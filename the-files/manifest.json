@@ -2,17 +2,25 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.4",
-  "payloadSha256": "f73517f3b72b366b1f11c41a173421aa09f5d288f3b4b5a3466e891799f2cefa",
+  "version": "0.2.3",
+  "payloadSha256": "499e34d3cfdef5181cb5423bf5c951ff64ff32d4213e5609aecdedd10146b93f",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-part-001.txt",
-      "sha256": "74688402c6f5cab1d6cf26d8c8405ec01dee2fb917dc936b648c4f153fb0e23b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-001.txt",
+      "sha256": "992863efe465d1aa1c19ee038530ccc57f40536b56438c84064e57652b769d35"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-part-002.txt",
-      "sha256": "574e09eb710af59db604cd784d0fd3632cd6cf0a3d2ff9be1ab8798cef4b0d74"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-002.txt",
+      "sha256": "96426ba4a376008b53e16cdf1911ecc2c087904a374f1ae76e90227b13bc8302"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-003.txt",
+      "sha256": "175c87577d3177109ad0f42a8c81d631bbb5752c9462cb8de02384855800ce9b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-004.txt",
+      "sha256": "4680007d52b8f5fdcd59d51db522e446f12cd4873c225ebbda14c8cda619430c"
     }
   ],
-  "notes": "Reference-layout rebuild: one character across the full two-page spread, reliable post-launch/DPI layout, visible clickable top and side tabs, centered title/search navigation, layered leather-and-parchment book styling, and all 182 existing field definitions preserved. Page-turn animation is intentionally deferred to the next update."
+  "notes": "Fully automatic updates: The Files checks on every launch and installs verified updates silently without an update prompt, then restarts itself."
 }
