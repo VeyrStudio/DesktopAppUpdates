@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "appId": "the-files",
+  "appName": "The Files",
+  "version": "0.1.0",
+  "notes": "Initial book-style character-sheet prototype. Remote update channel is live."
+}
