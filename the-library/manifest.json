@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.0",
-  "notes": "Independent update channel ready."
+  "version": "1.0.1",
+  "payloadSha256": "d9d8377dc9a4183017a8d66e798bfe1c8228bd688671f38a6bcde67a032dab13",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.1-part-001.txt",
+      "sha256": "b043bbbaf22259ab5979ef5572f5e0df15f51ddfa7f9009647b03ec2c0d299f6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.1-part-002.txt",
+      "sha256": "18c922dd7be374e97a2a7cd23830d4541ef654a8d73510c2d54c82418a0aaff5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.1-part-003.txt",
+      "sha256": "81faf02251fc99469318d2b27ca97fc254fc467ebbd0941ffa861e631b840736"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.1-part-004.txt",
+      "sha256": "53d5ad5f3f58def6039077a863d441d9e78c32d09783000bbdb815892334bc59"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.1-part-005.txt",
+      "sha256": "29288200267ff19f5d680209a5466fd4d88e0c2cc9f50cef175d998226c37f44"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.1-part-006.txt",
+      "sha256": "bd8420a30b3020716f133329289f70f14fa65afa1b8248028e35e9d42066ed75"
+    }
+  ],
+  "notes": "Performance update: smoother Library scrolling with fewer controls per cover card, opaque cover-grid painting, and faster buffered wheel scrolling."
 }
