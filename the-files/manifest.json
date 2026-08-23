@@ -2,45 +2,69 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.4",
-  "payloadSha256": "f73517f3b72b366b1f11c41a173421aa09f5d288f3b4b5a3466e891799f2cefa",
+  "version": "0.2.5",
+  "payloadSha256": "99f0d357edbdf3de771e4b15d4db26399dc22be0f1ca7b250ba8c8e7281e769f",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-001.txt",
-      "sha256": "d2d7550bad980d30df0fce1f449ad09ef6104c34784721de9fe388804d35fa6d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-001.txt",
+      "sha256": "3d9a233237fd77c6fbe42736e6c382e4ff030af3c8e7c10443c6325507b56e14"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-002.txt",
-      "sha256": "36e35d866b33477cc899c389707da3ec4b2abdeccc635691e89da875a1e50625"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-002.txt",
+      "sha256": "0282f34ba92fe4aae9de0522992ebfb0b71244c1ef92c5adae2b52a0df92c6a3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-003.txt",
-      "sha256": "b3a257e6ed100a8a0862bb7ab034b562e4aa0495d321d561400b3a1de75ada9c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-003.txt",
+      "sha256": "d24ed8d74bb9d570b4a88037a056a58bba9fae50a7637e77654a25ab6833ca6b"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-004.txt",
-      "sha256": "c5fc7bc500da4fe6a4174457d410b1672907e63d8f0f3496676913d18ac87382"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-004.txt",
+      "sha256": "5fa57eb44754d951bcb5c93f1af67e5c6c3d1cfa8f8e497237e9f8400061cb6e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-005.txt",
-      "sha256": "b97c39ff5c44ebefad0736681ae586a5c84b1663c78bbf3efd00e46e3493d6b1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-001.txt",
+      "sha256": "744327f5e17f1ce0e92d7554172fb5469bc228b098c3d4d2c5d00a36f86c51eb"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-006.txt",
-      "sha256": "3af0febe3abdbe60c2998cf9d74325a3d420af30306b9343708386f1267e2e8e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-002.txt",
+      "sha256": "165539b87179af09ddf2f1edea006c1a26c16df70e310f8f2e954443bae02e44"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-007.txt",
-      "sha256": "ab6431ec698b167bafec643eb5a59831b889b9b3d0df802cccaa68f23f287f95"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-003.txt",
+      "sha256": "26c3c7eb8dbc2ee9e14eba378a52b42691a9faf14673c31b853cf070797ecef1"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-008.txt",
-      "sha256": "b42a739bde75ae85fce540fcadd469fa6e4ae4740613cede777570055770dfa2"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-004.txt",
+      "sha256": "ca270668051afd316c1512d8986393d8ad412cf33a95277408f2feb597c00101"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-009.txt",
-      "sha256": "09d0d7b7541a9143edbdcd4294259ef9937e1c6ec6c35f184e90625f478f8be6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-005.txt",
+      "sha256": "ea5eb25f566ad3d81551e1afd3e94a7aff6ad72e17ba9e5fd50362d21e47641c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-006.txt",
+      "sha256": "280a489223de15285b808b3baed36823f2252cc004b869d4cc3a7e915fc75fef"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-007.txt",
+      "sha256": "baaf70247df894c7a03348fcb5532913ab556a520e5a9d948927cc19a33d7fc6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-008.txt",
+      "sha256": "7a4e3cb7a8be06b6ccf1ec2a65e050f948e76f63a2942c20e78b541d1b4a9def"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-009.txt",
+      "sha256": "5acc17f9cd71c94483883c3dfccc3844ec41f19c344252b295abf7581489deb0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-010.txt",
+      "sha256": "d882de9ddbc9e8a019b688ca422b09ac980a9c542e27fb43562b8977a8b4e494"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-011.txt",
+      "sha256": "f3998fa4ced534f6463c0c5f9fcc2d4e2844d160c5ffe2557c46e71fde421724"
     }
   ],
-  "notes": "Reference-layout rebuild: one character across the full two-page spread, visible usable top and side tabs, centered search/navigation, layered leather-and-parchment book styling, and all 182 character-sheet fields preserved. Page-turn animation is intentionally deferred to the next update."
+  "notes": "Fixes one-letter field focus loss, adds smooth mouse-wheel page scrolling, and substantially rebuilds the visual shell with a custom dark title bar, deeper leather desk/book framing, physical parchment pages, stitched colored section tabs, and brass-trimmed navigation. All 182 character-sheet fields remain preserved. Page-turn animation is still deferred."
 }
