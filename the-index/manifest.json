@@ -1,0 +1,8 @@
+{
+  "appId": "the-index",
+  "appName": "The Index",
+  "version": "1.0.0",
+  "packageUrl": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-index/the-index-1.0.0.zip",
+  "sha256": "7d736deb6c14648b1791f1020487010b1b959f1c0f20351a858b174f1d4debe7",
+  "notes": "Initial independent remote-update channel baseline."
+}
