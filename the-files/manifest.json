@@ -2,25 +2,45 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.3",
-  "payloadSha256": "499e34d3cfdef5181cb5423bf5c951ff64ff32d4213e5609aecdedd10146b93f",
+  "version": "0.2.4",
+  "payloadSha256": "f73517f3b72b366b1f11c41a173421aa09f5d288f3b4b5a3466e891799f2cefa",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-001.txt",
-      "sha256": "992863efe465d1aa1c19ee038530ccc57f40536b56438c84064e57652b769d35"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-001.txt",
+      "sha256": "d2d7550bad980d30df0fce1f449ad09ef6104c34784721de9fe388804d35fa6d"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-002.txt",
-      "sha256": "96426ba4a376008b53e16cdf1911ecc2c087904a374f1ae76e90227b13bc8302"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-002.txt",
+      "sha256": "36e35d866b33477cc899c389707da3ec4b2abdeccc635691e89da875a1e50625"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-003.txt",
-      "sha256": "175c87577d3177109ad0f42a8c81d631bbb5752c9462cb8de02384855800ce9b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-003.txt",
+      "sha256": "b3a257e6ed100a8a0862bb7ab034b562e4aa0495d321d561400b3a1de75ada9c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.3-part-004.txt",
-      "sha256": "4680007d52b8f5fdcd59d51db522e446f12cd4873c225ebbda14c8cda619430c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-004.txt",
+      "sha256": "c5fc7bc500da4fe6a4174457d410b1672907e63d8f0f3496676913d18ac87382"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-005.txt",
+      "sha256": "b97c39ff5c44ebefad0736681ae586a5c84b1663c78bbf3efd00e46e3493d6b1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-006.txt",
+      "sha256": "3af0febe3abdbe60c2998cf9d74325a3d420af30306b9343708386f1267e2e8e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-007.txt",
+      "sha256": "ab6431ec698b167bafec643eb5a59831b889b9b3d0df802cccaa68f23f287f95"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-008.txt",
+      "sha256": "b42a739bde75ae85fce540fcadd469fa6e4ae4740613cede777570055770dfa2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.4-safe-part-009.txt",
+      "sha256": "09d0d7b7541a9143edbdcd4294259ef9937e1c6ec6c35f184e90625f478f8be6"
     }
   ],
-  "notes": "Fully automatic updates: The Files checks on every launch and installs verified updates silently without an update prompt, then restarts itself."
+  "notes": "Reference-layout rebuild: one character across the full two-page spread, visible usable top and side tabs, centered search/navigation, layered leather-and-parchment book styling, and all 182 character-sheet fields preserved. Page-turn animation is intentionally deferred to the next update."
 }
