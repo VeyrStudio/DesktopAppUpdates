@@ -2,6 +2,41 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.1.0",
-  "notes": "Initial book-style character-sheet prototype. Remote update channel is live."
+  "version": "0.2.0",
+  "payloadSha256": "3102469501933cfa4cbc10098242cf8a7790cee4c7656e048759ba5425efbe34",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-001.txt",
+      "sha256": "df0224dbd7ac9f0e4fd9b7212d2d92caf807b9ba0299f09202ba065c67249aea"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-002.txt",
+      "sha256": "d1e7090dcb89496fed2fb31044d968fe9a14945890e6af364c5c921b1280bed2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-003.txt",
+      "sha256": "f75713f2bbe5f4438ef1fc2537a6f1a4e87c0b457dbb3af8ea5646e77cd5c5ee"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-004.txt",
+      "sha256": "515a64778484bd485b822e2ed1eb07ed99c42b3a82848b25233d1ed7711dc6bd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-005.txt",
+      "sha256": "e761af63d154449b000c162bfc3cd66ab2b28505888aaace786a33d9817781e5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-006.txt",
+      "sha256": "bf3397a64762b4a5ba1ec9055969efdb11ef51e163054c68befc886d11fc8dd6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-007.txt",
+      "sha256": "63bbe38b196e4105269b02dfa83547249b21345413350924d72da09dfd872d6e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.0-part-008.txt",
+      "sha256": "274fda93e36af88a776b9d0629ff4928fe362191bd3d4584dfb8d0727b3729c8"
+    }
+  ],
+  "notes": "Detailed book overhaul: richly painted leather-and-parchment open-book UI, stitched side tabs, top Existing/In Progress/Blank dividers, stable two-page spread with no page-turn animation, responsive smaller-screen layout, scrollable fields, and the expanded full character-sheet field set."
 }
