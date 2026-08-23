@@ -1,0 +1,8 @@
+{
+  "appId": "the-register",
+  "appName": "The Register",
+  "version": "1.0.0",
+  "packageUrl": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-register/the-register-1.0.0.zip",
+  "sha256": "756e8c40be0209da2fe6865e2bf3bc59cab02acfd09daaec28167bab2030777c",
+  "notes": "Initial independent remote-update channel baseline."
+}
