@@ -1,8 +1,7 @@
 {
+  "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
   "version": "1.0.0",
-  "packageUrl": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/the-library-1.0.0.zip",
-  "sha256": "3ac600780117d8134b7c3d1aca420b9296b3b9b32dba87c097c3df50a241ebe4",
-  "notes": "Initial independent remote-update channel baseline."
+  "notes": "Independent update channel ready."
 }
