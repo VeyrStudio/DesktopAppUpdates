@@ -2,6 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-register",
   "appName": "The Register",
-  "version": "1.0.0",
-  "notes": "Independent update channel ready."
+  "version": "1.0.1",
+  "payloadSha256": "191a8f0d2af1961a4350ccc1577646edf061f863306ca5cc6f326c7fc08b94a9",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-register/payload-1.0.1-part-001.txt",
+      "sha256": "191a8f0d2af1961a4350ccc1577646edf061f863306ca5cc6f326c7fc08b94a9"
+    }
+  ],
+  "notes": "Expanded name library: 269 additional given names and 92 additional surnames across all 24 built-in cultures."
 }
