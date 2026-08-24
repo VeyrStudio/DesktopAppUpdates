@@ -1,0 +1,48 @@
+name: The Files Runtime + Powers Fix v0.2.20
+on:
+  push:
+    paths:
+      - 'tools/the-files-runtime-powers-fix-v0220.py'
+      - '.github/workflows/the-files-runtime-powers-fix-v0220.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build cumulative fix
+        shell: pwsh
+        run: python tools/the-files-runtime-powers-fix-v0220.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.runtime-powers-validation/TheFiles.ps1','.runtime-powers-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/runtime-powers-0.2.20-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate package
+        shell: pwsh
+        run: |
+          python -c "import json,pathlib,hashlib,base64,gzip; r=pathlib.Path('.'); v=json.loads((r/'the-files/runtime-powers-0.2.20-validation.json').read_text(encoding='utf-8-sig')); b=(r/'the-files'/v['payload']).read_bytes(); assert hashlib.sha256(b).hexdigest()==v['payloadSha256']; x=json.loads(b.decode()); assert x['version']=='0.2.20'; fs={f['path']:f for f in x['files']}; assert 'TheFilesCore.ps1' in fs and 'TheFilesCore.ps1.gz' in fs; raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']); gz=gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64'])); assert raw==gz; print('Package validated')"
+      - name: Commit payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.20-runtime-powers-fix-part-001.txt' 'the-files/runtime-powers-0.2.20-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Files v0.2.20 runtime and Powers fix'
+            git pull --rebase origin main
+            git push origin main
+          }
