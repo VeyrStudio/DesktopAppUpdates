@@ -1,0 +1,17 @@
+﻿{
+    "version":  "0.2.18",
+    "baseVersion":  "0.2.17",
+    "payload":  "payload-0.2.18-powers-contrast-fix-part-001.txt",
+    "payloadSha256":  "663b5f6e58b3655205f8968e9231adfdb219561a117888f2390f45edcc0a6db3",
+    "changeScope":  "Powers contrast/readability only",
+    "requirements":  {
+                         "powersStructurePreserved":  true,
+                         "powersDataModelPreserved":  true,
+                         "psychologyStillRemoved":  true,
+                         "darkerControlBackground":  true,
+                         "darkControlText":  true,
+                         "userDataPathPreserved":  true,
+                         "noUserDataPayload":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
