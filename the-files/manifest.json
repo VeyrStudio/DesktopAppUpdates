@@ -2,49 +2,37 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.12",
-  "payloadSha256": "b42d74454ecda85d32595588826582e7138c028e0589bc9835d43d4cec640344",
+  "version": "0.2.13",
+  "payloadSha256": "9555278f9acfab20d150c42bd2ddbd4f4cb72bd4a68d16f75986a148fbd2a816",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-001.txt",
-      "sha256": "21ebaff830ec0c2dc35e91fba969db5a26e4762bb48c25b9dd67921bea2f2859"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-001.txt",
+      "sha256": "f285d76166b99e3cb991218b7dc5be735f8bc2d535688523fa30a81eab84cf3b"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-002a.txt",
-      "sha256": "064f8c6c6b2920f64102026fc1cd97ce3c0a4115ff694642d51dcc11ec68d4bf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-002.txt",
+      "sha256": "9e802b56cd4dda93903b9a007a2660a20ff73abeded4aea53b6000cd0eee9c15"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-002b.txt",
-      "sha256": "02b67af28c5846c42046bbb14880102afb110d7816a97506e24005acb5707f25"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-003.txt",
+      "sha256": "a9aa710f68582ffda1d87832111345a7410e4f83c62a2b8af074339b18186a17"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-002c.txt",
-      "sha256": "fa159fe9021758ac4aae69f89511b7f746b98ff4ca03c3e663c34d72bf83deba"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-004.txt",
+      "sha256": "7a070da455652bbb0a5bd30d7c478880b71f353d547af13182a0ffa268d8ca52"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-003.txt",
-      "sha256": "f72e44f96a389040a69561a40ea4edcaf841d5fd52cd8b2d9059214a75aaf8da"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-005.txt",
+      "sha256": "c5d3874587ce69ebf03fa4ec26e67860996678a6de0fcac36f88a2307201913c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-004.txt",
-      "sha256": "2fc6354bb0cab22ddb6d5bf2b922415c67ae9aed193a3b03e939a604008d083e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-006.txt",
+      "sha256": "a76a6e67074ada8059d9aa328ceef79c915a6f369725501691013f10e8618f80"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-005.txt",
-      "sha256": "9a7bb90b2910e332bdfbfa80512be7e8387dc9c079e50eb0abd8f9dc21d205f8"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-006.txt",
-      "sha256": "aae00590f7ac0414572e85e86cb6a2aa3f0b3cbebdb54fe5b3824964b1c4a223"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-007.txt",
-      "sha256": "56979395de62c0c7f40d2ebb6b145b5b07c94e4070e98826973633dbb10cece0"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-fix-part-008.txt",
-      "sha256": "e0338af21a02e11eea189e07ffff083da4728ce30c0f3c5e7254c3a54e0af64f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-007.txt",
+      "sha256": "9f5699025d99cc7069f42191946bece2877ce8483d649fdbb53615c479cc8c8a"
     }
   ],
-  "notes": "Appearance audit update: Appearance now contains Hair Color, Eye Color, Skin Tone, Scars, Health Notes, and Full Physical Description. Hair Color, Eye Color, and Skin Tone use labeled visual swatch pickers. Health, Disabilities, and Injuries are combined into Health Notes. Removed Appearance fields are no longer shown. Existing compatible values are migrated where possible; character data and portraits remain in the separate user-data folder."
+  "notes": "Personality + Background audit update: Personality now contains Core Personality, Positive Traits, Negative Traits, Strengths, Weaknesses, Likes, Dislikes, Fears, and Pet Peeves as multi-select dropdowns. Background now contains Childhood, Education, Past Occupation, Major Life Events, and Secrets. Childhood is multi-select; Education and Past Occupation use dropdowns; Major Life Events combines important past events, trauma or hardship, achievements, and regrets, with an individual notes box attached to every selected event. Existing compatible values are migrated where possible; character data and portraits remain in the separate user-data folder."
 }
