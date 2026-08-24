@@ -22,3 +22,4 @@ for i in hits:
     seen.add(key)
     print(f'\n--- CONTEXT {a+1}-{b} ---')
     for j in range(a,b): print(f'{j+1:05d}: {lines[j]}')
+print('\nINSPECTION_COMPLETE_2')
