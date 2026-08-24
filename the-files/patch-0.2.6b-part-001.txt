@@ -1,0 +1,18 @@
+param(
+    [Parameter(Mandatory=$true)][string]$CorePath,
+    [Parameter(Mandatory=$true)][string]$AppRoot
+)
+$ErrorActionPreference='Stop'
+if(-not (Test-Path -LiteralPath $CorePath)){exit 0}
+$src=[System.IO.File]::ReadAllText($CorePath,[System.Text.Encoding]::UTF8)
+
+function Replace-Literal([string]$Old,[string]$New){
+    if($script:src.Contains($Old)){$script:src=$script:src.Replace($Old,$New)}
+}
+function Replace-Regex([string]$Pattern,[string]$Replacement){
+    $script:src=[regex]::Replace($script:src,$Pattern,$Replacement,[System.Text.RegularExpressions.RegexOptions]::Multiline)
+}
+
+# Install the chosen compact open-book icon before the main UI is created.
+try{[System.IO.File]::WriteAllBytes((Join-Path $AppRoot 'TheFiles.png'),[Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABBVBMVEULCQgVEQ4YFRMUDAdWQiV5UylJMhN4VzI6KBpoRBupdDiIUxx5SRuHVyh0TCVgOiBFKxQkGBNPMiBnRSOZYyc3GwhkNg2naSrVmE3isWznuHLgsG3SnFiveD10NxUqFQexfULMoWXesnPZqmjXnlTEi0eWWyJcOBQkDgNGJwqZWRzLkkzkuHhUKgu5fTrxyo3rxYrWol3ChT46Igyzcy67hUbmvoLswH64jFKkbjPuypJZHRFjOhPJllXFnGSjflCJZDlbMw7wzpdFGwmAOxRaHQy8gDvfrmpWLBJsHA/Cj1CWajfx0JorJgg8MAxbRBSsgUqrekBNQBKbcD2ESxk4DgR2JRLGpgP0AAACaUlEQVQ4y22TAVfaMBSF00bQAu1gGrCsGiAWEtt0VIRB1zoKaifqnJP5/3/KXlpkHvWeQ0949+vLa5uLUCHtRTqoWGG0FcZbb6MC2fpv3C2CX7rDRX+nFwfBZadUfttB03d293JTQztGpVozQdanekPXG3uf9y3LqtUOTKOOMNJ0ixjN1qHdbn9xjo4ptTrdns1O3H5zQAy4X9PLXJx6zO+xbo9VhAzaX4e+b4dn1REuwxS6RrE8Pxl3J8NvbDqTTc+PhkCwwwPyneAc4HHAEnbxYz5NzDT2/IUi7LCyvLxCCiA8vg6zOR0RMj9SQBQpgo3lpSwAariJvUuFIINOqrZYLBYRAD9vrpAOwJLW3JU9J2REbt206frR3V0U+dkqplzN0MgBlkzJqD7dADDFJEuM+/wpCiDMStxi4ThNx71oAUP4mbP/60EBlAAwTixKxO9wHAMwhClhC8cSD2oLCh0C75EQQutJJ04DpgDo4Fn3fyi8SdUh8J4oVUM+xvKITcCf+MwrEYoLYH0WVCwOi8EsB4YA9ABITwlSAKkG7sqZl+v7FTOWldAfQoMs9ExZFQWwPvfCrM0umFNpylniT8BnjmuKtVQAJevTMy9kWdZdzVLRSpgPnzb0zmuyqrYYcWL2W9eew0LH7UvRd5ltw/q6VSWYwqsWWAgh09iw1DkSy9rt0+3cLBkDKcCiqDHgGMQ5V2cYc0p5/iuK8QihgSGUDaW/V0uOVFkBqjAyBvm53Rx/fFM9ppzgXEVlm4ri7/Pz86u4bUKDtonUyJLKPKSvwqdtYluUVAg/iuf/TOsf+tvsvw+v8v8BO1xhgpMA2TwAAAAASUVORK5CYII='))}catch{}
+try{[System.IO.File]::WriteAllBytes((Join-Path $AppRoot 'TheFiles.ico'),[Convert]::FromBase64String('AAABAAIAICAAAAEACACoCAAAJgAAABAQAAABACAAaAQAAM4IAAAoAAAAIAAAAEAAAAABAAgAAAAAAAAEAAAAAAAAAAAAAAABAAAAAQAACAkLAA4RFQATFRgABwwUACVCVgApU3kAEzJJADJXeAAaKDoAG0RoADh0qQAcU4gAG0l5AChXhwAlTHQAIDpgABQrRQATGCQAIDJPACNFZwAnY5kACBs3AA02ZAAqaacATZjVAGyx4gByuOcAbbDgAFic0gA9eK8AFTd0AAcVKgBCfbEAZaHMAHOy3gBoqtkAVJ7XAEeLxAAiW5YAFDhcAAMOJAAKJ0YAHFmZAEySywB4uOQACypUADp9uQCNyvEAisXrAF2i1gA+hcIADCI6AC5zswBGhbsAgr7mAH7A7ABSjLgAM26kAJLK7gARHVkAEzpjAFWWyQBknMUAUH6jADlkiQAOM1sAl87wAAkbRQAUO4AADB1aADuAvABqrt8AEixWAA8cbABQj8IAN2qWAJrQ8QAIJisADDA8ABREWwBKgawAQHqrABJATQA9cJsAGUuEAAQOOAASJXYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
