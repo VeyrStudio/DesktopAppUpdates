@@ -2,17 +2,33 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.15",
-  "payloadSha256": "2b1775660a4e362a498c01996872e5e964b62dd7b0b3d78e371f2e5462ffd36c",
+  "version": "0.2.16",
+  "payloadSha256": "34776e8bee2f6bb3d26da85e13fcaf966ade4cf07bc6433a8bf9e67490f2cd84",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.15-family-rebuild-part-001.txt",
-      "sha256": "34f1eba9c2c26e53323f1029e77124a99aaa36244a853cfd285ca776c1f85e16"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-001.txt",
+      "sha256": "f4bcb6456b44afa456e51680a68fe759b43ac23c342f294147ace2c74be84671"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.15-family-rebuild-part-002.txt",
-      "sha256": "b37ea2f1b736ceceb27339f75c06b1ca53bd9d9a8f817cb0a9f406a74469b6b4"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-002.txt",
+      "sha256": "47864e5ffd0ed15d681b96c2540436329341f4cc6ece19005add11e98ec5680a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-003.txt",
+      "sha256": "bb511bad47824e93b904bb87799d5ab2981c696fe3ea71958a6301bfcb7e1e9a"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-004.txt",
+      "sha256": "c7397cc42aacb51935819fdf86e318a1191d300f4fa071f181c1c6e1e70853a1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-005.txt",
+      "sha256": "8280eb9c6a63eb9476ce6eb9eb30099bbbd15f6a4c77bd11d866944b211cf55d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-006.txt",
+      "sha256": "9a30d69411caffcd781e515d97240416dc7258fe38bec960617d954dfe86d0cc"
     }
   ],
-  "notes": "Family-only cumulative rebuild from the last known-good v0.2.13 UI core, preserving the pre-UI verified bootstrap updater. Reintroduces folded Parent One/Two, repeatable Siblings/Children/Other Family, Important Family History notes, Family randomization, and preserves separate user data."
+  "notes": "Cumulative Relationships rebuild on the validated v0.2.15 Family release. Adds dropdown Relationship Status and Sexuality, folded repeatable Friends/Enemies/Mentors, required rival/enemy and mentor fields, field-level relationship randomization and Randomize Relationships. Preserves Family, the verified pre-UI updater, and separate user-data/portrait storage. Windows PowerShell static parsing and package/hash validation passed before this manifest was advanced."
 }
