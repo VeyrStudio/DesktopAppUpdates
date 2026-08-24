@@ -1,0 +1,44 @@
+name: The Files Relationships Build Safe
+on:
+  push:
+    paths:
+      - 'tools/the-files-relationships-build-safe.py'
+      - '.github/workflows/the-files-relationships-build-safe.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build cumulative Relationships release
+        shell: pwsh
+        run: python tools/the-files-relationships-build-safe.py
+      - name: Parse generated PowerShell under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.relationship-safe-validation/TheFiles.ps1','.relationship-safe-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error $_.Message};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/relationships-0.2.16-build-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r.powershellParse='passed-windows-powershell-parser'
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate hashes and payload assembly
+        shell: pwsh
+        run: |
+          python -c "import json,pathlib,hashlib,base64,gzip; r=pathlib.Path('.'); v=json.loads((r/'the-files/relationships-0.2.16-build-validation.json').read_text(encoding='utf-8-sig')); bs=[]; [bs.append((r/'the-files'/p['name']).read_bytes()) for p in v['parts']]; [(_ for _ in ()).throw(Exception('part sha')) if hashlib.sha256((r/'the-files'/p['name']).read_bytes()).hexdigest()!=p['sha256'] else None for p in v['parts']]; b=b''.join(bs); assert hashlib.sha256(b).hexdigest()==v['combinedPayloadSha256']; x=json.loads(b.decode()); assert x['version']=='0.2.16'; [(_ for _ in ()).throw(Exception('internal sha '+f['path'])) if hashlib.sha256(base64.b64decode(f['contentBase64'])).hexdigest()!=f['sha256'] else None for f in x['files']]; gzip.decompress(base64.b64decode(next(f for f in x['files'] if f['path']=='TheFilesCore.ps1.gz')['contentBase64'])); print('All hashes, JSON, base64, gzip validated')"
+      - name: Commit payloads and validation report only
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.16-relationships-safe-part-*.txt' 'the-files/relationships-0.2.16-build-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.16 Relationships release';git push}
