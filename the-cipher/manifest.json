@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "appId": "the-cipher",
+  "appName": "The Cipher",
+  "version": "1.0.0",
+  "payloadSha256": "609561568c5521fa70e5251b0d102526ce6edad731b9e59ee41ce0ed2caab084",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.0.txt",
+      "sha256": "609561568c5521fa70e5251b0d102526ce6edad731b9e59ee41ce0ed2caab084"
+    }
+  ],
+  "notes": "Initial release of The Cipher."
+}
