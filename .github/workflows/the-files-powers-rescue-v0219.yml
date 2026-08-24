@@ -41,4 +41,8 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add 'the-files/payload-0.2.19-powers-contrast-rescue-part-001.txt' 'the-files/powers-0.2.19-rescue-validation.json'
           git diff --cached --quiet
-          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.19 Powers rescue';git push}
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Files v0.2.19 Powers rescue'
+            git pull --rebase origin main
+            git push origin main
+          }
