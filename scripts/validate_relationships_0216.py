@@ -1,5 +1,6 @@
 import base64, gzip, hashlib, json, pathlib
 
+# Strict one-shot validation for the staged cumulative v0.2.16 Relationships release.
 ROOT = pathlib.Path('.')
 PAYLOAD_PATH = ROOT / 'the-files' / 'payload-0.2.16-relationships-rebuild-part-001.txt'
 REPORT_PATH = ROOT / 'the-files' / 'relationships-0.2.16-validation.json'
@@ -52,11 +53,9 @@ try:
 except Exception as e:
     check('appversion_json', False, str(e))
 
-# Bootstrap / rollback safety
 for token in ['Install-Update','payloadSha256','payloadParts','UpdateBackup','manifest.json','SHA256']:
     check('bootstrap_' + token.replace('.','_'), token in launcher, token)
 
-# Relationships audit requirements
 required_relationship_tokens = [
     'Relationship Status','Sexuality','Gay / Homosexual','Lesbian','Bisexual','Asexual','Aromantic','Straight / Heterosexual',
     'Friends','Enemies','Mentors','Enemy Type','Threat Level','Mentor Type','Mentorship Status','Relationship Dynamic',
@@ -68,11 +67,9 @@ required_relationship_tokens = [
 for token in required_relationship_tokens:
     check('relationship_token_' + hashlib.sha1(token.encode()).hexdigest()[:10], token in core, token)
 
-# Folded repeatable entry structures + requested fields
 for token in ['Add Friend','Add Enemy','Add Mentor','Name','Gender','Status','Occupation','Notes']:
     check('relationship_structure_' + hashlib.sha1(token.encode()).hexdigest()[:10], token in core, token)
 
-# Ensure the cumulative Family stage is still present
 family_tokens = [
     'Parent One','Parent Two','Parent Type','Adoptive','Spouse','Siblings','Sibling Type','Age Relationship',
     'Children','Child Type','Age/Life Stage','Other Parent','Other Family','Importance','Important Family History','Randomize Family'
@@ -80,7 +77,6 @@ family_tokens = [
 for token in family_tokens:
     check('family_preserved_' + hashlib.sha1(token.encode()).hexdigest()[:10], token in core, token)
 
-# Crude but useful safety/static indicators before the PowerShell parser step.
 check('core_nonempty', len(core) > 1000, str(len(core)))
 check('launcher_nonempty', len(launcher) > 1000, str(len(launcher)))
 check('no_encodedcommand_handoff', '-EncodedCommand' not in launcher, 'EncodedCommand must not return')
@@ -96,7 +92,6 @@ report = {
 }
 REPORT_PATH.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
 
-# Materialize decoded scripts solely for parser validation in CI.
 tmp = ROOT / '.relationship-validation'
 tmp.mkdir(exist_ok=True)
 (tmp / 'TheFiles.ps1').write_text(launcher, encoding='utf-8-sig')
