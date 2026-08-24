@@ -2,33 +2,17 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.11",
-  "payloadSha256": "011cabea260ec122f984e4936461f416eecf6cdbfaa84eac41a68889f0cc293d",
+  "version": "0.2.12",
+  "payloadSha256": "b42d74454ecda85d32595588826582e7138c028e0589bc9835d43d4cec640344",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.11-overview-part-001.txt",
-      "sha256": "e62c300c13eda4fafa73f8d2af84ed462b5e0f8484923519411b9894cf7fafb9"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-patch-part-001.txt",
+      "sha256": "f734a4b29cc791d46cc76d7645b8bbc1fae8c4e1595d48bde8f48b9bcf95dc33"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.11-overview-part-002.txt",
-      "sha256": "301af93d653641d9c88fe5e7e838caa452666ef9590f205175af703bb7453ab8"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.11-overview-part-003.txt",
-      "sha256": "dbe19513cb79a9029728dbe5096f1616a40bde40b882d874b2f3358a3b510fd2"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.11-overview-part-004.txt",
-      "sha256": "ee41023efd8d385c6b95cf545d0c5168289df2358705a7a8d48f91e5aa8c8214"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.11-overview-part-005.txt",
-      "sha256": "3de68d49b159f2f309cd6eeabf6a34e41c6b8391c076035c7f8d4aea63c37a73"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.11-overview-part-006.txt",
-      "sha256": "94ef8923082c08a58f02f4f4b9a660f08cac1f4e427108b31f0251097f2292a4"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.12-appearance-patch-part-002.txt",
+      "sha256": "754be6ece716f17f781d6476d068fc06cf7975d5d4be6a1ada7eeb7e9c436aba"
     }
   ],
-  "notes": "Overview audit update: removes Relationship to Main Character, Nationality / Culture, Birthplace, Financial Status, Religion / Beliefs, Languages, and Dominant Hand from Overview; renames Residence and Occupation; combines Character Tier + Story Role into Character Role; replaces Location with a Freedom Status dropdown; and turns Social Status into a dropdown. Skills still keeps its separate Languages field. Existing character data and portraits are preserved, with Character Role and Social Status migrated where possible."
+  "notes": "Appearance audit update: Appearance now contains Hair Color, Eye Color, Skin Tone, Scars, Health Notes, and Full Physical Description. Hair Color, Eye Color, and Skin Tone use labeled visual swatch pickers. Health, Disabilities, and Injuries are combined into Health Notes. Removed Appearance fields are no longer shown. Existing compatible values are migrated where possible; character data and portraits remain in the separate user-data folder."
 }
