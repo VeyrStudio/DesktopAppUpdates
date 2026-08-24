@@ -1,0 +1,19 @@
+﻿{
+    "version":  "0.2.20",
+    "baseVersion":  "0.2.19",
+    "payload":  "payload-0.2.20-runtime-powers-fix-part-001.txt",
+    "payloadSha256":  "081ad62f3485a4eddf56655cede9910a216ab5a67f499a7d34cbbc0f82125535",
+    "requirements":  {
+                         "legacyUiAutoUpdaterDisabled":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "powersEntryHeaderStyled":  true,
+                         "powersAddButtonStyled":  true,
+                         "powersRemoveButtonStyled":  true,
+                         "powersDiceStyled":  true,
+                         "innerFieldContrastPreserved":  true,
+                         "uncompressedCoreIncluded":  true,
+                         "compressedCoreIncluded":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
