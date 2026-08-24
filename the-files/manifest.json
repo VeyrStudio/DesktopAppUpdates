@@ -2,37 +2,17 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.13",
-  "payloadSha256": "9555278f9acfab20d150c42bd2ddbd4f4cb72bd4a68d16f75986a148fbd2a816",
+  "version": "0.2.14",
+  "payloadSha256": "4da2c5ec1502b004a32678bea2d077ea997283b35f8194b234084ef065e73a48",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-001.txt",
-      "sha256": "f285d76166b99e3cb991218b7dc5be735f8bc2d535688523fa30a81eab84cf3b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/b8dce1ce0dcb01add7dcaef56bf177b427455427/the-files/payload-0.2.14-bootstrap-part-001.txt",
+      "sha256": "762def4c8469ed9924862bdfa960d46ba863547a6225a1f9ae99f1cd8744b289"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-002.txt",
-      "sha256": "9e802b56cd4dda93903b9a007a2660a20ff73abeded4aea53b6000cd0eee9c15"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-003.txt",
-      "sha256": "a9aa710f68582ffda1d87832111345a7410e4f83c62a2b8af074339b18186a17"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-004.txt",
-      "sha256": "7a070da455652bbb0a5bd30d7c478880b71f353d547af13182a0ffa268d8ca52"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-005.txt",
-      "sha256": "c5d3874587ce69ebf03fa4ec26e67860996678a6de0fcac36f88a2307201913c"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-006.txt",
-      "sha256": "a76a6e67074ada8059d9aa328ceef79c915a6f369725501691013f10e8618f80"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-007.txt",
-      "sha256": "9f5699025d99cc7069f42191946bece2877ce8483d649fdbb53615c479cc8c8a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/b8dce1ce0dcb01add7dcaef56bf177b427455427/the-files/payload-0.2.14-bootstrap-part-002.txt",
+      "sha256": "5a5fa30754502cefff6cc5cc94c7582ecb8530d0e9e79cbfcf40cac411f5c279"
     }
   ],
-  "notes": "Rolled back to the last known-good The Files release, v0.2.13. This restores the stable Personality + Background audit build while the larger v0.3.x update is rebuilt and revalidated. Character data and portraits remain separate from app payload files."
+  "notes": "Installs the stable pre-UI automatic updater/bootstrap. Starting with this version, The Files checks, verifies, backs up, and installs available updates before loading the main UI. If an update fails, the last working version still opens. Character/user data is not modified."
 }
