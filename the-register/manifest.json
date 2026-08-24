@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-register",
   "appName": "The Register",
-  "version": "1.0.1",
-  "payloadSha256": "191a8f0d2af1961a4350ccc1577646edf061f863306ca5cc6f326c7fc08b94a9",
+  "version": "1.0.2",
+  "payloadSha256": "3e61f714efac976f55c950ad34f92fe215c170d0f829661f0856091f96f3cfc9",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-register/payload-1.0.1-part-001.txt",
-      "sha256": "191a8f0d2af1961a4350ccc1577646edf061f863306ca5cc6f326c7fc08b94a9"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-register/payload-1.0.2-split-screen.txt",
+      "sha256": "3e61f714efac976f55c950ad34f92fe215c170d0f829661f0856091f96f3cfc9"
     }
   ],
-  "notes": "Expanded name library: 269 additional given names and 92 additional surnames across all 24 built-in cultures."
+  "notes": "Adds Windows split-screen/Snap support. Narrow windows use a two-row bottom navigation, preserve the full name-workspace with internal scrolling when needed, and allow a smaller snapped window beside Edge. Saved names, projects, favorites, and history are unchanged."
 }
