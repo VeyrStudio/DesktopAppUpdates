@@ -2,37 +2,21 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.13",
-  "payloadSha256": "9555278f9acfab20d150c42bd2ddbd4f4cb72bd4a68d16f75986a148fbd2a816",
+  "version": "0.3.0",
+  "payloadSha256": "bb0e7df2acd8b0b29bfa01c3f27541787a835b0ad8be7b51f7afea2cc602d150",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-001.txt",
-      "sha256": "f285d76166b99e3cb991218b7dc5be735f8bc2d535688523fa30a81eab84cf3b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-001.txt",
+      "sha256": "8325ba629cfffce9d85742d10673c5abca861720d6ce4bfde6515a0074bbfbf7"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-002.txt",
-      "sha256": "9e802b56cd4dda93903b9a007a2660a20ff73abeded4aea53b6000cd0eee9c15"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-002.txt",
+      "sha256": "8063937b1aef2a8c8b0e010dba5f4518ca60735537e99fb02c54fae4ee0d97c3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-003.txt",
-      "sha256": "a9aa710f68582ffda1d87832111345a7410e4f83c62a2b8af074339b18186a17"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-004.txt",
-      "sha256": "7a070da455652bbb0a5bd30d7c478880b71f353d547af13182a0ffa268d8ca52"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-005.txt",
-      "sha256": "c5d3874587ce69ebf03fa4ec26e67860996678a6de0fcac36f88a2307201913c"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-006.txt",
-      "sha256": "a76a6e67074ada8059d9aa328ceef79c915a6f369725501691013f10e8618f80"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.13-personality-background-dropdown-part-007.txt",
-      "sha256": "9f5699025d99cc7069f42191946bece2877ce8483d649fdbb53615c479cc8c8a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-003.txt",
+      "sha256": "a3cbfcbc0270fd10b6b10b06a42e930cb50c86b8e2cd962de36890749e6f85e1"
     }
   ],
-  "notes": "Personality + Background audit update: Personality now contains Core Personality, Positive Traits, Negative Traits, Strengths, Weaknesses, Likes, Dislikes, Fears, and Pet Peeves as multi-select dropdowns. Background now contains Childhood, Education, Past Occupation, Major Life Events, and Secrets. Childhood is multi-select; Education and Past Occupation use dropdowns; Major Life Events combines important past events, trauma or hardship, achievements, and regrets, with an individual notes box attached to every selected event. Existing compatible values are migrated where possible; character data and portraits remain in the separate user-data folder."
+  "notes": "Major character-sheet audit update. Reworks Family, Relationships, Skills/Powers, Timeline, and Notes based on the completed field audit while preserving the previously updated Overview, Appearance, Personality, and Background direction. Family now uses structured parent, sibling, child, other-family, family-history, and visual family-tree tools. Relationships is streamlined to Relationship Status, Sexuality, Friends, Enemies (including rival types), and Mentors. Skills is replaced by a structured Powers system. Psychology is removed. Timeline is now a visual life-story timeline builder. Notes now focuses on Aliases, searchable story/trope tags, aesthetic tags, a generated mood-board view, multi-select labeled/custom color palettes, and Important Objects. Randomize controls are available throughout, with section and full-character randomization. Existing character/user data remains stored separately from app payload files, and the update does not delete prior data files."
 }
