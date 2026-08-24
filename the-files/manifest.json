@@ -2,21 +2,69 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.6",
-  "payloadSha256": "8fcc79771b7dda67d8df4985cdf189b1644c0ba23ffd0cdba8bde26f2348612e",
+  "version": "0.2.5",
+  "payloadSha256": "99f0d357edbdf3de771e4b15d4db26399dc22be0f1ca7b250ba8c8e7281e769f",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.6-final-part-001.txt",
-      "sha256": "1955c3a0bb79083f67ee33532ee41947f5ad7ba3a8680fa67be9376b35f6530a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-001.txt",
+      "sha256": "3d9a233237fd77c6fbe42736e6c382e4ff030af3c8e7c10443c6325507b56e14"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.6-final-part-002.txt",
-      "sha256": "51f67a4dc6d1527a137e87990aefc4057427301d76305a9a651ce1acd3b2bd38"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-002.txt",
+      "sha256": "0282f34ba92fe4aae9de0522992ebfb0b71244c1ef92c5adae2b52a0df92c6a3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.6-final-part-003.txt",
-      "sha256": "66f4c9cd26dd53b051de18a4dc351338bb32414ffb2e8d67e85d117bfdbc2cd7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-003.txt",
+      "sha256": "d24ed8d74bb9d570b4a88037a056a58bba9fae50a7637e77654a25ab6833ca6b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-part-004.txt",
+      "sha256": "5fa57eb44754d951bcb5c93f1af67e5c6c3d1cfa8f8e497237e9f8400061cb6e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-001.txt",
+      "sha256": "744327f5e17f1ce0e92d7554172fb5469bc228b098c3d4d2c5d00a36f86c51eb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-002.txt",
+      "sha256": "165539b87179af09ddf2f1edea006c1a26c16df70e310f8f2e954443bae02e44"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-003.txt",
+      "sha256": "26c3c7eb8dbc2ee9e14eba378a52b42691a9faf14673c31b853cf070797ecef1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-004.txt",
+      "sha256": "ca270668051afd316c1512d8986393d8ad412cf33a95277408f2feb597c00101"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-005.txt",
+      "sha256": "ea5eb25f566ad3d81551e1afd3e94a7aff6ad72e17ba9e5fd50362d21e47641c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-006.txt",
+      "sha256": "280a489223de15285b808b3baed36823f2252cc004b869d4cc3a7e915fc75fef"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-007.txt",
+      "sha256": "baaf70247df894c7a03348fcb5532913ab556a520e5a9d948927cc19a33d7fc6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-008.txt",
+      "sha256": "7a4e3cb7a8be06b6ccf1ec2a65e050f948e76f63a2942c20e78b541d1b4a9def"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-009.txt",
+      "sha256": "5acc17f9cd71c94483883c3dfccc3844ec41f19c344252b295abf7581489deb0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-010.txt",
+      "sha256": "d882de9ddbc9e8a019b688ca422b09ac980a9c542e27fb43562b8977a8b4e494"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.5-tail-011.txt",
+      "sha256": "f3998fa4ced534f6463c0c5f9fcc2d4e2844d160c5ffe2557c46e71fde421724"
     }
   ],
-  "notes": "Book interaction and character-sheet audit: labels the bottom randomize controls, fixes Nickname(s) randomization, keeps lock/undo behavior, reinforces typing focus, improves mouse-wheel page scrolling, adds portrait remove and field tooltips, remembers the last character/section/status, adds direction-aware section page riffles and Previous/Next page turns, and installs the new open-book icon while preserving the existing character-sheet fields."
+  "notes": "Fixes one-letter field focus loss, adds smooth mouse-wheel page scrolling, and substantially rebuilds the visual shell with a custom dark title bar, deeper leather desk/book framing, physical parchment pages, stitched colored section tabs, and brass-trimmed navigation. All 182 character-sheet fields remain preserved. Page-turn animation is still deferred."
 }
