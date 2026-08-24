@@ -1,0 +1,44 @@
+name: The Files Powers Contrast Fix
+on:
+  push:
+    paths:
+      - 'tools/the-files-powers-contrast-fix.py'
+      - '.github/workflows/the-files-powers-contrast-fix.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build contrast-only Powers release
+        shell: pwsh
+        run: python tools/the-files-powers-contrast-fix.py
+      - name: Parse generated PowerShell under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.powers-contrast-validation/TheFiles.ps1','.powers-contrast-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/powers-0.2.18-contrast-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate payload package and hashes
+        shell: pwsh
+        run: |
+          python -c "import json,pathlib,hashlib,base64,gzip; r=pathlib.Path('.'); v=json.loads((r/'the-files/powers-0.2.18-contrast-validation.json').read_text(encoding='utf-8-sig')); b=(r/'the-files'/v['payload']).read_bytes(); assert hashlib.sha256(b).hexdigest()==v['payloadSha256']; x=json.loads(b.decode()); assert x['version']=='0.2.18'; [(_ for _ in ()).throw(Exception('internal sha '+f['path'])) if hashlib.sha256(base64.b64decode(f['contentBase64'])).hexdigest()!=f['sha256'] else None for f in x['files']]; gzip.decompress(base64.b64decode(next(f for f in x['files'] if f['path']=='TheFilesCore.ps1.gz')['contentBase64'])); print('All hashes, JSON, base64, gzip validated')"
+      - name: Commit validated payload and report only
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.18-powers-contrast-fix-part-001.txt' 'the-files/powers-0.2.18-contrast-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.18 Powers contrast fix';git push}
