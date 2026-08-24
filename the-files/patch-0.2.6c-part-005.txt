@@ -1,0 +1,23 @@
+Section([string]$Target) {
+    if([string]::IsNullOrWhiteSpace($Target) -or $Target -eq $script:CurrentSection){return}
+    $from=[array]::IndexOf($script:SectionOrder,$script:CurrentSection);$to=[array]::IndexOf($script:SectionOrder,$Target)
+    $direction=1;$distance=1
+    if($from -ge 0 -and $to -ge 0){$direction=if($to -gt $from){1}else{-1};$distance=[math]::Max(1,[math]::Abs($to-$from))}
+    Animate-BookPages $direction $distance $false
+    $script:CurrentSection=$Target
+    if($null -ne $script:Settings){$script:Settings.LastSection=$Target}
+    Render-CurrentCharacter;Schedule-Save
+}
+
+'@
+    $src=$src.Replace('function Update-NavLabels {',$motion+'function Update-NavLabels {')
+}
+$src=$src.Replace('$b.Add_Click({$script:CurrentSection=[string]$this.Tag;Render-CurrentCharacter})','$b.Add_Click({Go-ToSection ([string]$this.Tag)})')
+$src=$src.Replace("$prevBtn.Add_Click({ if(`$script:Filtered.Count -gt 0){ `$script:CurrentIndex=(`$script:CurrentIndex-1+`$script:Filtered.Count)%`$script:Filtered.Count; `$jumpCombo.SelectedIndex=`$script:CurrentIndex; Render-CurrentCharacter } })","`$prevBtn.Add_Click({ if(`$script:Filtered.Count -gt 0){ Animate-BookPages -1 1 `$true; `$script:CurrentIndex=(`$script:CurrentIndex-1+`$script:Filtered.Count)%`$script:Filtered.Count; `$script:Rendering=`$true;try{`$jumpCombo.SelectedIndex=`$script:CurrentIndex}finally{`$script:Rendering=`$false}; Render-CurrentCharacter } })")
+$src=$src.Replace("$nextBtn.Add_Click({ if(`$script:Filtered.Count -gt 0){ `$script:CurrentIndex=(`$script:CurrentIndex+1)%`$script:Filtered.Count; `$jumpCombo.SelectedIndex=`$script:CurrentIndex; Render-CurrentCharacter } })","`$nextBtn.Add_Click({ if(`$script:Filtered.Count -gt 0){ Animate-BookPages 1 1 `$true; `$script:CurrentIndex=(`$script:CurrentIndex+1)%`$script:Filtered.Count; `$script:Rendering=`$true;try{`$jumpCombo.SelectedIndex=`$script:CurrentIndex}finally{`$script:Rendering=`$false}; Render-CurrentCharacter } })")
+
+# Remember last section/character/status between launches.
+if($src -notmatch "LastCharacterId='"){
+    $src=$src.Replace("[ordered]@{ AutoUpdateCheck = `$true; LastUpdateCheck = '' }","[ordered]@{ AutoUpdateCheck = `$true; LastUpdateCheck = ''; LastCharacterId=''; LastSection='Overview'; LastStatus='Existing' }")
+    $loadNeedle="if (`$s.LastUpdateCheck) { `$script:Settings.LastUpdateCheck = [string]`$s.LastUpdateCheck }"
+    $src
