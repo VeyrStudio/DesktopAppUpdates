@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-cipher",
   "appName": "The Cipher",
-  "version": "1.0.0",
-  "payloadSha256": "609561568c5521fa70e5251b0d102526ce6edad731b9e59ee41ce0ed2caab084",
+  "version": "1.0.1",
+  "payloadSha256": "d8a885ed59b2977e242725c2c23fb9fb59e9cd8072e5cd2c3833b570d3528acb",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.0.txt",
-      "sha256": "609561568c5521fa70e5251b0d102526ce6edad731b9e59ee41ce0ed2caab084"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.1.txt",
+      "sha256": "d8a885ed59b2977e242725c2c23fb9fb59e9cd8072e5cd2c3833b570d3528acb"
     }
   ],
-  "notes": "Initial release of The Cipher."
+  "notes": "Fixes the Windows Script Host quoting error in the launcher scripts from version 1.0.0."
 }
