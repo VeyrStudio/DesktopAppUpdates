@@ -1,0 +1,47 @@
+name: Inspect The Files v0.2.19 runtime
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-inspect-v0219-runtime.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract launcher and Powers renderer
+        shell: pwsh
+        run: |
+          @'
+          import json,base64,gzip,pathlib,re
+          root=pathlib.Path('.')
+          p=json.loads((root/'the-files/payload-0.2.19-powers-contrast-rescue-part-001.txt').read_text(encoding='utf-8'))
+          fs={f['path']:f for f in p['files']}
+          launcher=base64.b64decode(fs['TheFiles.ps1']['contentBase64']).decode('utf-8-sig')
+          core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig')
+          (root/'tools/current-launcher-v0.2.19.ps1').write_text(launcher,encoding='utf-8')
+          a=core.find('function Add-PowerField')
+          b=core.find('function Render-PowersSection')
+          c=core.find('function ', b+20)
+          snippet=core[a:(c if c!=-1 else b+12000)]
+          (root/'tools/current-powers-render-v0.2.19.ps1').write_text(snippet,encoding='utf-8')
+          # updater/startup related lines in core
+          lines=core.splitlines()
+          hits=[]
+          terms=('Update','updat','Start-Process','powershell','THEFILES_BOOTSTRAP_RELAUNCH','AppVersion')
+          for i,line in enumerate(lines,1):
+              if any(t in line for t in terms): hits.append(f'{i}: {line}')
+          (root/'tools/current-core-update-hooks-v0.2.19.txt').write_text('\n'.join(hits),encoding='utf-8')
+          '@ | python
+      - name: Commit inspection output
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tools/current-launcher-v0.2.19.ps1 tools/current-powers-render-v0.2.19.ps1 tools/current-core-update-hooks-v0.2.19.txt
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Inspect The Files v0.2.19 runtime loop and Powers controls'; git pull --rebase origin main; git push origin main}
