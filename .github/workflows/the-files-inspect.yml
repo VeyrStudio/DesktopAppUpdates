@@ -1,0 +1,17 @@
+name: The Files Inspect
+on:
+  push:
+    paths:
+      - 'scripts/the_files_inspect.py'
+      - '.github/workflows/the-files-inspect.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/the_files_inspect.py
