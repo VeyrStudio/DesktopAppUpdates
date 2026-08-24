@@ -1,0 +1,60 @@
+﻿{
+    "version":  "0.2.16",
+    "baseVersion":  "0.2.15",
+    "combinedPayloadSha256":  "34776e8bee2f6bb3d26da85e13fcaf966ade4cf07bc6433a8bf9e67490f2cd84",
+    "combinedPayloadBytes":  61261,
+    "parts":  [
+                  {
+                      "name":  "payload-0.2.16-relationships-safe-part-001.txt",
+                      "sha256":  "f4bcb6456b44afa456e51680a68fe759b43ac23c342f294147ace2c74be84671",
+                      "bytes":  12000
+                  },
+                  {
+                      "name":  "payload-0.2.16-relationships-safe-part-002.txt",
+                      "sha256":  "47864e5ffd0ed15d681b96c2540436329341f4cc6ece19005add11e98ec5680a",
+                      "bytes":  12000
+                  },
+                  {
+                      "name":  "payload-0.2.16-relationships-safe-part-003.txt",
+                      "sha256":  "bb511bad47824e93b904bb87799d5ab2981c696fe3ea71958a6301bfcb7e1e9a",
+                      "bytes":  12000
+                  },
+                  {
+                      "name":  "payload-0.2.16-relationships-safe-part-004.txt",
+                      "sha256":  "c7397cc42aacb51935819fdf86e318a1191d300f4fa071f181c1c6e1e70853a1",
+                      "bytes":  12000
+                  },
+                  {
+                      "name":  "payload-0.2.16-relationships-safe-part-005.txt",
+                      "sha256":  "8280eb9c6a63eb9476ce6eb9eb30099bbbd15f6a4c77bd11d866944b211cf55d",
+                      "bytes":  12000
+                  },
+                  {
+                      "name":  "payload-0.2.16-relationships-safe-part-006.txt",
+                      "sha256":  "9a30d69411caffcd781e515d97240416dc7258fe38bec960617d954dfe86d0cc",
+                      "bytes":  1261
+                  }
+              ],
+    "internalFiles":  [
+                          {
+                              "path":  "TheFiles.ps1",
+                              "sha256":  "17a03092f4467f3d7228e3fd22245a4e1bf025f2fa98499d51c8b751ec489880"
+                          },
+                          {
+                              "path":  "TheFilesCore.ps1.gz",
+                              "sha256":  "73b7d398390852487032f0f6f335ebba8ed76ee48cbdfa2b6dc455992f916ac5"
+                          },
+                          {
+                              "path":  "AppVersion.json",
+                              "sha256":  "3c79e44d03d3da0e508552a6ac5071287f0b6675a89536e6b91a513b4b2ca2fa"
+                          }
+                      ],
+    "requiredTokenCount":  58,
+    "missingRequiredTokens":  [
+
+                              ],
+    "forbiddenUserDataPaths":  false,
+    "encodedCommandPresent":  false,
+    "jsonRoundTrip":  true,
+    "powershellParse":  "passed-windows-powershell-parser"
+}
