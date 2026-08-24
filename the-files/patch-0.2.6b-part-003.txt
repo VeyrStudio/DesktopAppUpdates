@@ -1,0 +1,29 @@
+Drv9Dd6L/L2GN/xY/af8JHjb/Cxot/woTIf8JHjv/IlmS/0qQyv9jp9n/YZ/M/1WUxv8iUYH/H059/2Gj1P99vOf/cbPh/1mf1f8uZpv/Ejdi/wscMv8KFCL/CR47/ylimP9Ehbv/MVp//xgyTP8lTHL/IE17/yZVhf9trdv/i8Xr/4C95v9oq9z/OXGh/xM7Z/8LHDH/CxUj/wkcOf8rYZT/Pnms/w4jP/8HGTH/KlJ4/ylZh/8pWon/dbPf/5HK7v+Kxev/cLLh/zpvnP8NKkH/CxUg/w8WI/8KHDr/L2SV/1GSxv8wWH7/FS9N/0yGtP8tYI//LV+O/3265P+UzO//jsfs/3O14/88cJv/EDJG/w0XHv8RFR//Chw5/zBllf9anM7/OWaN/w4lQP8tV3z/KVyL/y5jlP+Cvuj/mM/x/5DJ7f9ztOL/NWeS/wsgN/8NEhn/DxQa/wgYMP8tYI//W53P/ytNbf8NJUH/IERo/yNSf/8xZ5f/gr/o/5XM7/+Nx+z/b7De/y5cj/8MIVP/DBAY/xAUGf8HFCf/JFSE/1aaz/9kncf/XJC3/1KMuf8hT3z/MGaX/4LA6v+NyO3/fbzn/16j1v8hS3v/DB9K/wsQGf8SGB7/EilC/xhFc/9Fh7//aqva/2mp2P9Tjr7/Gzxi/yBEaf9hm8b/cq7Z/2Kk1P8+f7f/Fj9p/w8lPv8NFBv/DRAU/xYoOP8fRWj/HD1d/yVAWv8kPVX/GyxA/xIYIf8TGSD/HSs6/yM5Tv8gOVD/HT1c/x9AYf8RITH/Cg4S/wgKDP8KDBD/DRIY/w4SFv8REhX/EhMV/xMUFv8TFRj/ExUX/xIUFv8SExb/ERMV/xATFv8OEhf/CgwP/wkKDP8ICQv/CAkM/wgLD/8MDxP/DxEV/xASFv8RExf/ERMX/xMVGP8TFRj/ERMX/w8SFf8OERX/Cw4S/wgKDP8ICQv/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=='))}catch{}
+
+# Smart nickname randomization. Nickname(s) remains independently lockable.
+if($src -notmatch "(?m)^\s*Nicknames\s*=\s*@\("){
+    $src=[regex]::Replace($src,"(?m)^(\s*FullName\s*=\s*@\([^\r\n]+\)\s*)$",'$1'+"`r`n    Nicknames = @('Ace','Ash','Cal','Cass','Dori','Eli','Gabe','Ian','Jay','Kit','Ren','Ro','Sam','Theo','Toby','Vic','Wren')",1)
+}
+if($src -notmatch 'function Get-SmartNickname'){
+$nicknameFn=@'
+function Get-SmartNickname {
+    $c=Get-CurrentCharacter
+    $name='';if($null -ne $c){$name=[string]$c.Fields.FullName}
+    if([string]::IsNullOrWhiteSpace($name)){return [string](Get-Random -InputObject $script:RandomPools.Nicknames)}
+    $first=($name.Trim() -split '\s+')[0]
+    $known=@{
+        'Adrian'=@('Adri','Ian');'Alexander'=@('Alex','Xan');'Benjamin'=@('Ben','Benny');'Callum'=@('Cal');
+        'Cassian'=@('Cass','Cas');'Christopher'=@('Chris','Kit');'Daniel'=@('Dan','Danny');'Dorian'=@('Dori','Ian');
+        'Edward'=@('Ed','Eddie');'Elias'=@('Eli');'Gabriel'=@('Gabe');'James'=@('Jamie','Jay');
+        'Jonathan'=@('Jon','Johnny');'Julian'=@('Jules');'Kieran'=@('Kier');'Maxwell'=@('Max');
+        'Nicholas'=@('Nick','Nico');'Rowan'=@('Ro');'Samuel'=@('Sam');'Sebastian'=@('Seb','Bash');
+        'Silas'=@('Si');'Sorin'=@('Sor');'Theodore'=@('Theo','Teddy');'Thomas'=@('Tom','Tommy');
+        'Tobias'=@('Toby');'Victor'=@('Vic')
+    }
+    if($known.ContainsKey($first)){return [string](Get-Random -InputObject $known[$first])}
+    if($first.Length -ge 5){return $first.Substring(0,[math]::Min(4,$first.Length-1))}
+    return [string](Get-Random -InputObject $script:RandomPools.Nicknames)
+}
+
+'@
+    $src=$src.Replace('function Get-RandomText([string]$Key) {',$nicknameFn+'function Get-RandomText([str
