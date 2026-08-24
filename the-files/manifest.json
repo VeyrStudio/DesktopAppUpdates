@@ -2,13 +2,57 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.7",
-  "payloadSha256": "3a29f6d7ae4a9ea224a901c96738f1338d5970f6b92cf975bfab2d263be459e0",
+  "version": "0.2.8",
+  "payloadSha256": "39afa3c8e3e883c43de45bd80464143b965c64f0b0bfd3759a335c7ff729a6cb",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.7-clean.txt",
-      "sha256": "3a29f6d7ae4a9ea224a901c96738f1338d5970f6b92cf975bfab2d263be459e0"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-001.txt",
+      "sha256": "425cf9b448be99468ad7261fa8c1c3ac0511f995daffb54feb240877aa23bfc2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-002.txt",
+      "sha256": "26e14cd9eace12fc60e288d87c8270bc887d6cf65095ac0fa76fa7164a9e0bf5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-003.txt",
+      "sha256": "2b94b754fde80a8ae7d08bfa19eb3caa41b18ab89d251e96b73024186ba2597b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-004.txt",
+      "sha256": "5d62ef73e766e15f38be5a8b4f1675d3d03837934cedf8339dc46eaf67deaaeb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-005.txt",
+      "sha256": "25066dbf600f9ff6e80a468e1f4f2b015e253aa59ea4fe181991da7b8c6dd333"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-006.txt",
+      "sha256": "d244df5ea01791b2880c856bd1f1af9b29b49ea953f0bc46773bf4b1ee997116"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-007.txt",
+      "sha256": "a6abd89c9b485a58d09e6fe3cde2e37675c68cc5ad947c17fe1dfac443521d5c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-008.txt",
+      "sha256": "eaeca434fba3f0200e525196a311d0e7fb812cea3e5ab8d997f1aea6ed6d4c10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-009a.txt",
+      "sha256": "c51bb5799a5858b79e7a2fc485c2cb6957ba0776984f90b00fbd2067372fbeac"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-009b.txt",
+      "sha256": "7e9f9d319680180bd1ff2cf0f031f11d78497a904639febbd84902ec3c7bbdc4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-010.txt",
+      "sha256": "8317a3ade360391cd2cf321f314de535e78fb56401fc5ca768e9c57e30922359"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.8-safe-part-011.txt",
+      "sha256": "65477eb72f3621d31374b20110703a09be8fb4aff0b93167a952d839e9663f17"
     }
   ],
-  "notes": "Clean full-core repair and feature completion: replaces the entire app core instead of patching source at launch; includes labeled Randomize Section/Character/Undo controls, working Nickname(s) randomization with locks/undo, portrait controls, tooltips, saved last character/section/status, improved mouse-wheel scrolling and typing focus, direction-aware section page riffling, Previous/Next character page-turn animation, the chosen open-book icon, and the complete 182-field character sheet. The broken 0.2.6 patch file is removed during installation."
+  "notes": "Runtime-wiring repair: forces visible labels on Randomize Section, Randomize Character, and Undo Randomize with standard WinForms buttons; makes Nickname(s) randomization explicit for the field button, section randomization, and full-character randomization; and replaces the subtle page effect with a clearly visible parchment page fold across the gutter for section changes and Previous/Next character navigation. Preserves all 182 character-sheet fields, locks, undo, portrait controls, autosave, scrolling/focus fixes, saved browsing state, and the open-book icon."
 }
