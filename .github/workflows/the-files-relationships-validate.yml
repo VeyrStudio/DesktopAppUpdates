@@ -5,6 +5,8 @@ on:
       - 'scripts/validate_relationships_0216.py'
       - '.github/workflows/the-files-relationships-validate.yml'
       - 'the-files/payload-0.2.16-relationships-rebuild-part-001.txt'
+  pull_request:
+    branches: [main]
 permissions:
   contents: write
 jobs:
@@ -32,6 +34,7 @@ jobs:
           $r.powershellParse='passed-windows-powershell-parser'
           $r | ConvertTo-Json -Depth 10 | Set-Content 'the-files/relationships-0.2.16-validation.json' -Encoding UTF8
       - name: Commit validation report
+        if: github.event_name == 'push'
         shell: pwsh
         run: |
           git config user.name 'VeyrStudio Validation'
