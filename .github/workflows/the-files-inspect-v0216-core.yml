@@ -1,0 +1,44 @@
+name: Inspect The Files v0.2.16 Core
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-inspect-v0216-core.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract live core
+        run: |
+          python - <<'PY'
+          import json,base64,gzip,pathlib,hashlib
+          r=pathlib.Path('.')
+          tf=r/'the-files'
+          m=json.loads((tf/'manifest.json').read_text())
+          assert m['version']=='0.2.16',m['version']
+          parts=[]
+          for p in m['payloadParts']:
+              n=p['url'].rsplit('/',1)[-1]
+              b=(tf/n).read_bytes()
+              assert hashlib.sha256(b).hexdigest()==p['sha256']
+              parts.append(b)
+          data=b''.join(parts)
+          assert hashlib.sha256(data).hexdigest()==m['payloadSha256']
+          payload=json.loads(data.decode())
+          f=next(x for x in payload['files'] if x['path']=='TheFilesCore.ps1.gz')
+          gz=base64.b64decode(f['contentBase64'])
+          assert hashlib.sha256(gz).hexdigest()==f['sha256']
+          core=gzip.decompress(gz)
+          pathlib.Path('tools/current-core-v0.2.16.ps1').write_bytes(core)
+          PY
+      - name: Commit extracted core
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tools/current-core-v0.2.16.ps1
+          git diff --cached --quiet || (git commit -m 'Extract live The Files v0.2.16 core for audited rebuild' && git push)
