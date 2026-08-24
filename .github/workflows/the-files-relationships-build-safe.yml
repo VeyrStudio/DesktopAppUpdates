@@ -1,3 +1,4 @@
+# Trigger safe build after workflow is present on default branch.
 name: The Files Relationships Build Safe
 on:
   push:
