@@ -7,6 +7,7 @@ Each app has its own independent channel:
 - `the-index/` — The Index
 - `the-library/` — The Library
 - `the-register/` — The Register
+- `the-cipher/` — The Cipher
 
 Future apps get their own folder and manifest in this same repository.
 
