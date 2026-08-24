@@ -3,11 +3,11 @@
   "appId": "the-files",
   "appName": "The Files",
   "version": "0.3.1",
-  "payloadSha256": "c15b208ac9a4275deaac2ae6bc00a16d26c15ad018767cd24faec0bc93661bde",
+  "payloadSha256": "346630340b2b7ce8c6f8104681943b1c4c4bf66fc997ac1cbfe6668784d9db74",
   "payloadParts": [
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/abb7966608af9bc47476bf79b4db44f962b865ac/the-files/payload-0.3.1-startup-fix-part-001.txt",
-      "sha256": "c15b208ac9a4275deaac2ae6bc00a16d26c15ad018767cd24faec0bc93661bde"
+      "sha256": "346630340b2b7ce8c6f8104681943b1c4c4bf66fc997ac1cbfe6668784d9db74"
     }
   ],
   "notes": "Startup repair for the v0.3.0 major audit. Replaces fragile PowerShell New-Object constructor syntax used by UI geometry and other .NET objects with explicit ::new(...) constructors so coordinate expressions such as y+5 are passed as two Point arguments instead of being misparsed as three. This fixes the startup crash reporting: Exception setting SelectedIndex: Cannot find an overload for Point and the argument count: 3. All v0.3.0 character-sheet audit features and separate user-data storage are preserved."
