@@ -18,7 +18,7 @@ jobs:
           python-version: '3.12'
       - run: python scripts/the_files_inspect.py
   relationships-safe-build:
-    if: github.event_name == 'pull_request' && github.head_ref == 'build-the-files-0216-relationships-safe'
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'build-the-files-0216-relationships-safe')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
