@@ -1,0 +1,31 @@
+traitBtn.Width=178","`$portraitBtn.Text='ADD / CHANGE';`$portraitBtn.Width=120")
+    $needle='$portraitBtn.Add_Click({Choose-Portrait});$contentHost.Controls.Add($portraitBtn)'
+    $replacement=$needle+"`r`n    try{`$portraitRemove=New-Object OrnateButton}catch{`$portraitRemove=New-Object System.Windows.Forms.Button};`$portraitRemove.Text='REMOVE';`$portraitRemove.Width=54;`$portraitRemove.Height=29;`$portraitRemove.Location=New-Object System.Drawing.Point(136,230);`$portraitRemove.Font=New-Object System.Drawing.Font('Georgia',7);`$portraitRemove.Add_Click({Remove-Portrait});`$contentHost.Controls.Add(`$portraitRemove)"
+    $src=$src.Replace($needle,$replacement)
+}
+
+# Section order and page-motion behavior.
+if($src -notmatch '\$script:SectionOrder='){
+    $src=$src.Replace("$rightNames=@('Relationships','Skills','Psychology','Story','Timeline','Notes')","`$rightNames=@('Relationships','Skills','Psychology','Story','Timeline','Notes')`r`n`$script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Skills','Psychology','Story','Timeline','Notes')")
+}
+if($src -notmatch 'function Animate-BookPages'){
+$motion=@'
+function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {
+    if($null -eq $book -or $book.Width -lt 100){return}
+    $count=[math]::Max(1,[math]::Min(6,$Count));$half=[int](($book.ClientSize.Width-40)/2)
+    for($n=0;$n -lt $count;$n++){
+        $sheet=New-Object System.Windows.Forms.Panel
+        if(($n%2)-eq 0){$sheet.BackColor=[System.Drawing.Color]::FromArgb(241,220,181)}else{$sheet.BackColor=[System.Drawing.Color]::FromArgb(230,204,163)}
+        $sheet.Height=[math]::Max(80,$book.ClientSize.Height-46);$sheet.Top=23;$sheet.Width=8
+        if($Direction -ge 0){$sheet.Left=[int]($book.ClientSize.Width/2)}else{$sheet.Left=[int]($book.ClientSize.Width/2)-8}
+        $book.Controls.Add($sheet);$sheet.BringToFront()
+        $steps=5;if($Whole){$steps=8}
+        for($s=1;$s -le $steps;$s++){
+            $sheet.Width=[math]::Max(8,[int]($half*($s/$steps)))
+            if($Direction -ge 0){$sheet.Left=[int]($book.ClientSize.Width/2)}else{$sheet.Left=[int]($book.ClientSize.Width/2)-$sheet.Width}
+            [System.Windows.Forms.Application]::DoEvents();$delay=9;if($Whole){$delay=15};Start-Sleep -Milliseconds $delay
+        }
+        $book.Controls.Remove($sheet);$sheet.Dispose()
+    }
+}
+function Go-To
