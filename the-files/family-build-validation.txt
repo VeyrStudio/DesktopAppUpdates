@@ -1,0 +1,9 @@
+The Files 0.2.15 Family rebuild validation
+Payload parts: 2
+Payload SHA-256: 2b1775660a4e362a498c01996872e5e964b62dd7b0b3d78e371f2e5462ffd36c
+Source UI core: stable v0.2.13
+Bootstrap: pre-UI manifest/version/SHA-256 verification + backup/rollback
+Family-only schema/render route applied; non-Family section definitions preserved from stable source.
+PowerShell static parse: attempted when pwsh is available on runner.
+No Windows runtime test claimed.
+No user-data, Media, or portrait paths included in payload.
