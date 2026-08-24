@@ -1,0 +1,43 @@
+on Scroll-BookPage($ctrl,[int]$delta) {
+    try {
+        $p=$ctrl
+        while($null -ne $p){
+            if($p.AutoScroll){
+                $old=[math]::Abs([int]$p.AutoScrollPosition.Y)
+                $target=$old-[int]($delta/120)*70
+                $max=[math]::Max(0,$p.VerticalScroll.Maximum-$p.VerticalScroll.LargeChange+1)
+                $target=[math]::Max(0,[math]::Min($target,$max))
+                $p.AutoScrollPosition=New-Object System.Drawing.Point(0,$target)
+                return
+            }
+            $p=$p.Parent
+        }
+    }catch{}
+}
+
+'@
+    $src=$src.Replace('function New-PageContent([System.Windows.Forms.Panel]$page) {',$scrollFn+'function New-PageContent([System.Windows.Forms.Panel]$page) {')
+    $src=$src.Replace("$contentHost.Anchor='Top,Bottom,Left,Right'; $page.Controls.Add($contentHost); return $contentHost","$contentHost.Anchor='Top,Bottom,Left,Right';`$contentHost.TabStop=`$true;`$contentHost.Add_MouseWheel({param(`$s,`$e);Scroll-BookPage `$this `$e.Delta});`$contentHost.Add_MouseEnter({try{`$this.Focus()}catch{}}); `$page.Controls.Add(`$contentHost); return `$contentHost")
+    $src=$src.Replace("$control.BackColor=[System.Drawing.Color]::FromArgb(247,233,202);$control.ForeColor=$script:Ink;$control.Anchor='Top,Left,Right';$page.Controls.Add($control)","$control.BackColor=[System.Drawing.Color]::FromArgb(247,233,202);`$control.ForeColor=`$script:Ink;`$control.Anchor='Top,Left,Right';if(-not `$isMulti){`$control.Add_MouseWheel({param(`$s,`$e);Scroll-BookPage `$this `$e.Delta})};`$page.Controls.Add(`$control)")
+}
+
+# Portrait controls: add/change plus remove.
+if($src -notmatch 'function Remove-Portrait'){
+$removePortrait=@'
+function Remove-Portrait {
+    $c=Get-CurrentCharacter;if($null -eq $c){return}
+    $c.PortraitPath='';$c.Modified=(Get-Date).ToString('o');Schedule-Save;Render-CurrentCharacter
+}
+
+'@
+    $src=$src.Replace('function Choose-Portrait {',$removePortrait+'function Choose-Portrait {')
+}
+if($src -notmatch "\$portraitRemove="){
+    $src=$src.Replace("$portraitBtn.Text='ADD / CHANGE PORTRAIT';$portraitBtn.Width=178","`$portraitBtn.Text='ADD / CHANGE';`$portraitBtn.Width=120")
+    $needle='$portraitBtn.Add_Click({Choose-Portrait});$contentHost.Controls.Add($portraitBtn)'
+    $replacement=$needle+"`r`n    try{`$portraitRemove=New-Object OrnateButton}catch{`$portraitRemove=New-Object System.Windows.Forms.Button};`$portraitRemove.Text='REMOVE';`$portraitRemove.Width=54;`$portraitRemove.Height=29;`$portraitRemove.Location=New-Object System.Drawing.Point(136,230);`$portraitRemove.Font=New-Object System.Drawing.Font('Georgia',7);`$portraitRemove.Add_Click({Remove-Portrait});`$contentHost.Controls.Add(`$portraitRemove)"
+    $src=$src.Replace($needle,$replacement)
+}
+
+# Section order and page-motion behavior.
+if($s
