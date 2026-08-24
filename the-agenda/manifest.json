@@ -2,37 +2,41 @@
   "schemaVersion": 1,
   "appId": "the-agenda",
   "appName": "The Agenda",
-  "version": "1.0.0",
-  "payloadSha256": "dddb6d34ce010cda76df1c5f296b8180824ed88fc91920d6220a67c47f22e179",
+  "version": "1.0.1",
+  "payloadSha256": "9edb5221f30d0791fff56f1fb3b39f482ac8834cec2438739da576fac4576491",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-001.txt",
-      "sha256": "c2606fb80b9a01b4a4b59bc0b50b8071ab2c5bddfcb0db93ee1a8c6f32239c4d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-001.txt",
+      "sha256": "f55fb14696f5d5b2acb4690bee56276630e54384a3a3318e779e18a06ce3cc22"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-002.txt",
-      "sha256": "330f675bbf5210edfade49c41b9cc159caabe3e9513b5160e2f9a0031969bb27"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-002.txt",
+      "sha256": "09eb2677569f8a044f5451794f815fcc1c25b834dca94820b80cf5b48b9cce29"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-003.txt",
-      "sha256": "5b72d1079ad1552a228024de6faf0b13fcfd0909efcd19d931220f3c81f150b6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-003.txt",
+      "sha256": "05e1b5aa5c125aa5437be18158cfc237740edeb9aaba0d7a20fd319a62b9b607"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-004.txt",
-      "sha256": "c9aaeeb336bde1ff6e8da4c2b22f25b2ace9c3b5c9da410df798f31af70c8d38"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-004.txt",
+      "sha256": "4049b64e3c40314b90a9ae83720ade9e1a70b84ec125c1fe797cc31603531b1a"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-005.txt",
-      "sha256": "a4ef5c2ed78bb8f58cdc7555369b45cc5b6e1c0d82ec5e9d828e106c78c34511"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-005.txt",
+      "sha256": "08ae8db1b0bf24772ef265608cd802de6ad8c655887b25517cb0e01311462a78"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-006.txt",
-      "sha256": "31aca8f72506287d152fbafa0a6815b644bd161535d32d86b981bb3d8229b52c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-006.txt",
+      "sha256": "71f2614bf3b96c9140ee417dbb322ff90c4b434c5e30a97e7bdfcb1096e307d7"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-007.txt",
-      "sha256": "abd6c8910bcbeea1a7e8b8552014e7112117bf71551022ece5ad7f21bbeece14"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-007.txt",
+      "sha256": "4b860e4f499e020f193948acfea82df3fe611314dbc9a70c00a0c6c2838de888"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.1-part-008.txt",
+      "sha256": "760fd54788f2dbe191b2b8777ed07307e03460dd1bc8d520ab30435c0f925ba5"
     }
   ],
-  "notes": "Initial release: Daily and Weekly schedule views, persistent daily check-offs, Fall 2026 schedule, Manage Schedule, exact 3x5 index-card printing, five-card full-week printing, gothic visual theme, and independent automatic updates."
+  "notes": "Printing fix: Daily 3×5 cards now print at the top-left instead of centered. Full Week printing now uses physical hundredths-of-an-inch drawing so every day card stays a true 3×5 size without WPF page scaling."
 }
