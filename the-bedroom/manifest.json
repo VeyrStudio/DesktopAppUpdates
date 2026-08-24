@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "appId": "the-bedroom",
+  "appName": "The Bedroom",
+  "version": "0.1.0",
+  "releaseReady": false,
+  "payloadSha256": "",
+  "payloadParts": [],
+  "notes": "Initial The Bedroom update channel. Development builds currently update through the private source repository's automatic updater. Packaged releases will publish versioned payload parts here with SHA-256 verification. User history, library, preferences, downloads, privacy settings, and local media metadata remain outside update payloads so an update cannot overwrite personal data."
+}
