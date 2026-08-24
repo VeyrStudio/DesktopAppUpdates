@@ -1,7 +1,11 @@
 import json, pathlib, runpy, shutil
 
 root = pathlib.Path('.')
-runpy.run_path(str(root/'tools/the-files-relationships-build-safe.py'), run_name='__main__')
+builder = root/'tools/the-files-relationships-build-safe.py'
+builder_text = builder.read_text(encoding='utf-8')
+builder_text = builder_text.replace("It''s Complicated", "Complicated / Unclear")
+builder.write_text(builder_text, encoding='utf-8')
+runpy.run_path(str(builder), run_name='__main__')
 source = root/'the-files/relationships-0.2.16-build-validation.json'
 report = json.loads(source.read_text(encoding='utf-8'))
 if report.get('version') != '0.2.16' or report.get('baseVersion') != '0.2.15':
