@@ -1,0 +1,21 @@
+﻿{
+    "version":  "0.2.17",
+    "baseVersion":  "0.2.16",
+    "parts":  [
+                  {
+                      "name":  "payload-0.2.17-powers-safe-part-001.txt",
+                      "sha256":  "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf"
+                  }
+              ],
+    "combinedPayloadSha256":  "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf",
+    "requirements":  {
+                         "skillsRemoved":  true,
+                         "psychologyRemoved":  true,
+                         "powersSection":  true,
+                         "powerFields":  true,
+                         "bootstrapPreserved":  true,
+                         "dataRootPreserved":  true,
+                         "noDataPayload":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
