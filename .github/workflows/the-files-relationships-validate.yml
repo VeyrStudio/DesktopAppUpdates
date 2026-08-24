@@ -1,0 +1,40 @@
+name: The Files Relationships Validate
+on:
+  push:
+    paths:
+      - 'scripts/validate_relationships_0216.py'
+      - '.github/workflows/the-files-relationships-validate.yml'
+      - 'the-files/payload-0.2.16-relationships-rebuild-part-001.txt'
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate package and audit requirements
+        shell: pwsh
+        run: python scripts/validate_relationships_0216.py
+      - name: Parse PowerShell scripts
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $files=@('.relationship-validation/TheFiles.ps1','.relationship-validation/TheFilesCore.ps1')
+          foreach($f in $files){
+            $tokens=$null; $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors) | Out-Null
+            if($errors.Count -gt 0){ $errors | ForEach-Object { Write-Error $_.Message }; throw "PowerShell parse failed for $f" }
+          }
+          $r=Get-Content 'the-files/relationships-0.2.16-validation.json' -Raw | ConvertFrom-Json
+          $r.powershellParse='passed-windows-powershell-parser'
+          $r | ConvertTo-Json -Depth 10 | Set-Content 'the-files/relationships-0.2.16-validation.json' -Encoding UTF8
+      - name: Commit validation report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Validation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add the-files/relationships-0.2.16-validation.json
+          git diff --cached --quiet; if ($LASTEXITCODE -ne 0) { git commit -m 'Validate The Files v0.2.16 Relationships release'; git push }
