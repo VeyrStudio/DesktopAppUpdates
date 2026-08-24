@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.17",
-  "payloadSha256": "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf",
+  "version": "0.2.19",
+  "payloadSha256": "8e8f4a4527c185734279c418246f27d02938294d51f460a4f404e6362bf32b56",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/88cd6e0f40ba72445a1d5adf382aedb814fe3e7e/the-files/payload-0.2.17-powers-safe-part-001.txt",
-      "sha256": "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f429ffeff21f3aba5107ea93d64a218f9f12fff8/the-files/payload-0.2.19-powers-contrast-rescue-part-001.txt",
+      "sha256": "8e8f4a4527c185734279c418246f27d02938294d51f460a4f404e6362bf32b56"
     }
   ],
-  "notes": "Emergency rollback from broken v0.2.18 contrast package to validated v0.2.17 Powers release while a corrected contrast build is prepared."
+  "notes": "Rescue release after the broken v0.2.18 install. Restores the complete v0.2.17 Powers build, applies the requested contrast/readability changes, and explicitly ships both TheFilesCore.ps1 and TheFilesCore.ps1.gz so the runnable core is present even if decompression/relaunch does not recreate it. User data and portraits remain separate. Windows PowerShell parsing and package/hash validation passed before publish."
 }
