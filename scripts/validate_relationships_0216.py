@@ -1,10 +1,15 @@
-# Retrigger with generated-core context around the exact parser failure.
+# Retrigger after sanitizing smart apostrophes inherited from the Family base.
 import json, pathlib, runpy, shutil
 
 root = pathlib.Path('.')
 builder = root/'tools/the-files-relationships-build-safe.py'
 builder_text = builder.read_text(encoding='utf-8')
 builder_text = builder_text.replace("It''s Complicated", "Complicated / Unclear")
+needle = "launcher = launcher.replace('v0.2.15', 'v0.2.16')"
+insert = "core = core.replace('’', \"''\").replace('‘', \"''\")\n" + needle
+if needle not in builder_text:
+    raise SystemExit('Could not install smart-apostrophe sanitizer')
+builder_text = builder_text.replace(needle, insert, 1)
 builder.write_text(builder_text, encoding='utf-8')
 runpy.run_path(str(builder), run_name='__main__')
 source = root/'the-files/relationships-0.2.16-build-validation.json'
@@ -20,10 +25,6 @@ if report.get('encodedCommandPresent'):
 if not report.get('jsonRoundTrip'):
     raise SystemExit('Payload JSON round-trip failed')
 core_path = root/'.relationship-safe-validation/TheFilesCore.ps1'
-lines = core_path.read_text(encoding='utf-8-sig').splitlines()
-for n in range(618, 628):
-    if n <= len(lines):
-        print(f'CORE {n:04d}: {lines[n-1]}')
 val = root/'.relationship-validation'
 shutil.rmtree(val, ignore_errors=True)
 val.mkdir()
