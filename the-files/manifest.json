@@ -2,33 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.16",
-  "payloadSha256": "34776e8bee2f6bb3d26da85e13fcaf966ade4cf07bc6433a8bf9e67490f2cd84",
+  "version": "0.2.17",
+  "payloadSha256": "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-001.txt",
-      "sha256": "f4bcb6456b44afa456e51680a68fe759b43ac23c342f294147ace2c74be84671"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-002.txt",
-      "sha256": "47864e5ffd0ed15d681b96c2540436329341f4cc6ece19005add11e98ec5680a"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-003.txt",
-      "sha256": "bb511bad47824e93b904bb87799d5ab2981c696fe3ea71958a6301bfcb7e1e9a"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-004.txt",
-      "sha256": "c7397cc42aacb51935819fdf86e318a1191d300f4fa071f181c1c6e1e70853a1"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-005.txt",
-      "sha256": "8280eb9c6a63eb9476ce6eb9eb30099bbbd15f6a4c77bd11d866944b211cf55d"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.16-relationships-safe-part-006.txt",
-      "sha256": "9a30d69411caffcd781e515d97240416dc7258fe38bec960617d954dfe86d0cc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/88cd6e0f40ba72445a1d5adf382aedb814fe3e7e/the-files/payload-0.2.17-powers-safe-part-001.txt",
+      "sha256": "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf"
     }
   ],
-  "notes": "Cumulative Relationships rebuild on the validated v0.2.15 Family release. Adds dropdown Relationship Status and Sexuality, folded repeatable Friends/Enemies/Mentors, required rival/enemy and mentor fields, field-level relationship randomization and Randomize Relationships. Preserves Family, the verified pre-UI updater, and separate user-data/portrait storage. Windows PowerShell static parsing and package/hash validation passed before this manifest was advanced."
+  "notes": "Cumulative Powers rebuild on validated v0.2.16 Relationships. Replaces Skills with a folded repeatable Powers editor containing Power / Ability, Power Type, Strength Level, Control Level, Limitations, Weaknesses, Source, Visibility, and Notes; removes the entire Psychology section; preserves Family, Relationships, the independent pre-UI updater, and separate user-data/portrait storage. The generated PowerShell passed the Windows PowerShell parser and package/hash validation before this manifest was advanced."
 }
