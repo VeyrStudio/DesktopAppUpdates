@@ -1,3 +1,4 @@
+# Retrigger with exact parser-location diagnostics enabled.
 import json, pathlib, runpy, shutil
 
 root = pathlib.Path('.')
