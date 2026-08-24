@@ -1,0 +1,321 @@
+00247:     'Appearance' = @(
+00248:         @{Key='HairColor';Label='Hair Color';Type='Swatch';Options=@('Black','Dark Brown','Brown','Light Brown','Auburn','Red','Strawberry Blonde','Blonde','Platinum Blonde','Gray','White','Dyed / Fantasy','Multicolored','Custom','Unknown')},
+00249:         @{Key='EyeColor';Label='Eye Color';Type='Swatch';Options=@('Brown','Dark Brown','Hazel','Amber','Green','Blue','Gray','Blue-Gray','Green-Gray','Heterochromia','Custom','Unknown')},
+00250:         @{Key='SkinTone';Label='Skin Tone';Type='Swatch';Options=@('Very Fair','Fair','Light','Light-Medium','Medium','Medium-Tan','Tan','Medium-Brown','Brown','Deep Brown','Very Deep','Albinism','Custom','Unknown')},
+00251:         @{Key='Scars';Label='Scars';Type='Multi'},
+00252:         @{Key='HealthNotes';Label='Health Notes';Type='Multi'},
+00253:         @{Key='PhysicalDescription';Label='Full Physical Description';Type='Large'}
+00254:     )
+00255:     'Personality' = @(
+00256:         @{Key='CorePersonality';Label='Core Personality';Type='MultiChoice';Options=@('Reserved','Outgoing','Introverted','Extroverted','Calm','Intense','Gentle','Assertive','Cautious','Impulsive','Optimistic','Pessimistic','Pragmatic','Idealistic','Logical','Emotional','Empathetic','Detached','Trusting','Suspicious','Independent','Dependent','Adaptable','Stubborn','Patient','Impatient','Serious','Playful','Confident','Insecure','Easygoing','High-Strung','Rebellious','Dutiful','Competitive','Cooperative','Private','Open','Protective','Nurturing','Dominant','Submissive','Curious','Cynical','Other / Custom')},
+00257:         @{Key='PositiveTraits';Label='Positive Traits';Type='MultiChoice';Options=@('Adaptable','Brave','Calm','Compassionate','Confident','Cooperative','Creative','Curious','Dependable','Determined','Diplomatic','Disciplined','Empathetic','Forgiving','Generous','Honest','Humble','Independent','Kind','Loyal','Observant','Open-Minded','Optimistic','Patient','Protective','Reliable','Resilient','Resourceful','Responsible','Selfless','Thoughtful','Trustworthy','Other / Custom')},
+00258:         @{Key='NegativeTraits';Label='Negative Traits';Type='MultiChoice';Options=@('Arrogant','Avoidant','Controlling','Cruel','Cynical','Defensive','Detached','Dishonest','Hot-Tempered','Impatient','Impulsive','Insecure','Jealous','Judgmental','Manipulative','Naive','Obsessive','Overprotective','Passive-Aggressive','Pessimistic','Possessive','Prideful','Reckless','Secretive','Self-Destructive','Selfish','Stubborn','Suspicious','Unreliable','Vindictive','Other / Custom')},
+00259:         @{Key='Strengths';Label='Strengths';Type='MultiChoice';Options=@('Adaptability','Bravery','Communication','Creativity','Discipline','Emotional Resilience','Empathy','Endurance','Focus','Improvisation','Independence','Leadership','Loyalty','Negotiation','Observation','Patience','Problem-Solving','Protectiveness','Quick Thinking','Resourcefulness','Self-Control','Strategic Thinking','Teamwork','Other / Custom')},
+00260:         @{Key='Weaknesses';Label='Weaknesses';Type='MultiChoice';Options=@('Avoids Conflict','Confrontational','Difficulty Asking for Help','Fear of Vulnerability','Holds Grudges','Impulsive','Indecisive','Jealousy','Need for Control','Overconfidence','Overly Self-Sacrificing','Poor Boundaries','Poor Communication','Poor Impulse Control','Pride','Recklessness','Secretive','Self-Doubt','Stubbornness','Trust Issues','Other / Custom')},
+00261:         @{Key='Likes';Label='Likes';Type='MultiChoice';Options=@('Animals','Art','Books','Cities','Cold Weather','Competition','Cooking','Crowds','Dancing','Food','Forests','Games','Gardening','History','Learning','Music','Nature','Nighttime','Parties','Rain','Routine','Silence','Solitude','Sports','Storms','Sunlight','Technology','Travel','Warm Weather','Water / Ocean','Other / Custom')},
+00262:         @{Key='Dislikes';Label='Dislikes';Type='MultiChoice';Options=@('Animals','Authority','Chaos','Cold Weather','Conflict','Crowds','Dishonesty','Heat','Hospitals','Loud Noise','Mess','Nature','Physical Contact','Routine','Rules','Silence','Small Talk','Social Events','Spicy Food','Technology','Travel','Violence','Waiting','Water / Ocean','Other / Custom')},
+00263:         @{Key='Fears';Label='Fears';Type='MultiChoice';Options=@('Abandonment','Being Forgotten','Being Trapped','Change','Crowds','Darkness','Death','Failure','Heights','Illness','Intimacy','Isolation','Losing Control','Losing Loved Ones','Pain','Powerlessness','Public Humiliation','Rejection','The Unknown','Water / Drowning','Becoming Like Someone They Hate','Other / Custom')},
+00264:         @{Key='PetPeeves';Label='Pet Peeves';Type='MultiChoice';Options=@('Arrogance','Being Ignored','Being Interrupted','Being Lied To','Being Touched Without Permission','Disorganization','Dishonesty','Incompetence','Interruptions','Invading Personal Space','Lateness','Loud Chewing','Messiness','People Touching Their Things','Poor Manners','Repetition','Small Talk','Unnecessary Noise','Wasted Food','Other / Custom')}
+00265:     )
+00266:     'Background' = @(
+00267:         @{Key='Childhood';Label='Childhood';Type='MultiChoice';Options=@('Stable','Loving','Happy','Privileged','Sheltered','Strict','Religious','Rural','Urban','Nomadic','Poor','Unstable','Chaotic','Neglectful','Abusive','Isolated','Lonely','Orphaned','Foster Care','Institutionalized','Raised by Relatives','Single-Parent Household','Large Family','Only Child','Parentified','Military Family','Frequently Relocated','Homeless / Housing Insecure','War / Conflict','Persecution','Criminal Environment','Traumatic','Other / Custom','Unknown')},
+00268:         @{Key='Education';Label='Education';Type='EditChoice';Options=@('No Formal Education','Primary / Elementary Education','Some Secondary / High School','High School Diploma / GED','Trade / Vocational School','Apprenticeship','Some College / University','Associate Degree / Equivalent','Bachelor Degree / Equivalent','Graduate Degree','Doctorate / Professional Degree','Military Training','Religious Education','Private Tutoring','Homeschooled','Self-Taught','Other / Custom','Unknown')},
+00269:         @{Key='PastOccupations';Label='Past Occupation';Type='EditChoice';Options=@('None / Never Employed','Student','Military','Law Enforcement','Government / Civil Service','Healthcare','Education','Research / Academia','Skilled Trade','Manual Labor','Agriculture / Farming','Hospitality / Food Service','Retail / Customer Service','Office / Administration','Business / Management','Finance','Legal','Arts / Creative','Entertainment','Media / Journalism','Technology','Science','Religious / Clergy','Security','Transportation','Caretaking / Domestic Work','Criminal / Illegal Work','Other / Custom','Unknown')},
+00270:         @{Key='MajorLifeEvents';Label='Major Life Events';Type='LifeEvents';Options=@('Loss / Death','Birth / New Family Member','Marriage / Partnership','Breakup / Divorce','Friendship Change','Betrayal','Abandonment','Abuse','Neglect','Poverty / Financial Hardship','Homelessness / Displacement','Illness / Diagnosis','Serious Injury','Disability / Health Change','Accident','Disaster','War / Armed Conflict','Persecution / Discrimination','Crime / Violence','Arrest / Legal Trouble','Imprisonment / Captivity','Escape / Rescue','Major Move / Relocation','Immigration / Exile','Education Milestone','Career Change','Major Achievement / Award','Skill Mastery','Leadership / Promotion','Failure / Defeat','Missed Opportunity','Broken Promise','Hurt Someone','Failed to Act','Crime They Committed','Secret Revealed','Major Discovery','Joined / Left a Group','Religious / Belief Change','Identity / Self-Discovery','Supernatural Event','Near-Death Experience','Other Hardship / Trauma','Regret / Past Mistake','Other / Custom')},
+00271:         @{Key='Secrets';Label='Secrets';Type='Large'}
+00272:     )
+00273:     'Family' = @(
+00274:         @{Key='Parent1Name';Label='Parent 1 — Name';Type='Text'},
+00275:         @{Key='Parent1Type';Label='Parent 1 — Relationship';Type='Choice';Options=@('Mother','Father','Parent','Adoptive Parent','Step-Parent','Guardian','Other')},
+00276:         @{Key='Parent1Status';Label='Parent 1 — Status';Type='Choice';Options=@('Alive','Dead','Missing','Unknown','Other')},
+00277:         @{Key='Parent1Occupation';Label='Parent 1 — Occupation';Type='Text'},
+00278:         @{Key='Parent1Relationship';Label='Relationship With Parent 1';Type='Multi'},
+00279:         @{Key='Parent1Notes';Label='Parent 1 — Notes';Type='Multi'},
+00280:         @{Key='Parent2Name';Label='Parent 2 — Name';Type='Text'},
+00281:         @{Key='Parent2Type';Label='Parent 2 — Relationship';Type='Choice';Options=@('Mother','Father','Parent','Adoptive Parent','Step-Parent','Guardian','Other')},
+00282:         @{Key='Parent2Status';Label='Parent 2 — Status';Type='Choice';Options=@('Alive','Dead','Missing','Unknown','Other')},
+00283:         @{Key='Parent2Occupation';Label='Parent 2 — Occupation';Type='Text'},
+00284:         @{Key='Parent2Relationship';Label='Relationship With Parent 2';Type='Multi'},
+00285:         @{Key='Parent2Notes';Label='Parent 2 — Notes';Type='Multi'},
+00286:         @{Key='AdoptiveGuardians';Label='Adoptive Parents / Guardians';Type='Multi'},
+00287:         @{Key='StepParents';Label='Step-Parents';Type='Multi'},
+00288:         @{Key='Siblings';Label='Siblings';Type='Large'},
+00289:         @{Key='Children';Label='Children';Type='Large'},
+00290:         @{Key='OtherFamily';Label='Other Family';Type='Large'},
+00291:         @{Key='FamilyHistory';Label='Important Family History';Type='Large'},
+00292:         @{Key='FamilyTree';Label='Family Tree / Family Structure';Type='Large'}
+00293:     )
+00294:     'Relationships' = @(
+00295:         @{Key='Partner';Label='Partner / Love Interest';Type='Text'},
+00296:         @{Key='RelationshipStatus';Label='Relationship Status';Type='Text'},
+00297:         @{Key='Sexuality';Label='Sexuality';Type='Text'},
+00298:         @{Key='RomanticOrientation';Label='Romantic Orientation';Type='Text'},
+00299:         @{Key='RomanticHistory';Label='Romantic History';Type='Large'},
+00300:         @{Key='Attraction';Label='What Attracts Them to Someone';Type='Multi'},
+00301:         @{Key='LoveLanguage';Label='Love Language';Type='Multi'},
+00302:         @{Key='ShowsAffection';Label='How They Show Affection';Type='Multi'},
+00303:         @{Key='Jealousy';Label='How They Handle Jealousy';Type='Multi'},
+00304:         @{Key='HandlesConflict';Label='How They Handle Conflict';Type='Multi'},
+00305:         @{Key='IntimacyNotes';Label='Intimacy Notes';Type='Large'},
+00306:         @{Key='PartnerRelationship';Label='Relationship With Partner';Type='Large'},
+00307:         @{Key='Friends';Label='Friends';Type='Large'},
+00308:         @{Key='Enemies';Label='Enemies';Type='Large'},
+00309:         @{Key='Rivals';Label='Rivals';Type='Large'},
+00310:         @{Key='Mentors';Label='Mentors';Type='Large'},
+00311:         @{Key='Dependents';Label='Dependents';Type='Large'},
+00312:         @{Key='PastRelationships';Label='Important Past Relationships';Type='Large'},
+00313:         @{Key='ImportantRelationships';Label='Other Important Relationships';Type='Large'},
+00314:         @{Key='RelationshipNotes';Label='Relationship Notes';Type='Large'}
+00315:     )
+00316:     'Skills' = @(
+00317:         @{Key='NaturalTalents';Label='Natural Talents';Type='Multi'},
+00318:         @{Key='LearnedSkills';Label='Learned Skills';Type='Large'},
+00319:         @{Key='CombatSkills';Label='Combat Skills';Type='Large'},
+00320:         @{Key='ProfessionalSkills';Label='Professional Skills';Type='Large'},
+00321:         @{Key='Languages';Label='Languages';Type='Multi'},
+00322:         @{Key='Powers';Label='Powers / Supernatural Abilities';Type='Large'},
+00323:         @{Key='PowerLimits';Label='Power Limitations';Type='Large'},
+00324:         @{Key='SupernaturalWeaknesses';Label='Supernatural Weaknesses';Type='Large'},
+00325:         @{Key='Equipment';Label='Equipment';Type='Large'},
+00326:         @{Key='Weapons';Label='Weapons';Type='Large'}
+---
+00549:     Pronouns = @('He / Him','He / Him','They / Them','He / They','She / Her')
+00550:     Species = @('Human','Fae','Vampire','Werewolf','Demon','Spirit','Witch','Changeling','Siren','Unknown Supernatural Being')
+00551:     Occupation = @('Archivist','Ranger','Paramedic','Mechanic','Teacher','Bartender','Researcher','Soldier','Lawyer','Conservationist','Librarian','Carpenter','Detective','Artist','Doctor','Farmer','Student','Historian')
+00552:     FreedomStatus = @('Free','Restricted','Confined','Detained','Imprisoned','Captive','Under Guard','House Arrest','Institutionalized','Missing / Unknown')
+00553:     SocialStatus = @('Lower Class','Working Class','Middle Class','Upper Class','Wealthy','Elite','Aristocracy / Nobility','Royalty','Outcast','Social Pariah','Unknown')
+00554:     HairColor = @('Black','Dark Brown','Brown','Light Brown','Auburn','Red','Strawberry Blonde','Blonde','Platinum Blonde','Gray','White')
+00555:     EyeColor = @('Brown','Dark Brown','Hazel','Amber','Green','Blue','Gray','Blue-Gray','Green-Gray')
+00556:     SkinTone = @('Very Fair','Fair','Light','Light-Medium','Medium','Medium-Tan','Tan','Medium-Brown','Brown','Deep Brown','Very Deep')
+00557:     Scars = @('No notable scars','Old surgical scar','Several faded scars','Scar across the palm','Burn scar on one forearm','Small scar through one eyebrow')
+00558:     CorePersonality = @('Protective, stubborn, observant, quietly funny','Reserved, loyal, skeptical, deeply compassionate','Charismatic, reckless, affectionate, defensive','Patient, perceptive, anxious, determined','Dry-witted, private, principled, intense')
+00559:     PositiveTraits = @('Loyal, patient, brave','Compassionate, observant, resourceful','Funny, generous, resilient','Protective, curious, determined')
+00560:     NegativeTraits = @('Stubborn, secretive, jealous','Reckless, avoidant, defensive','Controlling, pessimistic, impatient','Prideful, suspicious, self-sacrificing')
+00561:     Strengths = @('Keeps calm in a crisis','Reads people well','Persistent under pressure','Protective of others','Learns quickly','Good at improvising')
+00562:     Weaknesses = @('Refuses to ask for help','Takes responsibility for everyone','Acts before thinking','Holds grudges','Avoids vulnerability','Trusts too slowly')
+00563:     Habits = @('Taps his thumb against his fingers when thinking. Checks exits without noticing he is doing it.','Pushes his hair back when frustrated. Makes tea when he cannot sleep.','Carries a notebook everywhere and writes down things he is afraid he will forget.')
+00564:     Likes = @('Rain, coffee, old books','Forests, dogs, quiet mornings','Late-night drives, music, spicy food','Cooking, thunderstorms, small towns')
+00565:     Dislikes = @('Crowds, dishonesty, fluorescent lights','Being watched, wasted food, arrogance','Hospitals, small talk, people touching his things')
+00566:     Fears = @('Failing someone who depends on him','Being trapped with no way out','Becoming like the person he hates most','Losing the person he loves','Being known completely and rejected anyway')
+00567:     StressBehavior = @('Gets very quiet and hyper-focused. Stops sleeping before he admits anything is wrong.','Becomes sarcastic and restless, then disappears to deal with the problem alone.','Tries to control every detail around him when he feels powerless.')
+00568:     Birthplace = @('Melbourne, Victoria','A small town in upstate New York','Dublin, Ireland','Cardiff, Wales','Glasgow, Scotland','Bucharest, Romania','A coastal town in Maine','A rural village outside the capital')
+00569:     Residence = @('A rented apartment above a shop','A cabin at the edge of the woods','A small house inherited from family','University housing','A converted loft','A weathered farmhouse')
+00570:     NationalityCulture = @('Irish','Welsh','Scottish','Romanian','Australian','American','Indian','French','Italian','Polish','Mexican','Palestinian','Greek','Norwegian')
+00571:     Education = @('University degree','Trade school','Some college','Self-taught','Military training','Graduate degree','High school diploma','Apprenticeship')
+00572:     PastOccupations = @('Retail worker, bartender','Soldier','Research assistant','Farm hand','Mechanic apprentice','Tutor','EMT','None')
+00573:     Achievements = @('Graduated at the top of his class','Saved someone during a crisis','Built a life from nothing','Won a local competition','Protected a community nobody else cared about')
+00574:     Parent1Status = @('Alive','Dead','Missing','Unknown')
+00575:     Parent2Status = @('Alive','Dead','Missing','Unknown')
+00576:     POVStatus = @('Main POV','Occasional POV','Never POV')
+00577:     ArcType = @('Positive Change','Redemption','Flat','Disillusionment','Negative Change','Tragic')
+00578:     Languages = @('English','English, Irish','English, Romanian','English, French','English, Spanish','English, Arabic','English, Hindi','English, Welsh')
+00579:     NaturalTalents = @('Pattern recognition','Reading people','Mechanical intuition','Spatial awareness','Music','Animal handling','Memory','Negotiation')
+00580:     VoiceReference = @('Low and soft-spoken','Warm baritone','Quick, clipped delivery','Measured and precise','Rough voice with a quiet laugh')
+00581:     VisualReference = @('Dark, romantic, weathered','Soft-featured and bookish','Rugged outdoorsman','Elegant and severe','Ordinary at first glance')
+00582:     Gender = @('Man','Woman','Nonbinary','Genderfluid','Agender')
+00583:     Birthday = @('January 8','February 19','March 14','April 27','May 3','June 21','July 11','August 30','September 17','October 6','November 24','December 12')
+00584:     Tags = @('Primary, Romance, Human','Secondary, Family','Supernatural, Love Interest','Antagonist, Morally Gray','Found Family, Survivor')
+00585: }
+00586: 
+00587: function Get-SmartNickname {
+00588:     $c=Get-CurrentCharacter
+00589:     $name=''; if($null -ne $c){$name=[string]$c.Fields.FullName}
+00590:     if([string]::IsNullOrWhiteSpace($name)){ $pick=[string](Get-Random -InputObject @($script:RandomPools.Nicknames)); if([string]::IsNullOrWhiteSpace($pick)){$pick='Ace'}; return $pick }
+00591:     $first=($name.Trim() -split '\s+')[0]
+00592:     $known=@{
+00593:         'Adrian'=@('Adri','Ian');'Alexander'=@('Alex','Xan');'Benjamin'=@('Ben','Benny');'Callum'=@('Cal');
+00594:         'Cassian'=@('Cass','Cas');'Christopher'=@('Chris','Kit');'Daniel'=@('Dan','Danny');'Dorian'=@('Dori','Ian');
+00595:         'Edward'=@('Ed','Eddie');'Elias'=@('Eli');'Gabriel'=@('Gabe');'James'=@('Jamie','Jay');
+00596:         'Jonathan'=@('Jon','Johnny');'Julian'=@('Jules');'Kieran'=@('Kier');'Maxwell'=@('Max');
+00597:         'Nicholas'=@('Nick','Nico');'Rowan'=@('Ro');'Samuel'=@('Sam');'Sebastian'=@('Seb','Bash');
+00598:         'Silas'=@('Si');'Sorin'=@('Sor');'Theodore'=@('Theo','Teddy');'Thomas'=@('Tom','Tommy');
+00599:         'Tobias'=@('Toby');'Victor'=@('Vic')
+00600:     }
+00601:     if($known.ContainsKey($first)){ return [string](Get-Random -InputObject $known[$first]) }
+00602:     if($first.Length -ge 5){
+00603:         $cut=[math]::Min(4,$first.Length-1)
+00604:         return $first.Substring(0,$cut)
+00605:     }
+00606:         $pick=[string](Get-Random -InputObject @($script:RandomPools.Nicknames)); if([string]::IsNullOrWhiteSpace($pick)){$pick='Ace'}; return $pick
+00607: }
+00608: 
+00609: function Get-RandomText([string]$Key) {
+00610:     $def=Get-FieldDefinition $Key
+00611:     if($null -ne $def -and [string]$def.Type -eq 'MultiChoice'){
+00612:         $opts=@($def.Options | Where-Object {$_ -ne 'Other / Custom' -and $_ -ne 'Unknown'})
+00613:         if($opts.Count -gt 0){
+00614:             $maxCount=[math]::Min(4,$opts.Count);$count=Get-Random -Minimum 1 -Maximum ($maxCount+1)
+00615:             return ((Get-Random -InputObject $opts -Count $count) -join '; ')
+00616:         }
+00617:     }
+00618:     if($null -ne $def -and [string]$def.Type -eq 'LifeEvents'){
+00619:         $opts=@($def.Options | Where-Object {$_ -ne 'Other / Custom'})
+00620:         if($opts.Count -gt 0){$m=[ordered]@{};$m[[string](Get-Random -InputObject $opts)]='';return (ConvertTo-LifeEvents $m)}
+00621:     }
+00622:     if($Key -eq 'Education' -or $Key -eq 'PastOccupations'){
+00623:         if($null -ne $def -and @($def.Options).Count -gt 0){return [string](Get-Random -InputObject @($def.Options))}
+00624:     }
+00625:     if ($Key -eq 'Nicknames') { return Get-SmartNickname }
+00626:     if ($Key -eq 'Age') { return [string](Get-Random -Minimum 18 -Maximum 71) }
+00627:     if ($Key -eq 'Height') {
+00628:         $feet = Get-Random -Minimum 5 -Maximum 7
+00629:         $inch = Get-Random -Minimum 0 -Maximum 12
+00630:         return ("{0}'{1}`"" -f $feet,$inch)
+00631:     }
+00632:     if ($Key -match 'Parent[12]Name') { return [string](Get-Random -InputObject $script:RandomPools.FullName) }
+00633:     if ($Key -eq 'Parent1Relationship' -or $Key -eq 'Parent2Relationship') { return [string](Get-Random -InputObject @('Close','Complicated','Estranged','Protective','Distant','Loving but tense','Unknown')) }
+00634:     if ($Key -eq 'MainGoal') { return [string](Get-Random -InputObject @('Protect the person he loves, even if it costs him the life he planned.','Find the truth behind the event that destroyed his family.','Build a quiet life somewhere nobody knows his past.','Keep his community safe while refusing to become the thing they fear.')) }
+00635:     if ($Key -eq 'InternalConflict') { return [string](Get-Random -InputObject @('He wants intimacy but treats vulnerability as a threat.','He believes his value comes from being useful to everyone else.','He cannot decide whether survival justifies becoming someone he hates.')) }
+00636:     if ($Key -eq 'ExternalConflict') { return [string](Get-Random -InputObject @('Someone powerful is actively trying to force him out of the life he built.','A dangerous secret from his past has followed him home.','The place he is trying to protect is becoming increasingly unsafe.')) }
+00637:     if ($Key -eq 'RelationshipConflict') { return [string](Get-Random -InputObject @('They want each other, but neither trusts the other enough to surrender control.','Their loyalties put them on opposite sides of the same problem.','One is ready to build a life together; the other still expects everything good to disappear.')) }
+00638:     if ($Key -eq 'Timeline') { return "AGE 8 — A formative family event.`r`nAGE 16 — First major break from home.`r`nAGE 21 — Meets someone who changes the direction of his life.`r`nPRESENT — The story begins." }
+00639:     if ($Key -eq 'AuthorNotes') { return 'Add anything here that does not belong cleanly in another section.' }
+00640:     if ($Key -match 'Description|History|Secrets|MajorLifeEvents|Relationship|Romantic|Attraction|LoveLanguage|Affection|Jealousy|Conflict|Intimacy|Skills|Powers|Limits|Weaknesses|Equipment|Weapons|SelfImage|Worldview|Moral|Boundaries|Coping|Defense|Insecurities|Triggers|Refuses|RuleBreaking|Desire|Fear|BreakingPoint|CoreBelief|FalseBelief|Goal|Motivation|Want|Need|Abandon|FatalFlaw|State|TurningPoints|Scenes|Relevance|Aliases|Quotes|Playlist|Aesthetic|Inspirations|Objects|Knowledge|Notes|Trivia|CustomFields|Siblings|Children|OtherFamily|Guardians|StepParents|Friends|Enemies|Rivals|Mentors|Dependents|ImportantRelationships|Mannerisms|PetPeeves|SenseHumor|Temper|SocialBehavior|ComfortableBehavior|Health|Disabilities|Injuries|HealthNotes|Scars') {
+00641:         return [string](Get-Random -InputObject @('None decided yet.','Complicated; expand later.','This is important to the character arc and should be revisited.','Kept deliberately private from most people.','A major source of tension throughout the story.'))
+00642:     }
+00643:     if ($script:RandomPools.ContainsKey($Key)) { return [string](Get-Random -InputObject $script:RandomPools[$Key]) }
+00644:     return ''
+00645: }
+00646: 
+00647: function New-CharacterRecord {
+00648:     $fields = [ordered]@{}
+00649:     foreach ($key in $script:AllFieldKeys) { $fields[$key] = '' }
+00650:     $fields['CharacterTier'] = 'Primary'
+00651:     $fields['StoryRole'] = 'Protagonist'
+00652:     $fields['CharacterRole'] = 'Main Character'
+00653:     $fields['FreedomStatus'] = 'Free'
+00654:     $fields['SocialStatus'] = 'Unknown'
+00655:     $fields['HairColor'] = 'Unknown'
+00656:     $fields['EyeColor'] = 'Unknown'
+00657:     $fields['SkinTone'] = 'Unknown'
+00658:     $fields['LifeStatus'] = 'Alive'
+00659:     $fields['Pronouns'] = 'He / Him'
+00660:     $fields['POVStatus'] = 'Main POV'
+00661:     $fields['ArcType'] = 'Positive Change'
+00662:     $maxNo = 0
+00663:     foreach ($c in $script:Characters) { if ([int]$c.FileNumber -gt $maxNo) { $maxNo = [int]$c.FileNumber } }
+00664:     return [ordered]@{
+00665:         Id = [guid]::NewGuid().ToString('N')
+00666:         FileNumber = $maxNo + 1
+00667:         FileStatus = 'Blank'
+00668:         Created = (Get-Date).ToString('o')
+00669:         Modified = (Get-Date).ToString('o')
+00670:         PortraitPath = ''
+00671:         Locks = @()
+00672:         Fields = $fields
+00673:     }
+00674: }
+---
+01029: $jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+01030: $updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Check-ForRemoteUpdate $false}); $header.Controls.Add($updateBtn)
+01031: 
+01032: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+01033: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+01034: 
+01035: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+01036: $book.Anchor='None'; $main.Controls.Add($book)
+01037: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+01038: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+01039: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+01040: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+01041: 
+01042: $script:StatusButtons=@{}
+01043: foreach($st in @('Existing','In Progress','Blank')) {
+01044:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+01045:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+01046: }
+01047: 
+01048: $script:SectionButtons=@{}
+01049: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+01050: $rightNames=@('Relationships','Skills','Psychology','Story','Timeline','Notes')
+01051: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Skills','Psychology','Story','Timeline','Notes')
+01052: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+01053: $i=0
+01054: foreach($nm in $leftNames){
+01055:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+01056:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+01057: }
+01058: $i=0
+01059: foreach($nm in $rightNames){
+01060:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+01061:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+01062: }
+01063: 
+01064: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+01065: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+01066: $nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+01067: $currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+01068: $newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+01069: $deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+01070: $script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+01071: 
+01072: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+01073:     try {
+01074:         $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+01075:         Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+01076:     } catch {}
+01077: }
+01078: function Layout-Book {
+01079:     if($null -eq $main -or $null -eq $book){return}
+01080: 
+01081:     # The normal open-book spread is used when there is enough width. When Windows
+01082:     # snaps The Files beside another app, switch to a compact book layout instead of
+01083:     # forcing a desktop-sized minimum width. Compact mode keeps full-width readable
+01084:     # pages and lets the book itself scroll horizontally between the left and right page.
+01085:     $isCompact=([int]$form.ClientSize.Width -lt 1050)
+---
+01123:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+01124:             $updateBtn.Width=105; $updateBtn.Height=28
+01125:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+01126: 
+01127:             $searchW=[math]::Max(145,[math]::Min(190,[int]($hw*0.28)))
+01128:             $storyW=[math]::Max(125,[math]::Min(165,[int]($hw*0.24)))
+01129:             $searchBox.Width=$searchW; $storyFilter.Width=$storyW
+01130:             $searchBox.Location=New-Object System.Drawing.Point(12,49)
+01131:             $searchHint.Location=New-Object System.Drawing.Point(20,55)
+01132:             $storyFilter.Location=New-Object System.Drawing.Point((20+$searchW),48)
+01133:             $jumpX=28+$searchW+$storyW
+01134:             $jumpCombo.Width=[math]::Max(145,$hw-$jumpX-12)
+01135:             $jumpCombo.Location=New-Object System.Drawing.Point($jumpX,48)
+01136:             if($searchBox.Focused -or $searchBox.Text.Length -gt 0){$searchHint.Visible=$false}else{$searchHint.Visible=$true}
+01137:         } catch { Write-LayoutError 'compact-header' $_ }
+01138: 
+01139:         # The side bookmarks become two horizontal bookmark rows. Nothing is hidden;
+01140:         # every section stays one click away even at half-screen width.
+01141:         try {
+01142:             $gap=4; $leftPad=7
+01143:             $row1=@('Overview','Appearance','Personality','Background','Family','Relationships')
+01144:             $row2=@('Skills','Psychology','Story','Timeline','Notes')
+01145:             $bw1=[math]::Max(72,[int](($w-($leftPad*2)-($gap*5))/$row1.Count))
+01146:             $bw2=[math]::Max(82,[int](($w-($leftPad*2)-($gap*4))/$row2.Count))
+01147:             for($i=0;$i -lt $row1.Count;$i++){
+01148:                 $b=$script:SectionButtons[$row1[$i]]
+01149:                 if($null -ne $b){$b.Width=$bw1;$b.Height=28;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($leftPad+$i*($bw1+$gap)),4);$b.Visible=$true;$b.BringToFront()}
+01150:             }
+01151:             for($i=0;$i -lt $row2.Count;$i++){
+01152:                 $b=$script:SectionButtons[$row2[$i]]
+01153:                 if($null -ne $b){$b.Width=$bw2;$b.Height=28;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($leftPad+$i*($bw2+$gap)),36);$b.Visible=$true;$b.BringToFront()}
+01154:             }
+01155:         } catch { Write-LayoutError 'compact-section-tabs' $_ }
+01156: 
+01157:         try {
+01158:             $statusW=[math]::Min(132,[int](($w-34)/3)); $statusGap=5
+01159:             $statusTotal=($statusW*3)+($statusGap*2); $statusStart=[int](($w-$statusTotal)/2)
+01160:             $i=0
+01161:             foreach($st in @('Existing','In Progress','Blank')){
+01162:                 $b=$script:StatusButtons[$st]
+01163:                 if($null -ne $b){$b.Width=$statusW;$b.Height=30;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*($statusW+$statusGap)),69);$b.Visible=$true;$b.BringToFront()}
+01164:                 $i++
+01165:             }
+01166:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+01167: 
+01168:         try {
+01169:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+01170:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+01171:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+01172:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+01173:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+01174:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+01175:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+01176:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+01177:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
