@@ -1,5 +1,5 @@
 from pathlib import Path
-import base64, gzip, hashlib, json, re
+import base64, gzip, hashlib, json
 
 ROOT = Path(__file__).resolve().parents[1]
 TF = ROOT / 'the-files'
@@ -30,8 +30,14 @@ core_bytes=base64.b64decode(files['TheFilesCore.ps1']['contentBase64'])
 core=core_bytes.decode('utf-8-sig')
 
 # 1) Disable obsolete in-UI updater. Bootstrap remains the sole automatic updater.
-core,n=re.subn(r"function Should-AutoCheckUpdates\s*\{.*?\n\}","function Should-AutoCheckUpdates { return $false }",core,count=1,flags=re.S)
-if n!=1: raise SystemExit(f'auto updater function patch count={n}')
+timer_lines=[
+"    $updateTimer=New-Object System.Windows.Forms.Timer; $updateTimer.Interval=3500",
+"    $updateTimer.Add_Tick({$this.Stop(); Check-ForRemoteUpdate $true})",
+"    $updateTimer.Start()"
+]
+for line in timer_lines:
+    if core.count(line)!=1: raise SystemExit(f'legacy updater timer token count={core.count(line)}: {line}')
+    core=core.replace(line,"    # legacy in-UI updater disabled; bootstrap handles updates",1)
 old=".Add_Click({Check-ForRemoteUpdate $false})"
 if old not in core: raise SystemExit('manual legacy update click hook not found')
 core=core.replace(old,".Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'})",1)
@@ -64,7 +70,7 @@ sha=hashlib.sha256(out).hexdigest()
 VALID.mkdir(exist_ok=True)
 (VALID/'TheFiles.ps1').write_bytes(base64.b64decode(files['TheFiles.ps1']['contentBase64']))
 (VALID/'TheFilesCore.ps1').write_bytes(new_core)
-assert 'function Should-AutoCheckUpdates { return $false }' in core
+assert core.count('legacy in-UI updater disabled; bootstrap handles updates')==3
 assert "Updates are checked automatically when The Files starts." in core
 assert core.count('FromArgb(210,180,128)') >= 4
 report={'version':VERSION,'baseVersion':'0.2.19','payload':OUT.name,'payloadSha256':sha,'requirements':{'legacyUiAutoUpdaterDisabled':True,'bootstrapUpdaterPreserved':True,'powersEntryHeaderStyled':True,'powersAddButtonStyled':True,'powersRemoveButtonStyled':True,'powersDiceStyled':True,'innerFieldContrastPreserved':True,'uncompressedCoreIncluded':True,'compressedCoreIncluded':True,'userDataUntouched':True}}
