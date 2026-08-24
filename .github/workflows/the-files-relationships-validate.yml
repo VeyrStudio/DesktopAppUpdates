@@ -30,7 +30,12 @@ jobs:
           foreach($f in $files){
             $tokens=$null; $errors=$null
             [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors) | Out-Null
-            if($errors.Count -gt 0){ $errors | ForEach-Object { Write-Error $_.Message }; throw "PowerShell parse failed for $f" }
+            if($errors.Count -gt 0){
+              foreach($pe in $errors){
+                Write-Host ("PARSE {0}:{1} {2} TEXT=[{3}]" -f $pe.Extent.StartLineNumber,$pe.Extent.StartColumnNumber,$pe.Message,$pe.Extent.Text)
+              }
+              throw "PowerShell parse failed for $f"
+            }
           }
           $r=Get-Content 'the-files/relationships-0.2.16-validation.json' -Raw | ConvertFrom-Json
           $r.powershellParse='passed-windows-powershell-parser'
