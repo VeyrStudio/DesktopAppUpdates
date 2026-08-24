@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "appId": "the-agenda",
+  "appName": "The Agenda",
+  "version": "1.0.0",
+  "payloadSha256": "e299133de82a0a683c6f30c03006b9dd224d3c7b571e5aa61b0ea7087fdd99d6",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-001.txt",
+      "sha256": "56cd200f256f74ccd8492942db89a84b17569bfbea6f94a09e71943da9f0d530"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-002.txt",
+      "sha256": "ab4ec3f6a1755390aba7085ceb592b84ffdadd9f8b9740b03b1f3bea179b221d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-003.txt",
+      "sha256": "c6ba6e2f5fb691dfddf38a767e3db8042725fa736a217e1084b3e59bb62534d4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-004.txt",
+      "sha256": "2112f9c5b21f88c5ebbdf1b7b01238add0323659e4816611a5d8e3d450b2a039"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-005.txt",
+      "sha256": "5fe93630e367b46e306b9700a7b9ee2118cf62162c16f434b16121c2992f6ef8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-006.txt",
+      "sha256": "09c395b695de2684b88b11813f820b3249211bcc75d90f824214b4d50a259815"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.0-part-007.txt",
+      "sha256": "71d923962eaaf3a4fe18dfc0d07a6660574b75816e4b71fbd812a4b11aee1b02"
+    }
+  ],
+  "notes": "Initial release: Daily and Weekly schedule views, persistent daily check-offs, Fall 2026 schedule, Manage Schedule, exact 3x5 index-card printing, five-card full-week printing, gothic visual theme, and independent automatic updates."
+}
