@@ -6,15 +6,15 @@
   "payloadSha256": "bb0e7df2acd8b0b29bfa01c3f27541787a835b0ad8be7b51f7afea2cc602d150",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-001.txt?v=fix1",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8c3b4c43180aaeb963ef1fa91159560c2403cd8e/the-files/payload-0.3.0-major-audit-part-001.txt",
       "sha256": "8325ba629cfffce9d85742d10673c5abca861720d6ce4bfde6515a0074bbfbf7"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-002.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8c3b4c43180aaeb963ef1fa91159560c2403cd8e/the-files/payload-0.3.0-major-audit-part-002.txt",
       "sha256": "8063937b1aef2a8c8b0e010dba5f4518ca60735537e99fb02c54fae4ee0d97c3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-003.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8c3b4c43180aaeb963ef1fa91159560c2403cd8e/the-files/payload-0.3.0-major-audit-part-003.txt",
       "sha256": "a3cbfcbc0270fd10b6b10b06a42e930cb50c86b8e2cd962de36890749e6f85e1"
     }
   ],
