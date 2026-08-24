@@ -1,4 +1,4 @@
-# Retrigger with exact parser-location diagnostics enabled.
+# Retrigger with generated-core context around the exact parser failure.
 import json, pathlib, runpy, shutil
 
 root = pathlib.Path('.')
@@ -19,10 +19,15 @@ if report.get('encodedCommandPresent'):
     raise SystemExit('EncodedCommand handoff detected')
 if not report.get('jsonRoundTrip'):
     raise SystemExit('Payload JSON round-trip failed')
+core_path = root/'.relationship-safe-validation/TheFilesCore.ps1'
+lines = core_path.read_text(encoding='utf-8-sig').splitlines()
+for n in range(618, 628):
+    if n <= len(lines):
+        print(f'CORE {n:04d}: {lines[n-1]}')
 val = root/'.relationship-validation'
 shutil.rmtree(val, ignore_errors=True)
 val.mkdir()
 shutil.copy2(root/'.relationship-safe-validation/TheFiles.ps1', val/'TheFiles.ps1')
-shutil.copy2(root/'.relationship-safe-validation/TheFilesCore.ps1', val/'TheFilesCore.ps1')
+shutil.copy2(core_path, val/'TheFilesCore.ps1')
 (root/'the-files/relationships-0.2.16-validation.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
 print(json.dumps(report, indent=2))
