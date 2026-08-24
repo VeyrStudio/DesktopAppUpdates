@@ -1,6 +1,7 @@
 from pathlib import Path
 import base64, gzip, json, re
 
+# PR validation trigger: extract only, do not publish.
 ROOT = Path(__file__).resolve().parents[1]
 TF = ROOT / 'the-files'
 payload_path = TF / 'payload-0.2.14-bootstrap-part-001.txt'
