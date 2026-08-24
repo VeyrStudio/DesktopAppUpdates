@@ -6,7 +6,7 @@
   "payloadSha256": "bb0e7df2acd8b0b29bfa01c3f27541787a835b0ad8be7b51f7afea2cc602d150",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-001.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.3.0-major-audit-part-001.txt?v=fix1",
       "sha256": "8325ba629cfffce9d85742d10673c5abca861720d6ce4bfde6515a0074bbfbf7"
     },
     {
