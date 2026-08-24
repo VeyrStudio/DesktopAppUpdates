@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.18",
-  "payloadSha256": "663b5f6e58b3655205f8968e9231adfdb219561a117888f2390f45edcc0a6db3",
+  "version": "0.2.17",
+  "payloadSha256": "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/7b6b3590f33e3d5b49aa39f27c508a11889119ed/the-files/payload-0.2.18-powers-contrast-fix-part-001.txt",
-      "sha256": "663b5f6e58b3655205f8968e9231adfdb219561a117888f2390f45edcc0a6db3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/88cd6e0f40ba72445a1d5adf382aedb814fe3e7e/the-files/payload-0.2.17-powers-safe-part-001.txt",
+      "sha256": "a8da273499c0e609bccad452a636bcbb2b5535aa36279609ad63c47c17de15cf"
     }
   ],
-  "notes": "Contrast-only repair for the v0.2.17 Powers editor. Darkens Powers input/dropdown backgrounds and text plus the Powers fold header/randomize control for readability, while preserving the Powers structure, data model, Psychology removal, updater/bootstrap, and separate user-data/portrait storage. Windows PowerShell parsing and JSON/base64/gzip/SHA-256 package validation passed before publish."
+  "notes": "Emergency rollback from broken v0.2.18 contrast package to validated v0.2.17 Powers release while a corrected contrast build is prepared."
 }
