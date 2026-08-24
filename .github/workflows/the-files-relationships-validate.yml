@@ -36,7 +36,7 @@ jobs:
           $r.powershellParse='passed-windows-powershell-parser'
           $r | ConvertTo-Json -Depth 10 | Set-Content 'the-files/relationships-0.2.16-validation.json' -Encoding UTF8
       - name: Commit validated safe payloads on validation branch
-        if: github.event_name == 'pull_request' && github.head_ref == 'validate-the-files-0216-relationships'
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'validate-the-files-0216-relationships')
         shell: pwsh
         run: |
           git config user.name 'VeyrStudio Validation'
