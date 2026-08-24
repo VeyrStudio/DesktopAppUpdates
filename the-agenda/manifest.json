@@ -3,12 +3,12 @@
   "appId": "the-agenda",
   "appName": "The Agenda",
   "version": "1.0.2",
-  "payloadSha256": "6db733a5b04445764509a88007b04ca789525d7d35f6e2252b4868c50b52baec",
+  "payloadSha256": "ccbc1b8f549f8086f3b06c476df5c0333b83512a3c59254f19f097dd7a35762a",
   "payloadParts": [
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2-full.txt",
-      "sha256": "6db733a5b04445764509a88007b04ca789525d7d35f6e2252b4868c50b52baec"
+      "sha256": "ccbc1b8f549f8086f3b06c476df5c0333b83512a3c59254f19f097dd7a35762a"
     }
   ],
-  "notes": "Launcher update: The Agenda now opens without a visible PowerShell console. Existing desktop and Start Menu shortcuts are migrated automatically after the app restarts. This release also includes the corrected Daily and Full Week print layouts."
+  "notes": "Launcher fix: hides the PowerShell console so only The Agenda window is visible. Includes the corrected Daily top-left 3x5 print placement and true-size five-card Full Week printing."
 }
