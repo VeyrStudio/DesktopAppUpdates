@@ -1,0 +1,72 @@
+86:         Resize += delegate { UpdateRegion(); };
+93:     void UpdateRegion() { if(Width<10||Height<10)return; using(GraphicsPath p=RR(new Rectangle(0,0,Width,Height),12)) Region=new Region(p); }
+179: $script:VersionPath = Join-Path $script:AppRoot 'AppVersion.json'
+180: $script:UpdateHostPath = Join-Path $script:AppRoot 'RemoteUpdateHost.ps1'
+181: $script:UpdateAppDir = $script:AppRoot
+182: $script:UpdateDataDir = $script:DataRoot
+183: $script:UpdateLauncherPath = Join-Path $script:AppRoot 'Launch The Files.vbs'
+184: $script:UpdateExpectedMain = 'TheFiles.ps1'
+185: $script:UpdateWorkRoot = Join-Path $script:DataRoot 'Updates'
+186: $script:UpdateAppId = 'the-files'
+187: $script:UpdateAppName = 'The Files'
+188: $script:CurrentAppVersion = '0.2.15'
+189: $script:UpdateManifestUrl = 'https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/manifest.json'
+207:         if ([string]$vc.appId -eq $script:UpdateAppId) {
+208:             if (-not [string]::IsNullOrWhiteSpace([string]$vc.version)) { $script:CurrentAppVersion = [string]$vc.version }
+209:             if (-not [string]::IsNullOrWhiteSpace([string]$vc.manifestUrl)) { $script:UpdateManifestUrl = [string]$vc.manifestUrl }
+418:     Update-NavLabels
+832: $script:Settings = [ordered]@{ AutoUpdateCheck = $true; LastUpdateCheck = ''; LastCharacterId=''; LastSection='Overview'; LastStatus='Existing'; ScrollLeft=0; ScrollRight=0 }
+836:         if ($null -ne $s.AutoUpdateCheck) { $script:Settings.AutoUpdateCheck = [bool]$s.AutoUpdateCheck }
+837:         if ($s.LastUpdateCheck) { $script:Settings.LastUpdateCheck = [string]$s.LastUpdateCheck }
+863: function Get-RemoteUpdateManifest {
+866:         $r = Invoke-WebRequest -Uri $script:UpdateManifestUrl -UseBasicParsing -TimeoutSec 8 -Headers @{'Cache-Control'='no-cache'}
+874: function Start-RemoteAppUpdate($Manifest,[bool]$Automatic=$false) {
+876:         if ($null -eq $Manifest) { throw 'The update manifest is missing.' }
+877:         if ([string]$Manifest.appId -ne $script:UpdateAppId) { throw 'The update feed returned the wrong app.' }
+878:         if ($null -eq $Manifest.payloadParts -or @($Manifest.payloadParts).Count -lt 1) { throw 'The update payload list is missing.' }
+879:         if ([string]::IsNullOrWhiteSpace([string]$Manifest.payloadSha256)) { throw 'The update payload checksum is missing.' }
+880:         if (-not (Test-Path -LiteralPath $script:UpdateHostPath)) { throw 'The local update helper is missing.' }
+885:         New-Item -ItemType Directory -Force -Path $script:UpdateWorkRoot | Out-Null
+886:         $job = Join-Path $script:UpdateWorkRoot ('job_' + [guid]::NewGuid().ToString('N'))
+899:                 if ($actual -ne $expected) { throw "Update part $n failed its SHA-256 safety check." }
+906:         if ($actualPayload -ne $expectedPayload) { throw 'The reconstructed update failed its SHA-256 safety check.' }
+908:         if ([string]$doc.appId -ne $script:UpdateAppId) { throw 'The downloaded payload belongs to a different app.' }
+909:         if ([string]$doc.version -ne [string]$Manifest.version) { throw 'The update payload version does not match the manifest.' }
+927:         if (-not (Test-Path -LiteralPath (Join-Path $payload $script:UpdateExpectedMain))) { throw 'The update payload is incomplete.' }
+928:         $tempHost = Join-Path $env:TEMP ('TheFiles_Update_' + [guid]::NewGuid().ToString('N') + '.ps1')
+929:         Copy-Item -LiteralPath $script:UpdateHostPath -Destination $tempHost -Force
+930:         $args = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$tempHost`" -WaitPid $PID -PayloadDir `"$payload`" -AppDir `"$script:UpdateAppDir`" -DataDir `"$script:UpdateDataDir`" -Launcher `"$script:UpdateLauncherPath`" -AppName `"$script:UpdateAppName`" -ExpectedMain `"$script:UpdateExpectedMain`""
+931:         Start-Process powershell.exe -ArgumentList $args -WindowStyle Hidden
+933:         # Automatic updates are intentionally interaction-free.
+935:             Show-Info "The Files update was downloaded and verified.`r`n`r`nThe app will close, update its application files, and reopen."
+939:         # Failed automatic updates do not interrupt normal app use; manual checks still explain the failure.
+941:             New-Item -ItemType Directory -Force -Path $script:UpdateDataDir | Out-Null
+943:                 Set-Content -LiteralPath (Join-Path $script:UpdateDataDir 'update-error.txt') -Encoding UTF8
+945:         if (-not $Automatic) { Show-Error ("The update could not be installed.`r`n`r`n" + $_.Exception.Message) }
+948: function Check-ForRemoteUpdate([bool]$Silent=$false) {
+949:     $manifest = Get-RemoteUpdateManifest
+950:     $script:Settings.LastUpdateCheck = (Get-Date).ToString('o')
+952:     if ($null -eq $manifest) { if (-not $Silent) { Show-Info "The update feed could not be reached.`r`n`r`nInstalled version: $script:CurrentAppVersion" }; return }
+953:     if ([string]$manifest.appId -ne $script:UpdateAppId) { if (-not $Silent) { Show-Error 'The update feed returned the wrong app channel.' }; return }
+955:     if (-not (Test-RemoteVersionNewer $rv $script:CurrentAppVersion)) { if (-not $Silent) { Show-Info "The Files is up to date.`r`n`r`nInstalled version: $script:CurrentAppVersion" }; return }
+959:         Start-RemoteAppUpdate $manifest $true
+963:     $msg = "A new The Files update is available.`r`n`r`nInstalled: $script:CurrentAppVersion`r`nAvailable: $rv"
+966:     if ((Show-Confirm $msg) -eq [System.Windows.Forms.DialogResult]::Yes) { Start-RemoteAppUpdate $manifest $false }
+969:     # Automatic updates are checked once on every app launch.
+970:     return [bool]$script:Settings.AutoUpdateCheck
+999: $updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Check-ForRemoteUpdate $false}); $header.Controls.Add($updateBtn)
+1087:         # Header becomes two tidy rows when snapped: title/update on top and the
+1093:             $updateBtn.Width=105; $updateBtn.Height=28
+1094:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1176:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1181:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+1290:         $c.Modified=(Get-Date).ToString('o');Schedule-Save;Render-CurrentCharacter;Update-NavLabels
+1747:     if($c.FileStatus -eq 'Blank' -and -not [string]::IsNullOrWhiteSpace($value)){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress';$moved=$true};Schedule-Save;if($moved -or $key -eq 'FullName' -or $key -eq 'StoryTitle'){Refresh-Navigation -KeepId $c.Id -NoRender};Update-NavLabels
+1850:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1883:         Add-BookActions $leftPage;Update-NavLabels
+1937: function Update-NavLabels {
+1977:     if(-not $NoRender){Render-CurrentCharacter}else{Update-NavLabels}
+2006: # Delayed automatic update check so startup remains fast.
+2008:     $updateTimer=New-Object System.Windows.Forms.Timer; $updateTimer.Interval=3500
+2009:     $updateTimer.Add_Tick({$this.Stop(); Check-ForRemoteUpdate $true})
+2010:     $updateTimer.Start()
