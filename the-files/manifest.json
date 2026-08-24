@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.19",
-  "payloadSha256": "8e8f4a4527c185734279c418246f27d02938294d51f460a4f404e6362bf32b56",
+  "version": "0.2.20",
+  "payloadSha256": "081ad62f3485a4eddf56655cede9910a216ab5a67f499a7d34cbbc0f82125535",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f429ffeff21f3aba5107ea93d64a218f9f12fff8/the-files/payload-0.2.19-powers-contrast-rescue-part-001.txt",
-      "sha256": "8e8f4a4527c185734279c418246f27d02938294d51f460a4f404e6362bf32b56"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/4f8962df989898dafeaeba62250d820500b30068/the-files/payload-0.2.20-runtime-powers-fix-part-001.txt",
+      "sha256": "081ad62f3485a4eddf56655cede9910a216ab5a67f499a7d34cbbc0f82125535"
     }
   ],
-  "notes": "Rescue release after the broken v0.2.18 install. Restores the complete v0.2.17 Powers build, applies the requested contrast/readability changes, and explicitly ships both TheFilesCore.ps1 and TheFilesCore.ps1.gz so the runnable core is present even if decompression/relaunch does not recreate it. User data and portraits remain separate. Windows PowerShell parsing and package/hash validation passed before publish."
+  "notes": "Fixes the v0.2.19 relaunch loop by disabling the obsolete in-UI automatic updater so the verified bootstrap is the only automatic updater. Also applies readable tan/dark styling to Powers entry headers, Add Power, remove, and dice controls while preserving the already-fixed inner field contrast, Powers data, and separate user-data storage. Both runnable and compressed core files remain in the package. Windows PowerShell parsing and package validation passed before publish."
 }
