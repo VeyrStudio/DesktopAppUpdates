@@ -14,6 +14,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -33,11 +35,12 @@ jobs:
           $r=Get-Content 'the-files/relationships-0.2.16-validation.json' -Raw | ConvertFrom-Json
           $r.powershellParse='passed-windows-powershell-parser'
           $r | ConvertTo-Json -Depth 10 | Set-Content 'the-files/relationships-0.2.16-validation.json' -Encoding UTF8
-      - name: Commit validation report
-        if: github.event_name == 'push'
+      - name: Commit validated safe payloads on validation branch
+        if: github.event_name == 'pull_request' && github.head_ref == 'validate-the-files-0216-relationships'
         shell: pwsh
         run: |
           git config user.name 'VeyrStudio Validation'
           git config user.email 'actions@users.noreply.github.com'
-          git add the-files/relationships-0.2.16-validation.json
-          git diff --cached --quiet; if ($LASTEXITCODE -ne 0) { git commit -m 'Validate The Files v0.2.16 Relationships release'; git push }
+          git add 'the-files/payload-0.2.16-relationships-safe-part-*.txt' 'the-files/relationships-0.2.16-validation.json'
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) { git commit -m 'Stage validated safe The Files v0.2.16 Relationships payload'; git push origin HEAD:${{ github.head_ref }} }
