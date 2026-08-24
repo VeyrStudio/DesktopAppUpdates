@@ -1,0 +1,107 @@
+'Wren')",1)
+}
+if($src -notmatch 'function Get-SmartNickname'){
+$nicknameFn=@'
+function Get-SmartNickname {
+    $c=Get-CurrentCharacter
+    $name='';if($null -ne $c){$name=[string]$c.Fields.FullName}
+    if([string]::IsNullOrWhiteSpace($name)){return [string](Get-Random -InputObject $script:RandomPools.Nicknames)}
+    $first=($name.Trim() -split '\s+')[0]
+    $known=@{
+        'Adrian'=@('Adri','Ian');'Alexander'=@('Alex','Xan');'Benjamin'=@('Ben','Benny');'Callum'=@('Cal');
+        'Cassian'=@('Cass','Cas');'Christopher'=@('Chris','Kit');'Daniel'=@('Dan','Danny');'Dorian'=@('Dori','Ian');
+        'Edward'=@('Ed','Eddie');'Elias'=@('Eli');'Gabriel'=@('Gabe');'James'=@('Jamie','Jay');
+        'Jonathan'=@('Jon','Johnny');'Julian'=@('Jules');'Kieran'=@('Kier');'Maxwell'=@('Max');
+        'Nicholas'=@('Nick','Nico');'Rowan'=@('Ro');'Samuel'=@('Sam');'Sebastian'=@('Seb','Bash');
+        'Silas'=@('Si');'Sorin'=@('Sor');'Theodore'=@('Theo','Teddy');'Thomas'=@('Tom','Tommy');
+        'Tobias'=@('Toby');'Victor'=@('Vic')
+    }
+    if($known.ContainsKey($first)){return [string](Get-Random -InputObject $known[$first])}
+    if($first.Length -ge 5){return $first.Substring(0,[math]::Min(4,$first.Length-1))}
+    return [string](Get-Random -InputObject $script:RandomPools.Nicknames)
+}
+
+'@
+    $src=$src.Replace('function Get-RandomText([string]$Key) {',$nicknameFn+'function Get-RandomText([string]$Key) {')
+}
+if($src -notmatch '\$Key -eq ''Nicknames'''){
+    $src=$src.Replace("function Get-RandomText([string]`$Key) {","function Get-RandomText([string]`$Key) {`r`n    if (`$Key -eq 'Nicknames') { return Get-SmartNickname }")
+}
+
+# Never leave mystery action boxes at the bottom of the page.
+$src=[regex]::Replace($src,"(?m)(\$section\.Text=)'[^']*'","`$1'RANDOMIZE SECTION'")
+$src=[regex]::Replace($src,"(?m)(\$random\.Text=)'[^']*'","`$1'RANDOMIZE CHARACTER'")
+$src=[regex]::Replace($src,"(?m)(\$undo\.Text=)'[^']*'","`$1'UNDO RANDOMIZE'")
+$src=$src.Replace('$section.Width=94','$section.Width=145').Replace('$section.Location=New-Object System.Drawing.Point(208,$y)','$section.Location=New-Object System.Drawing.Point(18,$y)')
+$src=$src.Replace('$random.Width=180','$random.Width=170').Replace('$random.Location=New-Object System.Drawing.Point(22,$y)','$random.Location=New-Object System.Drawing.Point(169,$y)')
+$src=$src.Replace('$undo.Width=76','$undo.Width=125').Replace('$undo.Location=New-Object System.Drawing.Point(308,$y)','$undo.Location=New-Object System.Drawing.Point(345,$y)')
+
+# Field icon tooltips.
+if($src -notmatch "Randomize this field"){
+    $src=$src.Replace('$page.Controls.Add($dice)','$page.Controls.Add($dice);if($null -ne $script:ToolTip){$script:ToolTip.SetToolTip($dice,''Randomize this field'')}')
+    $src=$src.Replace('$page.Controls.Add($lock)','$page.Controls.Add($lock);if($null -ne $script:ToolTip){$script:ToolTip.SetToolTip($lock,''Lock / unlock this field'')}')
+}
+if($src -notmatch '\$script:ToolTip=New-Object'){
+    $src=$src.Replace('$script:UndoStacks=@{}',"$script:UndoStacks=@{}`r`n`$script:ToolTip=New-Object System.Windows.Forms.ToolTip")
+}
+
+# Prevent programmatic character-jump refreshes from firing a page rebuild while typing.
+$old=@'
+    $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+    if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+'@
+$new=@'
+    $wasRendering=$script:Rendering;$script:Rendering=$true
+    try {
+        $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+        if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+    } finally {$script:Rendering=$wasRendering}
+'@
+if($src.Contains($old)){$src=$src.Replace($old,$new)}
+
+# Mouse-wheel page scrolling even when the cursor is over normal single-line controls.
+if($src -notmatch 'Scroll-BookPage'){
+$scrollFn=@'
+function Scroll-BookPage($ctrl,[int]$delta) {
+    try {
+        $p=$ctrl
+        while($null -ne $p){
+            if($p.AutoScroll){
+                $old=[math]::Abs([int]$p.AutoScrollPosition.Y)
+                $target=$old-[int]($delta/120)*70
+                $max=[math]::Max(0,$p.VerticalScroll.Maximum-$p.VerticalScroll.LargeChange+1)
+                $target=[math]::Max(0,[math]::Min($target,$max))
+                $p.AutoScrollPosition=New-Object System.Drawing.Point(0,$target)
+                return
+            }
+            $p=$p.Parent
+        }
+    }catch{}
+}
+
+'@
+    $src=$src.Replace('function New-PageContent([System.Windows.Forms.Panel]$page) {',$scrollFn+'function New-PageContent([System.Windows.Forms.Panel]$page) {')
+    $src=$src.Replace("$contentHost.Anchor='Top,Bottom,Left,Right'; $page.Controls.Add($contentHost); return $contentHost","$contentHost.Anchor='Top,Bottom,Left,Right';`$contentHost.TabStop=`$true;`$contentHost.Add_MouseWheel({param(`$s,`$e);Scroll-BookPage `$this `$e.Delta});`$contentHost.Add_MouseEnter({try{`$this.Focus()}catch{}}); `$page.Controls.Add(`$contentHost); return `$contentHost")
+    $src=$src.Replace("$control.BackColor=[System.Drawing.Color]::FromArgb(247,233,202);$control.ForeColor=$script:Ink;$control.Anchor='Top,Left,Right';$page.Controls.Add($control)","$control.BackColor=[System.Drawing.Color]::FromArgb(247,233,202);`$control.ForeColor=`$script:Ink;`$control.Anchor='Top,Left,Right';if(-not `$isMulti){`$control.Add_MouseWheel({param(`$s,`$e);Scroll-BookPage `$this `$e.Delta})};`$page.Controls.Add(`$control)")
+}
+
+# Portrait controls: add/change plus remove.
+if($src -notmatch 'function Remove-Portrait'){
+$removePortrait=@'
+function Remove-Portrait {
+    $c=Get-CurrentCharacter;if($null -eq $c){return}
+    $c.PortraitPath='';$c.Modified=(Get-Date).ToString('o');Schedule-Save;Render-CurrentCharacter
+}
+
+'@
+    $src=$src.Replace('function Choose-Portrait {',$removePortrait+'function Choose-Portrait {')
+}
+if($src -notmatch "\$portraitRemove="){
+    $src=$src.Replace("$portraitBtn.Text='ADD / CHANGE PORTRAIT';$portraitBtn.Width=178","`$portraitBtn.Text='ADD / CHANGE';`$portraitBtn.Width=120")
+    $needle='$portraitBtn.Add_Click({Choose-Portrait});$contentHost.Controls.Add($portraitBtn)'
+    $replacement=$needle+"`r`n    try{`$portraitRemove=New-Object OrnateButton}catch{`$portraitRemove=New-Object System.Windows.Forms.Button};`$portraitRemove.Text='REMOVE';`$portraitRemove.Width=54;`$portraitRemove.Height=29;`$portraitRemove.Location=New-Object System.Drawing.Point(136,230);`$portraitRemove.Font=New-Object System.Drawing.Font('Georgia',7);`$portraitRemove.Add_Click({Remove-Portrait});`$contentHost.Controls.Add(`$portraitRemove)"
+    $src=$src.Replace($needle,$replacement)
+}
+
+# Section order and page-motion behavior.
+if($s
