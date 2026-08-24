@@ -2,6 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-index",
   "appName": "The Index",
-  "version": "1.0.0",
-  "notes": "Independent update channel ready."
+  "version": "1.0.1",
+  "payloadSha256": "00e677adffb057034e84567cd706c736ba869d7455adc0f43fed1b9518e4fa9c",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-index/payload-1.0.1-split-screen.txt",
+      "sha256": "00e677adffb057034e84567cd706c736ba869d7455adc0f43fed1b9518e4fa9c"
+    }
+  ],
+  "notes": "Adds Windows split-screen/Snap support. The card-catalog home reflows into two columns at narrow widths with vertical scrolling, trays remain usable with internal scrolling, and the window minimum is reduced so it can sit beside Edge. User prompt data is unchanged."
 }
