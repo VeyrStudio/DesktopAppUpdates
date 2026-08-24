@@ -1,0 +1,15 @@
+if(`$script:Filtered.Count -gt 0){ Animate-BookPages -1 1 `$true; `$script:CurrentIndex=(`$script:CurrentIndex-1+`$script:Filtered.Count)%`$script:Filtered.Count; `$script:Rendering=`$true;try{`$jumpCombo.SelectedIndex=`$script:CurrentIndex}finally{`$script:Rendering=`$false}; Render-CurrentCharacter } })")
+$src=$src.Replace("$nextBtn.Add_Click({ if(`$script:Filtered.Count -gt 0){ `$script:CurrentIndex=(`$script:CurrentIndex+1)%`$script:Filtered.Count; `$jumpCombo.SelectedIndex=`$script:CurrentIndex; Render-CurrentCharacter } })","`$nextBtn.Add_Click({ if(`$script:Filtered.Count -gt 0){ Animate-BookPages 1 1 `$true; `$script:CurrentIndex=(`$script:CurrentIndex+1)%`$script:Filtered.Count; `$script:Rendering=`$true;try{`$jumpCombo.SelectedIndex=`$script:CurrentIndex}finally{`$script:Rendering=`$false}; Render-CurrentCharacter } })")
+
+# Remember last section/character/status between launches.
+if($src -notmatch "LastCharacterId='"){
+    $src=$src.Replace("[ordered]@{ AutoUpdateCheck = `$true; LastUpdateCheck = '' }","[ordered]@{ AutoUpdateCheck = `$true; LastUpdateCheck = ''; LastCharacterId=''; LastSection='Overview'; LastStatus='Existing' }")
+    $loadNeedle="if (`$s.LastUpdateCheck) { `$script:Settings.LastUpdateCheck = [string]`$s.LastUpdateCheck }"
+    $src=$src.Replace($loadNeedle,$loadNeedle+"`r`n        if (`$s.LastCharacterId) { `$script:Settings.LastCharacterId=[string]`$s.LastCharacterId };if(`$s.LastSection){`$script:Settings.LastSection=[string]`$s.LastSection};if(`$s.LastStatus){`$script:Settings.LastStatus=[string]`$s.LastStatus}")
+    $src=$src.Replace("$script:ActiveStatus='Existing'","`$script:ActiveStatus='Existing';if(@('Existing','In Progress','Blank') -contains [string]`$script:Settings.LastStatus){`$script:ActiveStatus=[string]`$script:Settings.LastStatus}")
+    $src=$src.Replace("$script:CurrentSection='Overview'","`$script:CurrentSection='Overview';if(`$script:SectionOrder -contains [string]`$script:Settings.LastSection){`$script:CurrentSection=[string]`$script:Settings.LastSection}")
+    $src=$src.Replace("Refresh-Navigation`r`n`r`n# Delayed automatic update check","Refresh-Navigation -KeepId ([string]`$script:Settings.LastCharacterId)`r`n`r`n# Delayed automatic update check")
+    $src=$src.Replace("$form.Add_FormClosing({ Save-AllData })","`$form.Add_FormClosing({ `$c=Get-CurrentCharacter;if(`$null -ne `$c){`$script:Settings.LastCharacterId=[string]`$c.Id};`$script:Settings.LastSection=[string]`$script:CurrentSection;`$script:Settings.LastStatus=[string]`$script:ActiveStatus;Save-AllData })")
+}
+
+[System.IO.File]::WriteAllText($CorePath,$src,(New-Object System.Text.UTF8Encoding($true)))
