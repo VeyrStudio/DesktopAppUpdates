@@ -4,6 +4,8 @@ on:
     paths:
       - 'scripts/the_files_inspect.py'
       - '.github/workflows/the-files-inspect.yml'
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 jobs:
