@@ -6,9 +6,11 @@ on:
     paths:
       - '.github/workflows/the-files-family-build.yml'
       - 'tools/the-files-family-build.py'
+      - 'tools/the-files-family-hotfix.py'
   pull_request:
     paths:
       - 'tools/the-files-family-build.py'
+      - 'tools/the-files-family-hotfix.py'
 
 permissions:
   contents: write
@@ -22,11 +24,8 @@ jobs:
         with:
           python-version: '3.12'
       - name: Build family release
-        run: python tools/the-files-family-build.py
-      - name: Show extracted context
-        if: github.event_name == 'pull_request'
-        run: cat the-files/debug-family-context.txt
-      - name: Commit generated files
+        run: python tools/the-files-family-hotfix.py
+      - name: Commit generated validation files
         if: github.event_name != 'pull_request'
         run: |
           git config user.name "VeyrStudio Update Bot"
@@ -35,6 +34,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No generated changes"
           else
-            git commit -m "Publish The Files family rebuild"
+            git commit -m "Validate The Files family rebuild"
             git push
           fi
