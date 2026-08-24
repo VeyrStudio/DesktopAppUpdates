@@ -1,0 +1,30 @@
+place("function Get-RandomText([string]`$Key) {","function Get-RandomText([string]`$Key) {`r`n    if (`$Key -eq 'Nicknames') { return Get-SmartNickname }")
+}
+
+# Never leave mystery action boxes at the bottom of the page.
+$src=[regex]::Replace($src,"(?m)(\$section\.Text=)'[^']*'","`$1'RANDOMIZE SECTION'")
+$src=[regex]::Replace($src,"(?m)(\$random\.Text=)'[^']*'","`$1'RANDOMIZE CHARACTER'")
+$src=[regex]::Replace($src,"(?m)(\$undo\.Text=)'[^']*'","`$1'UNDO RANDOMIZE'")
+$src=$src.Replace('$section.Width=94','$section.Width=145').Replace('$section.Location=New-Object System.Drawing.Point(208,$y)','$section.Location=New-Object System.Drawing.Point(18,$y)')
+$src=$src.Replace('$random.Width=180','$random.Width=170').Replace('$random.Location=New-Object System.Drawing.Point(22,$y)','$random.Location=New-Object System.Drawing.Point(169,$y)')
+$src=$src.Replace('$undo.Width=76','$undo.Width=125').Replace('$undo.Location=New-Object System.Drawing.Point(308,$y)','$undo.Location=New-Object System.Drawing.Point(345,$y)')
+
+# Field icon tooltips.
+if($src -notmatch "Randomize this field"){
+    $src=$src.Replace('$page.Controls.Add($dice)','$page.Controls.Add($dice);if($null -ne $script:ToolTip){$script:ToolTip.SetToolTip($dice,''Randomize this field'')}')
+    $src=$src.Replace('$page.Controls.Add($lock)','$page.Controls.Add($lock);if($null -ne $script:ToolTip){$script:ToolTip.SetToolTip($lock,''Lock / unlock this field'')}')
+}
+if($src -notmatch '\$script:ToolTip=New-Object'){
+    $src=$src.Replace('$script:UndoStacks=@{}',"$script:UndoStacks=@{}`r`n`$script:ToolTip=New-Object System.Windows.Forms.ToolTip")
+}
+
+# Prevent programmatic character-jump refreshes from firing a page rebuild while typing.
+$old=@'
+    $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+    if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+'@
+$new=@'
+    $wasRendering=$script:Rendering;$script:Rendering=$true
+    try {
+        $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+        if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -
