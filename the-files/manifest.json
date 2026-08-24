@@ -2,17 +2,17 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.14",
-  "payloadSha256": "4da2c5ec1502b004a32678bea2d077ea997283b35f8194b234084ef065e73a48",
+  "version": "0.2.15",
+  "payloadSha256": "2b1775660a4e362a498c01996872e5e964b62dd7b0b3d78e371f2e5462ffd36c",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/b8dce1ce0dcb01add7dcaef56bf177b427455427/the-files/payload-0.2.14-bootstrap-part-001.txt",
-      "sha256": "762def4c8469ed9924862bdfa960d46ba863547a6225a1f9ae99f1cd8744b289"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.15-family-rebuild-part-001.txt",
+      "sha256": "34f1eba9c2c26e53323f1029e77124a99aaa36244a853cfd285ca776c1f85e16"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/b8dce1ce0dcb01add7dcaef56bf177b427455427/the-files/payload-0.2.14-bootstrap-part-002.txt",
-      "sha256": "5a5fa30754502cefff6cc5cc94c7582ecb8530d0e9e79cbfcf40cac411f5c279"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/payload-0.2.15-family-rebuild-part-002.txt",
+      "sha256": "b37ea2f1b736ceceb27339f75c06b1ca53bd9d9a8f817cb0a9f406a74469b6b4"
     }
   ],
-  "notes": "Installs the stable pre-UI automatic updater/bootstrap. Starting with this version, The Files checks, verifies, backs up, and installs available updates before loading the main UI. If an update fails, the last working version still opens. Character/user data is not modified."
+  "notes": "Family-only cumulative rebuild from the last known-good v0.2.13 UI core, preserving the pre-UI verified bootstrap updater. Reintroduces folded Parent One/Two, repeatable Siblings/Children/Other Family, Important Family History notes, Family randomization, and preserves separate user data."
 }
