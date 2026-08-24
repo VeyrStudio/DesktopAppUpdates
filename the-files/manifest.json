@@ -2,21 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.3.0",
-  "payloadSha256": "bb0e7df2acd8b0b29bfa01c3f27541787a835b0ad8be7b51f7afea2cc602d150",
+  "version": "0.3.1",
+  "payloadSha256": "c15b208ac9a4275deaac2ae6bc00a16d26c15ad018767cd24faec0bc93661bde",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8c3b4c43180aaeb963ef1fa91159560c2403cd8e/the-files/payload-0.3.0-major-audit-part-001.txt",
-      "sha256": "8325ba629cfffce9d85742d10673c5abca861720d6ce4bfde6515a0074bbfbf7"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8c3b4c43180aaeb963ef1fa91159560c2403cd8e/the-files/payload-0.3.0-major-audit-part-002.txt",
-      "sha256": "8063937b1aef2a8c8b0e010dba5f4518ca60735537e99fb02c54fae4ee0d97c3"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8c3b4c43180aaeb963ef1fa91159560c2403cd8e/the-files/payload-0.3.0-major-audit-part-003.txt",
-      "sha256": "a3cbfcbc0270fd10b6b10b06a42e930cb50c86b8e2cd962de36890749e6f85e1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/abb7966608af9bc47476bf79b4db44f962b865ac/the-files/payload-0.3.1-startup-fix-part-001.txt",
+      "sha256": "c15b208ac9a4275deaac2ae6bc00a16d26c15ad018767cd24faec0bc93661bde"
     }
   ],
-  "notes": "Major character-sheet audit update. Reworks Family, Relationships, Skills/Powers, Timeline, and Notes based on the completed field audit while preserving the previously updated Overview, Appearance, Personality, and Background direction. Family now uses structured parent, sibling, child, other-family, family-history, and visual family-tree tools. Relationships is streamlined to Relationship Status, Sexuality, Friends, Enemies (including rival types), and Mentors. Skills is replaced by a structured Powers system. Psychology is removed. Timeline is now a visual life-story timeline builder. Notes now focuses on Aliases, searchable story/trope tags, aesthetic tags, a generated mood-board view, multi-select labeled/custom color palettes, and Important Objects. Randomize controls are available throughout, with section and full-character randomization. Existing character/user data remains stored separately from app payload files, and the update does not delete prior data files."
+  "notes": "Startup repair for the v0.3.0 major audit. Replaces fragile PowerShell New-Object constructor syntax used by UI geometry and other .NET objects with explicit ::new(...) constructors so coordinate expressions such as y+5 are passed as two Point arguments instead of being misparsed as three. This fixes the startup crash reporting: Exception setting SelectedIndex: Cannot find an overload for Point and the argument count: 3. All v0.3.0 character-sheet audit features and separate user-data storage are preserved."
 }
