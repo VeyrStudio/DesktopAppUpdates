@@ -2,7 +2,7 @@ name: The Files Inspect
 on:
   push:
     paths:
-      - 'scripts/the_files_inspect.py'
+      - 'scripts/**'
       - '.github/workflows/the-files-inspect.yml'
   pull_request:
     branches: [main]
@@ -16,4 +16,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python scripts/the_files_inspect.py
+      - name: Build Relationships candidate
+        run: python scripts/run_build_relationships_0216.py
+      - name: Upload candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-files-relationships-0.2.16
+          path: build-out/
