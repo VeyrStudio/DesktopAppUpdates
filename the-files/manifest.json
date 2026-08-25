@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.31",
-  "payloadSha256": "c78fcfcae779fb5c98eb5fa3e4322f618fb4636f59386684519315ca6f5af28f",
+  "version": "0.2.32",
+  "payloadSha256": "153bfe3639cb28067f244d9ed2864ff61342d53876e94c50d8031ba7a03aeae4",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/5e007bf2d82a90acbe0f49080e0b8507aa82c764/the-files/payload-0.2.31-book-master-skin-part-001.txt",
-      "sha256": "c78fcfcae779fb5c98eb5fa3e4322f618fb4636f59386684519315ca6f5af28f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/93d0f48998abdf9a571b6591278c73eafa2a6ac0/the-files/payload-0.2.32-visual-geometry-part-001.txt",
+      "sha256": "153bfe3639cb28067f244d9ed2864ff61342d53876e94c50d8031ba7a03aeae4"
     }
   ],
-  "notes": "Visual master skin release based on the approved open-book reference. Deepens the dark wood/leather surround, warms the parchment pages, strengthens antique-brass borders and stitched tabs, shifts headings and character titles toward an elegant book-like Georgia treatment, and harmonizes ordinary inputs/buttons with the parchment UI. The skin is reapplied after every character/section render so navigation and refreshes keep the look. The existing page-turn animation is disabled to match the approved reference. Preserves the book frame/page controls, status and section tabs, Notes, Timeline, Story, Powers, custom color-picker persistence, updater behavior, and separate user data. Windows PowerShell parsing and package/hash verification passed before publish."
+  "notes": "Visual geometry pass based on the approved open-book reference and the user's real v0.2.31 screenshot. Replaces the flat rectangular page treatment with asymmetric bound-book page silhouettes, stronger center-gutter depth, shaped stitched leather section tabs with mirrored right-side geometry and section glyphs, and a coordinated leather Previous/Current/Next navigation treatment. Compacts the custom Notes layout so Aliases, Tags, Mood Board, Aesthetic Tags, and Color Palette no longer reserve large empty parchment gaps. Page-turn animation remains disabled. Preserves the master book skin, Notes behavior, Timeline, Story, Powers, updater behavior, separate user data, and verified package hashes. Windows PowerShell parsing and all geometry/package checks passed before publish."
 }
