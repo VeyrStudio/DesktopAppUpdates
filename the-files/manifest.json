@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.22",
-  "payloadSha256": "76eb7fd24fc6711b38f4eade116ba53fcb2a8860d94598f14c8e567b18db50db",
+  "version": "0.2.23",
+  "payloadSha256": "6ccba6e392ac23998f7540590159488069bd3a0ea76c2a54f8cf2725cbf6ba54",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/bce551bcf2c76948437b670b498648f9d89db856/the-files/payload-0.2.22-timeline-builder-part-001.txt",
-      "sha256": "76eb7fd24fc6711b38f4eade116ba53fcb2a8860d94598f14c8e567b18db50db"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/e91087790da068d2aae47113f95d841f50aed8eb/the-files/payload-0.2.23-timeline-hostfix-part-001.txt",
+      "sha256": "6ccba6e392ac23998f7540590159488069bd3a0ea76c2a54f8cf2725cbf6ba54"
     }
   ],
-  "notes": "Cumulative visual Timeline release on stable v0.2.21. Replaces the old single Life / Story Timeline text box with repeatable structured events containing Event Name, When type/value, Event Type, Importance, Notes, and optional End. Adds a scrollable chronological visual timeline, manual up/down ordering for uncertain events, zoom controls, per-event randomization, and whole-timeline randomization. Preserves Story, Powers, bootstrap updater, relaunch-loop fix, both runnable and compressed core files, and separate user data. Windows PowerShell parsing and package/hash validation passed before publish."
+  "notes": "Hotfix for the v0.2.22 Timeline renderer. Renames the Timeline helper parameter that collided with PowerShell's built-in read-only $Host variable, eliminating the 'Cannot overwrite variable host because it is read-only or constant' error while preserving the visual Timeline, Story, Powers, updater fixes, both runnable and compressed core files, and separate user data. Windows PowerShell parsing and package/hash validation passed before publish."
 }
