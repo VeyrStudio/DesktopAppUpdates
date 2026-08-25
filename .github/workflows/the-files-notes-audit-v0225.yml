@@ -1,0 +1,42 @@
+name: The Files Notes Audit v0.2.25
+on:
+  push:
+    paths:
+      - 'tools/the-files-notes-audit-v0225.py'
+      - '.github/workflows/the-files-notes-audit-v0225.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build cumulative Notes release
+        shell: pwsh
+        run: python tools/the-files-notes-audit-v0225.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.notes-v0225-validation/TheFiles.ps1','.notes-v0225-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/notes-0.2.25-validation.json';$r=Get-Content $p -Raw|ConvertFrom-Json;$r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force;$r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate package
+        shell: python
+        run: |
+          import json,pathlib,hashlib,base64,gzip,re
+          r=pathlib.Path('.');v=json.loads((r/'the-files/notes-0.2.25-validation.json').read_text(encoding='utf-8-sig'));b=(r/'the-files'/v['payload']).read_bytes();assert hashlib.sha256(b).hexdigest()==v['payloadSha256'];p=json.loads(b.decode());assert p['version']=='0.2.25';fs={f['path']:f for f in p['files']};assert {'TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'}<=set(fs)
+          for f in p['files']:
+              data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
+          raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw;c=raw.decode('utf-8-sig');m=re.search(r"    'Notes' = @\((.*?)\n    \)",c,re.S);assert m;block=m.group(1);assert block.count("@{Key=")==6;assert all(x in block for x in ['Aliases','Tags','Mood Board','Aesthetic Tags','Color Palette','Important Objects']);assert all(x not in block for x in ['Quotes','Playlist','Inspirations','VoiceReference','ReaderKnowledge','UniverseNotes','Trivia','CustomFields']);assert 'function Render-TimelineSection' in c;assert 'function Render-PowersSection' in c;assert "'Story' = @(" in c;print('Notes package validated')
+      - name: Commit validated payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.25-notes-audit-part-001.txt' 'the-files/notes-0.2.25-validation.json';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.25 Notes audit';git pull --rebase origin main;git push origin main}
