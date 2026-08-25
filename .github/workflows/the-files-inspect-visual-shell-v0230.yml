@@ -1,0 +1,36 @@
+name: Inspect The Files v0.2.30 visual shell
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-inspect-visual-shell-v0230.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Extract visual shell code
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,base64
+          r=Path('.')
+          p=json.loads((r/'the-files/payload-0.2.30-color-reader-fix-part-001.txt').read_text())
+          fs={f['path']:f for f in p['files']}
+          c=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig').splitlines()
+          keys=['MainForm','BackColor','ForeColor','Font','nav','Navigation','Section','Tab','LeftPage','RightPage','Search','Previous','Next','Current','Portrait','SplitContainer','TableLayoutPanel','FlowLayoutPanel']
+          out=[]
+          for i,line in enumerate(c):
+              if any(k.lower() in line.lower() for k in keys):
+                  s=max(0,i-5); e=min(len(c),i+16)
+                  out.append('\n'.join(f'{j+1}: {c[j]}' for j in range(s,e)))
+          (r/'tools/current-visual-shell-v0.2.30.txt').write_text('\n\n---\n\n'.join(out),encoding='utf-8')
+      - name: Commit inspection
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'tools/current-visual-shell-v0.2.30.txt';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Inspect The Files v0.2.30 visual shell';git pull --rebase origin main;git push origin main}
