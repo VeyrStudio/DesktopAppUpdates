@@ -1,0 +1,43 @@
+name: Extract The Files v0.2.31 visual functions
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-extract-visual-v0231.yml'
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Extract current visual functions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,base64,re
+          root=Path('.'); tf=root/'the-files'; m=json.loads((tf/'manifest.json').read_text())
+          b=b''.join((tf/x['url'].rsplit('/',1)[-1]).read_bytes() for x in m['payloadParts'])
+          p=json.loads(b.decode()); fs={f['path']:f for f in p['files']}
+          core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig')
+          names=['Add-TopBookHeader','New-PageContent','Add-BookActions','Render-NotesSection','Render-CurrentCharacter','Update-NavLabels','Refresh-Navigation']
+          out=[]
+          for name in names:
+              pat=re.compile(r'(?ms)^function\s+'+re.escape(name)+r'\b.*?(?=^function\s+|\Z)')
+              mm=pat.search(core)
+              out.append(('### '+name+'\n'+(mm.group(0) if mm else 'NOT FOUND')))
+          # also capture shell/control construction around leftPage/rightPage/book/nav
+          for term in ['$leftPage=','$rightPage=','$book=','$bottomBar=','$script:SectionButtons=','$script:StatusButtons=']:
+              idx=core.find(term)
+              if idx>=0:
+                  s=max(0,core.rfind('\n',0,max(0,idx-1800))); e=min(len(core),idx+5000)
+                  out.append('### REGION '+term+'\n'+core[s:e])
+          (root/'tools/current-visual-functions-v0.2.31.txt').write_text('\n\n---\n\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit extraction
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tools/current-visual-functions-v0.2.31.txt
+          git diff --cached --quiet || (git commit -m 'Inspect The Files v0.2.31 visual functions' && git pull --rebase origin main && git push origin main)
