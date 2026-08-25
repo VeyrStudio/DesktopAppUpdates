@@ -1,0 +1,19 @@
+﻿{
+    "version":  "0.2.27",
+    "baseVersion":  "0.2.26",
+    "payload":  "payload-0.2.27-hide-console-part-001.txt",
+    "payloadSha256":  "9fccf5ace1c3544097e4ed6c9e71ad4871788baef7b91eb001d7d2daf9284f1d",
+    "requirements":  {
+                         "consoleHideRunsInExistingLauncher":  true,
+                         "noShortcutReplacementRequired":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "customNotesPreserved":  true,
+                         "timelinePreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "allInternalHashesVerified":  true,
+                         "compressedCoreMatchesRunnableCore":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
