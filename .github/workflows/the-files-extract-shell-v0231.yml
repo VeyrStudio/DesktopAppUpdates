@@ -1,0 +1,34 @@
+name: Extract The Files v0.2.31 shell construction
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-extract-shell-v0231.yml'
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Extract shell construction
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,base64
+          root=Path('.');tf=root/'the-files';m=json.loads((tf/'manifest.json').read_text())
+          b=b''.join((tf/x['url'].rsplit('/',1)[-1]).read_bytes() for x in m['payloadParts']);p=json.loads(b.decode());fs={f['path']:f for f in p['files']};c=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig')
+          terms=['$prevBtn','$currentNav','$nextBtn','$leftPage','$rightPage','$book','$desk','$sectionButtons','$script:SectionButtons','$statusButtons','$script:StatusButtons']
+          lines=c.splitlines();hits=[]
+          for i,line in enumerate(lines):
+              if any(t in line for t in terms):
+                  s=max(0,i-8);e=min(len(lines),i+18);hits.append('\n'.join(f'{j+1}: {lines[j]}' for j in range(s,e)))
+          (root/'tools/current-shell-construction-v0.2.31.txt').write_text('\n\n---\n\n'.join(hits),encoding='utf-8')
+          PY
+      - name: Commit extraction
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tools/current-shell-construction-v0.2.31.txt
+          git diff --cached --quiet || (git commit -m 'Inspect The Files v0.2.31 shell construction' && git pull --rebase origin main && git push origin main)
