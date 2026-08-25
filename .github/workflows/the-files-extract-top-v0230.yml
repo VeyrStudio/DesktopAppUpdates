@@ -1,0 +1,31 @@
+name: Extract The Files v0.2.30 top shell
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-extract-top-v0230.yml'
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Extract top source
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,base64
+          r=Path('.')
+          p=json.loads((r/'the-files/payload-0.2.30-color-reader-fix-part-001.txt').read_text())
+          fs={f['path']:f for f in p['files']}
+          lines=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig').splitlines()
+          text='\n'.join(f'{i+1}: {lines[i]}' for i in range(min(280,len(lines))))
+          (r/'tools/the-files-v0230-top-source.txt').write_text(text,encoding='utf-8')
+      - name: Commit
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'tools/the-files-v0230-top-source.txt';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Extract The Files v0.2.30 top shell source';git pull --rebase origin main;git push origin main}
