@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.25",
-  "payloadSha256": "67d3ce5c19a47882f29305a0b9b05766c6969321a495d055a3d9658f654c017c",
+  "version": "0.2.26",
+  "payloadSha256": "8034b810d09b28da200bf167662e08a270a45568d76f813767c9c4b513d784b8",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/c88625a43094d6231fdd093627f33104fe205dd8/the-files/payload-0.2.25-notes-audit-part-001.txt",
-      "sha256": "67d3ce5c19a47882f29305a0b9b05766c6969321a495d055a3d9658f654c017c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/901cddc3c518686ec29864a04aa4262de3e55e11/the-files/payload-0.2.26-custom-notes-part-001.txt",
+      "sha256": "8034b810d09b28da200bf167662e08a270a45568d76f813767c9c4b513d784b8"
     }
   ],
-  "notes": "Cumulative Notes audit on stable v0.2.24. Rebuilds Notes to exactly six fields: Aliases, Tags, Mood Board, Aesthetic Tags, Color Palette, and Important Objects. Reuses the existing Aesthetic data key as Mood Board so saved moodboard/aesthetic notes are preserved. Removes obsolete Notes fields such as Quotes, Playlist, Inspirations, Voice Reference, character/reader knowledge notes, universe notes, Trivia, and Custom Fields from the Notes UI. Preserves Timeline, Story, Powers, updater fixes, separate user data, and both runnable/compressed core files. All internal per-file SHA-256 values were recomputed and verified, the compressed core matches the runnable core, and Windows PowerShell parsing passed before publish."
+  "notes": "Cumulative custom Notes rebuild on stable v0.2.25. Replaces the generic six text boxes with a dedicated Notes workspace: repeatable Aliases; removable Tags chips; a real Mood Board that imports images, copies them into The Files' separate Data\\Media\\MoodBoards storage, displays thumbnails, and supports reorder/remove while preserving legacy mood-board notes; removable Aesthetic Tags chips; Color Palette swatches added through a color picker; and repeatable Important Objects with separate name and notes fields. Preserves Timeline including the Host-variable fix, Story, Powers, updater behavior, and separate user data. All internal per-file SHA-256 values were recomputed and verified, TheFilesCore.ps1.gz decompresses exactly to TheFilesCore.ps1, and Windows PowerShell parsing passed before publish."
 }
