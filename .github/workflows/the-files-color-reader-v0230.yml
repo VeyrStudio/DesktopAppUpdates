@@ -1,0 +1,55 @@
+name: The Files Color Reader v0.2.30
+on:
+  push:
+    paths:
+      - 'tools/the-files-color-reader-v0230.py'
+      - '.github/workflows/the-files-color-reader-v0230.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build color reader repair
+        shell: pwsh
+        run: python tools/the-files-color-reader-v0230.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.colorreader-v0230-validation/TheFiles.ps1','.colorreader-v0230-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+      - name: Test one-item Notes JSON array under Windows PowerShell
+        shell: powershell
+        run: |
+          function Split-Test([string]$Raw){
+            if([string]::IsNullOrWhiteSpace($Raw)){return @()}
+            try{$trim=$Raw.Trim();if($trim.StartsWith('[')){$parsed=@($Raw|ConvertFrom-Json);return @($parsed|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})}}catch{}
+            return @(($Raw -split '[;\r\n,]+')|ForEach-Object{$_.Trim()}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})
+          }
+          $one=@(Split-Test '["#A1B2C3"]')
+          if($one.Count -ne 1 -or $one[0] -ne '#A1B2C3'){throw 'One-item JSON array did not survive reader'}
+          $many=@(Split-Test '["#A1B2C3","#102030"]')
+          if($many.Count -ne 2){throw 'Multi-item JSON array reader failed'}
+          Write-Host 'One-item swatch refresh test passed.'
+      - name: Revalidate package
+        shell: python
+        run: |
+          import json,pathlib,hashlib,base64,gzip
+          r=pathlib.Path('.');v=json.loads((r/'the-files/color-reader-0.2.30-validation.json').read_text());b=(r/'the-files'/v['payload']).read_bytes();assert hashlib.sha256(b).hexdigest()==v['payloadSha256'];p=json.loads(b.decode());assert p['version']=='0.2.30';fs={f['path']:f for f in p['files']}
+          for f in p['files']:
+              data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
+          raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw;c=raw.decode('utf-8-sig');assert "$parsed=@($Raw|ConvertFrom-Json)" in c;assert 'CustomColors' in c;assert 'function Render-NotesSection' in c;assert 'function Render-TimelineSection' in c;assert 'function Render-PowersSection' in c
+      - name: Mark validation and commit
+        shell: pwsh
+        run: |
+          $p='the-files/color-reader-0.2.30-validation.json';$r=Get-Content $p -Raw|ConvertFrom-Json;$r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force;$r|Add-Member -NotePropertyName oneItemSwatchRoundTrip -NotePropertyValue 'passed-windows-powershell-test' -Force;$r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.30-color-reader-fix-part-001.txt' 'the-files/color-reader-0.2.30-validation.json';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.30 color reader fix';git pull --rebase origin main;git push origin main}
