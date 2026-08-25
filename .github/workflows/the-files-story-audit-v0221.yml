@@ -31,9 +31,26 @@ jobs:
           $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
           $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
       - name: Revalidate payload and Story surface
-        shell: pwsh
+        shell: python
         run: |
-          python -c "import json,pathlib,hashlib,base64,gzip,re; r=pathlib.Path('.'); v=json.loads((r/'the-files/story-0.2.21-validation.json').read_text(encoding='utf-8-sig')); b=(r/'the-files'/v['payload']).read_bytes(); assert hashlib.sha256(b).hexdigest()==v['payloadSha256']; p=json.loads(b.decode()); assert p['version']=='0.2.21'; fs={f['path']:f for f in p['files']}; assert {'TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'}<=set(fs); raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']); assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw; c=raw.decode('utf-8-sig'); s=re.search(r\"    'Story' = @\\((.*?)\\n    \\)\\n    'Timeline'\",c,re.S).group(1); req=['CharacterTier','Motivation','InternalConflict','ExternalConflict','FatalFlaw','Archetype','BeginningState','MiddleState','EndingState','PlotRelevance']; assert all(s.count(\"Key='\"+k+\"'\")==1 for k in req); assert \"Key='StoryRole'\" not in s; assert \"Label='Story Role'\" in c; print('Story surface and package validated')"
+          import json,pathlib,hashlib,base64,gzip,re
+          r=pathlib.Path('.')
+          v=json.loads((r/'the-files/story-0.2.21-validation.json').read_text(encoding='utf-8-sig'))
+          b=(r/'the-files'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='0.2.21'
+          fs={f['path']:f for f in p['files']}
+          assert {'TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'}<=set(fs)
+          raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64'])
+          assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw
+          c=raw.decode('utf-8-sig')
+          s=re.search(r"    'Story' = @\((.*?)\n    \)\n    'Timeline'",c,re.S).group(1)
+          req=['CharacterTier','Motivation','InternalConflict','ExternalConflict','FatalFlaw','Archetype','BeginningState','MiddleState','EndingState','PlotRelevance']
+          assert all(s.count("Key='"+k+"'")==1 for k in req)
+          assert "Key='StoryRole'" not in s
+          assert "Label='Story Role'" in c
+          print('Story surface and package validated')
       - name: Commit validated payload and report only
         shell: pwsh
         run: |
