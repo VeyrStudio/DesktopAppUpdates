@@ -25,7 +25,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path tome-build | Out-Null
-          Expand-Archive -Path the-tome/build/source-v0.1.0.zip -DestinationPath tome-build -Force
+          python -c "import zipfile; zipfile.ZipFile(r'the-tome/build/source-v0.1.0.zip').extractall(r'tome-build')"
           New-Item -ItemType Directory -Force -Path tome-build/assets | Out-Null
       - name: Create bundled artwork assets
         shell: pwsh
