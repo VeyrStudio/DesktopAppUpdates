@@ -1,0 +1,26 @@
+{
+  "version": "0.2.32",
+  "baseVersion": "0.2.31",
+  "payload": "payload-0.2.32-visual-geometry-part-001.txt",
+  "payloadSha256": "153bfe3639cb28067f244d9ed2864ff61342d53876e94c50d8031ba7a03aeae4",
+  "requirements": {
+    "asymmetricBookPages": true,
+    "deepGutter": true,
+    "shapedLeatherTabs": true,
+    "rightTabsMirrored": true,
+    "sectionTabIcons": true,
+    "leatherBottomNav": true,
+    "currentNavLeatherCell": true,
+    "compactNotes": true,
+    "pageTurnDisabled": true,
+    "bookMasterSkinPreserved": true,
+    "notesPreserved": true,
+    "timelinePreserved": true,
+    "storyPreserved": true,
+    "powersPreserved": true,
+    "userDataSeparate": true,
+    "allInternalHashesVerified": true,
+    "compressedCoreMatchesRunnableCore": true
+  },
+  "powershellParse": "passed-windows-powershell-parser"
+}
