@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.21",
-  "payloadSha256": "9fe287bd2f9c9243d313733f1a0692367525737c114a2d9630cbf5eafcc255f7",
+  "version": "0.2.22",
+  "payloadSha256": "76eb7fd24fc6711b38f4eade116ba53fcb2a8860d94598f14c8e567b18db50db",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f68e58cb917bb19108c99f73f6658b3c8518e23a/the-files/payload-0.2.21-story-audit-part-001.txt",
-      "sha256": "9fe287bd2f9c9243d313733f1a0692367525737c114a2d9630cbf5eafcc255f7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/bce551bcf2c76948437b670b498648f9d89db856/the-files/payload-0.2.22-timeline-builder-part-001.txt",
+      "sha256": "76eb7fd24fc6711b38f4eade116ba53fcb2a8860d94598f14c8e567b18db50db"
     }
   ],
-  "notes": "Cumulative Story-tab audit on stable v0.2.20. Merges Story Role into the existing Overview CharacterRole data field and labels it Story Role, removes the duplicate Story-tab role, and rebuilds Story to the ten audited fields: Character Tier; Motivation; Internal Conflict; External Conflict; Fatal Flaw; Archetype; Beginning State; Middle State; Ending State; Plot Relevance. Removes POV, first/last appearance, all goal fields, want/need/abandon-goal fields, relationship conflict, major turning point, and important scenes from Story. Preserves Powers fixes, the bootstrap updater, the relaunch-loop fix, and separate user data. Windows PowerShell parsing and package validation passed before publish."
+  "notes": "Cumulative visual Timeline release on stable v0.2.21. Replaces the old single Life / Story Timeline text box with repeatable structured events containing Event Name, When type/value, Event Type, Importance, Notes, and optional End. Adds a scrollable chronological visual timeline, manual up/down ordering for uncertain events, zoom controls, per-event randomization, and whole-timeline randomization. Preserves Story, Powers, bootstrap updater, relaunch-loop fix, both runnable and compressed core files, and separate user data. Windows PowerShell parsing and package/hash validation passed before publish."
 }
