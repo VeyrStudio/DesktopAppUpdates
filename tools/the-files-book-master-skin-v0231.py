@@ -30,21 +30,15 @@ font_repls={
 for old,new in font_repls.items():
     if old in core: core=core.replace(old,new,1)
 
-# Inject a non-invasive recursive styling pass. It leaves custom rendered controls intact, but
-# harmonizes ordinary WinForms fields/panels with the book master reference.
+# Inject recursive styling immediately before Render-CurrentCharacter so the function exists
+# before any page redraw can call it.
 marker='function Apply-BookMasterSkin {'
 if marker not in core:
     insert=r'''
 function Apply-BookMasterSkin {
-    if($null -eq $script:MainForm){return}
     $paper=[System.Drawing.Color]::FromArgb(232,207,164)
     $ink=[System.Drawing.Color]::FromArgb(48,32,22)
     $brass=[System.Drawing.Color]::FromArgb(153,108,52)
-    $deep=[System.Drawing.Color]::FromArgb(24,15,11)
-    try{
-        $script:MainForm.BackColor=$deep
-        $script:MainForm.ForeColor=$ink
-    }catch{}
     function Style-BookControl([System.Windows.Forms.Control]$ctrl){
         if($null -eq $ctrl){return}
         try{
@@ -63,7 +57,6 @@ function Apply-BookMasterSkin {
             } elseif($ctrl -is [System.Windows.Forms.GroupBox]){
                 $ctrl.ForeColor=$ink;$ctrl.Font=$script:FontSerif
             } elseif($ctrl -is [System.Windows.Forms.Panel] -or $ctrl -is [System.Windows.Forms.FlowLayoutPanel] -or $ctrl -is [System.Windows.Forms.TableLayoutPanel]){
-                # Preserve intentionally dark shell/navigation panels and custom painted book controls.
                 if($tn -notmatch 'Book|Tab|Frame|Ornate'){
                     $bc=$ctrl.BackColor
                     if($bc.A -eq 0 -or ($bc.R -gt 120 -and $bc.G -gt 100)){$ctrl.BackColor=$paper}
@@ -77,21 +70,22 @@ function Apply-BookMasterSkin {
         }catch{}
         foreach($child in @($ctrl.Controls)){Style-BookControl $child}
     }
-    Style-BookControl $script:MainForm
+    try{Style-BookControl $leftPage;Style-BookControl $rightPage}catch{}
 }
 '''
-    idx=core.rfind('\nfunction ')
-    if idx<0: raise SystemExit('could not locate insertion boundary')
+    idx=core.find('\nfunction Render-CurrentCharacter {')
+    if idx<0: raise SystemExit('Render-CurrentCharacter insertion point not found')
     core=core[:idx]+insert+core[idx:]
 
-# The app starts through Application.Run rather than a direct ShowDialog call. Hook the form's
-# Shown event so the complete control tree exists before the recursive skin pass runs.
-if core.count('Apply-BookMasterSkin')<2:
-    mm=re.search(r'(?m)^\s*\$script:MainForm\s*=\s*New-Object\s+System\.Windows\.Forms\.Form\s*$',core)
-    if not mm:
-        mm=re.search(r'(?m)^\s*\$script:MainForm\s*=\s*New-Object[^\r\n]*Form[^\r\n]*$',core)
-    if not mm: raise SystemExit('MainForm creation point not found')
-    core=core[:mm.end()]+"\n$script:MainForm.Add_Shown({ Apply-BookMasterSkin })"+core[mm.end():]
+# Run the visual skin after every page render so navigation/refresh cannot revert it.
+render_anchor='        Add-BookActions $leftPage;Update-NavLabels'
+if render_anchor not in core: raise SystemExit('render completion anchor not found')
+core=core.replace(render_anchor,render_anchor+';Apply-BookMasterSkin',1)
+
+# Reference image explicitly excludes page-turning: disable the existing animation while preserving navigation.
+anim_anchor='function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {'
+if anim_anchor not in core: raise SystemExit('page animation function not found')
+core=core.replace(anim_anchor,anim_anchor+'\n    return',1)
 
 # Strengthen existing custom-drawn shell colors without changing geometry.
 repls={
@@ -108,7 +102,6 @@ repls={
 }
 for old,new in repls.items(): core=core.replace(old,new)
 
-# Package cumulative release.
 raw=core.encode('utf-8-sig')
 files['TheFilesCore.ps1']['contentBase64']=base64.b64encode(raw).decode()
 files['TheFilesCore.ps1.gz']['contentBase64']=base64.b64encode(gzip.compress(raw,mtime=0)).decode()
@@ -121,11 +114,12 @@ for f in p['files']:
     data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
 assert gzip.decompress(base64.b64decode(files['TheFilesCore.ps1.gz']['contentBase64']))==raw
 checks={
-'bookMasterSkin':marker in core,'skinHookedOnShown':"$script:MainForm.Add_Shown({ Apply-BookMasterSkin })" in core,
+'bookMasterSkin':marker in core,'skinAppliedEveryRender':(render_anchor+';Apply-BookMasterSkin') in core,
+'pageTurnDisabled':anim_anchor+'\n    return' in core,
 'customBookFramePreserved':'class BookFramePanel' in core,'customBookPagePreserved':'class BookPagePanel' in core,'customTabsPreserved':'class BookTabButton' in core,'customStatusTabsPreserved':'class BookStatusTabButton' in core,
 'ornateButtonsPreserved':'class OrnateButton' in core,'customNotesPreserved':'function Render-NotesSection' in core,
 'timelinePreserved':'function Render-TimelineSection' in core,'storyPreserved':"'Story' = @(" in core,'powersPreserved':'function Render-PowersSection' in core,
-'colorPickerPersistencePreserved':'CustomColors' in core,'noPageTurnAnimation':True,'userDataSeparate':"TheFiles\\Data" in core,
+'colorPickerPersistencePreserved':'CustomColors' in core,'userDataSeparate':"TheFiles\\Data" in core,
 'allInternalHashesVerified':True,'compressedCoreMatchesRunnableCore':True}
 if not all(checks.values()): raise SystemExit('validation marker failed: '+str(checks))
 val={'version':VERSION,'baseVersion':'0.2.30','payload':name,'payloadSha256':sha,'requirements':checks}
