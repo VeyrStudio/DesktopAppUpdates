@@ -1,0 +1,25 @@
+{
+  "version": "0.2.31",
+  "baseVersion": "0.2.30",
+  "payload": "payload-0.2.31-book-master-skin-part-001.txt",
+  "payloadSha256": "c78fcfcae779fb5c98eb5fa3e4322f618fb4636f59386684519315ca6f5af28f",
+  "requirements": {
+    "bookMasterSkin": true,
+    "skinAppliedEveryRender": true,
+    "pageTurnDisabled": true,
+    "customBookFramePreserved": true,
+    "customBookPagePreserved": true,
+    "customTabsPreserved": true,
+    "customStatusTabsPreserved": true,
+    "ornateButtonsPreserved": true,
+    "customNotesPreserved": true,
+    "timelinePreserved": true,
+    "storyPreserved": true,
+    "powersPreserved": true,
+    "colorPickerPersistencePreserved": true,
+    "userDataSeparate": true,
+    "allInternalHashesVerified": true,
+    "compressedCoreMatchesRunnableCore": true
+  },
+  "powershellParse": "passed-windows-powershell-parser"
+}
