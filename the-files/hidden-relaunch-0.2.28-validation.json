@@ -1,0 +1,19 @@
+﻿{
+    "version":  "0.2.28",
+    "baseVersion":  "0.2.27",
+    "payload":  "payload-0.2.28-hidden-relaunch-part-001.txt",
+    "payloadSha256":  "9718f21f3dc07565d0728eb630f0db05c4906fa676cee8312660583422f45804",
+    "requirements":  {
+                         "hiddenRelaunchViaWscript":  true,
+                         "existingShortcutPreserved":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "customNotesPreserved":  true,
+                         "timelinePreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "allInternalHashesVerified":  true,
+                         "compressedCoreMatchesRunnableCore":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
