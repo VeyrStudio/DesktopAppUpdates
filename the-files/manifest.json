@@ -2,13 +2,14 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.27",
-  "payloadSha256": "9fccf5ace1c3544097e4ed6c9e71ad4871788baef7b91eb001d7d2daf9284f1d",
+  "version": "0.2.28",
+  "payloadSha256": "9718f21f3dc07565d0728eb630f0db05c4906fa676cee8312660583422f45804",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/507ec292d87dccf3679af0a09479c313eaaae7ee/the-files/payload-0.2.27-hide-console-part-001.txt",
-      "sha256": "9fccf5ace1c3544097e4ed6c9e71ad4871788baef7b91eb001d7d2daf9284f1d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/065b8dcc688a6f4b6ba5e3a74505de94cf6410ec/the-files/payload-0.2.28-hidden-relaunch-part-001.txt",
+      "sha256": "9718f21f3dc07565d0728eb630f0db05c4906fa676cee8312660583422f45804"
     }
   ],
-  "notes": "Launcher-polish release on stable v0.2.26. The existing TheFiles.ps1 bootstrap now hides its own PowerShell console window immediately on startup, so the normal shortcut can remain unchanged while The Files continues running normally. Preserves the bootstrap updater, custom Notes workspace, Timeline, Story, Powers, separate user data, and both runnable/compressed core files. All internal per-file SHA-256 values were recomputed and verified, the compressed core matches the runnable core, and Windows PowerShell parsing passed before publish."
+  "notes": "Launcher handoff repair on stable v0.2.27. Instead of relying on hiding an already-created PowerShell console, the existing TheFiles.ps1 bootstrap now immediately hands off through wscript.exe to a hidden PowerShell process, then exits. The user's existing shortcut remains unchanged; the hidden process runs the updater and The Files normally. Preserves the bootstrap updater, custom Notes workspace, Timeline, Story, Powers, separate user data, and both runnable/compressed core files. All internal per-file SHA-256 values were recomputed and verified, the compressed core matches the runnable core, and Windows PowerShell parsing passed before publish.
+"
 }
