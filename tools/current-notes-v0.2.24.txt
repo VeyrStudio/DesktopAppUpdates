@@ -1,0 +1,17 @@
+320:     'Notes' = @(
+321:         @{Key='Aliases';Label='Aliases / Former Names / Titles';Type='Multi'},
+322:         @{Key='Tags';Label='Tags';Type='Multi'},
+323:         @{Key='Quotes';Label='Quotes';Type='Large'},
+324:         @{Key='Playlist';Label='Playlist / Theme Songs';Type='Large'},
+325:         @{Key='Aesthetic';Label='Aesthetic / Moodboard Notes';Type='Large'},
+326:         @{Key='ColorPalette';Label='Color Palette';Type='Multi'},
+327:         @{Key='Inspirations';Label='Inspirations';Type='Large'},
+328:         @{Key='VoiceReference';Label='Voice Reference';Type='Text'},
+329:         @{Key='ImportantObjects';Label='Important Objects';Type='Large'},
+330:         @{Key='Knowledge';Label='What This Character Knows';Type='Large'},
+331:         @{Key='ReaderKnowledge';Label='What the Reader Knows';Type='Large'},
+333:         @{Key='UniverseNotes';Label='Universe-Wide Notes';Type='Large'},
+334:         @{Key='Trivia';Label='Trivia';Type='Large'},
+335:         @{Key='CustomFields';Label='Custom Fields / Anything Else';Type='Large'},
+529:     Tags = @('Primary, Romance, Human','Secondary, Family','Supernatural, Love Interest','Antagonist, Morally Gray','Found Family, Survivor')
+592:     if ($Key -match 'Description|History|Secrets|MajorLifeEvents|Relationship|Romantic|Attraction|LoveLanguage|Affection|Jealousy|Conflict|Intimacy|Skills|Powers|Limits|Weaknesses|Equipment|Weapons|SelfImage|Worldview|Moral|Boundaries|Coping|Defense|Insecurities|Triggers|Refuses|RuleBreaking|Desire|Fear|BreakingPoint|CoreBelief|FalseBelief|Goal|Motivation|Want|Need|Abandon|FatalFlaw|State|TurningPoints|Scenes|Relevance|Aliases|Quotes|Playlist|Aesthetic|Inspirations|Objects|Knowledge|Notes|Trivia|CustomFields|Siblings|Children|OtherFamily|Guardians|StepParents|Friends|Enemies|Rivals|Mentors|Dependents|ImportantRelationships|Mannerisms|PetPeeves|SenseHumor|Temper|SocialBehavior|ComfortableBehavior|Health|Disabilities|Injuries|HealthNotes|Scars') {
