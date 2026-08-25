@@ -9,13 +9,11 @@ p=json.loads(b.decode('utf-8')); files={f['path']:f for f in p['files']}
 for x in ('TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'):
     if x not in files: raise SystemExit('missing '+x)
 launcher=base64.b64decode(files['TheFiles.ps1']['contentBase64']).decode('utf-8-sig')
-# Replace the previous in-process console-hide shim, if present, with a hidden relaunch handoff.
 start_marker='# --- Hide bootstrap console window ---'
 end_marker='# --- End hide bootstrap console window ---'
 if start_marker in launcher and end_marker in launcher:
     a=launcher.index(start_marker); b2=launcher.index(end_marker)+len(end_marker)
     launcher=launcher[:a]+launcher[b2:]
-# Hidden relaunch must happen before updater/bootstrap work. WScript starts powershell with window style 0.
 shim=r'''# --- Hidden bootstrap relaunch ---
 if ($env:THEFILES_HIDDEN_BOOTSTRAP -ne '1') {
     try {
@@ -24,12 +22,12 @@ if ($env:THEFILES_HIDDEN_BOOTSTRAP -ne '1') {
             $vbs = Join-Path ([IO.Path]::GetTempPath()) ('TheFilesHidden-' + [guid]::NewGuid().ToString('N') + '.vbs')
             $escaped = $self.Replace('"','""')
             $cmd = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""' + $escaped + '""'
-            $script = 'Set sh = CreateObject("WScript.Shell")' + "`r`n" + _
-                      'Set env = sh.Environment("PROCESS")' + "`r`n" + _
-                      'env("THEFILES_HIDDEN_BOOTSTRAP") = "1"' + "`r`n" + _
-                      'sh.Run "' + $cmd.Replace('"','""') + '", 0, False' + "`r`n" + _
-                      'On Error Resume Next' + "`r`n" + _
-                      'CreateObject("Scripting.FileSystemObject").DeleteFile WScript.ScriptFullName, True'
+            $script = ('Set sh = CreateObject("WScript.Shell")' + "`r`n" +
+                       'Set env = sh.Environment("PROCESS")' + "`r`n" +
+                       'env("THEFILES_HIDDEN_BOOTSTRAP") = "1"' + "`r`n" +
+                       'sh.Run "' + $cmd.Replace('"','""') + '", 0, False' + "`r`n" +
+                       'On Error Resume Next' + "`r`n" +
+                       'CreateObject("Scripting.FileSystemObject").DeleteFile WScript.ScriptFullName, True')
             [IO.File]::WriteAllText($vbs,$script,[Text.Encoding]::Unicode)
             Start-Process -FilePath 'wscript.exe' -ArgumentList ('"' + $vbs + '"') -WindowStyle Hidden
             exit
@@ -40,11 +38,10 @@ if ($env:THEFILES_HIDDEN_BOOTSTRAP -ne '1') {
 }
 # --- End hidden bootstrap relaunch ---
 '''
-# Insert after ErrorActionPreference so script environment exists but before any updater UI/network work.
 needle="$ErrorActionPreference='Stop'"
 if needle not in launcher: raise SystemExit('launcher insertion point missing')
 launcher=launcher.replace(needle,needle+'\n'+shim,1)
-if 'THEFILES_HIDDEN_BOOTSTRAP' not in launcher or "wscript.exe" not in launcher or 'WindowStyle Hidden' not in launcher: raise SystemExit('hidden relaunch markers missing')
+if 'THEFILES_HIDDEN_BOOTSTRAP' not in launcher or 'wscript.exe' not in launcher or 'WindowStyle Hidden' not in launcher: raise SystemExit('hidden relaunch markers missing')
 raw_launcher=launcher.encode('utf-8-sig'); files['TheFiles.ps1']['contentBase64']=base64.b64encode(raw_launcher).decode()
 app=json.loads(base64.b64decode(files['AppVersion.json']['contentBase64']).decode('utf-8-sig')); app['version']=VERSION
 files['AppVersion.json']['contentBase64']=base64.b64encode(json.dumps(app,indent=2).encode('utf-8')).decode()
