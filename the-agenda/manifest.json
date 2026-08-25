@@ -3,12 +3,40 @@
   "appId": "the-agenda",
   "appName": "The Agenda",
   "version": "1.0.2",
-  "payloadSha256": "ccbc1b8f549f8086f3b06c476df5c0333b83512a3c59254f19f097dd7a35762a",
+  "payloadSha256": "cd100b475dd1bbbc68c3c227712913db63def7af4eda43bcb32ef83061249663",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2-full.txt",
-      "sha256": "ccbc1b8f549f8086f3b06c476df5c0333b83512a3c59254f19f097dd7a35762a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-001.txt",
+      "sha256": "e1c3e925f887887cf1837a6c1a5f22a24683f514a0ac85fecb529c2148474ec8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-002.txt",
+      "sha256": "4154741b6132d142cea8ed95a7266384bd374da7cd65d6d48c87f28d834a9590"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-003.txt",
+      "sha256": "9d3865f530521d62696ebe1392d91103536f0aeb194af5d6fbaba108ee8a7ed4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-004.txt",
+      "sha256": "eba9d9640d5694d55c0045ae242475e64666402c03ed14d52f1fc6c6f341aa29"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-005.txt",
+      "sha256": "2280d910496d500c3c4eab71a0f13b31053747274b1c13f7e1c088eb9c72f4c2"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-006.txt",
+      "sha256": "2aa4b76247d0921303592e4d5d3b066a32ab8611c979993afecd0c703a4b65b7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-007.txt",
+      "sha256": "723c46192b968b33db6679d46f5c0e5ad79364ed02c1d5a11419cb093d4f844f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-agenda/payload-1.0.2c-part-008.txt",
+      "sha256": "3909e1bfaf1887ef170d85fe0b3b2d8f5dafaf42e62cbe7cd7b6071b24110bb4"
     }
   ],
-  "notes": "Launcher fix: hides the PowerShell console so only The Agenda window is visible. Includes the corrected Daily top-left 3x5 print placement and true-size five-card Full Week printing."
+  "notes": "Launcher update: The Agenda now opens without a visible PowerShell console. Existing desktop and Start Menu shortcuts are migrated automatically to a hidden launcher after restart. Includes the v1.0.1 printing fixes for top-left Daily printing and true 3x5 Full Week cards."
 }
