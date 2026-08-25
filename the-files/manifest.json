@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.23",
-  "payloadSha256": "6ccba6e392ac23998f7540590159488069bd3a0ea76c2a54f8cf2725cbf6ba54",
+  "version": "0.2.24",
+  "payloadSha256": "b5c2f75e232d67433a0bdebb53d5ba7a96ced902fb987938cb238692705e2333",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/e91087790da068d2aae47113f95d841f50aed8eb/the-files/payload-0.2.23-timeline-hostfix-part-001.txt",
-      "sha256": "6ccba6e392ac23998f7540590159488069bd3a0ea76c2a54f8cf2725cbf6ba54"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/30c7da5f2f1c44c9563b6087ba62dace3dac7f86/the-files/payload-0.2.24-internal-hash-repair-part-001.txt",
+      "sha256": "b5c2f75e232d67433a0bdebb53d5ba7a96ced902fb987938cb238692705e2333"
     }
   ],
-  "notes": "Hotfix for the v0.2.22 Timeline renderer. Renames the Timeline helper parameter that collided with PowerShell's built-in read-only $Host variable, eliminating the 'Cannot overwrite variable host because it is read-only or constant' error while preserving the visual Timeline, Story, Powers, updater fixes, both runnable and compressed core files, and separate user data. Windows PowerShell parsing and package/hash validation passed before publish."
+  "notes": "Packaging-only repair after the v0.2.23 updater verification warning. Preserves the working Timeline Host fix and all current Timeline, Story, Powers, updater, and user-data behavior. Recomputes every internal per-file SHA-256 after final bytes are written, verifies all internal hashes updater-style, verifies TheFilesCore.ps1.gz decompresses exactly to TheFilesCore.ps1, and passes Windows PowerShell parsing before publish."
 }
