@@ -1,0 +1,180 @@
+1932:  else{$c=[System.Windows.Forms.TextBox]::new();$c.Text=[string]$e.$field;if($kind -eq 'Multi'){$c.Multiline=$true;$c.ScrollBars='Vertical';$c.Height=58;$h=68};$c.Add_TextChanged({Timeline-ControlChanged $this})}
+1933:  $c.Tag=$tag;$c.Font=$script:FontSmall;$c.Location=[System.Drawing.Point]::new($x,$y);$c.Width=$w;$c.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$c.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$c.Anchor='Top,Left,Right';$container.Controls.Add($c);return $h}
+1934: function Render-TimelineSection($c,$leftHost,$rightHost){$title=[System.Windows.Forms.Label]::new();$title.Text='TIMELINE EVENTS';$title.Font=[System.Drawing.Font]::new('Georgia',10,[System.Drawing.FontStyle]::Bold);$title.ForeColor=$script:Ink;$title.Location=[System.Drawing.Point]::new(10,10);$title.AutoSize=$true;$leftHost.Controls.Add($title);$rand=[System.Windows.Forms.Button]::new();$rand.Text='🎲 RANDOMIZE TIMELINE';$rand.Width=180;$rand.Height=30;$rand.Location=[System.Drawing.Point]::new(10,38);$rand.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$rand.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$rand.FlatStyle='Flat';$rand.Add_Click({Randomize-TimelineAll});$leftHost.Controls.Add($rand);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD EVENT';$add.Width=120;$add.Height=30;$add.Location=[System.Drawing.Point]::new(198,38);$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.FlatStyle='Flat';$add.Add_Click({Push-UndoState;$a=@(Get-TimelineArray);$a+=,(New-TimelineEvent);Set-TimelineArray $a;Render-CurrentCharacter});$leftHost.Controls.Add($add);$a=@(Get-TimelineArray);$y=82
+1935:  for($i=0;$i -lt $a.Count;$i++){$e=$a[$i];$bar=[System.Windows.Forms.Panel]::new();$bar.Location=[System.Drawing.Point]::new(8,$y);$bar.Size=[System.Drawing.Size]::new([math]::Max(280,$leftHost.ClientSize.Width-20),32);$bar.Anchor='Top,Left,Right';$bar.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$leftHost.Controls.Add($bar);$nm=[System.Windows.Forms.Label]::new();$nm.Text=if([string]::IsNullOrWhiteSpace([string]$e.EventName)){('Event '+($i+1))}else{[string]$e.EventName};$nm.Location=[System.Drawing.Point]::new(8,7);$nm.Size=[System.Drawing.Size]::new([math]::Max(90,$bar.Width-180),20);$nm.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$bar.Controls.Add($nm);foreach($spec in @(@('↑',-1,100),@('↓',1,128))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$spec[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$spec[1]};$bt.Width=26;$bt.Height=24;$bt.Location=[System.Drawing.Point]::new([math]::Max(100,$bar.Width-[int]$spec[2]),4);$bt.Anchor='Top,Right';$bt.Add_Click({Move-TimelineEvent ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$bar.Controls.Add($bt)};$dice=[System.Windows.Forms.Button]::new();$dice.Text='🎲';$dice.Tag=$i;$dice.Width=30;$dice.Height=24;$dice.Location=[System.Drawing.Point]::new([math]::Max(100,$bar.Width-70),4);$dice.Anchor='Top,Right';$dice.Add_Click({Randomize-TimelineEvent ([int]$this.Tag)});$bar.Controls.Add($dice);$rm=[System.Windows.Forms.Button]::new();$rm.Text='X';$rm.Tag=$i;$rm.Width=28;$rm.Height=24;$rm.Location=[System.Drawing.Point]::new([math]::Max(100,$bar.Width-36),4);$rm.Anchor='Top,Right';$rm.BackColor=[System.Drawing.Color]::FromArgb(120,67,42);$rm.ForeColor=[System.Drawing.Color]::FromArgb(248,233,200);$rm.Add_Click({Remove-TimelineEvent ([int]$this.Tag)});$bar.Controls.Add($rm);$y+=38;$y+=Add-TimelineField $leftHost $i 'Event Name' 'EventName' 'Text' @() $y;$y+=Add-TimelineField $leftHost $i 'When' 'WhenType' 'Choice' @('Exact Date','Year','Age','Approximate Age','Life Stage','Unknown') $y;$y+=Add-TimelineField $leftHost $i 'When Value' 'WhenValue' 'Text' @() $y;$y+=Add-TimelineField $leftHost $i 'Event Type' 'EventType' 'Choice' @('Family','Relationship','Education','Career','Loss / Death','Conflict','Discovery','Travel / Relocation','Health','Supernatural','Crime / Legal','War / Disaster','Other / Custom') $y;$y+=Add-TimelineField $leftHost $i 'Importance' 'Importance' 'Choice' @('Minor','Moderate','Important','Very Important','Central','Unknown') $y;$y+=Add-TimelineField $leftHost $i 'End (optional)' 'End' 'Text' @() $y;$y+=Add-TimelineField $leftHost $i 'Notes' 'Notes' 'Multi' @() $y;$y+=10}
+1936:  $zt=[System.Windows.Forms.Label]::new();$zt.Text='VISUAL TIMELINE';$zt.Font=[System.Drawing.Font]::new('Georgia',10,[System.Drawing.FontStyle]::Bold);$zt.ForeColor=$script:Ink;$zt.Location=[System.Drawing.Point]::new(12,10);$zt.AutoSize=$true;$rightHost.Controls.Add($zt);$minus=[System.Windows.Forms.Button]::new();$minus.Text='−';$minus.Size=[System.Drawing.Size]::new(30,26);$minus.Location=[System.Drawing.Point]::new([math]::Max(120,$rightHost.ClientSize.Width-82),6);$minus.Anchor='Top,Right';$minus.Add_Click({$script:TimelineZoom=[math]::Max(0.7,$script:TimelineZoom-0.1);Render-CurrentCharacter});$rightHost.Controls.Add($minus);$plus=[System.Windows.Forms.Button]::new();$plus.Text='+';$plus.Size=[System.Drawing.Size]::new(30,26);$plus.Location=[System.Drawing.Point]::new([math]::Max(154,$rightHost.ClientSize.Width-46),6);$plus.Anchor='Top,Right';$plus.Add_Click({$script:TimelineZoom=[math]::Min(1.6,$script:TimelineZoom+0.1);Render-CurrentCharacter});$rightHost.Controls.Add($plus);$vis=[System.Windows.Forms.Panel]::new();$vis.AutoScroll=$true;$vis.Location=[System.Drawing.Point]::new(8,42);$vis.Size=[System.Drawing.Size]::new([math]::Max(260,$rightHost.ClientSize.Width-18),[math]::Max(260,$rightHost.ClientSize.Height-54));$vis.Anchor='Top,Bottom,Left,Right';$rightHost.Controls.Add($vis);$sorted=@();for($i=0;$i -lt $a.Count;$i++){$sorted+=,[pscustomobject]@{E=$a[$i];I=$i;K=(Get-TimelineSortKey $a[$i] $i)}};$sorted=@($sorted|Sort-Object K);$vy=18;$step=[int](112*$script:TimelineZoom);foreach($x in $sorted){$e=$x.E;$line=[System.Windows.Forms.Panel]::new();$line.BackColor=[System.Drawing.Color]::FromArgb(131,67,45);$line.Location=[System.Drawing.Point]::new(28,$vy);$line.Size=[System.Drawing.Size]::new(4,[math]::Max(55,$step));$vis.Controls.Add($line);$dot=[System.Windows.Forms.Label]::new();$dot.Text='●';$dot.ForeColor=[System.Drawing.Color]::FromArgb(131,67,45);$dot.Font=[System.Drawing.Font]::new('Georgia',[single](12*$script:TimelineZoom),[System.Drawing.FontStyle]::Bold);$dot.Location=[System.Drawing.Point]::new(18,$vy-4);$dot.AutoSize=$true;$vis.Controls.Add($dot);$card=[System.Windows.Forms.Panel]::new();$card.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$card.Location=[System.Drawing.Point]::new(48,$vy-2);$card.Size=[System.Drawing.Size]::new([math]::Max(180,$vis.ClientSize.Width-72),[math]::Max(68,[int](78*$script:TimelineZoom)));$card.Anchor='Top,Left,Right';$vis.Controls.Add($card);$l1=[System.Windows.Forms.Label]::new();$l1.Text=((Timeline-WhenText $e)+'  •  '+(if([string]::IsNullOrWhiteSpace([string]$e.EventName)){'Unnamed Event'}else{[string]$e.EventName}));$l1.Font=[System.Drawing.Font]::new('Georgia',[single](9*$script:TimelineZoom),[System.Drawing.FontStyle]::Bold);$l1.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$l1.Location=[System.Drawing.Point]::new(9,8);$l1.Size=[System.Drawing.Size]::new([math]::Max(150,$card.Width-18),24);$card.Controls.Add($l1);$l2=[System.Windows.Forms.Label]::new();$l2.Text=([string]$e.EventType+'  |  '+[string]$e.Importance+(if([string]::IsNullOrWhiteSpace([string]$e.End)){''}else{'  |  End: '+[string]$e.End}));$l2.ForeColor=[System.Drawing.Color]::FromArgb(70,45,28);$l2.Location=[System.Drawing.Point]::new(9,34);$l2.Size=[System.Drawing.Size]::new([math]::Max(150,$card.Width-18),20);$card.Controls.Add($l2);$vy+=$step};if($a.Count -eq 0){$empty=[System.Windows.Forms.Label]::new();$empty.Text='Add an event to begin the visual timeline.';$empty.ForeColor=$script:Muted;$empty.Location=[System.Drawing.Point]::new(18,20);$empty.AutoSize=$true;$vis.Controls.Add($empty)}}
+1937: 
+1938: function Render-CurrentCharacter {
+1939:     $script:Rendering=$true
+1940:     try {
+1941:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1942:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1943:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1944:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1945:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1946:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1947:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1948:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1949:         if($script:CurrentSection -eq 'Overview'){
+1950:             Add-OverviewExtras $c $leftHost
+1951:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1952:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1953:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1954:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1955:         } elseif($script:CurrentSection -eq 'Family'){
+1956:             Render-FamilySection $c $leftHost $rightHost
+1957:         } elseif($script:CurrentSection -eq 'Relationships'){
+1958:             Render-RelationshipsSection $c $leftHost $rightHost
+1959:         } elseif($script:CurrentSection -eq 'Timeline'){
+1960:             Render-TimelineSection $c $leftHost $rightHost
+1961:         } elseif($script:CurrentSection -eq 'Powers'){
+1962:             Render-PowersSection $c $leftHost $rightHost
+1963:         } elseif($script:CurrentSection -eq 'Notes'){
+1964:             Render-NotesSection $c $leftHost $rightHost
+1965:         } else {
+1966:             $split=[math]::Ceiling($defs.Count/2);$leftDefs=@($defs|Select-Object -First $split);$rightDefs=@($defs|Select-Object -Skip $split)
+1967:             $y=12;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1968:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1969:         }
+1970:         foreach($key in $script:FieldControls.Keys){
+1971:             $ctrl=$script:FieldControls[$key];$value=[string]$c.Fields[$key];$def=Get-FieldDefinition $key;$type=if($null -eq $def){''}else{[string]$def.Type}
+1972:             if($type -eq 'MultiChoice'){$ctrl.Text=Get-MultiChoiceSummary $value}
+1973:             elseif($type -eq 'LifeEvents'){}
+1974:             elseif($ctrl -is [System.Windows.Forms.ComboBox]){
+1975:                 if($type -eq 'EditChoice'){$ctrl.Text=$value}
+1976:                 elseif($ctrl.Items.Contains($value)){$ctrl.SelectedItem=$value}
+1977:                 elseif($ctrl.Items.Count -gt 0){$ctrl.SelectedIndex=0}
+1978:             }else{$ctrl.Text=$value}
+1979:             foreach($pnl in @($leftHost,$rightHost)){foreach($p in @($pnl.Controls)){if($p -is [System.Windows.Forms.Button] -and [string]$p.Tag -eq $key -and $p.Width -eq 30){if($p.Location.X -gt ($pnl.ClientSize.Width-55)){if(Get-LockState $c $key){$p.Text='🔒'}else{$p.Text='🔓'}}}}}
+1980:         }
+1981:         Add-BookActions $leftPage;Update-NavLabels
+1982:     } finally {$script:Rendering=$false}
+1983: }
+1984: function Save-BrowseState {
+1985:     $c=Get-CurrentCharacter
+1986:     if($null -ne $c){$script:Settings.LastCharacterId=[string]$c.Id}
+1987:     $script:Settings.LastSection=[string]$script:CurrentSection
+1988:     $script:Settings.LastStatus=[string]$script:ActiveStatus
+1989:     try{if($null -ne $script:LeftHost){$script:Settings.ScrollLeft=[math]::Abs([int]$script:LeftHost.AutoScrollPosition.Y)}}catch{}
+1990:     try{if($null -ne $script:RightHost){$script:Settings.ScrollRight=[math]::Abs([int]$script:RightHost.AutoScrollPosition.Y)}}catch{}
+1991:     Schedule-Save
+1992: }
+1993: 
+1994: function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {
+1995:     if($null -eq $book -or $book.ClientSize.Width -lt 300 -or $book.ClientSize.Height -lt 200){return}
+1996:     $count=[math]::Max(1,[math]::Min(6,$Count))
+1997:     $center=[int]($book.ClientSize.Width/2);$half=[int](($book.ClientSize.Width-56)/2);$top=22;$height=[math]::Max(120,$book.ClientSize.Height-44)
+1998:     $frames=if($Whole){10}else{6};$pause=if($Whole){18}else{10}
+1999:     for($n=0;$n -lt $count;$n++){
+2000:         $sheet=New-Object System.Windows.Forms.Panel;$sheet.BackColor=if(($n%2)-eq 0){[System.Drawing.Color]::FromArgb(245,225,188)}else{[System.Drawing.Color]::FromArgb(234,210,170)}
+2001:         $sheet.Top=$top;$sheet.Height=$height;$sheet.Width=$half;$sheet.Left=if($Direction -ge 0){$center}else{$center-$half}
+2002:         $sheet.BorderStyle='FixedSingle';$book.Controls.Add($sheet);$sheet.BringToFront();$book.Refresh()
+2003:         # Fold the source page toward the gutter.
+2004:         for($f=0;$f -le $frames;$f++){
+2005:             $remain=[math]::Max(10,[int]($half*(1-($f/$frames))))
+2006:             $sheet.Width=$remain
+2007:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+2008:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2009:         }
+2010:         # Open the sheet onto the destination side.
+2011:         for($f=1;$f -le $frames;$f++){
+2012:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+2013:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+2014:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2015:         }
+2016:         $book.Controls.Remove($sheet);$sheet.Dispose();$book.Refresh()
+2017:     }
+2018: }
+2019: 
+2020: function Go-ToSection([string]$Target) {
+2021:     if([string]::IsNullOrWhiteSpace($Target) -or $Target -eq $script:CurrentSection){return}
+2022:     $from=[array]::IndexOf($script:SectionOrder,$script:CurrentSection)
+2023:     $to=[array]::IndexOf($script:SectionOrder,$Target)
+2024:     if($from -lt 0 -or $to -lt 0){$script:CurrentSection=$Target;Render-CurrentCharacter;return}
+2025:     Save-BrowseState
+2026:     $direction=if($to -gt $from){1}else{-1}
+2027:     $distance=[math]::Abs($to-$from)
+2028:     Animate-BookPages $direction $distance $false
+2029:     $script:CurrentSection=$Target
+2030:     $script:Settings.LastSection=$Target
+2031:     Render-CurrentCharacter
+2032:     Schedule-Save
+2033: }
+2034: 
+2035: function Update-NavLabels {
+2036:     $c=Get-CurrentCharacter
+2037:     if($null -eq $c){ $currentNav.Text='NO CHARACTER'; $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›'; return }
+2038:     $name='Untitled Character'; if($c.Fields.FullName){$name=[string]$c.Fields.FullName}
+2039:     $currentNav.Text="CURRENT`r`n$name"
+2040:     if($script:Filtered.Count -gt 1){
+2041:         $pi=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $ni=($script:CurrentIndex+1)%$script:Filtered.Count
+2042:         $pn='Untitled'; if($script:Filtered[$pi].Fields.FullName){$pn=$script:Filtered[$pi].Fields.FullName}
+2043:         $nn='Untitled'; if($script:Filtered[$ni].Fields.FullName){$nn=$script:Filtered[$ni].Fields.FullName}
+2044:         $prevBtn.Text="‹  PREVIOUS`r`n$pn"; $nextBtn.Text="NEXT  ›`r`n$nn"
+2045:     } else { $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›' }
+2046: }
+2047: function Refresh-StoryFilter {
+2048:     $wasRendering = $script:Rendering
+2049:     $script:Rendering = $true
+2050:     try {
+2051:         $current=[string]$storyFilter.SelectedItem
+2052:         $stories=@($script:Characters | ForEach-Object {[string]$_.Fields.StoryTitle} | Where-Object {$_} | Sort-Object -Unique)
+2053:         $storyFilter.Items.Clear(); [void]$storyFilter.Items.Add('All Stories'); foreach($s in $stories){[void]$storyFilter.Items.Add($s)}
+2054:         if($current -and $storyFilter.Items.Contains($current)){$storyFilter.SelectedItem=$current}else{$storyFilter.SelectedIndex=0}
+2055:     } finally { $script:Rendering = $wasRendering }
+2056: }
+2057: function Refresh-Navigation {
+2058:     param([string]$KeepId='', [switch]$NoRender)
+2059:     if(-not $KeepId){ $cur=Get-CurrentCharacter; if($null -ne $cur){$KeepId=[string]$cur.Id} }
+2060:     $q=$searchBox.Text.Trim().ToLowerInvariant(); $sf=[string]$storyFilter.SelectedItem
+2061:     $list=@($script:Characters | Where-Object {
+2062:         $_.FileStatus -eq $script:ActiveStatus -and
+2063:         (($sf -eq '' -or $sf -eq 'All Stories') -or ([string]$_.Fields.StoryTitle -eq $sf)) -and
+2064:         (($q -eq '') -or ([string]$_.Fields.FullName).ToLowerInvariant().Contains($q) -or ([string]$_.Fields.StoryTitle).ToLowerInvariant().Contains($q) -or ([string]$_.Fields.Partner).ToLowerInvariant().Contains($q))
+2065:     } | Sort-Object FileNumber)
+2066:     $script:Filtered=$list; $script:CurrentIndex=-1
+2067:     for($i=0;$i -lt $list.Count;$i++){if($list[$i].Id -eq $KeepId){$script:CurrentIndex=$i;break}}
+2068:     if($script:CurrentIndex -lt 0 -and $list.Count -gt 0){$script:CurrentIndex=0}
+2069:     $wasRendering=$script:Rendering;$script:Rendering=$true
+2070:     try {
+2071:         $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+2072:         if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+2073:     } finally {$script:Rendering=$wasRendering}
+2074:     Refresh-StoryFilter
+2075:     if(-not $NoRender){Render-CurrentCharacter}else{Update-NavLabels}
+2076: }
+2077: 
+2078: $prevBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages -1 1 $true; $script:CurrentIndex=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+2079: $nextBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages 1 1 $true; $script:CurrentIndex=($script:CurrentIndex+1)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+2080: $newBtn.Add_Click({ $c=New-CharacterRecord; $script:Characters+=,$c; $script:ActiveStatus='Blank'; Schedule-Save; Refresh-Navigation -KeepId $c.Id })
+2081: $deleteBtn.Add_Click({ $c=Get-CurrentCharacter; if($null -eq $c){return}; $nm='this blank file'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; if((Show-Confirm "Delete $nm?`r`n`r`nThis removes the character record. Portrait files are left in your data folder for safety.") -eq [System.Windows.Forms.DialogResult]::Yes){ $id=$c.Id; $script:Characters=@($script:Characters | Where-Object {$_.Id -ne $id}); Save-AllData; Refresh-Navigation } })
+2082: $searchBox.Add_TextChanged({ Refresh-Navigation })
+2083: $storyFilter.Add_SelectedIndexChanged({ if(-not $script:Rendering){ Refresh-Navigation } })
+2084: $jumpCombo.Add_SelectedIndexChanged({ if(-not $script:Rendering -and $jumpCombo.SelectedIndex -ge 0 -and $jumpCombo.SelectedIndex -lt $script:Filtered.Count){Save-BrowseState;$dir=if($jumpCombo.SelectedIndex -ge $script:CurrentIndex){1}else{-1};Animate-BookPages $dir 1 $true;$script:CurrentIndex=$jumpCombo.SelectedIndex;Render-CurrentCharacter;Save-BrowseState} })
+2085: $form.Add_FormClosing({ Save-BrowseState; Save-AllData })
+2086: 
+2087: # First-run convenience: start with one genuinely blank page, not a fake example character.
+2088: if($script:Characters.Count -eq 0){ $script:Characters += ,(New-CharacterRecord); Save-AllData; $script:ActiveStatus='Blank' }
+2089: 
+2090: Refresh-StoryFilter
+2091: Refresh-Navigation -KeepId ([string]$script:Settings.LastCharacterId)
+2092: 
+2093: # Final layout pass after the real window handle, DPI scale, and Dock layout exist.
+2094: # Without this, some Windows setups can retain startup bounds for the right page and
+2095: # leave header/navigation controls piled at their default 0,0 positions.
+2096: $form.Add_Shown({
+2097:     try {
+2098:         Layout-Book
+2099:         Render-CurrentCharacter
+2100:         Layout-Book
+2101:     } catch { Write-LayoutError 'shown-pass' $_ }
+2102: })
+2103: 
+2104: # Delayed automatic update check so startup remains fast.
+2105: if(Should-AutoCheck){
+2106:     # legacy in-UI updater disabled; bootstrap handles updates
+2107:     # legacy in-UI updater disabled; bootstrap handles updates
+2108:     # legacy in-UI updater disabled; bootstrap handles updates
+2109: }
+2110: 
+2111: [void]$form.ShowDialog()
