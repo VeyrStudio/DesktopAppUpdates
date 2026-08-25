@@ -14,11 +14,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Extract Story and Overview definitions
-        shell: pwsh
+        shell: python
         run: |
-          python - <<'PY'
           from pathlib import Path
-          import json,base64,re
+          import json,base64
           r=Path('.')
           m=json.loads((r/'the-files/manifest.json').read_text())
           b=b''.join((r/'the-files'/p['url'].rsplit('/',1)[-1]).read_bytes() for p in m['payloadParts'])
@@ -32,7 +31,6 @@ jobs:
               if any(k in line for k in keys) or "'Story'" in line or '"Story"' in line:
                   out.append(f'{i}: {line}')
           (r/'tools/current-story-v0.2.20.txt').write_text('\n'.join(out),encoding='utf-8')
-          PY
       - name: Commit inspection
         shell: pwsh
         run: |
