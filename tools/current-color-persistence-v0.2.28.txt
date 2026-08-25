@@ -1,0 +1,522 @@
+373:         }
+374:     }
+375:     if($rows.Count -eq 0){return ''}
+376:     return (ConvertTo-Json -InputObject @($rows) -Compress -Depth 4)
+377: }
+378: 
+379: function Mark-CharacterChanged([string]$Value) {
+380:     $c=Get-CurrentCharacter;if($null -eq $c){return}
+381:     $c.Modified=(Get-Date).ToString('o');$moved=$false
+382:     if($c.FileStatus -eq 'Blank' -and -not [string]::IsNullOrWhiteSpace($Value)){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress';$moved=$true}
+383:     Schedule-Save
+384:     if($moved){Refresh-Navigation -KeepId $c.Id -NoRender}
+385:     Update-NavLabels
+386: }
+387: 
+388: function Set-MultiChoiceSelection([string]$Key,[string]$Option,[bool]$Selected) {
+389:     if($script:Rendering){return}
+390:     $c=Get-CurrentCharacter;if($null -eq $c){return}
+391:     $items=New-Object System.Collections.Generic.List[string]
+392:     foreach($v in @(Split-MultiChoiceValue ([string]$c.Fields[$Key]))){[void]$items.Add([string]$v)}
+393:     if($Selected){if(-not $items.Contains($Option)){[void]$items.Add($Option)}}else{[void]$items.Remove($Option)}
+394:     $value=Join-MultiChoiceValue $items
+395:     $c.Fields[$Key]=$value
+396:     if($script:FieldControls.ContainsKey($Key)){try{$script:FieldControls[$Key].Text=Get-MultiChoiceSummary $value}catch{}}
+397:     Mark-CharacterChanged $value
+398: }
+399: 
+400: function Queue-RenderCurrentCharacter {
+401:     try {
+402:         if($null -ne $script:MainForm -and -not $script:MainForm.IsDisposed){
+403:             [void]$script:MainForm.BeginInvoke([System.Windows.Forms.MethodInvoker]{Render-CurrentCharacter})
+404:         } else {Render-CurrentCharacter}
+
+---
+
+604:         PortraitPath = ''
+605:         Locks = @()
+606:         Fields = $fields
+607:     }
+608: }
+609: 
+610: function Convert-ToCharacterRecord($raw) {
+611:     $fields = [ordered]@{}
+612:     foreach ($key in $script:AllFieldKeys) {
+613:         $v = ''
+614:         try { if ($null -ne $raw.Fields.PSObject.Properties[$key]) { $v = [string]$raw.Fields.$key } } catch {}
+615:         $fields[$key] = $v
+616:     }
+617:     # Overview migration for v0.2.11: combine tier/role for the Overview page and replace location with freedom status.
+618:     if ([string]::IsNullOrWhiteSpace([string]$fields['CharacterRole'])) {
+619:         $oldRole='';$oldTier=''
+620:         try { if ($null -ne $raw.Fields.PSObject.Properties['StoryRole']) { $oldRole=[string]$raw.Fields.StoryRole } } catch {}
+621:         try { if ($null -ne $raw.Fields.PSObject.Properties['CharacterTier']) { $oldTier=[string]$raw.Fields.CharacterTier } } catch {}
+622:         switch ($oldRole) {
+623:             'Protagonist' { $fields['CharacterRole']='Main Character' }
+624:             'Love Interest' { $fields['CharacterRole']='Love Interest' }
+625:             'Antagonist' { $fields['CharacterRole']='Antagonist' }
+626:             'Deuteragonist' { $fields['CharacterRole']='Secondary Main' }
+627:             'Supporting' { $fields['CharacterRole']='Supporting Character' }
+628:             'Mentor' { $fields['CharacterRole']='Mentor' }
+629:             'Rival' { $fields['CharacterRole']='Rival' }
+630:             'Confidant' { $fields['CharacterRole']='Supporting Character' }
+631:             'Comic Relief' { $fields['CharacterRole']='Supporting Character' }
+632:         }
+633:         if ([string]::IsNullOrWhiteSpace([string]$fields['CharacterRole'])) {
+634:             switch ($oldTier) {
+635:                 'Primary' { $fields['CharacterRole']='Main Character' }
+
+---
+
+784: }
+785: 
+786: $script:Characters = @()
+787: try {
+788:     if (Test-Path -LiteralPath $script:CharactersPath) {
+789:         $rawList = @(Get-Content -LiteralPath $script:CharactersPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+790:         foreach ($raw in $rawList) { $script:Characters += ,(Convert-ToCharacterRecord $raw) }
+791:     }
+792: } catch {
+793:     try { Copy-Item -LiteralPath $script:CharactersPath -Destination ($script:CharactersPath + '.broken-' + (Get-Date -Format 'yyyyMMdd-HHmmss')) -Force } catch {}
+794:     $script:Characters = @()
+795: }
+796: 
+797: $script:Settings = [ordered]@{ AutoUpdateCheck = $true; LastUpdateCheck = ''; LastCharacterId=''; LastSection='Overview'; LastStatus='Existing'; ScrollLeft=0; ScrollRight=0 }
+798: try {
+799:     if (Test-Path -LiteralPath $script:SettingsPath) {
+800:         $s = Get-Content -LiteralPath $script:SettingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+801:         if ($null -ne $s.AutoUpdateCheck) { $script:Settings.AutoUpdateCheck = [bool]$s.AutoUpdateCheck }
+802:         if ($s.LastUpdateCheck) { $script:Settings.LastUpdateCheck = [string]$s.LastUpdateCheck }
+803:         if ($s.LastCharacterId) { $script:Settings.LastCharacterId = [string]$s.LastCharacterId }
+804:         if ($s.LastSection) { $script:Settings.LastSection = [string]$s.LastSection }
+805:         if ($s.LastStatus) { $script:Settings.LastStatus = [string]$s.LastStatus }
+806:         if ($null -ne $s.ScrollLeft) { $script:Settings.ScrollLeft = [int]$s.ScrollLeft }
+807:         if ($null -ne $s.ScrollRight) { $script:Settings.ScrollRight = [int]$s.ScrollRight }
+808:     }
+809: } catch {}
+810: 
+811: function Save-AllData {
+812:     try {
+813:         $tmp = $script:CharactersPath + '.tmp'
+814:         ConvertTo-Json -InputObject @($script:Characters) -Depth 8 | Set-Content -LiteralPath $tmp -Encoding UTF8
+815:         Move-Item -LiteralPath $tmp -Destination $script:CharactersPath -Force
+
+---
+
+805:         if ($s.LastStatus) { $script:Settings.LastStatus = [string]$s.LastStatus }
+806:         if ($null -ne $s.ScrollLeft) { $script:Settings.ScrollLeft = [int]$s.ScrollLeft }
+807:         if ($null -ne $s.ScrollRight) { $script:Settings.ScrollRight = [int]$s.ScrollRight }
+808:     }
+809: } catch {}
+810: 
+811: function Save-AllData {
+812:     try {
+813:         $tmp = $script:CharactersPath + '.tmp'
+814:         ConvertTo-Json -InputObject @($script:Characters) -Depth 8 | Set-Content -LiteralPath $tmp -Encoding UTF8
+815:         Move-Item -LiteralPath $tmp -Destination $script:CharactersPath -Force
+816:         $script:Settings | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $script:SettingsPath -Encoding UTF8
+817:         if ($null -ne $script:SaveStateLabel) { $script:SaveStateLabel.Text = 'AUTO-SAVED  ' + (Get-Date -Format 'h:mm tt') }
+818:     } catch {
+819:         if ($null -ne $script:SaveStateLabel) { $script:SaveStateLabel.Text = 'SAVE ERROR' }
+820:     }
+821: }
+822: 
+823: $script:SaveTimer = New-Object System.Windows.Forms.Timer
+824: $script:SaveTimer.Interval = 700
+825: $script:SaveTimer.Add_Tick({ $script:SaveTimer.Stop(); Save-AllData })
+826: function Schedule-Save { $script:SaveTimer.Stop(); $script:SaveTimer.Start() }
+827: 
+828: function Get-RemoteUpdateManifest {
+829:     try {
+830:         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+831:         $r = Invoke-WebRequest -Uri $script:UpdateManifestUrl -UseBasicParsing -TimeoutSec 8 -Headers @{'Cache-Control'='no-cache'}
+832:         if ($null -eq $r -or [string]::IsNullOrWhiteSpace([string]$r.Content)) { return $null }
+833:         return ($r.Content | ConvertFrom-Json)
+834:     } catch { return $null }
+835: }
+836: function Test-RemoteVersionNewer([string]$RemoteVersion,[string]$LocalVersion) {
+
+---
+
+820:     }
+821: }
+822: 
+823: $script:SaveTimer = New-Object System.Windows.Forms.Timer
+824: $script:SaveTimer.Interval = 700
+825: $script:SaveTimer.Add_Tick({ $script:SaveTimer.Stop(); Save-AllData })
+826: function Schedule-Save { $script:SaveTimer.Stop(); $script:SaveTimer.Start() }
+827: 
+828: function Get-RemoteUpdateManifest {
+829:     try {
+830:         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+831:         $r = Invoke-WebRequest -Uri $script:UpdateManifestUrl -UseBasicParsing -TimeoutSec 8 -Headers @{'Cache-Control'='no-cache'}
+832:         if ($null -eq $r -or [string]::IsNullOrWhiteSpace([string]$r.Content)) { return $null }
+833:         return ($r.Content | ConvertFrom-Json)
+834:     } catch { return $null }
+835: }
+836: function Test-RemoteVersionNewer([string]$RemoteVersion,[string]$LocalVersion) {
+837:     try { return ([version]$RemoteVersion -gt [version]$LocalVersion) } catch { return ($RemoteVersion -ne $LocalVersion) }
+838: }
+839: function Start-RemoteAppUpdate($Manifest,[bool]$Automatic=$false) {
+840:     try {
+841:         if ($null -eq $Manifest) { throw 'The update manifest is missing.' }
+842:         if ([string]$Manifest.appId -ne $script:UpdateAppId) { throw 'The update feed returned the wrong app.' }
+843:         if ($null -eq $Manifest.payloadParts -or @($Manifest.payloadParts).Count -lt 1) { throw 'The update payload list is missing.' }
+844:         if ([string]::IsNullOrWhiteSpace([string]$Manifest.payloadSha256)) { throw 'The update payload checksum is missing.' }
+845:         if (-not (Test-Path -LiteralPath $script:UpdateHostPath)) { throw 'The local update helper is missing.' }
+846: 
+847:         # Save current edits before an automatic restart.
+848:         Save-AllData
+849: 
+850:         New-Item -ItemType Directory -Force -Path $script:UpdateWorkRoot | Out-Null
+851:         $job = Join-Path $script:UpdateWorkRoot ('job_' + [guid]::NewGuid().ToString('N'))
+
+---
+
+1228: }
+1229: function Undo-Character {
+1230:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1231:     $id=[string]$c.Id
+1232:     if(-not $script:UndoStacks.ContainsKey($id) -or $script:UndoStacks[$id].Count -lt 1){ return }
+1233:     $stack=$script:UndoStacks[$id]; $json=[string]$stack[$stack.Count-1]; $stack.RemoveAt($stack.Count-1)
+1234:     $restored=Convert-ToCharacterRecord ($json | ConvertFrom-Json)
+1235:     for($i=0;$i -lt $script:Characters.Count;$i++){ if($script:Characters[$i].Id -eq $id){ $script:Characters[$i]=$restored; break } }
+1236:     Refresh-Navigation -KeepId $id; Schedule-Save
+1237: }
+1238: function Set-RandomizedFieldValue($c,[string]$key) {
+1239:     if($null -eq $c -or [string]::IsNullOrWhiteSpace($key) -or (Get-LockState $c $key)){return $false}
+1240:     $v=if($key -eq 'Powers'){Get-RandomPowerStructuredValue}elseif($key -eq 'Nicknames'){Get-SmartNickname}else{Get-RandomText $key}
+1241:     if($key -eq 'Nicknames' -and [string]::IsNullOrWhiteSpace([string]$v)){$v='Ace'}
+1242:     if([string]::IsNullOrWhiteSpace([string]$v)){return $false}
+1243:     $c.Fields[$key]=[string]$v
+1244:     if($script:FieldControls.ContainsKey($key)){
+1245:         $was=$script:Rendering;$script:Rendering=$true
+1246:         try{$ctrl=$script:FieldControls[$key];if($ctrl -is [System.Windows.Forms.ComboBox]){if($ctrl.Items.Contains([string]$v)){$ctrl.SelectedItem=[string]$v}}else{$ctrl.Text=[string]$v}}finally{$script:Rendering=$was}
+1247:     }
+1248:     return $true
+1249: }
+1250: function Randomize-OneField([string]$key) {
+1251:     $c=Get-CurrentCharacter; if($null -eq $c -or (Get-LockState $c $key)){return}
+1252:     Push-UndoState
+1253:     if(Set-RandomizedFieldValue $c $key){
+1254:         if($c.FileStatus -eq 'Blank'){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress'}
+1255:         $c.Modified=(Get-Date).ToString('o');Schedule-Save;Render-CurrentCharacter;Update-NavLabels
+1256:     }
+1257: }
+1258: function Randomize-Section {
+1259:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+
+---
+
+1804: function Split-NotesLegacyList([string]$Raw){
+1805:     if([string]::IsNullOrWhiteSpace($Raw)){return @()}
+1806:     try{$j=$Raw|ConvertFrom-Json;if($j -is [System.Array]){return @($j|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})}}catch{}
+1807:     return @(($Raw -split '[;\r\n,]+')|ForEach-Object{$_.Trim()}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})
+1808: }
+1809: function Get-NotesStringArray([string]$Key){$c=Get-CurrentCharacter;if($null -eq $c){return @()};return @(Split-NotesLegacyList ([string]$c.Fields[$Key]))}
+1810: function Set-NotesStringArray([string]$Key,$Items){$c=Get-CurrentCharacter;if($null -eq $c){return};$clean=@($Items|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)});$c.Fields[$Key]=($clean|ConvertTo-Json -Compress);Mark-CharacterChanged ([string]$c.Fields[$Key])}
+1811: function Add-NotesStringItem([string]$Key,[string]$Value){$v=$Value.Trim();if([string]::IsNullOrWhiteSpace($v)){return};Push-UndoState;$a=@(Get-NotesStringArray $Key);if(-not ($a -contains $v)){$a+=,$v};Set-NotesStringArray $Key $a;Render-CurrentCharacter}
+1812: function Remove-NotesStringItem([string]$Key,[int]$Index){Push-UndoState;$a=@(Get-NotesStringArray $Key);$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};Set-NotesStringArray $Key $n;Render-CurrentCharacter}
+1813: 
+1814: function Get-MoodBoardData {
+1815:     $c=Get-CurrentCharacter;if($null -eq $c){return [pscustomobject]@{Notes='';Images=@()}}
+1816:     $raw=[string]$c.Fields['Aesthetic'];if([string]::IsNullOrWhiteSpace($raw)){return [pscustomobject]@{Notes='';Images=@()}}
+1817:     try{$o=$raw|ConvertFrom-Json;if($null -ne $o.PSObject.Properties['Images']){return [pscustomobject]@{Notes=[string]$o.Notes;Images=@($o.Images|ForEach-Object{[string]$_})}}}catch{}
+1818:     return [pscustomobject]@{Notes=$raw;Images=@()}
+1819: }
+1820: function Set-MoodBoardData($Data){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Aesthetic']=([pscustomobject]@{Notes=[string]$Data.Notes;Images=@($Data.Images)}|ConvertTo-Json -Depth 5 -Compress);Mark-CharacterChanged ([string]$c.Fields['Aesthetic'])}
+1821: function MoodBoard-NotesChanged($Ctrl){if($script:Rendering){return};$d=Get-MoodBoardData;$d.Notes=[string]$Ctrl.Text;Set-MoodBoardData $d}
+1822: function Add-MoodBoardImages {
+1823:     $c=Get-CurrentCharacter;if($null -eq $c){return};$dlg=[System.Windows.Forms.OpenFileDialog]::new();$dlg.Title='Add images to Mood Board';$dlg.Filter='Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.webp|All files|*.*';$dlg.Multiselect=$true
+1824:     if($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK){$dlg.Dispose();return}
+1825:     Push-UndoState;$destRoot=Join-Path (Join-Path $script:MediaRoot 'MoodBoards') ([string]$c.Id);New-Item -ItemType Directory -Force -Path $destRoot|Out-Null;$d=Get-MoodBoardData
+1826:     foreach($src in @($dlg.FileNames)){try{$ext=[System.IO.Path]::GetExtension($src);if([string]::IsNullOrWhiteSpace($ext)){$ext='.img'};$dest=Join-Path $destRoot (([guid]::NewGuid().ToString('N'))+$ext);Copy-Item -LiteralPath $src -Destination $dest -Force;$d.Images+=,$dest}catch{}}
+1827:     $dlg.Dispose();Set-MoodBoardData $d;Render-CurrentCharacter
+1828: }
+1829: function Move-MoodBoardImage([int]$Index,[int]$Delta){$d=Get-MoodBoardData;$a=@($d.Images);$j=$Index+$Delta;if($Index -lt 0 -or $Index -ge $a.Count -or $j -lt 0 -or $j -ge $a.Count){return};Push-UndoState;$tmp=$a[$Index];$a[$Index]=$a[$j];$a[$j]=$tmp;$d.Images=$a;Set-MoodBoardData $d;Render-CurrentCharacter}
+1830: function Remove-MoodBoardImage([int]$Index){$d=Get-MoodBoardData;$a=@($d.Images);if($Index -lt 0 -or $Index -ge $a.Count){return};Push-UndoState;$old=[string]$a[$Index];$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};$d.Images=$n;Set-MoodBoardData $d;try{if($old -and (Test-Path -LiteralPath $old) -and $old.StartsWith((Join-Path $script:MediaRoot 'MoodBoards'),[System.StringComparison]::OrdinalIgnoreCase)){Remove-Item -LiteralPath $old -Force}}catch{};Render-CurrentCharacter}
+1831: 
+1832: function Get-ImportantObjectArray {
+1833:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['ImportantObjects'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1834:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['Name']){return $a}}catch{}
+1835:     return @([pscustomobject]@{Name='';Notes=$raw})
+
+---
+
+1805:     if([string]::IsNullOrWhiteSpace($Raw)){return @()}
+1806:     try{$j=$Raw|ConvertFrom-Json;if($j -is [System.Array]){return @($j|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})}}catch{}
+1807:     return @(($Raw -split '[;\r\n,]+')|ForEach-Object{$_.Trim()}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})
+1808: }
+1809: function Get-NotesStringArray([string]$Key){$c=Get-CurrentCharacter;if($null -eq $c){return @()};return @(Split-NotesLegacyList ([string]$c.Fields[$Key]))}
+1810: function Set-NotesStringArray([string]$Key,$Items){$c=Get-CurrentCharacter;if($null -eq $c){return};$clean=@($Items|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)});$c.Fields[$Key]=($clean|ConvertTo-Json -Compress);Mark-CharacterChanged ([string]$c.Fields[$Key])}
+1811: function Add-NotesStringItem([string]$Key,[string]$Value){$v=$Value.Trim();if([string]::IsNullOrWhiteSpace($v)){return};Push-UndoState;$a=@(Get-NotesStringArray $Key);if(-not ($a -contains $v)){$a+=,$v};Set-NotesStringArray $Key $a;Render-CurrentCharacter}
+1812: function Remove-NotesStringItem([string]$Key,[int]$Index){Push-UndoState;$a=@(Get-NotesStringArray $Key);$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};Set-NotesStringArray $Key $n;Render-CurrentCharacter}
+1813: 
+1814: function Get-MoodBoardData {
+1815:     $c=Get-CurrentCharacter;if($null -eq $c){return [pscustomobject]@{Notes='';Images=@()}}
+1816:     $raw=[string]$c.Fields['Aesthetic'];if([string]::IsNullOrWhiteSpace($raw)){return [pscustomobject]@{Notes='';Images=@()}}
+1817:     try{$o=$raw|ConvertFrom-Json;if($null -ne $o.PSObject.Properties['Images']){return [pscustomobject]@{Notes=[string]$o.Notes;Images=@($o.Images|ForEach-Object{[string]$_})}}}catch{}
+1818:     return [pscustomobject]@{Notes=$raw;Images=@()}
+1819: }
+1820: function Set-MoodBoardData($Data){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Aesthetic']=([pscustomobject]@{Notes=[string]$Data.Notes;Images=@($Data.Images)}|ConvertTo-Json -Depth 5 -Compress);Mark-CharacterChanged ([string]$c.Fields['Aesthetic'])}
+1821: function MoodBoard-NotesChanged($Ctrl){if($script:Rendering){return};$d=Get-MoodBoardData;$d.Notes=[string]$Ctrl.Text;Set-MoodBoardData $d}
+1822: function Add-MoodBoardImages {
+1823:     $c=Get-CurrentCharacter;if($null -eq $c){return};$dlg=[System.Windows.Forms.OpenFileDialog]::new();$dlg.Title='Add images to Mood Board';$dlg.Filter='Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.webp|All files|*.*';$dlg.Multiselect=$true
+1824:     if($dlg.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK){$dlg.Dispose();return}
+1825:     Push-UndoState;$destRoot=Join-Path (Join-Path $script:MediaRoot 'MoodBoards') ([string]$c.Id);New-Item -ItemType Directory -Force -Path $destRoot|Out-Null;$d=Get-MoodBoardData
+1826:     foreach($src in @($dlg.FileNames)){try{$ext=[System.IO.Path]::GetExtension($src);if([string]::IsNullOrWhiteSpace($ext)){$ext='.img'};$dest=Join-Path $destRoot (([guid]::NewGuid().ToString('N'))+$ext);Copy-Item -LiteralPath $src -Destination $dest -Force;$d.Images+=,$dest}catch{}}
+1827:     $dlg.Dispose();Set-MoodBoardData $d;Render-CurrentCharacter
+1828: }
+1829: function Move-MoodBoardImage([int]$Index,[int]$Delta){$d=Get-MoodBoardData;$a=@($d.Images);$j=$Index+$Delta;if($Index -lt 0 -or $Index -ge $a.Count -or $j -lt 0 -or $j -ge $a.Count){return};Push-UndoState;$tmp=$a[$Index];$a[$Index]=$a[$j];$a[$j]=$tmp;$d.Images=$a;Set-MoodBoardData $d;Render-CurrentCharacter}
+1830: function Remove-MoodBoardImage([int]$Index){$d=Get-MoodBoardData;$a=@($d.Images);if($Index -lt 0 -or $Index -ge $a.Count){return};Push-UndoState;$old=[string]$a[$Index];$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};$d.Images=$n;Set-MoodBoardData $d;try{if($old -and (Test-Path -LiteralPath $old) -and $old.StartsWith((Join-Path $script:MediaRoot 'MoodBoards'),[System.StringComparison]::OrdinalIgnoreCase)){Remove-Item -LiteralPath $old -Force}}catch{};Render-CurrentCharacter}
+1831: 
+1832: function Get-ImportantObjectArray {
+1833:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['ImportantObjects'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1834:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['Name']){return $a}}catch{}
+1835:     return @([pscustomobject]@{Name='';Notes=$raw})
+1836: }
+
+---
+
+1836: }
+1837: function Set-ImportantObjectArray($Items){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['ImportantObjects']=(@($Items)|ConvertTo-Json -Depth 5 -Compress);Mark-CharacterChanged ([string]$c.Fields['ImportantObjects'])}
+1838: function Add-ImportantObject {Push-UndoState;$a=@(Get-ImportantObjectArray);$a+=,[pscustomobject]@{Name='';Notes=''};Set-ImportantObjectArray $a;Render-CurrentCharacter}
+1839: function Remove-ImportantObject([int]$Index){Push-UndoState;$a=@(Get-ImportantObjectArray);$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};Set-ImportantObjectArray $n;Render-CurrentCharacter}
+1840: function ImportantObject-Changed($Ctrl){if($script:Rendering){return};$t=$Ctrl.Tag;$a=@(Get-ImportantObjectArray);$i=[int]$t.Index;if($i -lt 0 -or $i -ge $a.Count){return};$a[$i].([string]$t.Field)=[string]$Ctrl.Text;Set-ImportantObjectArray $a}
+1841: 
+1842: function Get-NotesPaletteArray {return @(Get-NotesStringArray 'ColorPalette')}
+1843: function Add-NotesColor {
+1844:     $dlg=[System.Windows.Forms.ColorDialog]::new();$dlg.FullOpen=$true
+1845:     if($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$hex=('#{0:X2}{1:X2}{2:X2}' -f $dlg.Color.R,$dlg.Color.G,$dlg.Color.B);Add-NotesStringItem 'ColorPalette' $hex};$dlg.Dispose()
+1846: }
+1847: function Get-SafeColor([string]$Value){try{if($Value -match '^#[0-9A-Fa-f]{6}$'){return [System.Drawing.ColorTranslator]::FromHtml($Value)};$c=[System.Drawing.Color]::FromName($Value);if($c.IsKnownColor -or $c.IsNamedColor){return $c}}catch{};return [System.Drawing.Color]::FromArgb(190,170,135)}
+1848: 
+1849: function Add-NotesSectionTitle($Container,[string]$Text,[int]$Y){$l=[System.Windows.Forms.Label]::new();$l.Text=$Text;$l.Font=[System.Drawing.Font]::new('Georgia',10,[System.Drawing.FontStyle]::Bold);$l.ForeColor=$script:Ink;$l.Location=[System.Drawing.Point]::new(10,$Y);$l.AutoSize=$true;$Container.Controls.Add($l);return $l}
+1850: function Render-NotesListEditor($Container,[string]$Key,[string]$Title,[int]$Y,[int]$Height){
+1851:     [void](Add-NotesSectionTitle $Container $Title $Y);$box=[System.Windows.Forms.TextBox]::new();$box.Location=[System.Drawing.Point]::new(10,$Y+28);$box.Size=[System.Drawing.Size]::new([math]::Max(120,$Container.ClientSize.Width-115),28);$box.Anchor='Top,Left,Right';$box.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$box.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$Container.Controls.Add($box)
+1852:     $add=[System.Windows.Forms.Button]::new();$add.Text='ADD';$add.Tag=[pscustomobject]@{Key=$Key;Input=$box};$add.Location=[System.Drawing.Point]::new([math]::Max(130,$Container.ClientSize.Width-94),$Y+27);$add.Size=[System.Drawing.Size]::new(74,29);$add.Anchor='Top,Right';$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesStringItem ([string]$this.Tag.Key) ([string]$this.Tag.Input.Text)});$Container.Controls.Add($add)
+1853:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesStringArray $Key)
+1854:     for($i=0;$i -lt $a.Count;$i++){$chip=[System.Windows.Forms.Button]::new();$chip.AutoSize=$true;$chip.Height=28;$chip.Text=([string]$a[$i]+'  ×');$chip.Tag=[pscustomobject]@{Key=$Key;Index=$i};$chip.FlatStyle='Flat';$chip.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$chip.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$chip.Add_Click({Remove-NotesStringItem ([string]$this.Tag.Key) ([int]$this.Tag.Index)});[void]$flow.Controls.Add($chip)}
+1855:     return ($Y+$Height)
+1856: }
+1857: function Render-ColorPaletteEditor($Container,[int]$Y,[int]$Height){
+1858:     [void](Add-NotesSectionTitle $Container 'COLOR PALETTE' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD COLOR';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(110,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesColor});$Container.Controls.Add($add)
+1859:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesPaletteArray)
+1860:     for($i=0;$i -lt $a.Count;$i++){$v=[string]$a[$i];$p=[System.Windows.Forms.Panel]::new();$p.Size=[System.Drawing.Size]::new(124,42);$p.BackColor=$script:Parchment2;$sw=[System.Windows.Forms.Panel]::new();$sw.Location=[System.Drawing.Point]::new(3,3);$sw.Size=[System.Drawing.Size]::new(34,34);$sw.BackColor=Get-SafeColor $v;$p.Controls.Add($sw);$lab=[System.Windows.Forms.Label]::new();$lab.Text=$v;$lab.Location=[System.Drawing.Point]::new(41,5);$lab.Size=[System.Drawing.Size]::new(58,28);$lab.ForeColor=$script:Ink;$p.Controls.Add($lab);$x=[System.Windows.Forms.Button]::new();$x.Text='×';$x.Tag=$i;$x.Location=[System.Drawing.Point]::new(100,7);$x.Size=[System.Drawing.Size]::new(22,26);$x.Add_Click({Remove-NotesStringItem 'ColorPalette' ([int]$this.Tag)});$p.Controls.Add($x);[void]$flow.Controls.Add($p)}
+1861:     return ($Y+$Height)
+1862: }
+1863: function Render-MoodBoardEditor($Container,[int]$Y,[int]$Height){
+1864:     [void](Add-NotesSectionTitle $Container 'MOOD BOARD' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD IMAGES';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-MoodBoardImages});$Container.Controls.Add($add)
+1865:     $d=Get-MoodBoardData;$notes=[System.Windows.Forms.TextBox]::new();$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(136,$Y+28);$notes.Size=[System.Drawing.Size]::new([math]::Max(130,$Container.ClientSize.Width-156),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$notes.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$notes.Text=[string]$d.Notes;$notes.Add_TextChanged({MoodBoard-NotesChanged $this});$Container.Controls.Add($notes)
+1866:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+92);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-94);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$imgs=@($d.Images)
+1867:     for($i=0;$i -lt $imgs.Count;$i++){$path=[string]$imgs[$i];$tile=[System.Windows.Forms.Panel]::new();$tile.Size=[System.Drawing.Size]::new(142,154);$tile.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$pic=[System.Windows.Forms.PictureBox]::new();$pic.Location=[System.Drawing.Point]::new(4,4);$pic.Size=[System.Drawing.Size]::new(134,112);$pic.SizeMode='Zoom';$pic.BackColor=[System.Drawing.Color]::FromArgb(224,204,166);if($path -and (Test-Path -LiteralPath $path)){try{$im=[System.Drawing.Image]::FromFile($path);$bmp=[System.Drawing.Bitmap]::new($im);$im.Dispose();$pic.Image=$bmp;$pic.Add_Disposed({if($null -ne $this.Image){$this.Image.Dispose()}})}catch{}};$tile.Controls.Add($pic);foreach($s in @(@('←',-1,4),@('→',1,42))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$s[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$s[1]};$bt.Location=[System.Drawing.Point]::new([int]$s[2],122);$bt.Size=[System.Drawing.Size]::new(34,26);$bt.Add_Click({Move-MoodBoardImage ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$tile.Controls.Add($bt)};$rm=[System.Windows.Forms.Button]::new();$rm.Text='REMOVE';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new(80,122);$rm.Size=[System.Drawing.Size]::new(58,26);$rm.Add_Click({Remove-MoodBoardImage ([int]$this.Tag)});$tile.Controls.Add($rm);[void]$flow.Controls.Add($tile)}
+
+---
+
+1837: function Set-ImportantObjectArray($Items){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['ImportantObjects']=(@($Items)|ConvertTo-Json -Depth 5 -Compress);Mark-CharacterChanged ([string]$c.Fields['ImportantObjects'])}
+1838: function Add-ImportantObject {Push-UndoState;$a=@(Get-ImportantObjectArray);$a+=,[pscustomobject]@{Name='';Notes=''};Set-ImportantObjectArray $a;Render-CurrentCharacter}
+1839: function Remove-ImportantObject([int]$Index){Push-UndoState;$a=@(Get-ImportantObjectArray);$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};Set-ImportantObjectArray $n;Render-CurrentCharacter}
+1840: function ImportantObject-Changed($Ctrl){if($script:Rendering){return};$t=$Ctrl.Tag;$a=@(Get-ImportantObjectArray);$i=[int]$t.Index;if($i -lt 0 -or $i -ge $a.Count){return};$a[$i].([string]$t.Field)=[string]$Ctrl.Text;Set-ImportantObjectArray $a}
+1841: 
+1842: function Get-NotesPaletteArray {return @(Get-NotesStringArray 'ColorPalette')}
+1843: function Add-NotesColor {
+1844:     $dlg=[System.Windows.Forms.ColorDialog]::new();$dlg.FullOpen=$true
+1845:     if($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$hex=('#{0:X2}{1:X2}{2:X2}' -f $dlg.Color.R,$dlg.Color.G,$dlg.Color.B);Add-NotesStringItem 'ColorPalette' $hex};$dlg.Dispose()
+1846: }
+1847: function Get-SafeColor([string]$Value){try{if($Value -match '^#[0-9A-Fa-f]{6}$'){return [System.Drawing.ColorTranslator]::FromHtml($Value)};$c=[System.Drawing.Color]::FromName($Value);if($c.IsKnownColor -or $c.IsNamedColor){return $c}}catch{};return [System.Drawing.Color]::FromArgb(190,170,135)}
+1848: 
+1849: function Add-NotesSectionTitle($Container,[string]$Text,[int]$Y){$l=[System.Windows.Forms.Label]::new();$l.Text=$Text;$l.Font=[System.Drawing.Font]::new('Georgia',10,[System.Drawing.FontStyle]::Bold);$l.ForeColor=$script:Ink;$l.Location=[System.Drawing.Point]::new(10,$Y);$l.AutoSize=$true;$Container.Controls.Add($l);return $l}
+1850: function Render-NotesListEditor($Container,[string]$Key,[string]$Title,[int]$Y,[int]$Height){
+1851:     [void](Add-NotesSectionTitle $Container $Title $Y);$box=[System.Windows.Forms.TextBox]::new();$box.Location=[System.Drawing.Point]::new(10,$Y+28);$box.Size=[System.Drawing.Size]::new([math]::Max(120,$Container.ClientSize.Width-115),28);$box.Anchor='Top,Left,Right';$box.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$box.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$Container.Controls.Add($box)
+1852:     $add=[System.Windows.Forms.Button]::new();$add.Text='ADD';$add.Tag=[pscustomobject]@{Key=$Key;Input=$box};$add.Location=[System.Drawing.Point]::new([math]::Max(130,$Container.ClientSize.Width-94),$Y+27);$add.Size=[System.Drawing.Size]::new(74,29);$add.Anchor='Top,Right';$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesStringItem ([string]$this.Tag.Key) ([string]$this.Tag.Input.Text)});$Container.Controls.Add($add)
+1853:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesStringArray $Key)
+1854:     for($i=0;$i -lt $a.Count;$i++){$chip=[System.Windows.Forms.Button]::new();$chip.AutoSize=$true;$chip.Height=28;$chip.Text=([string]$a[$i]+'  ×');$chip.Tag=[pscustomobject]@{Key=$Key;Index=$i};$chip.FlatStyle='Flat';$chip.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$chip.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$chip.Add_Click({Remove-NotesStringItem ([string]$this.Tag.Key) ([int]$this.Tag.Index)});[void]$flow.Controls.Add($chip)}
+1855:     return ($Y+$Height)
+1856: }
+1857: function Render-ColorPaletteEditor($Container,[int]$Y,[int]$Height){
+1858:     [void](Add-NotesSectionTitle $Container 'COLOR PALETTE' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD COLOR';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(110,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesColor});$Container.Controls.Add($add)
+1859:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesPaletteArray)
+1860:     for($i=0;$i -lt $a.Count;$i++){$v=[string]$a[$i];$p=[System.Windows.Forms.Panel]::new();$p.Size=[System.Drawing.Size]::new(124,42);$p.BackColor=$script:Parchment2;$sw=[System.Windows.Forms.Panel]::new();$sw.Location=[System.Drawing.Point]::new(3,3);$sw.Size=[System.Drawing.Size]::new(34,34);$sw.BackColor=Get-SafeColor $v;$p.Controls.Add($sw);$lab=[System.Windows.Forms.Label]::new();$lab.Text=$v;$lab.Location=[System.Drawing.Point]::new(41,5);$lab.Size=[System.Drawing.Size]::new(58,28);$lab.ForeColor=$script:Ink;$p.Controls.Add($lab);$x=[System.Windows.Forms.Button]::new();$x.Text='×';$x.Tag=$i;$x.Location=[System.Drawing.Point]::new(100,7);$x.Size=[System.Drawing.Size]::new(22,26);$x.Add_Click({Remove-NotesStringItem 'ColorPalette' ([int]$this.Tag)});$p.Controls.Add($x);[void]$flow.Controls.Add($p)}
+1861:     return ($Y+$Height)
+1862: }
+1863: function Render-MoodBoardEditor($Container,[int]$Y,[int]$Height){
+1864:     [void](Add-NotesSectionTitle $Container 'MOOD BOARD' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD IMAGES';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-MoodBoardImages});$Container.Controls.Add($add)
+1865:     $d=Get-MoodBoardData;$notes=[System.Windows.Forms.TextBox]::new();$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(136,$Y+28);$notes.Size=[System.Drawing.Size]::new([math]::Max(130,$Container.ClientSize.Width-156),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$notes.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$notes.Text=[string]$d.Notes;$notes.Add_TextChanged({MoodBoard-NotesChanged $this});$Container.Controls.Add($notes)
+1866:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+92);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-94);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$imgs=@($d.Images)
+1867:     for($i=0;$i -lt $imgs.Count;$i++){$path=[string]$imgs[$i];$tile=[System.Windows.Forms.Panel]::new();$tile.Size=[System.Drawing.Size]::new(142,154);$tile.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$pic=[System.Windows.Forms.PictureBox]::new();$pic.Location=[System.Drawing.Point]::new(4,4);$pic.Size=[System.Drawing.Size]::new(134,112);$pic.SizeMode='Zoom';$pic.BackColor=[System.Drawing.Color]::FromArgb(224,204,166);if($path -and (Test-Path -LiteralPath $path)){try{$im=[System.Drawing.Image]::FromFile($path);$bmp=[System.Drawing.Bitmap]::new($im);$im.Dispose();$pic.Image=$bmp;$pic.Add_Disposed({if($null -ne $this.Image){$this.Image.Dispose()}})}catch{}};$tile.Controls.Add($pic);foreach($s in @(@('←',-1,4),@('→',1,42))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$s[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$s[1]};$bt.Location=[System.Drawing.Point]::new([int]$s[2],122);$bt.Size=[System.Drawing.Size]::new(34,26);$bt.Add_Click({Move-MoodBoardImage ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$tile.Controls.Add($bt)};$rm=[System.Windows.Forms.Button]::new();$rm.Text='REMOVE';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new(80,122);$rm.Size=[System.Drawing.Size]::new(58,26);$rm.Add_Click({Remove-MoodBoardImage ([int]$this.Tag)});$tile.Controls.Add($rm);[void]$flow.Controls.Add($tile)}
+1868:     return ($Y+$Height)
+
+---
+
+1838: function Add-ImportantObject {Push-UndoState;$a=@(Get-ImportantObjectArray);$a+=,[pscustomobject]@{Name='';Notes=''};Set-ImportantObjectArray $a;Render-CurrentCharacter}
+1839: function Remove-ImportantObject([int]$Index){Push-UndoState;$a=@(Get-ImportantObjectArray);$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};Set-ImportantObjectArray $n;Render-CurrentCharacter}
+1840: function ImportantObject-Changed($Ctrl){if($script:Rendering){return};$t=$Ctrl.Tag;$a=@(Get-ImportantObjectArray);$i=[int]$t.Index;if($i -lt 0 -or $i -ge $a.Count){return};$a[$i].([string]$t.Field)=[string]$Ctrl.Text;Set-ImportantObjectArray $a}
+1841: 
+1842: function Get-NotesPaletteArray {return @(Get-NotesStringArray 'ColorPalette')}
+1843: function Add-NotesColor {
+1844:     $dlg=[System.Windows.Forms.ColorDialog]::new();$dlg.FullOpen=$true
+1845:     if($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$hex=('#{0:X2}{1:X2}{2:X2}' -f $dlg.Color.R,$dlg.Color.G,$dlg.Color.B);Add-NotesStringItem 'ColorPalette' $hex};$dlg.Dispose()
+1846: }
+1847: function Get-SafeColor([string]$Value){try{if($Value -match '^#[0-9A-Fa-f]{6}$'){return [System.Drawing.ColorTranslator]::FromHtml($Value)};$c=[System.Drawing.Color]::FromName($Value);if($c.IsKnownColor -or $c.IsNamedColor){return $c}}catch{};return [System.Drawing.Color]::FromArgb(190,170,135)}
+1848: 
+1849: function Add-NotesSectionTitle($Container,[string]$Text,[int]$Y){$l=[System.Windows.Forms.Label]::new();$l.Text=$Text;$l.Font=[System.Drawing.Font]::new('Georgia',10,[System.Drawing.FontStyle]::Bold);$l.ForeColor=$script:Ink;$l.Location=[System.Drawing.Point]::new(10,$Y);$l.AutoSize=$true;$Container.Controls.Add($l);return $l}
+1850: function Render-NotesListEditor($Container,[string]$Key,[string]$Title,[int]$Y,[int]$Height){
+1851:     [void](Add-NotesSectionTitle $Container $Title $Y);$box=[System.Windows.Forms.TextBox]::new();$box.Location=[System.Drawing.Point]::new(10,$Y+28);$box.Size=[System.Drawing.Size]::new([math]::Max(120,$Container.ClientSize.Width-115),28);$box.Anchor='Top,Left,Right';$box.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$box.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$Container.Controls.Add($box)
+1852:     $add=[System.Windows.Forms.Button]::new();$add.Text='ADD';$add.Tag=[pscustomobject]@{Key=$Key;Input=$box};$add.Location=[System.Drawing.Point]::new([math]::Max(130,$Container.ClientSize.Width-94),$Y+27);$add.Size=[System.Drawing.Size]::new(74,29);$add.Anchor='Top,Right';$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesStringItem ([string]$this.Tag.Key) ([string]$this.Tag.Input.Text)});$Container.Controls.Add($add)
+1853:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesStringArray $Key)
+1854:     for($i=0;$i -lt $a.Count;$i++){$chip=[System.Windows.Forms.Button]::new();$chip.AutoSize=$true;$chip.Height=28;$chip.Text=([string]$a[$i]+'  ×');$chip.Tag=[pscustomobject]@{Key=$Key;Index=$i};$chip.FlatStyle='Flat';$chip.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$chip.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$chip.Add_Click({Remove-NotesStringItem ([string]$this.Tag.Key) ([int]$this.Tag.Index)});[void]$flow.Controls.Add($chip)}
+1855:     return ($Y+$Height)
+1856: }
+1857: function Render-ColorPaletteEditor($Container,[int]$Y,[int]$Height){
+1858:     [void](Add-NotesSectionTitle $Container 'COLOR PALETTE' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD COLOR';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(110,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesColor});$Container.Controls.Add($add)
+1859:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesPaletteArray)
+1860:     for($i=0;$i -lt $a.Count;$i++){$v=[string]$a[$i];$p=[System.Windows.Forms.Panel]::new();$p.Size=[System.Drawing.Size]::new(124,42);$p.BackColor=$script:Parchment2;$sw=[System.Windows.Forms.Panel]::new();$sw.Location=[System.Drawing.Point]::new(3,3);$sw.Size=[System.Drawing.Size]::new(34,34);$sw.BackColor=Get-SafeColor $v;$p.Controls.Add($sw);$lab=[System.Windows.Forms.Label]::new();$lab.Text=$v;$lab.Location=[System.Drawing.Point]::new(41,5);$lab.Size=[System.Drawing.Size]::new(58,28);$lab.ForeColor=$script:Ink;$p.Controls.Add($lab);$x=[System.Windows.Forms.Button]::new();$x.Text='×';$x.Tag=$i;$x.Location=[System.Drawing.Point]::new(100,7);$x.Size=[System.Drawing.Size]::new(22,26);$x.Add_Click({Remove-NotesStringItem 'ColorPalette' ([int]$this.Tag)});$p.Controls.Add($x);[void]$flow.Controls.Add($p)}
+1861:     return ($Y+$Height)
+1862: }
+1863: function Render-MoodBoardEditor($Container,[int]$Y,[int]$Height){
+1864:     [void](Add-NotesSectionTitle $Container 'MOOD BOARD' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD IMAGES';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-MoodBoardImages});$Container.Controls.Add($add)
+1865:     $d=Get-MoodBoardData;$notes=[System.Windows.Forms.TextBox]::new();$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(136,$Y+28);$notes.Size=[System.Drawing.Size]::new([math]::Max(130,$Container.ClientSize.Width-156),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$notes.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$notes.Text=[string]$d.Notes;$notes.Add_TextChanged({MoodBoard-NotesChanged $this});$Container.Controls.Add($notes)
+1866:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+92);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-94);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$imgs=@($d.Images)
+1867:     for($i=0;$i -lt $imgs.Count;$i++){$path=[string]$imgs[$i];$tile=[System.Windows.Forms.Panel]::new();$tile.Size=[System.Drawing.Size]::new(142,154);$tile.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$pic=[System.Windows.Forms.PictureBox]::new();$pic.Location=[System.Drawing.Point]::new(4,4);$pic.Size=[System.Drawing.Size]::new(134,112);$pic.SizeMode='Zoom';$pic.BackColor=[System.Drawing.Color]::FromArgb(224,204,166);if($path -and (Test-Path -LiteralPath $path)){try{$im=[System.Drawing.Image]::FromFile($path);$bmp=[System.Drawing.Bitmap]::new($im);$im.Dispose();$pic.Image=$bmp;$pic.Add_Disposed({if($null -ne $this.Image){$this.Image.Dispose()}})}catch{}};$tile.Controls.Add($pic);foreach($s in @(@('←',-1,4),@('→',1,42))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$s[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$s[1]};$bt.Location=[System.Drawing.Point]::new([int]$s[2],122);$bt.Size=[System.Drawing.Size]::new(34,26);$bt.Add_Click({Move-MoodBoardImage ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$tile.Controls.Add($bt)};$rm=[System.Windows.Forms.Button]::new();$rm.Text='REMOVE';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new(80,122);$rm.Size=[System.Drawing.Size]::new(58,26);$rm.Add_Click({Remove-MoodBoardImage ([int]$this.Tag)});$tile.Controls.Add($rm);[void]$flow.Controls.Add($tile)}
+1868:     return ($Y+$Height)
+1869: }
+
+---
+
+1839: function Remove-ImportantObject([int]$Index){Push-UndoState;$a=@(Get-ImportantObjectArray);$n=@();for($i=0;$i -lt $a.Count;$i++){if($i -ne $Index){$n+=,$a[$i]}};Set-ImportantObjectArray $n;Render-CurrentCharacter}
+1840: function ImportantObject-Changed($Ctrl){if($script:Rendering){return};$t=$Ctrl.Tag;$a=@(Get-ImportantObjectArray);$i=[int]$t.Index;if($i -lt 0 -or $i -ge $a.Count){return};$a[$i].([string]$t.Field)=[string]$Ctrl.Text;Set-ImportantObjectArray $a}
+1841: 
+1842: function Get-NotesPaletteArray {return @(Get-NotesStringArray 'ColorPalette')}
+1843: function Add-NotesColor {
+1844:     $dlg=[System.Windows.Forms.ColorDialog]::new();$dlg.FullOpen=$true
+1845:     if($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){$hex=('#{0:X2}{1:X2}{2:X2}' -f $dlg.Color.R,$dlg.Color.G,$dlg.Color.B);Add-NotesStringItem 'ColorPalette' $hex};$dlg.Dispose()
+1846: }
+1847: function Get-SafeColor([string]$Value){try{if($Value -match '^#[0-9A-Fa-f]{6}$'){return [System.Drawing.ColorTranslator]::FromHtml($Value)};$c=[System.Drawing.Color]::FromName($Value);if($c.IsKnownColor -or $c.IsNamedColor){return $c}}catch{};return [System.Drawing.Color]::FromArgb(190,170,135)}
+1848: 
+1849: function Add-NotesSectionTitle($Container,[string]$Text,[int]$Y){$l=[System.Windows.Forms.Label]::new();$l.Text=$Text;$l.Font=[System.Drawing.Font]::new('Georgia',10,[System.Drawing.FontStyle]::Bold);$l.ForeColor=$script:Ink;$l.Location=[System.Drawing.Point]::new(10,$Y);$l.AutoSize=$true;$Container.Controls.Add($l);return $l}
+1850: function Render-NotesListEditor($Container,[string]$Key,[string]$Title,[int]$Y,[int]$Height){
+1851:     [void](Add-NotesSectionTitle $Container $Title $Y);$box=[System.Windows.Forms.TextBox]::new();$box.Location=[System.Drawing.Point]::new(10,$Y+28);$box.Size=[System.Drawing.Size]::new([math]::Max(120,$Container.ClientSize.Width-115),28);$box.Anchor='Top,Left,Right';$box.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$box.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$Container.Controls.Add($box)
+1852:     $add=[System.Windows.Forms.Button]::new();$add.Text='ADD';$add.Tag=[pscustomobject]@{Key=$Key;Input=$box};$add.Location=[System.Drawing.Point]::new([math]::Max(130,$Container.ClientSize.Width-94),$Y+27);$add.Size=[System.Drawing.Size]::new(74,29);$add.Anchor='Top,Right';$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesStringItem ([string]$this.Tag.Key) ([string]$this.Tag.Input.Text)});$Container.Controls.Add($add)
+1853:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesStringArray $Key)
+1854:     for($i=0;$i -lt $a.Count;$i++){$chip=[System.Windows.Forms.Button]::new();$chip.AutoSize=$true;$chip.Height=28;$chip.Text=([string]$a[$i]+'  ×');$chip.Tag=[pscustomobject]@{Key=$Key;Index=$i};$chip.FlatStyle='Flat';$chip.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$chip.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$chip.Add_Click({Remove-NotesStringItem ([string]$this.Tag.Key) ([int]$this.Tag.Index)});[void]$flow.Controls.Add($chip)}
+1855:     return ($Y+$Height)
+1856: }
+1857: function Render-ColorPaletteEditor($Container,[int]$Y,[int]$Height){
+1858:     [void](Add-NotesSectionTitle $Container 'COLOR PALETTE' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD COLOR';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(110,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesColor});$Container.Controls.Add($add)
+1859:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesPaletteArray)
+1860:     for($i=0;$i -lt $a.Count;$i++){$v=[string]$a[$i];$p=[System.Windows.Forms.Panel]::new();$p.Size=[System.Drawing.Size]::new(124,42);$p.BackColor=$script:Parchment2;$sw=[System.Windows.Forms.Panel]::new();$sw.Location=[System.Drawing.Point]::new(3,3);$sw.Size=[System.Drawing.Size]::new(34,34);$sw.BackColor=Get-SafeColor $v;$p.Controls.Add($sw);$lab=[System.Windows.Forms.Label]::new();$lab.Text=$v;$lab.Location=[System.Drawing.Point]::new(41,5);$lab.Size=[System.Drawing.Size]::new(58,28);$lab.ForeColor=$script:Ink;$p.Controls.Add($lab);$x=[System.Windows.Forms.Button]::new();$x.Text='×';$x.Tag=$i;$x.Location=[System.Drawing.Point]::new(100,7);$x.Size=[System.Drawing.Size]::new(22,26);$x.Add_Click({Remove-NotesStringItem 'ColorPalette' ([int]$this.Tag)});$p.Controls.Add($x);[void]$flow.Controls.Add($p)}
+1861:     return ($Y+$Height)
+1862: }
+1863: function Render-MoodBoardEditor($Container,[int]$Y,[int]$Height){
+1864:     [void](Add-NotesSectionTitle $Container 'MOOD BOARD' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD IMAGES';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-MoodBoardImages});$Container.Controls.Add($add)
+1865:     $d=Get-MoodBoardData;$notes=[System.Windows.Forms.TextBox]::new();$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(136,$Y+28);$notes.Size=[System.Drawing.Size]::new([math]::Max(130,$Container.ClientSize.Width-156),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$notes.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$notes.Text=[string]$d.Notes;$notes.Add_TextChanged({MoodBoard-NotesChanged $this});$Container.Controls.Add($notes)
+1866:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+92);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-94);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$imgs=@($d.Images)
+1867:     for($i=0;$i -lt $imgs.Count;$i++){$path=[string]$imgs[$i];$tile=[System.Windows.Forms.Panel]::new();$tile.Size=[System.Drawing.Size]::new(142,154);$tile.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$pic=[System.Windows.Forms.PictureBox]::new();$pic.Location=[System.Drawing.Point]::new(4,4);$pic.Size=[System.Drawing.Size]::new(134,112);$pic.SizeMode='Zoom';$pic.BackColor=[System.Drawing.Color]::FromArgb(224,204,166);if($path -and (Test-Path -LiteralPath $path)){try{$im=[System.Drawing.Image]::FromFile($path);$bmp=[System.Drawing.Bitmap]::new($im);$im.Dispose();$pic.Image=$bmp;$pic.Add_Disposed({if($null -ne $this.Image){$this.Image.Dispose()}})}catch{}};$tile.Controls.Add($pic);foreach($s in @(@('←',-1,4),@('→',1,42))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$s[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$s[1]};$bt.Location=[System.Drawing.Point]::new([int]$s[2],122);$bt.Size=[System.Drawing.Size]::new(34,26);$bt.Add_Click({Move-MoodBoardImage ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$tile.Controls.Add($bt)};$rm=[System.Windows.Forms.Button]::new();$rm.Text='REMOVE';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new(80,122);$rm.Size=[System.Drawing.Size]::new(58,26);$rm.Add_Click({Remove-MoodBoardImage ([int]$this.Tag)});$tile.Controls.Add($rm);[void]$flow.Controls.Add($tile)}
+1868:     return ($Y+$Height)
+1869: }
+1870: function Render-ImportantObjectsEditor($Container,[int]$Y){
+
+---
+
+1851:     [void](Add-NotesSectionTitle $Container $Title $Y);$box=[System.Windows.Forms.TextBox]::new();$box.Location=[System.Drawing.Point]::new(10,$Y+28);$box.Size=[System.Drawing.Size]::new([math]::Max(120,$Container.ClientSize.Width-115),28);$box.Anchor='Top,Left,Right';$box.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$box.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$Container.Controls.Add($box)
+1852:     $add=[System.Windows.Forms.Button]::new();$add.Text='ADD';$add.Tag=[pscustomobject]@{Key=$Key;Input=$box};$add.Location=[System.Drawing.Point]::new([math]::Max(130,$Container.ClientSize.Width-94),$Y+27);$add.Size=[System.Drawing.Size]::new(74,29);$add.Anchor='Top,Right';$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesStringItem ([string]$this.Tag.Key) ([string]$this.Tag.Input.Text)});$Container.Controls.Add($add)
+1853:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesStringArray $Key)
+1854:     for($i=0;$i -lt $a.Count;$i++){$chip=[System.Windows.Forms.Button]::new();$chip.AutoSize=$true;$chip.Height=28;$chip.Text=([string]$a[$i]+'  ×');$chip.Tag=[pscustomobject]@{Key=$Key;Index=$i};$chip.FlatStyle='Flat';$chip.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$chip.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$chip.Add_Click({Remove-NotesStringItem ([string]$this.Tag.Key) ([int]$this.Tag.Index)});[void]$flow.Controls.Add($chip)}
+1855:     return ($Y+$Height)
+1856: }
+1857: function Render-ColorPaletteEditor($Container,[int]$Y,[int]$Height){
+1858:     [void](Add-NotesSectionTitle $Container 'COLOR PALETTE' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD COLOR';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(110,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesColor});$Container.Controls.Add($add)
+1859:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesPaletteArray)
+1860:     for($i=0;$i -lt $a.Count;$i++){$v=[string]$a[$i];$p=[System.Windows.Forms.Panel]::new();$p.Size=[System.Drawing.Size]::new(124,42);$p.BackColor=$script:Parchment2;$sw=[System.Windows.Forms.Panel]::new();$sw.Location=[System.Drawing.Point]::new(3,3);$sw.Size=[System.Drawing.Size]::new(34,34);$sw.BackColor=Get-SafeColor $v;$p.Controls.Add($sw);$lab=[System.Windows.Forms.Label]::new();$lab.Text=$v;$lab.Location=[System.Drawing.Point]::new(41,5);$lab.Size=[System.Drawing.Size]::new(58,28);$lab.ForeColor=$script:Ink;$p.Controls.Add($lab);$x=[System.Windows.Forms.Button]::new();$x.Text='×';$x.Tag=$i;$x.Location=[System.Drawing.Point]::new(100,7);$x.Size=[System.Drawing.Size]::new(22,26);$x.Add_Click({Remove-NotesStringItem 'ColorPalette' ([int]$this.Tag)});$p.Controls.Add($x);[void]$flow.Controls.Add($p)}
+1861:     return ($Y+$Height)
+1862: }
+1863: function Render-MoodBoardEditor($Container,[int]$Y,[int]$Height){
+1864:     [void](Add-NotesSectionTitle $Container 'MOOD BOARD' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD IMAGES';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-MoodBoardImages});$Container.Controls.Add($add)
+1865:     $d=Get-MoodBoardData;$notes=[System.Windows.Forms.TextBox]::new();$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(136,$Y+28);$notes.Size=[System.Drawing.Size]::new([math]::Max(130,$Container.ClientSize.Width-156),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$notes.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$notes.Text=[string]$d.Notes;$notes.Add_TextChanged({MoodBoard-NotesChanged $this});$Container.Controls.Add($notes)
+1866:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+92);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-94);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$imgs=@($d.Images)
+1867:     for($i=0;$i -lt $imgs.Count;$i++){$path=[string]$imgs[$i];$tile=[System.Windows.Forms.Panel]::new();$tile.Size=[System.Drawing.Size]::new(142,154);$tile.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$pic=[System.Windows.Forms.PictureBox]::new();$pic.Location=[System.Drawing.Point]::new(4,4);$pic.Size=[System.Drawing.Size]::new(134,112);$pic.SizeMode='Zoom';$pic.BackColor=[System.Drawing.Color]::FromArgb(224,204,166);if($path -and (Test-Path -LiteralPath $path)){try{$im=[System.Drawing.Image]::FromFile($path);$bmp=[System.Drawing.Bitmap]::new($im);$im.Dispose();$pic.Image=$bmp;$pic.Add_Disposed({if($null -ne $this.Image){$this.Image.Dispose()}})}catch{}};$tile.Controls.Add($pic);foreach($s in @(@('←',-1,4),@('→',1,42))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$s[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$s[1]};$bt.Location=[System.Drawing.Point]::new([int]$s[2],122);$bt.Size=[System.Drawing.Size]::new(34,26);$bt.Add_Click({Move-MoodBoardImage ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$tile.Controls.Add($bt)};$rm=[System.Windows.Forms.Button]::new();$rm.Text='REMOVE';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new(80,122);$rm.Size=[System.Drawing.Size]::new(58,26);$rm.Add_Click({Remove-MoodBoardImage ([int]$this.Tag)});$tile.Controls.Add($rm);[void]$flow.Controls.Add($tile)}
+1868:     return ($Y+$Height)
+1869: }
+1870: function Render-ImportantObjectsEditor($Container,[int]$Y){
+1871:     [void](Add-NotesSectionTitle $Container 'IMPORTANT OBJECTS' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD OBJECT';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-ImportantObject});$Container.Controls.Add($add);$a=@(Get-ImportantObjectArray);$yy=$Y+66
+1872:     for($i=0;$i -lt $a.Count;$i++){$card=[System.Windows.Forms.Panel]::new();$card.Location=[System.Drawing.Point]::new(10,$yy);$card.Size=[System.Drawing.Size]::new([math]::Max(240,$Container.ClientSize.Width-30),104);$card.Anchor='Top,Left,Right';$card.BackColor=[System.Drawing.Color]::FromArgb(218,194,151);$Container.Controls.Add($card);$name=[System.Windows.Forms.TextBox]::new();$name.Tag=[pscustomobject]@{Index=$i;Field='Name'};$name.Location=[System.Drawing.Point]::new(8,8);$name.Size=[System.Drawing.Size]::new([math]::Max(120,$card.Width-50),26);$name.Anchor='Top,Left,Right';$name.BackColor=[System.Drawing.Color]::FromArgb(235,214,175);$name.ForeColor=$script:Ink;$name.Text=[string]$a[$i].Name;$name.Add_TextChanged({ImportantObject-Changed $this});$card.Controls.Add($name);$rm=[System.Windows.Forms.Button]::new();$rm.Text='X';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new([math]::Max(125,$card.Width-38),8);$rm.Size=[System.Drawing.Size]::new(28,26);$rm.Anchor='Top,Right';$rm.BackColor=[System.Drawing.Color]::FromArgb(120,67,42);$rm.ForeColor=[System.Drawing.Color]::FromArgb(248,233,200);$rm.Add_Click({Remove-ImportantObject ([int]$this.Tag)});$card.Controls.Add($rm);$notes=[System.Windows.Forms.TextBox]::new();$notes.Tag=[pscustomobject]@{Index=$i;Field='Notes'};$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(8,42);$notes.Size=[System.Drawing.Size]::new([math]::Max(160,$card.Width-16),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(235,214,175);$notes.ForeColor=$script:Ink;$notes.Text=[string]$a[$i].Notes;$notes.Add_TextChanged({ImportantObject-Changed $this});$card.Controls.Add($notes);$yy+=112}
+1873: }
+1874: function Render-NotesSection($c,$leftContainer,$rightContainer){
+1875:     $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+1876:     $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+1877: }
+1878: # --- End custom Notes workspace -------------------------------------------
+1879: 
+1880: function Render-EmptyState {
+1881:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1882:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+
+---
+
+1854:     for($i=0;$i -lt $a.Count;$i++){$chip=[System.Windows.Forms.Button]::new();$chip.AutoSize=$true;$chip.Height=28;$chip.Text=([string]$a[$i]+'  ×');$chip.Tag=[pscustomobject]@{Key=$Key;Index=$i};$chip.FlatStyle='Flat';$chip.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$chip.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$chip.Add_Click({Remove-NotesStringItem ([string]$this.Tag.Key) ([int]$this.Tag.Index)});[void]$flow.Controls.Add($chip)}
+1855:     return ($Y+$Height)
+1856: }
+1857: function Render-ColorPaletteEditor($Container,[int]$Y,[int]$Height){
+1858:     [void](Add-NotesSectionTitle $Container 'COLOR PALETTE' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD COLOR';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(110,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-NotesColor});$Container.Controls.Add($add)
+1859:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+64);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-66);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$a=@(Get-NotesPaletteArray)
+1860:     for($i=0;$i -lt $a.Count;$i++){$v=[string]$a[$i];$p=[System.Windows.Forms.Panel]::new();$p.Size=[System.Drawing.Size]::new(124,42);$p.BackColor=$script:Parchment2;$sw=[System.Windows.Forms.Panel]::new();$sw.Location=[System.Drawing.Point]::new(3,3);$sw.Size=[System.Drawing.Size]::new(34,34);$sw.BackColor=Get-SafeColor $v;$p.Controls.Add($sw);$lab=[System.Windows.Forms.Label]::new();$lab.Text=$v;$lab.Location=[System.Drawing.Point]::new(41,5);$lab.Size=[System.Drawing.Size]::new(58,28);$lab.ForeColor=$script:Ink;$p.Controls.Add($lab);$x=[System.Windows.Forms.Button]::new();$x.Text='×';$x.Tag=$i;$x.Location=[System.Drawing.Point]::new(100,7);$x.Size=[System.Drawing.Size]::new(22,26);$x.Add_Click({Remove-NotesStringItem 'ColorPalette' ([int]$this.Tag)});$p.Controls.Add($x);[void]$flow.Controls.Add($p)}
+1861:     return ($Y+$Height)
+1862: }
+1863: function Render-MoodBoardEditor($Container,[int]$Y,[int]$Height){
+1864:     [void](Add-NotesSectionTitle $Container 'MOOD BOARD' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD IMAGES';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-MoodBoardImages});$Container.Controls.Add($add)
+1865:     $d=Get-MoodBoardData;$notes=[System.Windows.Forms.TextBox]::new();$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(136,$Y+28);$notes.Size=[System.Drawing.Size]::new([math]::Max(130,$Container.ClientSize.Width-156),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$notes.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$notes.Text=[string]$d.Notes;$notes.Add_TextChanged({MoodBoard-NotesChanged $this});$Container.Controls.Add($notes)
+1866:     $flow=[System.Windows.Forms.FlowLayoutPanel]::new();$flow.Location=[System.Drawing.Point]::new(10,$Y+92);$flow.Size=[System.Drawing.Size]::new([math]::Max(180,$Container.ClientSize.Width-30),$Height-94);$flow.Anchor='Top,Left,Right';$flow.AutoScroll=$true;$flow.WrapContents=$true;$Container.Controls.Add($flow);$imgs=@($d.Images)
+1867:     for($i=0;$i -lt $imgs.Count;$i++){$path=[string]$imgs[$i];$tile=[System.Windows.Forms.Panel]::new();$tile.Size=[System.Drawing.Size]::new(142,154);$tile.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$pic=[System.Windows.Forms.PictureBox]::new();$pic.Location=[System.Drawing.Point]::new(4,4);$pic.Size=[System.Drawing.Size]::new(134,112);$pic.SizeMode='Zoom';$pic.BackColor=[System.Drawing.Color]::FromArgb(224,204,166);if($path -and (Test-Path -LiteralPath $path)){try{$im=[System.Drawing.Image]::FromFile($path);$bmp=[System.Drawing.Bitmap]::new($im);$im.Dispose();$pic.Image=$bmp;$pic.Add_Disposed({if($null -ne $this.Image){$this.Image.Dispose()}})}catch{}};$tile.Controls.Add($pic);foreach($s in @(@('←',-1,4),@('→',1,42))){$bt=[System.Windows.Forms.Button]::new();$bt.Text=$s[0];$bt.Tag=[pscustomobject]@{Index=$i;Delta=[int]$s[1]};$bt.Location=[System.Drawing.Point]::new([int]$s[2],122);$bt.Size=[System.Drawing.Size]::new(34,26);$bt.Add_Click({Move-MoodBoardImage ([int]$this.Tag.Index) ([int]$this.Tag.Delta)});$tile.Controls.Add($bt)};$rm=[System.Windows.Forms.Button]::new();$rm.Text='REMOVE';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new(80,122);$rm.Size=[System.Drawing.Size]::new(58,26);$rm.Add_Click({Remove-MoodBoardImage ([int]$this.Tag)});$tile.Controls.Add($rm);[void]$flow.Controls.Add($tile)}
+1868:     return ($Y+$Height)
+1869: }
+1870: function Render-ImportantObjectsEditor($Container,[int]$Y){
+1871:     [void](Add-NotesSectionTitle $Container 'IMPORTANT OBJECTS' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD OBJECT';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-ImportantObject});$Container.Controls.Add($add);$a=@(Get-ImportantObjectArray);$yy=$Y+66
+1872:     for($i=0;$i -lt $a.Count;$i++){$card=[System.Windows.Forms.Panel]::new();$card.Location=[System.Drawing.Point]::new(10,$yy);$card.Size=[System.Drawing.Size]::new([math]::Max(240,$Container.ClientSize.Width-30),104);$card.Anchor='Top,Left,Right';$card.BackColor=[System.Drawing.Color]::FromArgb(218,194,151);$Container.Controls.Add($card);$name=[System.Windows.Forms.TextBox]::new();$name.Tag=[pscustomobject]@{Index=$i;Field='Name'};$name.Location=[System.Drawing.Point]::new(8,8);$name.Size=[System.Drawing.Size]::new([math]::Max(120,$card.Width-50),26);$name.Anchor='Top,Left,Right';$name.BackColor=[System.Drawing.Color]::FromArgb(235,214,175);$name.ForeColor=$script:Ink;$name.Text=[string]$a[$i].Name;$name.Add_TextChanged({ImportantObject-Changed $this});$card.Controls.Add($name);$rm=[System.Windows.Forms.Button]::new();$rm.Text='X';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new([math]::Max(125,$card.Width-38),8);$rm.Size=[System.Drawing.Size]::new(28,26);$rm.Anchor='Top,Right';$rm.BackColor=[System.Drawing.Color]::FromArgb(120,67,42);$rm.ForeColor=[System.Drawing.Color]::FromArgb(248,233,200);$rm.Add_Click({Remove-ImportantObject ([int]$this.Tag)});$card.Controls.Add($rm);$notes=[System.Windows.Forms.TextBox]::new();$notes.Tag=[pscustomobject]@{Index=$i;Field='Notes'};$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(8,42);$notes.Size=[System.Drawing.Size]::new([math]::Max(160,$card.Width-16),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(235,214,175);$notes.ForeColor=$script:Ink;$notes.Text=[string]$a[$i].Notes;$notes.Add_TextChanged({ImportantObject-Changed $this});$card.Controls.Add($notes);$yy+=112}
+1873: }
+1874: function Render-NotesSection($c,$leftContainer,$rightContainer){
+1875:     $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+1876:     $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+1877: }
+1878: # --- End custom Notes workspace -------------------------------------------
+1879: 
+1880: function Render-EmptyState {
+1881:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1882:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1883:     $contentHost=New-PageContent $leftPage
+1884:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1885:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+
+---
+
+1870: function Render-ImportantObjectsEditor($Container,[int]$Y){
+1871:     [void](Add-NotesSectionTitle $Container 'IMPORTANT OBJECTS' $Y);$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD OBJECT';$add.Location=[System.Drawing.Point]::new(10,$Y+28);$add.Size=[System.Drawing.Size]::new(115,29);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Add-ImportantObject});$Container.Controls.Add($add);$a=@(Get-ImportantObjectArray);$yy=$Y+66
+1872:     for($i=0;$i -lt $a.Count;$i++){$card=[System.Windows.Forms.Panel]::new();$card.Location=[System.Drawing.Point]::new(10,$yy);$card.Size=[System.Drawing.Size]::new([math]::Max(240,$Container.ClientSize.Width-30),104);$card.Anchor='Top,Left,Right';$card.BackColor=[System.Drawing.Color]::FromArgb(218,194,151);$Container.Controls.Add($card);$name=[System.Windows.Forms.TextBox]::new();$name.Tag=[pscustomobject]@{Index=$i;Field='Name'};$name.Location=[System.Drawing.Point]::new(8,8);$name.Size=[System.Drawing.Size]::new([math]::Max(120,$card.Width-50),26);$name.Anchor='Top,Left,Right';$name.BackColor=[System.Drawing.Color]::FromArgb(235,214,175);$name.ForeColor=$script:Ink;$name.Text=[string]$a[$i].Name;$name.Add_TextChanged({ImportantObject-Changed $this});$card.Controls.Add($name);$rm=[System.Windows.Forms.Button]::new();$rm.Text='X';$rm.Tag=$i;$rm.Location=[System.Drawing.Point]::new([math]::Max(125,$card.Width-38),8);$rm.Size=[System.Drawing.Size]::new(28,26);$rm.Anchor='Top,Right';$rm.BackColor=[System.Drawing.Color]::FromArgb(120,67,42);$rm.ForeColor=[System.Drawing.Color]::FromArgb(248,233,200);$rm.Add_Click({Remove-ImportantObject ([int]$this.Tag)});$card.Controls.Add($rm);$notes=[System.Windows.Forms.TextBox]::new();$notes.Tag=[pscustomobject]@{Index=$i;Field='Notes'};$notes.Multiline=$true;$notes.ScrollBars='Vertical';$notes.Location=[System.Drawing.Point]::new(8,42);$notes.Size=[System.Drawing.Size]::new([math]::Max(160,$card.Width-16),54);$notes.Anchor='Top,Left,Right';$notes.BackColor=[System.Drawing.Color]::FromArgb(235,214,175);$notes.ForeColor=$script:Ink;$notes.Text=[string]$a[$i].Notes;$notes.Add_TextChanged({ImportantObject-Changed $this});$card.Controls.Add($notes);$yy+=112}
+1873: }
+1874: function Render-NotesSection($c,$leftContainer,$rightContainer){
+1875:     $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+1876:     $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+1877: }
+1878: # --- End custom Notes workspace -------------------------------------------
+1879: 
+1880: function Render-EmptyState {
+1881:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1882:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1883:     $contentHost=New-PageContent $leftPage
+1884:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1885:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+1886: }
+1887: 
+1888: $script:TimelineZoom = 1.0
+1889: function New-TimelineEvent {
+1890:     return [pscustomobject]@{EventName='';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes='';End=''}
+1891: }
+1892: function Get-TimelineArray {
+1893:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['Timeline'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1894:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['EventName']){return $a}}catch{}
+1895:     return @([pscustomobject]@{EventName='Legacy Timeline';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes=$raw;End=''})
+1896: }
+1897: function Set-TimelineArray($a){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Timeline']=(@($a)|ConvertTo-Json -Depth 8 -Compress);Mark-CharacterChanged ([string]$c.Fields['Timeline'])}
+1898: function Timeline-WhenText($e){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;if($t -eq 'Unknown'){return 'Unknown'};if([string]::IsNullOrWhiteSpace($v)){return $t};return ($t+': '+$v)}
+1899: function Get-TimelineSortKey($e,[int]$i){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;$n=999999.0;switch($t){'Age'{if([double]::TryParse($v,[ref]$n)){return 100000+$n}}'Approximate Age'{if([double]::TryParse(($v -replace '[^0-9.]',''),[ref]$n)){return 100000+$n+0.1}}'Year'{if([double]::TryParse(($v -replace '[^0-9.-]',''),[ref]$n)){return 200000+$n}}'Exact Date'{try{return 300000+([datetime]::Parse($v).Ticks/1e12)}catch{}}'Life Stage'{ $map=@{'Infancy'=1;'Childhood'=10;'Adolescence'=20;'Young Adulthood'=30;'Adulthood'=40;'Middle Age'=50;'Older Adulthood'=60};if($map.ContainsKey($v)){return 150000+[double]$map[$v]}}};return 900000+$i}
+1900: function Move-TimelineEvent([int]$i,[int]$delta){$a=@(Get-TimelineArray);$j=$i+$delta;if($i -lt 0 -or $i -ge $a.Count -or $j -lt 0 -or $j -ge $a.Count){return};$tmp=$a[$i];$a[$i]=$a[$j];$a[$j]=$tmp;Set-TimelineArray $a;Render-CurrentCharacter}
+1901: function Remove-TimelineEvent([int]$i){Push-UndoState;$a=@(Get-TimelineArray);$n=@();for($j=0;$j -lt $a.Count;$j++){if($j -ne $i){$n+=,$a[$j]}};Set-TimelineArray $n;Render-CurrentCharacter}
