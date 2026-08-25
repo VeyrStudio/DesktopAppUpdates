@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.24",
-  "payloadSha256": "b5c2f75e232d67433a0bdebb53d5ba7a96ced902fb987938cb238692705e2333",
+  "version": "0.2.25",
+  "payloadSha256": "67d3ce5c19a47882f29305a0b9b05766c6969321a495d055a3d9658f654c017c",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/30c7da5f2f1c44c9563b6087ba62dace3dac7f86/the-files/payload-0.2.24-internal-hash-repair-part-001.txt",
-      "sha256": "b5c2f75e232d67433a0bdebb53d5ba7a96ced902fb987938cb238692705e2333"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/c88625a43094d6231fdd093627f33104fe205dd8/the-files/payload-0.2.25-notes-audit-part-001.txt",
+      "sha256": "67d3ce5c19a47882f29305a0b9b05766c6969321a495d055a3d9658f654c017c"
     }
   ],
-  "notes": "Packaging-only repair after the v0.2.23 updater verification warning. Preserves the working Timeline Host fix and all current Timeline, Story, Powers, updater, and user-data behavior. Recomputes every internal per-file SHA-256 after final bytes are written, verifies all internal hashes updater-style, verifies TheFilesCore.ps1.gz decompresses exactly to TheFilesCore.ps1, and passes Windows PowerShell parsing before publish."
+  "notes": "Cumulative Notes audit on stable v0.2.24. Rebuilds Notes to exactly six fields: Aliases, Tags, Mood Board, Aesthetic Tags, Color Palette, and Important Objects. Reuses the existing Aesthetic data key as Mood Board so saved moodboard/aesthetic notes are preserved. Removes obsolete Notes fields such as Quotes, Playlist, Inspirations, Voice Reference, character/reader knowledge notes, universe notes, Trivia, and Custom Fields from the Notes UI. Preserves Timeline, Story, Powers, updater fixes, separate user data, and both runnable/compressed core files. All internal per-file SHA-256 values were recomputed and verified, the compressed core matches the runnable core, and Windows PowerShell parsing passed before publish."
 }
