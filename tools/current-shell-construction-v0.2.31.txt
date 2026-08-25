@@ -1,0 +1,2491 @@
+962: $searchHint=New-Object System.Windows.Forms.Label; $searchHint.Text='Search characters…'; $searchHint.Font=$script:FontSmall; $searchHint.ForeColor=[System.Drawing.Color]::FromArgb(132,111,83); $searchHint.AutoSize=$true; $searchHint.Add_Click({$searchBox.Focus()}); $header.Controls.Add($searchHint)
+963: $storyFilter=New-Object System.Windows.Forms.ComboBox; $storyFilter.DropDownStyle='DropDownList'; $storyFilter.Width=170; $storyFilter.Font=$script:FontSmall; $storyFilter.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($storyFilter)
+964: $jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+965: $updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+966: 
+967: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+968: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+
+---
+
+963: $storyFilter=New-Object System.Windows.Forms.ComboBox; $storyFilter.DropDownStyle='DropDownList'; $storyFilter.Width=170; $storyFilter.Font=$script:FontSmall; $storyFilter.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($storyFilter)
+964: $jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+965: $updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+966: 
+967: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+968: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+
+---
+
+964: $jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+965: $updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+966: 
+967: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+968: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+
+---
+
+965: $updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+966: 
+967: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+968: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+
+---
+
+966: 
+967: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+968: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+
+---
+
+967: try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+968: $main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+992: }
+
+---
+
+969: 
+970: try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+971: $book.Anchor='None'; $main.Controls.Add($book)
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+992: }
+993: $i=0
+994: foreach($nm in $rightNames){
+
+---
+
+972: try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+973: try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+974: $leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+992: }
+993: $i=0
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+
+---
+
+975: $gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+976: 
+977: $script:StatusButtons=@{}
+978: foreach($st in @('Existing','In Progress','Blank')) {
+979:     try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+980:     $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+981: }
+982: 
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+992: }
+993: $i=0
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+998: 
+999: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+1000: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+
+---
+
+983: $script:SectionButtons=@{}
+984: $leftNames=@('Overview','Appearance','Personality','Background','Family')
+985: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+986: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+987: $tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+992: }
+993: $i=0
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+998: 
+999: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+1000: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+1001: $nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+1002: $currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+1003: $newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+1004: $deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+1005: $script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+1006: 
+1007: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+1008:     try {
+
+---
+
+988: $i=0
+989: foreach($nm in $leftNames){
+990:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+991:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+992: }
+993: $i=0
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+998: 
+999: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+1000: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+1001: $nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+1002: $currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+1003: $newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+1004: $deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+1005: $script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+1006: 
+1007: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+1008:     try {
+1009:         $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+1010:         Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+1011:     } catch {}
+1012: }
+1013: function Layout-Book {
+
+---
+
+992: }
+993: $i=0
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+998: 
+999: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+1000: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+1001: $nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+1002: $currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+1003: $newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+1004: $deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+1005: $script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+1006: 
+1007: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+1008:     try {
+1009:         $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+1010:         Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+1011:     } catch {}
+1012: }
+1013: function Layout-Book {
+1014:     if($null -eq $main -or $null -eq $book){return}
+1015: 
+1016:     # The normal open-book spread is used when there is enough width. When Windows
+1017:     # snaps The Files beside another app, switch to a compact book layout instead of
+
+---
+
+993: $i=0
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+998: 
+999: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+1000: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+1001: $nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+1002: $currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+1003: $newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+1004: $deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+1005: $script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+1006: 
+1007: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+1008:     try {
+1009:         $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+1010:         Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+1011:     } catch {}
+1012: }
+1013: function Layout-Book {
+1014:     if($null -eq $main -or $null -eq $book){return}
+1015: 
+1016:     # The normal open-book spread is used when there is enough width. When Windows
+1017:     # snaps The Files beside another app, switch to a compact book layout instead of
+1018:     # forcing a desktop-sized minimum width. Compact mode keeps full-width readable
+
+---
+
+994: foreach($nm in $rightNames){
+995:     try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+996:     $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+997: }
+998: 
+999: $bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+1000: $prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+1001: $nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+1002: $currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+1003: $newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+1004: $deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+1005: $script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+1006: 
+1007: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+1008:     try {
+1009:         $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+1010:         Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+1011:     } catch {}
+1012: }
+1013: function Layout-Book {
+1014:     if($null -eq $main -or $null -eq $book){return}
+1015: 
+1016:     # The normal open-book spread is used when there is enough width. When Windows
+1017:     # snaps The Files beside another app, switch to a compact book layout instead of
+1018:     # forcing a desktop-sized minimum width. Compact mode keeps full-width readable
+1019:     # pages and lets the book itself scroll horizontally between the left and right page.
+
+---
+
+1006: 
+1007: function Write-LayoutError([string]$Stage,$ErrorRecord) {
+1008:     try {
+1009:         $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+1010:         Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+1011:     } catch {}
+1012: }
+1013: function Layout-Book {
+1014:     if($null -eq $main -or $null -eq $book){return}
+1015: 
+1016:     # The normal open-book spread is used when there is enough width. When Windows
+1017:     # snaps The Files beside another app, switch to a compact book layout instead of
+1018:     # forcing a desktop-sized minimum width. Compact mode keeps full-width readable
+1019:     # pages and lets the book itself scroll horizontally between the left and right page.
+1020:     $isCompact=([int]$form.ClientSize.Width -lt 1050)
+1021:     $desiredHeader=if($isCompact){88}else{52}
+1022:     $desiredBottom=if($isCompact){94}else{70}
+1023:     if($header.Height -ne $desiredHeader){$header.Height=$desiredHeader;return}
+1024:     if($bottom.Height -ne $desiredBottom){$bottom.Height=$desiredBottom;return}
+1025: 
+1026:     $w=[int]$main.ClientSize.Width; $h=[int]$main.ClientSize.Height
+1027:     if($w -lt 500 -or $h -lt 400){return}
+1028: 
+1029:     if($isCompact){
+1030:         # ---------- SPLIT-SCREEN / SNAP MODE ----------
+1031:         $bookLeft=6; $bookTop=104
+
+---
+
+1023:     if($header.Height -ne $desiredHeader){$header.Height=$desiredHeader;return}
+1024:     if($bottom.Height -ne $desiredBottom){$bottom.Height=$desiredBottom;return}
+1025: 
+1026:     $w=[int]$main.ClientSize.Width; $h=[int]$main.ClientSize.Height
+1027:     if($w -lt 500 -or $h -lt 400){return}
+1028: 
+1029:     if($isCompact){
+1030:         # ---------- SPLIT-SCREEN / SNAP MODE ----------
+1031:         $bookLeft=6; $bookTop=104
+1032:         $bookWidth=[math]::Max(500,$w-12)
+1033:         $bookHeight=[math]::Max(280,$h-$bottom.Height-$bookTop-8)
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+
+---
+
+1024:     if($bottom.Height -ne $desiredBottom){$bottom.Height=$desiredBottom;return}
+1025: 
+1026:     $w=[int]$main.ClientSize.Width; $h=[int]$main.ClientSize.Height
+1027:     if($w -lt 500 -or $h -lt 400){return}
+1028: 
+1029:     if($isCompact){
+1030:         # ---------- SPLIT-SCREEN / SNAP MODE ----------
+1031:         $bookLeft=6; $bookTop=104
+1032:         $bookWidth=[math]::Max(500,$w-12)
+1033:         $bookHeight=[math]::Max(280,$h-$bottom.Height-$bookTop-8)
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+
+---
+
+1025: 
+1026:     $w=[int]$main.ClientSize.Width; $h=[int]$main.ClientSize.Height
+1027:     if($w -lt 500 -or $h -lt 400){return}
+1028: 
+1029:     if($isCompact){
+1030:         # ---------- SPLIT-SCREEN / SNAP MODE ----------
+1031:         $bookLeft=6; $bookTop=104
+1032:         $bookWidth=[math]::Max(500,$w-12)
+1033:         $bookHeight=[math]::Max(280,$h-$bottom.Height-$bookTop-8)
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+
+---
+
+1029:     if($isCompact){
+1030:         # ---------- SPLIT-SCREEN / SNAP MODE ----------
+1031:         $bookLeft=6; $bookTop=104
+1032:         $bookWidth=[math]::Max(500,$w-12)
+1033:         $bookHeight=[math]::Max(280,$h-$bottom.Height-$bookTop-8)
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+
+---
+
+1030:         # ---------- SPLIT-SCREEN / SNAP MODE ----------
+1031:         $bookLeft=6; $bookTop=104
+1032:         $bookWidth=[math]::Max(500,$w-12)
+1033:         $bookHeight=[math]::Max(280,$h-$bottom.Height-$bookTop-8)
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+
+---
+
+1033:         $bookHeight=[math]::Max(280,$h-$bottom.Height-$bookTop-8)
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+
+---
+
+1034:         $margin=20; $gut=14
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+
+---
+
+1035:         # One page is almost the whole snapped window width. The second page sits to
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+
+---
+
+1036:         # the right and is reached with the book's horizontal scrollbar.
+1037:         $pageW=[math]::Max(440,$bookWidth-44)
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1061: 
+
+---
+
+1038:         $pageH=[math]::Max(250,$bookHeight-44)
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1061: 
+1062:             $searchW=[math]::Max(145,[math]::Min(190,[int]($hw*0.28)))
+1063:             $storyW=[math]::Max(125,[math]::Min(165,[int]($hw*0.24)))
+
+---
+
+1039: 
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1061: 
+1062:             $searchW=[math]::Max(145,[math]::Min(190,[int]($hw*0.28)))
+1063:             $storyW=[math]::Max(125,[math]::Min(165,[int]($hw*0.24)))
+1064:             $searchBox.Width=$searchW; $storyFilter.Width=$storyW
+
+---
+
+1040:         try {
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1061: 
+1062:             $searchW=[math]::Max(145,[math]::Min(190,[int]($hw*0.28)))
+1063:             $storyW=[math]::Max(125,[math]::Min(165,[int]($hw*0.24)))
+1064:             $searchBox.Width=$searchW; $storyFilter.Width=$storyW
+1065:             $searchBox.Location=New-Object System.Drawing.Point(12,49)
+
+---
+
+1041:             $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1061: 
+1062:             $searchW=[math]::Max(145,[math]::Min(190,[int]($hw*0.28)))
+1063:             $storyW=[math]::Max(125,[math]::Min(165,[int]($hw*0.24)))
+1064:             $searchBox.Width=$searchW; $storyFilter.Width=$storyW
+1065:             $searchBox.Location=New-Object System.Drawing.Point(12,49)
+1066:             $searchHint.Location=New-Object System.Drawing.Point(20,55)
+
+---
+
+1042:             $book.AutoScroll=$true
+1043:             $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1044:             $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1045:             $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1046:             $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1047:             $book.AutoScrollMinSize=New-Object System.Drawing.Size(($margin+$pageW+$gut+$pageW+$margin),($pageH+40))
+1048:             $book.HorizontalScroll.SmallChange=70
+1049:             $book.HorizontalScroll.LargeChange=[math]::Max(180,[int]($bookWidth*0.75))
+1050:             $book.Invalidate()
+1051:         } catch { Write-LayoutError 'compact-book/pages' $_ }
+1052: 
+1053:         # Header becomes two tidy rows when snapped: title/update on top and the
+1054:         # search/story/character controls below it.
+1055:         try {
+1056:             $hw=[int]$header.ClientSize.Width
+1057:             $title.Location=New-Object System.Drawing.Point(12,8)
+1058:             $titleFlourishL.Visible=$false; $titleFlourishR.Visible=$false
+1059:             $updateBtn.Width=105; $updateBtn.Height=28
+1060:             $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(430,$hw-117),8)
+1061: 
+1062:             $searchW=[math]::Max(145,[math]::Min(190,[int]($hw*0.28)))
+1063:             $storyW=[math]::Max(125,[math]::Min(165,[int]($hw*0.24)))
+1064:             $searchBox.Width=$searchW; $storyFilter.Width=$storyW
+1065:             $searchBox.Location=New-Object System.Drawing.Point(12,49)
+1066:             $searchHint.Location=New-Object System.Drawing.Point(20,55)
+1067:             $storyFilter.Location=New-Object System.Drawing.Point((20+$searchW),48)
+
+---
+
+1075:         # every section stays one click away even at half-screen width.
+1076:         try {
+1077:             $gap=4; $leftPad=7
+1078:             $row1=@('Overview','Appearance','Personality','Background','Family','Relationships')
+1079:             $row2=@('Powers','Story','Timeline','Notes')
+1080:             $bw1=[math]::Max(72,[int](($w-($leftPad*2)-($gap*5))/$row1.Count))
+1081:             $bw2=[math]::Max(82,[int](($w-($leftPad*2)-($gap*4))/$row2.Count))
+1082:             for($i=0;$i -lt $row1.Count;$i++){
+1083:                 $b=$script:SectionButtons[$row1[$i]]
+1084:                 if($null -ne $b){$b.Width=$bw1;$b.Height=28;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($leftPad+$i*($bw1+$gap)),4);$b.Visible=$true;$b.BringToFront()}
+1085:             }
+1086:             for($i=0;$i -lt $row2.Count;$i++){
+1087:                 $b=$script:SectionButtons[$row2[$i]]
+1088:                 if($null -ne $b){$b.Width=$bw2;$b.Height=28;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($leftPad+$i*($bw2+$gap)),36);$b.Visible=$true;$b.BringToFront()}
+1089:             }
+1090:         } catch { Write-LayoutError 'compact-section-tabs' $_ }
+1091: 
+1092:         try {
+1093:             $statusW=[math]::Min(132,[int](($w-34)/3)); $statusGap=5
+1094:             $statusTotal=($statusW*3)+($statusGap*2); $statusStart=[int](($w-$statusTotal)/2)
+1095:             $i=0
+1096:             foreach($st in @('Existing','In Progress','Blank')){
+1097:                 $b=$script:StatusButtons[$st]
+1098:                 if($null -ne $b){$b.Width=$statusW;$b.Height=30;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*($statusW+$statusGap)),69);$b.Visible=$true;$b.BringToFront()}
+1099:                 $i++
+1100:             }
+
+---
+
+1079:             $row2=@('Powers','Story','Timeline','Notes')
+1080:             $bw1=[math]::Max(72,[int](($w-($leftPad*2)-($gap*5))/$row1.Count))
+1081:             $bw2=[math]::Max(82,[int](($w-($leftPad*2)-($gap*4))/$row2.Count))
+1082:             for($i=0;$i -lt $row1.Count;$i++){
+1083:                 $b=$script:SectionButtons[$row1[$i]]
+1084:                 if($null -ne $b){$b.Width=$bw1;$b.Height=28;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($leftPad+$i*($bw1+$gap)),4);$b.Visible=$true;$b.BringToFront()}
+1085:             }
+1086:             for($i=0;$i -lt $row2.Count;$i++){
+1087:                 $b=$script:SectionButtons[$row2[$i]]
+1088:                 if($null -ne $b){$b.Width=$bw2;$b.Height=28;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($leftPad+$i*($bw2+$gap)),36);$b.Visible=$true;$b.BringToFront()}
+1089:             }
+1090:         } catch { Write-LayoutError 'compact-section-tabs' $_ }
+1091: 
+1092:         try {
+1093:             $statusW=[math]::Min(132,[int](($w-34)/3)); $statusGap=5
+1094:             $statusTotal=($statusW*3)+($statusGap*2); $statusStart=[int](($w-$statusTotal)/2)
+1095:             $i=0
+1096:             foreach($st in @('Existing','In Progress','Blank')){
+1097:                 $b=$script:StatusButtons[$st]
+1098:                 if($null -ne $b){$b.Width=$statusW;$b.Height=30;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*($statusW+$statusGap)),69);$b.Visible=$true;$b.BringToFront()}
+1099:                 $i++
+1100:             }
+1101:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+
+---
+
+1089:             }
+1090:         } catch { Write-LayoutError 'compact-section-tabs' $_ }
+1091: 
+1092:         try {
+1093:             $statusW=[math]::Min(132,[int](($w-34)/3)); $statusGap=5
+1094:             $statusTotal=($statusW*3)+($statusGap*2); $statusStart=[int](($w-$statusTotal)/2)
+1095:             $i=0
+1096:             foreach($st in @('Existing','In Progress','Blank')){
+1097:                 $b=$script:StatusButtons[$st]
+1098:                 if($null -ne $b){$b.Width=$statusW;$b.Height=30;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*($statusW+$statusGap)),69);$b.Visible=$true;$b.BringToFront()}
+1099:                 $i++
+1100:             }
+1101:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+
+---
+
+1098:                 if($null -ne $b){$b.Width=$statusW;$b.Height=30;$b.Font=$script:FontSmall;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*($statusW+$statusGap)),69);$b.Visible=$true;$b.BringToFront()}
+1099:                 $i++
+1100:             }
+1101:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+
+---
+
+1099:                 $i++
+1100:             }
+1101:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+
+---
+
+1100:             }
+1101:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+
+---
+
+1101:         } catch { Write-LayoutError 'compact-status-tabs' $_ }
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+
+---
+
+1102: 
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+
+---
+
+1103:         try {
+1104:             $navGap=4; $navSide=[math]::Max(112,[math]::Min(145,[int]($w*0.23)))
+1105:             $currentW=[math]::Max(190,$w-($navSide*2)-($navGap*2)-16)
+1106:             $prevBtn.Width=$navSide;$nextBtn.Width=$navSide;$currentNav.Width=$currentW
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+
+---
+
+1107:             $prevBtn.Height=42;$nextBtn.Height=42;$currentNav.Height=42
+1108:             $prevBtn.Font=$script:FontSmall;$nextBtn.Font=$script:FontSmall;$currentNav.Font=$script:FontSmall
+1109:             $prevBtn.Location=New-Object System.Drawing.Point(8,5)
+1110:             $currentNav.Location=New-Object System.Drawing.Point((8+$navSide+$navGap),5)
+1111:             $nextBtn.Location=New-Object System.Drawing.Point((8+$navSide+$navGap+$currentW+$navGap),5)
+1112:             $newBtn.Width=145;$newBtn.Height=34;$newBtn.Location=New-Object System.Drawing.Point(8,53)
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+
+---
+
+1113:             $deleteBtn.Width=70;$deleteBtn.Height=34;$deleteBtn.Location=New-Object System.Drawing.Point(158,53)
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+
+---
+
+1114:             $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(236,$w-$script:SaveStateLabel.Width-14),63)
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+
+---
+
+1115:             $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1116:         } catch { Write-LayoutError 'compact-bottom-nav' $_ }
+1117:         return
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+
+---
+
+1118:     }
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+
+---
+
+1119: 
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+
+---
+
+1120:     # ---------- NORMAL OPEN-BOOK MODE ----------
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+
+---
+
+1121:     $side=142; $bookLeft=$side; $bookTop=38
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+
+---
+
+1122:     $bookWidth=[math]::Max(720,$w-($side*2)); $bookHeight=[math]::Max(410,$h-$bottom.Height-48)
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+1147:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+
+---
+
+1123:     $margin=20; $gut=18; $pageW=[int](($bookWidth-($margin*2)-$gut)/2); $pageH=$bookHeight-40
+1124: 
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+1147:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+1148:         if($searchBox.Focused -or $searchBox.Text.Length -gt 0){$searchHint.Visible=$false}else{$searchHint.Visible=$true}
+
+---
+
+1125:     try {
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+1147:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+1148:         if($searchBox.Focused -or $searchBox.Text.Length -gt 0){$searchHint.Visible=$false}else{$searchHint.Visible=$true}
+1149:     } catch { Write-LayoutError 'header' $_ }
+1150: 
+
+---
+
+1126:         $book.AutoScroll=$false
+1127:         $book.AutoScrollMinSize=New-Object System.Drawing.Size(0,0)
+1128:         $book.AutoScrollPosition=New-Object System.Drawing.Point(0,0)
+1129:         $book.Anchor='None'; $leftPage.Anchor='None'; $rightPage.Anchor='None'; $gutter.Anchor='None'
+1130:         $book.SetBounds($bookLeft,$bookTop,$bookWidth,$bookHeight)
+1131:         $leftPage.SetBounds($margin,20,$pageW,$pageH)
+1132:         $gutter.SetBounds(($margin+$pageW),25,$gut,[math]::Max(20,$pageH-10))
+1133:         $rightPage.SetBounds(($margin+$pageW+$gut),20,$pageW,$pageH)
+1134:         $book.Invalidate()
+1135:     } catch { Write-LayoutError 'book/pages' $_ }
+1136: 
+1137:     try {
+1138:         $titleFlourishL.Visible=$true; $titleFlourishR.Visible=$true
+1139:         $title.Location=New-Object System.Drawing.Point([int](($header.ClientSize.Width-$title.Width)/2),10)
+1140:         $titleFlourishL.Location=New-Object System.Drawing.Point(($title.Left-75),18)
+1141:         $titleFlourishR.Location=New-Object System.Drawing.Point(($title.Right+12),18)
+1142:         $searchBox.Width=205; $storyFilter.Width=170; $jumpCombo.Width=205; $updateBtn.Width=105
+1143:         $searchBox.Location=New-Object System.Drawing.Point(16,12)
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+1147:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+1148:         if($searchBox.Focused -or $searchBox.Text.Length -gt 0){$searchHint.Visible=$false}else{$searchHint.Visible=$true}
+1149:     } catch { Write-LayoutError 'header' $_ }
+1150: 
+1151:     try {
+
+---
+
+1144:         $searchHint.Location=New-Object System.Drawing.Point(24,18)
+1145:         $storyFilter.Location=New-Object System.Drawing.Point(230,11)
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+1147:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+1148:         if($searchBox.Focused -or $searchBox.Text.Length -gt 0){$searchHint.Visible=$false}else{$searchHint.Visible=$true}
+1149:     } catch { Write-LayoutError 'header' $_ }
+1150: 
+1151:     try {
+1152:         $tabY=$bookTop+72; $i=0
+1153:         foreach($nm in $leftNames){
+1154:             $b=$script:SectionButtons[$nm]
+1155:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(7,($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1156:             $i++
+1157:         }
+1158:     } catch { Write-LayoutError 'left-tabs' $_ }
+1159: 
+1160:     try {
+1161:         $i=0
+1162:         foreach($nm in $rightNames){
+1163:             $b=$script:SectionButtons[$nm]
+1164:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($w-145),($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1165:             $i++
+1166:         }
+1167:     } catch { Write-LayoutError 'right-tabs' $_ }
+1168: 
+1169:     try {
+
+---
+
+1146:         $jumpCombo.Location=New-Object System.Drawing.Point(406,11)
+1147:         $updateBtn.Location=New-Object System.Drawing.Point([math]::Max(620,$header.ClientSize.Width-120),11)
+1148:         if($searchBox.Focused -or $searchBox.Text.Length -gt 0){$searchHint.Visible=$false}else{$searchHint.Visible=$true}
+1149:     } catch { Write-LayoutError 'header' $_ }
+1150: 
+1151:     try {
+1152:         $tabY=$bookTop+72; $i=0
+1153:         foreach($nm in $leftNames){
+1154:             $b=$script:SectionButtons[$nm]
+1155:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(7,($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1156:             $i++
+1157:         }
+1158:     } catch { Write-LayoutError 'left-tabs' $_ }
+1159: 
+1160:     try {
+1161:         $i=0
+1162:         foreach($nm in $rightNames){
+1163:             $b=$script:SectionButtons[$nm]
+1164:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($w-145),($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1165:             $i++
+1166:         }
+1167:     } catch { Write-LayoutError 'right-tabs' $_ }
+1168: 
+1169:     try {
+1170:         $statusStart=$bookLeft+[int](($bookWidth-408)/2); $i=0
+1171:         foreach($st in @('Existing','In Progress','Blank')){
+
+---
+
+1155:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(7,($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1156:             $i++
+1157:         }
+1158:     } catch { Write-LayoutError 'left-tabs' $_ }
+1159: 
+1160:     try {
+1161:         $i=0
+1162:         foreach($nm in $rightNames){
+1163:             $b=$script:SectionButtons[$nm]
+1164:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($w-145),($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1165:             $i++
+1166:         }
+1167:     } catch { Write-LayoutError 'right-tabs' $_ }
+1168: 
+1169:     try {
+1170:         $statusStart=$bookLeft+[int](($bookWidth-408)/2); $i=0
+1171:         foreach($st in @('Existing','In Progress','Blank')){
+1172:             $b=$script:StatusButtons[$st]
+1173:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1174:             $i++
+1175:         }
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+
+---
+
+1162:         foreach($nm in $rightNames){
+1163:             $b=$script:SectionButtons[$nm]
+1164:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($w-145),($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1165:             $i++
+1166:         }
+1167:     } catch { Write-LayoutError 'right-tabs' $_ }
+1168: 
+1169:     try {
+1170:         $statusStart=$bookLeft+[int](($bookWidth-408)/2); $i=0
+1171:         foreach($st in @('Existing','In Progress','Blank')){
+1172:             $b=$script:StatusButtons[$st]
+1173:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1174:             $i++
+1175:         }
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+
+---
+
+1164:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($w-145),($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1165:             $i++
+1166:         }
+1167:     } catch { Write-LayoutError 'right-tabs' $_ }
+1168: 
+1169:     try {
+1170:         $statusStart=$bookLeft+[int](($bookWidth-408)/2); $i=0
+1171:         foreach($st in @('Existing','In Progress','Blank')){
+1172:             $b=$script:StatusButtons[$st]
+1173:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1174:             $i++
+1175:         }
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+
+---
+
+1171:         foreach($st in @('Existing','In Progress','Blank')){
+1172:             $b=$script:StatusButtons[$st]
+1173:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1174:             $i++
+1175:         }
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+
+---
+
+1172:             $b=$script:StatusButtons[$st]
+1173:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1174:             $i++
+1175:         }
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+1197: 
+
+---
+
+1173:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1174:             $i++
+1175:         }
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+1197: 
+1198: $script:ActiveStatus='Existing'
+
+---
+
+1176:     } catch { Write-LayoutError 'status-tabs' $_ }
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+1197: 
+1198: $script:ActiveStatus='Existing'
+1199: if(@('Existing','In Progress','Blank') -contains [string]$script:Settings.LastStatus){$script:ActiveStatus=[string]$script:Settings.LastStatus}
+1200: $script:CurrentSection='Overview'
+1201: if($script:SectionOrder -contains [string]$script:Settings.LastSection){$script:CurrentSection=[string]$script:Settings.LastSection}
+
+---
+
+1177: 
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+1197: 
+1198: $script:ActiveStatus='Existing'
+1199: if(@('Existing','In Progress','Blank') -contains [string]$script:Settings.LastStatus){$script:ActiveStatus=[string]$script:Settings.LastStatus}
+1200: $script:CurrentSection='Overview'
+1201: if($script:SectionOrder -contains [string]$script:Settings.LastSection){$script:CurrentSection=[string]$script:Settings.LastSection}
+1202: $script:Filtered=@()
+
+---
+
+1178:     try {
+1179:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1180:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1181:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+1197: 
+1198: $script:ActiveStatus='Existing'
+1199: if(@('Existing','In Progress','Blank') -contains [string]$script:Settings.LastStatus){$script:ActiveStatus=[string]$script:Settings.LastStatus}
+1200: $script:CurrentSection='Overview'
+1201: if($script:SectionOrder -contains [string]$script:Settings.LastSection){$script:CurrentSection=[string]$script:Settings.LastSection}
+1202: $script:Filtered=@()
+1203: $script:CurrentIndex=-1
+
+---
+
+1182:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1183:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1184:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1185:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1186:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1187:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1188:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1189:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1190:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1191:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1192: }
+1193: $form.Add_Resize({Layout-Book})
+1194: $main.Add_Resize({Layout-Book})
+1195: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1196: Layout-Book
+1197: 
+1198: $script:ActiveStatus='Existing'
+1199: if(@('Existing','In Progress','Blank') -contains [string]$script:Settings.LastStatus){$script:ActiveStatus=[string]$script:Settings.LastStatus}
+1200: $script:CurrentSection='Overview'
+1201: if($script:SectionOrder -contains [string]$script:Settings.LastSection){$script:CurrentSection=[string]$script:Settings.LastSection}
+1202: $script:Filtered=@()
+1203: $script:CurrentIndex=-1
+1204: $script:FieldControls=@{}
+1205: $script:Rendering=$false
+1206: $script:UndoStacks=@{}
+1207: $script:ToolTip=New-Object System.Windows.Forms.ToolTip
+
+---
+
+1898: }
+1899: function Render-NotesSection($c,$leftContainer,$rightContainer){
+1900:     $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+1901:     $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+1902: }
+1903: # --- End custom Notes workspace -------------------------------------------
+1904: 
+1905: function Render-EmptyState {
+1906:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1907:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1908:     $contentHost=New-PageContent $leftPage
+1909:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1910:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+1911: }
+1912: 
+1913: $script:TimelineZoom = 1.0
+1914: function New-TimelineEvent {
+1915:     return [pscustomobject]@{EventName='';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes='';End=''}
+1916: }
+1917: function Get-TimelineArray {
+1918:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['Timeline'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1919:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['EventName']){return $a}}catch{}
+1920:     return @([pscustomobject]@{EventName='Legacy Timeline';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes=$raw;End=''})
+1921: }
+1922: function Set-TimelineArray($a){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Timeline']=(@($a)|ConvertTo-Json -Depth 8 -Compress);Mark-CharacterChanged ([string]$c.Fields['Timeline'])}
+1923: function Timeline-WhenText($e){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;if($t -eq 'Unknown'){return 'Unknown'};if([string]::IsNullOrWhiteSpace($v)){return $t};return ($t+': '+$v)}
+
+---
+
+1899: function Render-NotesSection($c,$leftContainer,$rightContainer){
+1900:     $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+1901:     $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+1902: }
+1903: # --- End custom Notes workspace -------------------------------------------
+1904: 
+1905: function Render-EmptyState {
+1906:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1907:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1908:     $contentHost=New-PageContent $leftPage
+1909:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1910:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+1911: }
+1912: 
+1913: $script:TimelineZoom = 1.0
+1914: function New-TimelineEvent {
+1915:     return [pscustomobject]@{EventName='';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes='';End=''}
+1916: }
+1917: function Get-TimelineArray {
+1918:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['Timeline'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1919:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['EventName']){return $a}}catch{}
+1920:     return @([pscustomobject]@{EventName='Legacy Timeline';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes=$raw;End=''})
+1921: }
+1922: function Set-TimelineArray($a){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Timeline']=(@($a)|ConvertTo-Json -Depth 8 -Compress);Mark-CharacterChanged ([string]$c.Fields['Timeline'])}
+1923: function Timeline-WhenText($e){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;if($t -eq 'Unknown'){return 'Unknown'};if([string]::IsNullOrWhiteSpace($v)){return $t};return ($t+': '+$v)}
+1924: function Get-TimelineSortKey($e,[int]$i){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;$n=999999.0;switch($t){'Age'{if([double]::TryParse($v,[ref]$n)){return 100000+$n}}'Approximate Age'{if([double]::TryParse(($v -replace '[^0-9.]',''),[ref]$n)){return 100000+$n+0.1}}'Year'{if([double]::TryParse(($v -replace '[^0-9.-]',''),[ref]$n)){return 200000+$n}}'Exact Date'{try{return 300000+([datetime]::Parse($v).Ticks/1e12)}catch{}}'Life Stage'{ $map=@{'Infancy'=1;'Childhood'=10;'Adolescence'=20;'Young Adulthood'=30;'Adulthood'=40;'Middle Age'=50;'Older Adulthood'=60};if($map.ContainsKey($v)){return 150000+[double]$map[$v]}}};return 900000+$i}
+
+---
+
+1900:     $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+1901:     $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+1902: }
+1903: # --- End custom Notes workspace -------------------------------------------
+1904: 
+1905: function Render-EmptyState {
+1906:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1907:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1908:     $contentHost=New-PageContent $leftPage
+1909:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1910:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+1911: }
+1912: 
+1913: $script:TimelineZoom = 1.0
+1914: function New-TimelineEvent {
+1915:     return [pscustomobject]@{EventName='';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes='';End=''}
+1916: }
+1917: function Get-TimelineArray {
+1918:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['Timeline'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1919:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['EventName']){return $a}}catch{}
+1920:     return @([pscustomobject]@{EventName='Legacy Timeline';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes=$raw;End=''})
+1921: }
+1922: function Set-TimelineArray($a){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Timeline']=(@($a)|ConvertTo-Json -Depth 8 -Compress);Mark-CharacterChanged ([string]$c.Fields['Timeline'])}
+1923: function Timeline-WhenText($e){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;if($t -eq 'Unknown'){return 'Unknown'};if([string]::IsNullOrWhiteSpace($v)){return $t};return ($t+': '+$v)}
+1924: function Get-TimelineSortKey($e,[int]$i){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;$n=999999.0;switch($t){'Age'{if([double]::TryParse($v,[ref]$n)){return 100000+$n}}'Approximate Age'{if([double]::TryParse(($v -replace '[^0-9.]',''),[ref]$n)){return 100000+$n+0.1}}'Year'{if([double]::TryParse(($v -replace '[^0-9.-]',''),[ref]$n)){return 200000+$n}}'Exact Date'{try{return 300000+([datetime]::Parse($v).Ticks/1e12)}catch{}}'Life Stage'{ $map=@{'Infancy'=1;'Childhood'=10;'Adolescence'=20;'Young Adulthood'=30;'Adulthood'=40;'Middle Age'=50;'Older Adulthood'=60};if($map.ContainsKey($v)){return 150000+[double]$map[$v]}}};return 900000+$i}
+1925: function Move-TimelineEvent([int]$i,[int]$delta){$a=@(Get-TimelineArray);$j=$i+$delta;if($i -lt 0 -or $i -ge $a.Count -or $j -lt 0 -or $j -ge $a.Count){return};$tmp=$a[$i];$a[$i]=$a[$j];$a[$j]=$tmp;Set-TimelineArray $a;Render-CurrentCharacter}
+
+---
+
+1902: }
+1903: # --- End custom Notes workspace -------------------------------------------
+1904: 
+1905: function Render-EmptyState {
+1906:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1907:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1908:     $contentHost=New-PageContent $leftPage
+1909:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1910:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+1911: }
+1912: 
+1913: $script:TimelineZoom = 1.0
+1914: function New-TimelineEvent {
+1915:     return [pscustomobject]@{EventName='';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes='';End=''}
+1916: }
+1917: function Get-TimelineArray {
+1918:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['Timeline'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1919:     try{$a=@($raw|ConvertFrom-Json);if($a.Count -gt 0 -and $null -ne $a[0].PSObject.Properties['EventName']){return $a}}catch{}
+1920:     return @([pscustomobject]@{EventName='Legacy Timeline';WhenType='Unknown';WhenValue='';EventType='Other / Custom';Importance='Moderate';Notes=$raw;End=''})
+1921: }
+1922: function Set-TimelineArray($a){$c=Get-CurrentCharacter;if($null -eq $c){return};$c.Fields['Timeline']=(@($a)|ConvertTo-Json -Depth 8 -Compress);Mark-CharacterChanged ([string]$c.Fields['Timeline'])}
+1923: function Timeline-WhenText($e){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;if($t -eq 'Unknown'){return 'Unknown'};if([string]::IsNullOrWhiteSpace($v)){return $t};return ($t+': '+$v)}
+1924: function Get-TimelineSortKey($e,[int]$i){$t=[string]$e.WhenType;$v=[string]$e.WhenValue;$n=999999.0;switch($t){'Age'{if([double]::TryParse($v,[ref]$n)){return 100000+$n}}'Approximate Age'{if([double]::TryParse(($v -replace '[^0-9.]',''),[ref]$n)){return 100000+$n+0.1}}'Year'{if([double]::TryParse(($v -replace '[^0-9.-]',''),[ref]$n)){return 200000+$n}}'Exact Date'{try{return 300000+([datetime]::Parse($v).Ticks/1e12)}catch{}}'Life Stage'{ $map=@{'Infancy'=1;'Childhood'=10;'Adolescence'=20;'Young Adulthood'=30;'Adulthood'=40;'Middle Age'=50;'Older Adulthood'=60};if($map.ContainsKey($v)){return 150000+[double]$map[$v]}}};return 900000+$i}
+1925: function Move-TimelineEvent([int]$i,[int]$delta){$a=@(Get-TimelineArray);$j=$i+$delta;if($i -lt 0 -or $i -ge $a.Count -or $j -lt 0 -or $j -ge $a.Count){return};$tmp=$a[$i];$a[$i]=$a[$j];$a[$j]=$tmp;Set-TimelineArray $a;Render-CurrentCharacter}
+1926: function Remove-TimelineEvent([int]$i){Push-UndoState;$a=@(Get-TimelineArray);$n=@();for($j=0;$j -lt $a.Count;$j++){if($j -ne $i){$n+=,$a[$j]}};Set-TimelineArray $n;Render-CurrentCharacter}
+1927: function Randomize-TimelineEvent([int]$i){Push-UndoState;$a=@(Get-TimelineArray);if($i -lt 0 -or $i -ge $a.Count){return};$names=@('A loss changes everything','Leaves home','Meets someone important','Makes a dangerous choice','Discovers a hidden truth','Survives a major crisis','Begins a new life','Breaks with the past');$types=@('Family','Relationship','Education','Career','Loss / Death','Conflict','Discovery','Travel / Relocation','Health','Supernatural','Crime / Legal','Other / Custom');$whens=@('Age','Approximate Age','Year','Life Stage','Unknown');$stages=@('Childhood','Adolescence','Young Adulthood','Adulthood','Middle Age','Older Adulthood');$a[$i].EventName=[string](Get-Random $names);$a[$i].EventType=[string](Get-Random $types);$a[$i].Importance=[string](Get-Random @('Minor','Moderate','Important','Very Important','Central'));$a[$i].WhenType=[string](Get-Random $whens);switch($a[$i].WhenType){'Age'{$a[$i].WhenValue=[string](Get-Random -Minimum 5 -Maximum 60)}'Approximate Age'{$a[$i].WhenValue='About '+[string](Get-Random -Minimum 5 -Maximum 60)}'Year'{$a[$i].WhenValue=[string](Get-Random -Minimum 1950 -Maximum 2035)}'Life Stage'{$a[$i].WhenValue=[string](Get-Random $stages)}default{$a[$i].WhenValue=''}};$a[$i].Notes='';$a[$i].End='';Set-TimelineArray $a;Render-CurrentCharacter}
+
+---
+
+1965:                 if($tn -notmatch 'Book|Ornate'){
+1966:                     $ctrl.FlatStyle=[System.Windows.Forms.FlatStyle]::Flat;$ctrl.FlatAppearance.BorderSize=1;$ctrl.FlatAppearance.BorderColor=$brass
+1967:                     $ctrl.BackColor=[System.Drawing.Color]::FromArgb(205,170,115);$ctrl.ForeColor=$ink;$ctrl.Font=$script:FontSerif
+1968:                 }
+1969:             }
+1970:         }catch{}
+1971:         foreach($child in @($ctrl.Controls)){Style-BookControl $child}
+1972:     }
+1973:     try{Style-BookControl $leftPage;Style-BookControl $rightPage}catch{}
+1974: }
+1975: 
+1976: function Render-CurrentCharacter {
+1977:     $script:Rendering=$true
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+
+---
+
+1971:         foreach($child in @($ctrl.Controls)){Style-BookControl $child}
+1972:     }
+1973:     try{Style-BookControl $leftPage;Style-BookControl $rightPage}catch{}
+1974: }
+1975: 
+1976: function Render-CurrentCharacter {
+1977:     $script:Rendering=$true
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1991:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1992:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1993:         } elseif($script:CurrentSection -eq 'Family'){
+1994:             Render-FamilySection $c $leftHost $rightHost
+1995:         } elseif($script:CurrentSection -eq 'Relationships'){
+1996:             Render-RelationshipsSection $c $leftHost $rightHost
+
+---
+
+1972:     }
+1973:     try{Style-BookControl $leftPage;Style-BookControl $rightPage}catch{}
+1974: }
+1975: 
+1976: function Render-CurrentCharacter {
+1977:     $script:Rendering=$true
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1991:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1992:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1993:         } elseif($script:CurrentSection -eq 'Family'){
+1994:             Render-FamilySection $c $leftHost $rightHost
+1995:         } elseif($script:CurrentSection -eq 'Relationships'){
+1996:             Render-RelationshipsSection $c $leftHost $rightHost
+1997:         } elseif($script:CurrentSection -eq 'Timeline'){
+
+---
+
+1973:     try{Style-BookControl $leftPage;Style-BookControl $rightPage}catch{}
+1974: }
+1975: 
+1976: function Render-CurrentCharacter {
+1977:     $script:Rendering=$true
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1991:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1992:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1993:         } elseif($script:CurrentSection -eq 'Family'){
+1994:             Render-FamilySection $c $leftHost $rightHost
+1995:         } elseif($script:CurrentSection -eq 'Relationships'){
+1996:             Render-RelationshipsSection $c $leftHost $rightHost
+1997:         } elseif($script:CurrentSection -eq 'Timeline'){
+1998:             Render-TimelineSection $c $leftHost $rightHost
+
+---
+
+1976: function Render-CurrentCharacter {
+1977:     $script:Rendering=$true
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1991:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1992:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1993:         } elseif($script:CurrentSection -eq 'Family'){
+1994:             Render-FamilySection $c $leftHost $rightHost
+1995:         } elseif($script:CurrentSection -eq 'Relationships'){
+1996:             Render-RelationshipsSection $c $leftHost $rightHost
+1997:         } elseif($script:CurrentSection -eq 'Timeline'){
+1998:             Render-TimelineSection $c $leftHost $rightHost
+1999:         } elseif($script:CurrentSection -eq 'Powers'){
+2000:             Render-PowersSection $c $leftHost $rightHost
+2001:         } elseif($script:CurrentSection -eq 'Notes'){
+
+---
+
+1977:     $script:Rendering=$true
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1991:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1992:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1993:         } elseif($script:CurrentSection -eq 'Family'){
+1994:             Render-FamilySection $c $leftHost $rightHost
+1995:         } elseif($script:CurrentSection -eq 'Relationships'){
+1996:             Render-RelationshipsSection $c $leftHost $rightHost
+1997:         } elseif($script:CurrentSection -eq 'Timeline'){
+1998:             Render-TimelineSection $c $leftHost $rightHost
+1999:         } elseif($script:CurrentSection -eq 'Powers'){
+2000:             Render-PowersSection $c $leftHost $rightHost
+2001:         } elseif($script:CurrentSection -eq 'Notes'){
+2002:             Render-NotesSection $c $leftHost $rightHost
+
+---
+
+1978:     try {
+1979:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1980:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1981:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1982:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1983:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1984:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1985:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1986:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1987:         if($script:CurrentSection -eq 'Overview'){
+1988:             Add-OverviewExtras $c $leftHost
+1989:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1990:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1991:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1992:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1993:         } elseif($script:CurrentSection -eq 'Family'){
+1994:             Render-FamilySection $c $leftHost $rightHost
+1995:         } elseif($script:CurrentSection -eq 'Relationships'){
+1996:             Render-RelationshipsSection $c $leftHost $rightHost
+1997:         } elseif($script:CurrentSection -eq 'Timeline'){
+1998:             Render-TimelineSection $c $leftHost $rightHost
+1999:         } elseif($script:CurrentSection -eq 'Powers'){
+2000:             Render-PowersSection $c $leftHost $rightHost
+2001:         } elseif($script:CurrentSection -eq 'Notes'){
+2002:             Render-NotesSection $c $leftHost $rightHost
+2003:         } else {
+
+---
+
+2011:             elseif($type -eq 'LifeEvents'){}
+2012:             elseif($ctrl -is [System.Windows.Forms.ComboBox]){
+2013:                 if($type -eq 'EditChoice'){$ctrl.Text=$value}
+2014:                 elseif($ctrl.Items.Contains($value)){$ctrl.SelectedItem=$value}
+2015:                 elseif($ctrl.Items.Count -gt 0){$ctrl.SelectedIndex=0}
+2016:             }else{$ctrl.Text=$value}
+2017:             foreach($pnl in @($leftHost,$rightHost)){foreach($p in @($pnl.Controls)){if($p -is [System.Windows.Forms.Button] -and [string]$p.Tag -eq $key -and $p.Width -eq 30){if($p.Location.X -gt ($pnl.ClientSize.Width-55)){if(Get-LockState $c $key){$p.Text='🔒'}else{$p.Text='🔓'}}}}}
+2018:         }
+2019:         Add-BookActions $leftPage;Update-NavLabels;Apply-BookMasterSkin
+2020:     } finally {$script:Rendering=$false}
+2021: }
+2022: function Save-BrowseState {
+2023:     $c=Get-CurrentCharacter
+2024:     if($null -ne $c){$script:Settings.LastCharacterId=[string]$c.Id}
+2025:     $script:Settings.LastSection=[string]$script:CurrentSection
+2026:     $script:Settings.LastStatus=[string]$script:ActiveStatus
+2027:     try{if($null -ne $script:LeftHost){$script:Settings.ScrollLeft=[math]::Abs([int]$script:LeftHost.AutoScrollPosition.Y)}}catch{}
+2028:     try{if($null -ne $script:RightHost){$script:Settings.ScrollRight=[math]::Abs([int]$script:RightHost.AutoScrollPosition.Y)}}catch{}
+2029:     Schedule-Save
+2030: }
+2031: 
+2032: function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {
+2033:     return
+2034:     if($null -eq $book -or $book.ClientSize.Width -lt 300 -or $book.ClientSize.Height -lt 200){return}
+2035:     $count=[math]::Max(1,[math]::Min(6,$Count))
+2036:     $center=[int]($book.ClientSize.Width/2);$half=[int](($book.ClientSize.Width-56)/2);$top=22;$height=[math]::Max(120,$book.ClientSize.Height-44)
+
+---
+
+2026:     $script:Settings.LastStatus=[string]$script:ActiveStatus
+2027:     try{if($null -ne $script:LeftHost){$script:Settings.ScrollLeft=[math]::Abs([int]$script:LeftHost.AutoScrollPosition.Y)}}catch{}
+2028:     try{if($null -ne $script:RightHost){$script:Settings.ScrollRight=[math]::Abs([int]$script:RightHost.AutoScrollPosition.Y)}}catch{}
+2029:     Schedule-Save
+2030: }
+2031: 
+2032: function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {
+2033:     return
+2034:     if($null -eq $book -or $book.ClientSize.Width -lt 300 -or $book.ClientSize.Height -lt 200){return}
+2035:     $count=[math]::Max(1,[math]::Min(6,$Count))
+2036:     $center=[int]($book.ClientSize.Width/2);$half=[int](($book.ClientSize.Width-56)/2);$top=22;$height=[math]::Max(120,$book.ClientSize.Height-44)
+2037:     $frames=if($Whole){10}else{6};$pause=if($Whole){18}else{10}
+2038:     for($n=0;$n -lt $count;$n++){
+2039:         $sheet=New-Object System.Windows.Forms.Panel;$sheet.BackColor=if(($n%2)-eq 0){[System.Drawing.Color]::FromArgb(245,225,188)}else{[System.Drawing.Color]::FromArgb(234,210,170)}
+2040:         $sheet.Top=$top;$sheet.Height=$height;$sheet.Width=$half;$sheet.Left=if($Direction -ge 0){$center}else{$center-$half}
+2041:         $sheet.BorderStyle='FixedSingle';$book.Controls.Add($sheet);$sheet.BringToFront();$book.Refresh()
+2042:         # Fold the source page toward the gutter.
+2043:         for($f=0;$f -le $frames;$f++){
+2044:             $remain=[math]::Max(10,[int]($half*(1-($f/$frames))))
+2045:             $sheet.Width=$remain
+2046:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+2047:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2048:         }
+2049:         # Open the sheet onto the destination side.
+2050:         for($f=1;$f -le $frames;$f++){
+2051:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+
+---
+
+2028:     try{if($null -ne $script:RightHost){$script:Settings.ScrollRight=[math]::Abs([int]$script:RightHost.AutoScrollPosition.Y)}}catch{}
+2029:     Schedule-Save
+2030: }
+2031: 
+2032: function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {
+2033:     return
+2034:     if($null -eq $book -or $book.ClientSize.Width -lt 300 -or $book.ClientSize.Height -lt 200){return}
+2035:     $count=[math]::Max(1,[math]::Min(6,$Count))
+2036:     $center=[int]($book.ClientSize.Width/2);$half=[int](($book.ClientSize.Width-56)/2);$top=22;$height=[math]::Max(120,$book.ClientSize.Height-44)
+2037:     $frames=if($Whole){10}else{6};$pause=if($Whole){18}else{10}
+2038:     for($n=0;$n -lt $count;$n++){
+2039:         $sheet=New-Object System.Windows.Forms.Panel;$sheet.BackColor=if(($n%2)-eq 0){[System.Drawing.Color]::FromArgb(245,225,188)}else{[System.Drawing.Color]::FromArgb(234,210,170)}
+2040:         $sheet.Top=$top;$sheet.Height=$height;$sheet.Width=$half;$sheet.Left=if($Direction -ge 0){$center}else{$center-$half}
+2041:         $sheet.BorderStyle='FixedSingle';$book.Controls.Add($sheet);$sheet.BringToFront();$book.Refresh()
+2042:         # Fold the source page toward the gutter.
+2043:         for($f=0;$f -le $frames;$f++){
+2044:             $remain=[math]::Max(10,[int]($half*(1-($f/$frames))))
+2045:             $sheet.Width=$remain
+2046:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+2047:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2048:         }
+2049:         # Open the sheet onto the destination side.
+2050:         for($f=1;$f -le $frames;$f++){
+2051:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+2052:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+2053:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+
+---
+
+2033:     return
+2034:     if($null -eq $book -or $book.ClientSize.Width -lt 300 -or $book.ClientSize.Height -lt 200){return}
+2035:     $count=[math]::Max(1,[math]::Min(6,$Count))
+2036:     $center=[int]($book.ClientSize.Width/2);$half=[int](($book.ClientSize.Width-56)/2);$top=22;$height=[math]::Max(120,$book.ClientSize.Height-44)
+2037:     $frames=if($Whole){10}else{6};$pause=if($Whole){18}else{10}
+2038:     for($n=0;$n -lt $count;$n++){
+2039:         $sheet=New-Object System.Windows.Forms.Panel;$sheet.BackColor=if(($n%2)-eq 0){[System.Drawing.Color]::FromArgb(245,225,188)}else{[System.Drawing.Color]::FromArgb(234,210,170)}
+2040:         $sheet.Top=$top;$sheet.Height=$height;$sheet.Width=$half;$sheet.Left=if($Direction -ge 0){$center}else{$center-$half}
+2041:         $sheet.BorderStyle='FixedSingle';$book.Controls.Add($sheet);$sheet.BringToFront();$book.Refresh()
+2042:         # Fold the source page toward the gutter.
+2043:         for($f=0;$f -le $frames;$f++){
+2044:             $remain=[math]::Max(10,[int]($half*(1-($f/$frames))))
+2045:             $sheet.Width=$remain
+2046:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+2047:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2048:         }
+2049:         # Open the sheet onto the destination side.
+2050:         for($f=1;$f -le $frames;$f++){
+2051:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+2052:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+2053:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2054:         }
+2055:         $book.Controls.Remove($sheet);$sheet.Dispose();$book.Refresh()
+2056:     }
+2057: }
+2058: 
+
+---
+
+2039:         $sheet=New-Object System.Windows.Forms.Panel;$sheet.BackColor=if(($n%2)-eq 0){[System.Drawing.Color]::FromArgb(245,225,188)}else{[System.Drawing.Color]::FromArgb(234,210,170)}
+2040:         $sheet.Top=$top;$sheet.Height=$height;$sheet.Width=$half;$sheet.Left=if($Direction -ge 0){$center}else{$center-$half}
+2041:         $sheet.BorderStyle='FixedSingle';$book.Controls.Add($sheet);$sheet.BringToFront();$book.Refresh()
+2042:         # Fold the source page toward the gutter.
+2043:         for($f=0;$f -le $frames;$f++){
+2044:             $remain=[math]::Max(10,[int]($half*(1-($f/$frames))))
+2045:             $sheet.Width=$remain
+2046:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+2047:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2048:         }
+2049:         # Open the sheet onto the destination side.
+2050:         for($f=1;$f -le $frames;$f++){
+2051:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+2052:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+2053:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2054:         }
+2055:         $book.Controls.Remove($sheet);$sheet.Dispose();$book.Refresh()
+2056:     }
+2057: }
+2058: 
+2059: function Go-ToSection([string]$Target) {
+2060:     if([string]::IsNullOrWhiteSpace($Target) -or $Target -eq $script:CurrentSection){return}
+2061:     $from=[array]::IndexOf($script:SectionOrder,$script:CurrentSection)
+2062:     $to=[array]::IndexOf($script:SectionOrder,$Target)
+2063:     if($from -lt 0 -or $to -lt 0){$script:CurrentSection=$Target;Render-CurrentCharacter;return}
+2064:     Save-BrowseState
+
+---
+
+2045:             $sheet.Width=$remain
+2046:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+2047:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2048:         }
+2049:         # Open the sheet onto the destination side.
+2050:         for($f=1;$f -le $frames;$f++){
+2051:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+2052:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+2053:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2054:         }
+2055:         $book.Controls.Remove($sheet);$sheet.Dispose();$book.Refresh()
+2056:     }
+2057: }
+2058: 
+2059: function Go-ToSection([string]$Target) {
+2060:     if([string]::IsNullOrWhiteSpace($Target) -or $Target -eq $script:CurrentSection){return}
+2061:     $from=[array]::IndexOf($script:SectionOrder,$script:CurrentSection)
+2062:     $to=[array]::IndexOf($script:SectionOrder,$Target)
+2063:     if($from -lt 0 -or $to -lt 0){$script:CurrentSection=$Target;Render-CurrentCharacter;return}
+2064:     Save-BrowseState
+2065:     $direction=if($to -gt $from){1}else{-1}
+2066:     $distance=[math]::Abs($to-$from)
+2067:     Animate-BookPages $direction $distance $false
+2068:     $script:CurrentSection=$Target
+2069:     $script:Settings.LastSection=$Target
+2070:     Render-CurrentCharacter
+
+---
+
+2047:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2048:         }
+2049:         # Open the sheet onto the destination side.
+2050:         for($f=1;$f -le $frames;$f++){
+2051:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+2052:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+2053:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+2054:         }
+2055:         $book.Controls.Remove($sheet);$sheet.Dispose();$book.Refresh()
+2056:     }
+2057: }
+2058: 
+2059: function Go-ToSection([string]$Target) {
+2060:     if([string]::IsNullOrWhiteSpace($Target) -or $Target -eq $script:CurrentSection){return}
+2061:     $from=[array]::IndexOf($script:SectionOrder,$script:CurrentSection)
+2062:     $to=[array]::IndexOf($script:SectionOrder,$Target)
+2063:     if($from -lt 0 -or $to -lt 0){$script:CurrentSection=$Target;Render-CurrentCharacter;return}
+2064:     Save-BrowseState
+2065:     $direction=if($to -gt $from){1}else{-1}
+2066:     $distance=[math]::Abs($to-$from)
+2067:     Animate-BookPages $direction $distance $false
+2068:     $script:CurrentSection=$Target
+2069:     $script:Settings.LastSection=$Target
+2070:     Render-CurrentCharacter
+2071:     Schedule-Save
+2072: }
+
+---
+
+2068:     $script:CurrentSection=$Target
+2069:     $script:Settings.LastSection=$Target
+2070:     Render-CurrentCharacter
+2071:     Schedule-Save
+2072: }
+2073: 
+2074: function Update-NavLabels {
+2075:     $c=Get-CurrentCharacter
+2076:     if($null -eq $c){ $currentNav.Text='NO CHARACTER'; $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›'; return }
+2077:     $name='Untitled Character'; if($c.Fields.FullName){$name=[string]$c.Fields.FullName}
+2078:     $currentNav.Text="CURRENT`r`n$name"
+2079:     if($script:Filtered.Count -gt 1){
+2080:         $pi=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $ni=($script:CurrentIndex+1)%$script:Filtered.Count
+2081:         $pn='Untitled'; if($script:Filtered[$pi].Fields.FullName){$pn=$script:Filtered[$pi].Fields.FullName}
+2082:         $nn='Untitled'; if($script:Filtered[$ni].Fields.FullName){$nn=$script:Filtered[$ni].Fields.FullName}
+2083:         $prevBtn.Text="‹  PREVIOUS`r`n$pn"; $nextBtn.Text="NEXT  ›`r`n$nn"
+2084:     } else { $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›' }
+2085: }
+2086: function Refresh-StoryFilter {
+2087:     $wasRendering = $script:Rendering
+2088:     $script:Rendering = $true
+2089:     try {
+2090:         $current=[string]$storyFilter.SelectedItem
+2091:         $stories=@($script:Characters | ForEach-Object {[string]$_.Fields.StoryTitle} | Where-Object {$_} | Sort-Object -Unique)
+2092:         $storyFilter.Items.Clear(); [void]$storyFilter.Items.Add('All Stories'); foreach($s in $stories){[void]$storyFilter.Items.Add($s)}
+2093:         if($current -and $storyFilter.Items.Contains($current)){$storyFilter.SelectedItem=$current}else{$storyFilter.SelectedIndex=0}
+
+---
+
+2070:     Render-CurrentCharacter
+2071:     Schedule-Save
+2072: }
+2073: 
+2074: function Update-NavLabels {
+2075:     $c=Get-CurrentCharacter
+2076:     if($null -eq $c){ $currentNav.Text='NO CHARACTER'; $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›'; return }
+2077:     $name='Untitled Character'; if($c.Fields.FullName){$name=[string]$c.Fields.FullName}
+2078:     $currentNav.Text="CURRENT`r`n$name"
+2079:     if($script:Filtered.Count -gt 1){
+2080:         $pi=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $ni=($script:CurrentIndex+1)%$script:Filtered.Count
+2081:         $pn='Untitled'; if($script:Filtered[$pi].Fields.FullName){$pn=$script:Filtered[$pi].Fields.FullName}
+2082:         $nn='Untitled'; if($script:Filtered[$ni].Fields.FullName){$nn=$script:Filtered[$ni].Fields.FullName}
+2083:         $prevBtn.Text="‹  PREVIOUS`r`n$pn"; $nextBtn.Text="NEXT  ›`r`n$nn"
+2084:     } else { $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›' }
+2085: }
+2086: function Refresh-StoryFilter {
+2087:     $wasRendering = $script:Rendering
+2088:     $script:Rendering = $true
+2089:     try {
+2090:         $current=[string]$storyFilter.SelectedItem
+2091:         $stories=@($script:Characters | ForEach-Object {[string]$_.Fields.StoryTitle} | Where-Object {$_} | Sort-Object -Unique)
+2092:         $storyFilter.Items.Clear(); [void]$storyFilter.Items.Add('All Stories'); foreach($s in $stories){[void]$storyFilter.Items.Add($s)}
+2093:         if($current -and $storyFilter.Items.Contains($current)){$storyFilter.SelectedItem=$current}else{$storyFilter.SelectedIndex=0}
+2094:     } finally { $script:Rendering = $wasRendering }
+2095: }
+
+---
+
+2075:     $c=Get-CurrentCharacter
+2076:     if($null -eq $c){ $currentNav.Text='NO CHARACTER'; $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›'; return }
+2077:     $name='Untitled Character'; if($c.Fields.FullName){$name=[string]$c.Fields.FullName}
+2078:     $currentNav.Text="CURRENT`r`n$name"
+2079:     if($script:Filtered.Count -gt 1){
+2080:         $pi=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $ni=($script:CurrentIndex+1)%$script:Filtered.Count
+2081:         $pn='Untitled'; if($script:Filtered[$pi].Fields.FullName){$pn=$script:Filtered[$pi].Fields.FullName}
+2082:         $nn='Untitled'; if($script:Filtered[$ni].Fields.FullName){$nn=$script:Filtered[$ni].Fields.FullName}
+2083:         $prevBtn.Text="‹  PREVIOUS`r`n$pn"; $nextBtn.Text="NEXT  ›`r`n$nn"
+2084:     } else { $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›' }
+2085: }
+2086: function Refresh-StoryFilter {
+2087:     $wasRendering = $script:Rendering
+2088:     $script:Rendering = $true
+2089:     try {
+2090:         $current=[string]$storyFilter.SelectedItem
+2091:         $stories=@($script:Characters | ForEach-Object {[string]$_.Fields.StoryTitle} | Where-Object {$_} | Sort-Object -Unique)
+2092:         $storyFilter.Items.Clear(); [void]$storyFilter.Items.Add('All Stories'); foreach($s in $stories){[void]$storyFilter.Items.Add($s)}
+2093:         if($current -and $storyFilter.Items.Contains($current)){$storyFilter.SelectedItem=$current}else{$storyFilter.SelectedIndex=0}
+2094:     } finally { $script:Rendering = $wasRendering }
+2095: }
+2096: function Refresh-Navigation {
+2097:     param([string]$KeepId='', [switch]$NoRender)
+2098:     if(-not $KeepId){ $cur=Get-CurrentCharacter; if($null -ne $cur){$KeepId=[string]$cur.Id} }
+2099:     $q=$searchBox.Text.Trim().ToLowerInvariant(); $sf=[string]$storyFilter.SelectedItem
+2100:     $list=@($script:Characters | Where-Object {
+
+---
+
+2076:     if($null -eq $c){ $currentNav.Text='NO CHARACTER'; $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›'; return }
+2077:     $name='Untitled Character'; if($c.Fields.FullName){$name=[string]$c.Fields.FullName}
+2078:     $currentNav.Text="CURRENT`r`n$name"
+2079:     if($script:Filtered.Count -gt 1){
+2080:         $pi=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $ni=($script:CurrentIndex+1)%$script:Filtered.Count
+2081:         $pn='Untitled'; if($script:Filtered[$pi].Fields.FullName){$pn=$script:Filtered[$pi].Fields.FullName}
+2082:         $nn='Untitled'; if($script:Filtered[$ni].Fields.FullName){$nn=$script:Filtered[$ni].Fields.FullName}
+2083:         $prevBtn.Text="‹  PREVIOUS`r`n$pn"; $nextBtn.Text="NEXT  ›`r`n$nn"
+2084:     } else { $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›' }
+2085: }
+2086: function Refresh-StoryFilter {
+2087:     $wasRendering = $script:Rendering
+2088:     $script:Rendering = $true
+2089:     try {
+2090:         $current=[string]$storyFilter.SelectedItem
+2091:         $stories=@($script:Characters | ForEach-Object {[string]$_.Fields.StoryTitle} | Where-Object {$_} | Sort-Object -Unique)
+2092:         $storyFilter.Items.Clear(); [void]$storyFilter.Items.Add('All Stories'); foreach($s in $stories){[void]$storyFilter.Items.Add($s)}
+2093:         if($current -and $storyFilter.Items.Contains($current)){$storyFilter.SelectedItem=$current}else{$storyFilter.SelectedIndex=0}
+2094:     } finally { $script:Rendering = $wasRendering }
+2095: }
+2096: function Refresh-Navigation {
+2097:     param([string]$KeepId='', [switch]$NoRender)
+2098:     if(-not $KeepId){ $cur=Get-CurrentCharacter; if($null -ne $cur){$KeepId=[string]$cur.Id} }
+2099:     $q=$searchBox.Text.Trim().ToLowerInvariant(); $sf=[string]$storyFilter.SelectedItem
+2100:     $list=@($script:Characters | Where-Object {
+2101:         $_.FileStatus -eq $script:ActiveStatus -and
+
+---
+
+2109:     try {
+2110:         $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+2111:         if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+2112:     } finally {$script:Rendering=$wasRendering}
+2113:     Refresh-StoryFilter
+2114:     if(-not $NoRender){Render-CurrentCharacter}else{Update-NavLabels}
+2115: }
+2116: 
+2117: $prevBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages -1 1 $true; $script:CurrentIndex=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+2118: $nextBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages 1 1 $true; $script:CurrentIndex=($script:CurrentIndex+1)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+2119: $newBtn.Add_Click({ $c=New-CharacterRecord; $script:Characters+=,$c; $script:ActiveStatus='Blank'; Schedule-Save; Refresh-Navigation -KeepId $c.Id })
+2120: $deleteBtn.Add_Click({ $c=Get-CurrentCharacter; if($null -eq $c){return}; $nm='this blank file'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; if((Show-Confirm "Delete $nm?`r`n`r`nThis removes the character record. Portrait files are left in your data folder for safety.") -eq [System.Windows.Forms.DialogResult]::Yes){ $id=$c.Id; $script:Characters=@($script:Characters | Where-Object {$_.Id -ne $id}); Save-AllData; Refresh-Navigation } })
+2121: $searchBox.Add_TextChanged({ Refresh-Navigation })
+2122: $storyFilter.Add_SelectedIndexChanged({ if(-not $script:Rendering){ Refresh-Navigation } })
+2123: $jumpCombo.Add_SelectedIndexChanged({ if(-not $script:Rendering -and $jumpCombo.SelectedIndex -ge 0 -and $jumpCombo.SelectedIndex -lt $script:Filtered.Count){Save-BrowseState;$dir=if($jumpCombo.SelectedIndex -ge $script:CurrentIndex){1}else{-1};Animate-BookPages $dir 1 $true;$script:CurrentIndex=$jumpCombo.SelectedIndex;Render-CurrentCharacter;Save-BrowseState} })
+2124: $form.Add_FormClosing({ Save-BrowseState; Save-AllData })
+2125: 
+2126: # First-run convenience: start with one genuinely blank page, not a fake example character.
+2127: if($script:Characters.Count -eq 0){ $script:Characters += ,(New-CharacterRecord); Save-AllData; $script:ActiveStatus='Blank' }
+2128: 
+2129: Refresh-StoryFilter
+2130: Refresh-Navigation -KeepId ([string]$script:Settings.LastCharacterId)
+2131: 
+2132: # Final layout pass after the real window handle, DPI scale, and Dock layout exist.
+2133: # Without this, some Windows setups can retain startup bounds for the right page and
+2134: # leave header/navigation controls piled at their default 0,0 positions.
+
+---
+
+2110:         $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+2111:         if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+2112:     } finally {$script:Rendering=$wasRendering}
+2113:     Refresh-StoryFilter
+2114:     if(-not $NoRender){Render-CurrentCharacter}else{Update-NavLabels}
+2115: }
+2116: 
+2117: $prevBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages -1 1 $true; $script:CurrentIndex=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+2118: $nextBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages 1 1 $true; $script:CurrentIndex=($script:CurrentIndex+1)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+2119: $newBtn.Add_Click({ $c=New-CharacterRecord; $script:Characters+=,$c; $script:ActiveStatus='Blank'; Schedule-Save; Refresh-Navigation -KeepId $c.Id })
+2120: $deleteBtn.Add_Click({ $c=Get-CurrentCharacter; if($null -eq $c){return}; $nm='this blank file'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; if((Show-Confirm "Delete $nm?`r`n`r`nThis removes the character record. Portrait files are left in your data folder for safety.") -eq [System.Windows.Forms.DialogResult]::Yes){ $id=$c.Id; $script:Characters=@($script:Characters | Where-Object {$_.Id -ne $id}); Save-AllData; Refresh-Navigation } })
+2121: $searchBox.Add_TextChanged({ Refresh-Navigation })
+2122: $storyFilter.Add_SelectedIndexChanged({ if(-not $script:Rendering){ Refresh-Navigation } })
+2123: $jumpCombo.Add_SelectedIndexChanged({ if(-not $script:Rendering -and $jumpCombo.SelectedIndex -ge 0 -and $jumpCombo.SelectedIndex -lt $script:Filtered.Count){Save-BrowseState;$dir=if($jumpCombo.SelectedIndex -ge $script:CurrentIndex){1}else{-1};Animate-BookPages $dir 1 $true;$script:CurrentIndex=$jumpCombo.SelectedIndex;Render-CurrentCharacter;Save-BrowseState} })
+2124: $form.Add_FormClosing({ Save-BrowseState; Save-AllData })
+2125: 
+2126: # First-run convenience: start with one genuinely blank page, not a fake example character.
+2127: if($script:Characters.Count -eq 0){ $script:Characters += ,(New-CharacterRecord); Save-AllData; $script:ActiveStatus='Blank' }
+2128: 
+2129: Refresh-StoryFilter
+2130: Refresh-Navigation -KeepId ([string]$script:Settings.LastCharacterId)
+2131: 
+2132: # Final layout pass after the real window handle, DPI scale, and Dock layout exist.
+2133: # Without this, some Windows setups can retain startup bounds for the right page and
+2134: # leave header/navigation controls piled at their default 0,0 positions.
+2135: $form.Add_Shown({
