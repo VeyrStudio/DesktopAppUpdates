@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-cipher",
   "appName": "The Cipher",
-  "version": "1.0.3",
-  "payloadSha256": "f6560bdc7e4a39d0eadab62ff69be32cd1a9381a24a035604b49bc8c307afffb",
+  "version": "1.0.4",
+  "payloadSha256": "95a14478dc13d9b6ec2278a13428477aca992b4c5b693d07e77f51cd3e6236f9",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.3.txt",
-      "sha256": "f6560bdc7e4a39d0eadab62ff69be32cd1a9381a24a035604b49bc8c307afffb"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.4-taskbar.txt",
+      "sha256": "95a14478dc13d9b6ec2278a13428477aca992b4c5b693d07e77f51cd3e6236f9"
     }
   ],
-  "notes": "Updates The Cipher app icon to the new forbidden-love artwork for the window, taskbar/Alt+Tab, and shortcuts."
+  "notes": "Fixes the running Windows taskbar/toolbar icon by giving The Cipher its own Windows AppUserModelID and explicitly applying the custom icon to the native window."
 }
