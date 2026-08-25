@@ -1,0 +1,48 @@
+name: The Files Hide Console v0.2.27
+on:
+  push:
+    paths:
+      - 'tools/the-files-hide-console-v0227.py'
+      - '.github/workflows/the-files-hide-console-v0227.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build console-hide release
+        shell: pwsh
+        run: python tools/the-files-hide-console-v0227.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.hide-console-v0227-validation/TheFiles.ps1','.hide-console-v0227-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/hide-console-0.2.27-validation.json';$r=Get-Content $p -Raw|ConvertFrom-Json;$r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force;$r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate package and launcher markers
+        shell: python
+        run: |
+          import json,pathlib,hashlib,base64,gzip
+          r=pathlib.Path('.');v=json.loads((r/'the-files/hide-console-0.2.27-validation.json').read_text(encoding='utf-8-sig'));b=(r/'the-files'/v['payload']).read_bytes();assert hashlib.sha256(b).hexdigest()==v['payloadSha256'];p=json.loads(b.decode());assert p['version']=='0.2.27';fs={f['path']:f for f in p['files']};assert {'TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'}<=set(fs)
+          for f in p['files']:
+              data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
+          launcher=base64.b64decode(fs['TheFiles.ps1']['contentBase64']).decode('utf-8-sig');core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==core
+          for s in ['# --- Hide bootstrap console window ---','GetConsoleWindow','ShowWindow($consoleHandle, 0)','function Install-Update']:
+              assert s in launcher,s
+          c=core.decode('utf-8-sig')
+          for s in ['function Render-NotesSection','function Render-TimelineSection','function Render-PowersSection',"'Story' = @("]:
+              assert s in c,s
+          print('Console-hide package validated')
+      - name: Commit validated payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.27-hide-console-part-001.txt' 'the-files/hide-console-0.2.27-validation.json';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.27 console hide';git pull --rebase origin main;git push origin main}
