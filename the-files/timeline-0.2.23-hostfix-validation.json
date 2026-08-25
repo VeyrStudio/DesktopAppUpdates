@@ -1,0 +1,18 @@
+﻿{
+    "version":  "0.2.23",
+    "baseVersion":  "0.2.22",
+    "payload":  "payload-0.2.23-timeline-hostfix-part-001.txt",
+    "payloadSha256":  "6ccba6e392ac23998f7540590159488069bd3a0ea76c2a54f8cf2725cbf6ba54",
+    "requirements":  {
+                         "timelineHostParameterRenamed":  true,
+                         "readOnlyHostCollisionRemoved":  true,
+                         "timelinePreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "compressedCoreIncluded":  true,
+                         "uncompressedCoreIncluded":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
