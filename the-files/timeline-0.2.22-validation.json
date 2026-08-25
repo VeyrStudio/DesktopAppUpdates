@@ -1,0 +1,29 @@
+﻿{
+    "version":  "0.2.22",
+    "baseVersion":  "0.2.21",
+    "payload":  "payload-0.2.22-timeline-builder-part-001.txt",
+    "payloadSha256":  "76eb7fd24fc6711b38f4eade116ba53fcb2a8860d94598f14c8e567b18db50db",
+    "requirements":  {
+                         "oldTimelineTextboxRemoved":  true,
+                         "repeatableTimelineEvents":  true,
+                         "eventName":  true,
+                         "whenTypeAndValue":  true,
+                         "eventType":  true,
+                         "importance":  true,
+                         "notes":  true,
+                         "optionalEnd":  true,
+                         "visualTimeline":  true,
+                         "chronologicalSorting":  true,
+                         "manualReorder":  true,
+                         "zoomControls":  true,
+                         "eventRandomization":  true,
+                         "timelineRandomization":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "compressedCoreIncluded":  true,
+                         "uncompressedCoreIncluded":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
