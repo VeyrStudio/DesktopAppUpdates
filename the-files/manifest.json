@@ -2,14 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.28",
-  "payloadSha256": "9718f21f3dc07565d0728eb630f0db05c4906fa676cee8312660583422f45804",
+  "version": "0.2.29",
+  "payloadSha256": "7a45eaa463972e52b0d5f407a1587fb95469e5bb12a354bd2cfd4d55c9dd2723",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/065b8dcc688a6f4b6ba5e3a74505de94cf6410ec/the-files/payload-0.2.28-hidden-relaunch-part-001.txt",
-      "sha256": "9718f21f3dc07565d0728eb630f0db05c4906fa676cee8312660583422f45804"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/0cb53a3ec1a4e4a94dd8fff1f796fc34d01ee49b/the-files/payload-0.2.29-color-persistence-part-001.txt",
+      "sha256": "7a45eaa463972e52b0d5f407a1587fb95469e5bb12a354bd2cfd4d55c9dd2723"
     }
   ],
-  "notes": "Launcher handoff repair on stable v0.2.27. Instead of relying on hiding an already-created PowerShell console, the existing TheFiles.ps1 bootstrap now immediately hands off through wscript.exe to a hidden PowerShell process, then exits. The user's existing shortcut remains unchanged; the hidden process runs the updater and The Files normally. Preserves the bootstrap updater, custom Notes workspace, Timeline, Story, Powers, separate user data, and both runnable/compressed core files. All internal per-file SHA-256 values were recomputed and verified, the compressed core matches the runnable core, and Windows PowerShell parsing passed before publish.
-"
+  "notes": "Color persistence repair on stable v0.2.28. Color Palette entries now serialize as proper JSON arrays even when only one color exists, persist across Notes refreshes and app restarts, and save immediately after color changes. The color picker's custom color slots are also stored in settings and restored the next time the picker opens. The same one-item array fix also protects Aliases, Tags, and Aesthetic Tags. This release also repairs the malformed v0.2.28 manifest JSON while preserving custom Notes, Timeline, Story, Powers, updater behavior, launcher changes, separate user data, and verified package hashes."
 }
