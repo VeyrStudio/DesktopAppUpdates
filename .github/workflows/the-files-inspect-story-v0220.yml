@@ -1,0 +1,43 @@
+name: Inspect The Files v0.2.20 Story
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-inspect-story-v0220.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract Story and Overview definitions
+        shell: pwsh
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,base64,re
+          r=Path('.')
+          m=json.loads((r/'the-files/manifest.json').read_text())
+          b=b''.join((r/'the-files'/p['url'].rsplit('/',1)[-1]).read_bytes() for p in m['payloadParts'])
+          p=json.loads(b.decode())
+          fs={f['path']:f for f in p['files']}
+          core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig')
+          lines=core.splitlines()
+          keys=('StoryTitle','CharacterTier','StoryRole','CharacterRole','POV','FirstAppearance','LastAppearance','MainGoal','ShortTermGoal','LongTermGoal','Motivation','InternalConflict','ExternalConflict','RelationshipConflict','FatalFlaw','Archetype','BeginningState','MiddleState','MajorTurningPoint','EndingState','ImportantScenes','PlotRelevance')
+          out=[]
+          for i,line in enumerate(lines,1):
+              if any(k in line for k in keys) or "'Story'" in line or '"Story"' in line:
+                  out.append(f'{i}: {line}')
+          (r/'tools/current-story-v0.2.20.txt').write_text('\n'.join(out),encoding='utf-8')
+          PY
+      - name: Commit inspection
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tools/current-story-v0.2.20.txt
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Inspect The Files v0.2.20 Story definitions';git pull --rebase origin main;git push origin main}
