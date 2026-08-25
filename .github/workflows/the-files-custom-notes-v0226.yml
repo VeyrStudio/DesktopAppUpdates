@@ -1,0 +1,46 @@
+name: The Files Custom Notes v0.2.26
+on:
+  push:
+    paths:
+      - 'tools/the-files-custom-notes-v0226.py'
+      - '.github/workflows/the-files-custom-notes-v0226.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build custom Notes release
+        shell: pwsh
+        run: python tools/the-files-custom-notes-v0226.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.notes-v0226-validation/TheFiles.ps1','.notes-v0226-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/custom-notes-0.2.26-validation.json';$r=Get-Content $p -Raw|ConvertFrom-Json;$r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force;$r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate package and custom Notes markers
+        shell: python
+        run: |
+          import json,pathlib,hashlib,base64,gzip
+          r=pathlib.Path('.');v=json.loads((r/'the-files/custom-notes-0.2.26-validation.json').read_text(encoding='utf-8-sig'));b=(r/'the-files'/v['payload']).read_bytes();assert hashlib.sha256(b).hexdigest()==v['payloadSha256'];p=json.loads(b.decode());assert p['version']=='0.2.26';fs={f['path']:f for f in p['files']};assert {'TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'}<=set(fs)
+          for f in p['files']:
+              data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
+          raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw;c=raw.decode('utf-8-sig')
+          for s in ['function Render-NotesSection','function Add-MoodBoardImages',"CurrentSection -eq 'Notes'",'function Render-ImportantObjectsEditor','System.Windows.Forms.ColorDialog','MoodBoards','function Render-TimelineSection','function Render-PowersSection',"'Story' = @("]:
+              assert s in c,s
+          assert 'function Add-TimelineField($host,' not in c
+          print('Custom Notes package validated')
+      - name: Commit validated payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.26-custom-notes-part-001.txt' 'the-files/custom-notes-0.2.26-validation.json';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.26 custom Notes';git pull --rebase origin main;git push origin main}
