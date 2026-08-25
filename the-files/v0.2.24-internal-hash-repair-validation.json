@@ -1,0 +1,24 @@
+﻿{
+    "version":  "0.2.24",
+    "baseVersion":  "0.2.23",
+    "payload":  "payload-0.2.24-internal-hash-repair-part-001.txt",
+    "payloadSha256":  "b5c2f75e232d67433a0bdebb53d5ba7a96ced902fb987938cb238692705e2333",
+    "requirements":  {
+                         "timelineSourcePreserved":  true,
+                         "timelineHostFixPreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "allInternalHashesRecomputed":  true,
+                         "allInternalHashesVerified":  true,
+                         "compressedCoreMatchesRunnableCore":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "userDataUntouched":  true
+                     },
+    "fileHashes":  {
+                       "TheFiles.ps1":  "17a03092f4467f3d7228e3fd22245a4e1bf025f2fa98499d51c8b751ec489880",
+                       "TheFilesCore.ps1.gz":  "baa3b5ced0cb7f23730094ba684d03dc53d98f722f92eabbfa448ce1c128392a",
+                       "AppVersion.json":  "9568f2e4e52cb8c442be81b0719db4a360bb6c95c4d21aa723844064348bb6b3",
+                       "TheFilesCore.ps1":  "feed29b2216eb204274a99b615288411e163b457dd3871f5639ca58041af0e39"
+                   },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
