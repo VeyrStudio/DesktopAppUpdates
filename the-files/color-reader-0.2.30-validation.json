@@ -1,0 +1,22 @@
+{
+  "version": "0.2.30",
+  "baseVersion": "0.2.29",
+  "payload": "payload-0.2.30-color-reader-fix-part-001.txt",
+  "payloadSha256": "17ea04faf5f3b148d2becf95b4eda3e118394525758008c345a6fc8c17a5d67e",
+  "requirements": {
+    "singleItemJsonArrayReaderFixed": true,
+    "multiItemJsonArrayReaderPreserved": true,
+    "singleColorSurvivesRefresh": true,
+    "aliasesTagsAestheticTagsReaderAlsoFixed": true,
+    "customColorPickerPersistencePreserved": true,
+    "customNotesPreserved": true,
+    "timelinePreserved": true,
+    "storyPreserved": true,
+    "powersPreserved": true,
+    "allInternalHashesVerified": true,
+    "compressedCoreMatchesRunnableCore": true,
+    "userDataUntouched": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "swatchRoundTrip": "passed-one-and-many-windows-powershell-tests"
+}
