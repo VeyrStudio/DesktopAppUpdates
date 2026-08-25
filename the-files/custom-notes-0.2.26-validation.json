@@ -1,0 +1,27 @@
+﻿{
+    "version":  "0.2.26",
+    "baseVersion":  "0.2.25",
+    "payload":  "payload-0.2.26-custom-notes-part-001.txt",
+    "payloadSha256":  "8034b810d09b28da200bf167662e08a270a45568d76f813767c9c4b513d784b8",
+    "requirements":  {
+                         "customNotesRenderer":  true,
+                         "aliasesRepeatable":  true,
+                         "tagsAsChips":  true,
+                         "moodBoardImages":  true,
+                         "moodBoardCopiesIntoDataMedia":  true,
+                         "moodBoardReorderRemove":  true,
+                         "legacyMoodBoardNotesPreserved":  true,
+                         "aestheticTagsAsChips":  true,
+                         "colorPaletteSwatches":  true,
+                         "importantObjectsRepeatableStructured":  true,
+                         "timelinePreserved":  true,
+                         "timelineHostFixPreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "allInternalHashesVerified":  true,
+                         "compressedCoreMatchesRunnableCore":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "userDataSeparate":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
