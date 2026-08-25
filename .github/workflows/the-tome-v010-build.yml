@@ -1,0 +1,81 @@
+name: Build The Tome v0.1.0
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/the-tome-v010-build.yml'
+      - 'the-tome/build/source-v0.1.0.zip'
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Expand source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path tome-build | Out-Null
+          Expand-Archive -Path the-tome/build/source-v0.1.0.zip -DestinationPath tome-build -Force
+          New-Item -ItemType Directory -Force -Path tome-build/assets | Out-Null
+      - name: Create bundled artwork assets
+        shell: pwsh
+        run: |
+          python -m pip install pillow
+          @'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          p=Path('tome-build/assets')
+          w,h=1400,900
+          im=Image.new('RGB',(w,h))
+          px=im.load()
+          for y in range(h):
+              t=y/(h-1)
+              for x in range(w):
+                  edge=min(x,w-1-x,y,h-1-y)/min(w,h)
+                  glow=max(0,min(1,edge*5))
+                  r=int(20+18*(1-t)+7*glow); g=int(8+7*glow); b=int(31+24*(1-t)+12*glow)
+                  px[x,y]=(r,g,b)
+          d=ImageDraw.Draw(im,'RGBA')
+          for off in (24,34,44): d.rounded_rectangle((off,off,w-off,h-off),radius=28,outline=(145,105,170,45),width=2)
+          for x in range(60,w-60,160):
+              d.arc((x-70,-85,x+70,85),0,180,fill=(190,145,205,28),width=2)
+              d.arc((x-70,h-85,x+70,h+85),180,360,fill=(190,145,205,28),width=2)
+          im.save(p/'background.jpg',quality=91)
+
+          ico=Image.new('RGBA',(256,256),(22,8,31,255)); q=ImageDraw.Draw(ico,'RGBA')
+          q.rounded_rectangle((48,24,204,232),radius=17,fill=(73,37,100,255),outline=(201,171,108,255),width=7)
+          q.line((62,42,62,217),fill=(130,92,154,255),width=4)
+          q.rounded_rectangle((185,76,220,179),radius=8,fill=(76,62,72,255),outline=(194,168,118,255),width=5)
+          q.ellipse((86,68,165,147),fill=(220,211,226,255))
+          q.ellipse((109,58,176,136),fill=(73,37,100,255))
+          q.arc((67,41,187,203),210,510,fill=(173,139,184,150),width=3)
+          ico.save(p/'TheTome.ico',sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])
+          '@ | Set-Content -Encoding UTF8 make_assets.py
+          python make_assets.py
+      - name: Install dependencies
+        working-directory: tome-build
+        run: npm install --no-audit --no-fund
+      - name: Build Windows installer
+        working-directory: tome-build
+        shell: pwsh
+        run: npx electron-builder --win nsis --x64
+      - name: List build output
+        shell: pwsh
+        run: Get-ChildItem tome-build/dist -Recurse | Select-Object FullName,Length
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: The-Tome-v0.1.0-Windows-Installer
+          path: tome-build/dist/*.exe
+          if-no-files-found: error
+          retention-days: 30
