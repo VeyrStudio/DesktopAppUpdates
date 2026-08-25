@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.20",
-  "payloadSha256": "081ad62f3485a4eddf56655cede9910a216ab5a67f499a7d34cbbc0f82125535",
+  "version": "0.2.21",
+  "payloadSha256": "9fe287bd2f9c9243d313733f1a0692367525737c114a2d9630cbf5eafcc255f7",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/4f8962df989898dafeaeba62250d820500b30068/the-files/payload-0.2.20-runtime-powers-fix-part-001.txt",
-      "sha256": "081ad62f3485a4eddf56655cede9910a216ab5a67f499a7d34cbbc0f82125535"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f68e58cb917bb19108c99f73f6658b3c8518e23a/the-files/payload-0.2.21-story-audit-part-001.txt",
+      "sha256": "9fe287bd2f9c9243d313733f1a0692367525737c114a2d9630cbf5eafcc255f7"
     }
   ],
-  "notes": "Fixes the v0.2.19 relaunch loop by disabling the obsolete in-UI automatic updater so the verified bootstrap is the only automatic updater. Also applies readable tan/dark styling to Powers entry headers, Add Power, remove, and dice controls while preserving the already-fixed inner field contrast, Powers data, and separate user-data storage. Both runnable and compressed core files remain in the package. Windows PowerShell parsing and package validation passed before publish."
+  "notes": "Cumulative Story-tab audit on stable v0.2.20. Merges Story Role into the existing Overview CharacterRole data field and labels it Story Role, removes the duplicate Story-tab role, and rebuilds Story to the ten audited fields: Character Tier; Motivation; Internal Conflict; External Conflict; Fatal Flaw; Archetype; Beginning State; Middle State; Ending State; Plot Relevance. Removes POV, first/last appearance, all goal fields, want/need/abandon-goal fields, relationship conflict, major turning point, and important scenes from Story. Preserves Powers fixes, the bootstrap updater, the relaunch-loop fix, and separate user data. Windows PowerShell parsing and package validation passed before publish."
 }
