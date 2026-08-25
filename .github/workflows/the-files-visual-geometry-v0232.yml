@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'tools/the-files-visual-geometry-v0232.py'
+      - 'tools/the-files-visual-geometry-v0232-final.py'
       - '.github/workflows/the-files-visual-geometry-v0232.yml'
 permissions:
   contents: write
@@ -15,7 +16,7 @@ jobs:
         with: {python-version: '3.12'}
       - name: Build visual geometry release
         shell: pwsh
-        run: python tools/the-files-visual-geometry-v0232.py
+        run: python tools/the-files-visual-geometry-v0232-final.py
       - name: Parse launcher and core under Windows PowerShell
         shell: powershell
         run: |
@@ -33,7 +34,7 @@ jobs:
           for f in p['files']:
               data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
           raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw;c=raw.decode('utf-8-sig')
-          for marker in ['GraphicsPath PagePath','public bool Mirror','public class LeatherNavButton','function Get-SectionTabText','Render-MoodBoardEditor $rightContainer $r 220','function Apply-BookMasterSkin','function Render-NotesSection','function Render-TimelineSection','function Render-PowersSection']:
+          for marker in ['GraphicsPath PagePath','public bool Mirror','$b.Mirror=$true','public class LeatherNavButton','function Get-SectionTabText','Render-MoodBoardEditor $rightContainer $r 220','function Apply-BookMasterSkin','function Render-NotesSection','function Render-TimelineSection','function Render-PowersSection']:
               assert marker in c,marker
       - name: Mark validation and commit
         shell: pwsh
