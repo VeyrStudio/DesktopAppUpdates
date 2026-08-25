@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.26",
-  "payloadSha256": "8034b810d09b28da200bf167662e08a270a45568d76f813767c9c4b513d784b8",
+  "version": "0.2.27",
+  "payloadSha256": "9fccf5ace1c3544097e4ed6c9e71ad4871788baef7b91eb001d7d2daf9284f1d",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/901cddc3c518686ec29864a04aa4262de3e55e11/the-files/payload-0.2.26-custom-notes-part-001.txt",
-      "sha256": "8034b810d09b28da200bf167662e08a270a45568d76f813767c9c4b513d784b8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/507ec292d87dccf3679af0a09479c313eaaae7ee/the-files/payload-0.2.27-hide-console-part-001.txt",
+      "sha256": "9fccf5ace1c3544097e4ed6c9e71ad4871788baef7b91eb001d7d2daf9284f1d"
     }
   ],
-  "notes": "Cumulative custom Notes rebuild on stable v0.2.25. Replaces the generic six text boxes with a dedicated Notes workspace: repeatable Aliases; removable Tags chips; a real Mood Board that imports images, copies them into The Files' separate Data\\Media\\MoodBoards storage, displays thumbnails, and supports reorder/remove while preserving legacy mood-board notes; removable Aesthetic Tags chips; Color Palette swatches added through a color picker; and repeatable Important Objects with separate name and notes fields. Preserves Timeline including the Host-variable fix, Story, Powers, updater behavior, and separate user data. All internal per-file SHA-256 values were recomputed and verified, TheFilesCore.ps1.gz decompresses exactly to TheFilesCore.ps1, and Windows PowerShell parsing passed before publish."
+  "notes": "Launcher-polish release on stable v0.2.26. The existing TheFiles.ps1 bootstrap now hides its own PowerShell console window immediately on startup, so the normal shortcut can remain unchanged while The Files continues running normally. Preserves the bootstrap updater, custom Notes workspace, Timeline, Story, Powers, separate user data, and both runnable/compressed core files. All internal per-file SHA-256 values were recomputed and verified, the compressed core matches the runnable core, and Windows PowerShell parsing passed before publish."
 }
