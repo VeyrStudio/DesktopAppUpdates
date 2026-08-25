@@ -1,0 +1,280 @@
+1: # The Files Desktop — v0.2.6
+2: # Offline-first character book / character-sheet manager.
+3: # User data lives in %LOCALAPPDATA%\TheFiles\Data and is never stored beside app code.
+4: 
+5: Add-Type -AssemblyName System.Windows.Forms
+6: Add-Type -AssemblyName System.Drawing
+7: [System.Windows.Forms.Application]::EnableVisualStyles()
+8: 
+9: 
+10: # Rich painted controls keep the book visual detailed without shipping a heavy image skin.
+11: try {
+12:     Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -TypeDefinition @"
+13: using System;
+14: using System.Drawing;
+15: using System.Drawing.Drawing2D;
+16: using System.Windows.Forms;
+17: 
+18: public class BookDeskPanel : Panel {
+19:     public BookDeskPanel() {
+20:         DoubleBuffered = true;
+21:         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+22:     }
+23:     protected override void OnPaintBackground(PaintEventArgs e) {
+24:         using (LinearGradientBrush b = new LinearGradientBrush(ClientRectangle, Color.FromArgb(20,16,13), Color.FromArgb(49,31,20), 16f))
+25:             e.Graphics.FillRectangle(b, ClientRectangle);
+26:         using (Pen grain = new Pen(Color.FromArgb(26,190,145,92), 1f)) {
+27:             int step = 31;
+28:             for (int y = 10; y < Height; y += step) {
+29:                 int wobble = (y * 17) % 13;
+30:                 e.Graphics.DrawBezier(grain, -20, y, Width/3, y-2-wobble/4, Width*2/3, y+3+wobble/5, Width+20, y-1);
+31:             }
+32:         }
+33:         using (Pen edge = new Pen(Color.FromArgb(110,8,6,5), 2f)) e.Graphics.DrawRectangle(edge, 1,1,Math.Max(1,Width-3),Math.Max(1,Height-3));
+34:     }
+35: }
+36: 
+37: public class BookContentPanel : Panel {
+38:     public BookContentPanel() {
+39:         DoubleBuffered=true; AutoScroll=true;
+40:         SetStyle(ControlStyles.SupportsTransparentBackColor | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+41:         BackColor=Color.Transparent;
+42:     }
+43: }
+44: 
+45: public class BookFramePanel : Panel {
+46:     public BookFramePanel() {
+47:         DoubleBuffered = true;
+48:         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+49:         BackColor = Color.FromArgb(62,40,27);
+50:     }
+51:     GraphicsPath RR(Rectangle r, int rad) {
+52:         GraphicsPath p = new GraphicsPath(); int d = rad*2;
+53:         p.AddArc(r.X,r.Y,d,d,180,90); p.AddArc(r.Right-d,r.Y,d,d,270,90);
+54:         p.AddArc(r.Right-d,r.Bottom-d,d,d,0,90); p.AddArc(r.X,r.Bottom-d,d,d,90,90); p.CloseFigure(); return p;
+55:     }
+56:     protected override void OnPaintBackground(PaintEventArgs e) {
+57:         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+58:         Rectangle r = new Rectangle(2,2,Math.Max(1,Width-5),Math.Max(1,Height-5));
+59:         using (GraphicsPath p = RR(r,22))
+60:         using (LinearGradientBrush b = new LinearGradientBrush(r, Color.FromArgb(92,53,29), Color.FromArgb(42,27,20), 90f)) {
+61:             e.Graphics.FillPath(b,p);
+62:             using (Pen border = new Pen(Color.FromArgb(150,118,73,37),3f)) e.Graphics.DrawPath(border,p);
+63:             Rectangle r2 = Rectangle.Inflate(r,-10,-10);
+64:             using (GraphicsPath p2=RR(r2,16)) using(Pen gold=new Pen(Color.FromArgb(130,190,146,73),1f)) e.Graphics.DrawPath(gold,p2);
+65:         }
+66:         // Layered page-block edges visible beneath the current spread.
+67:         using (Pen pg1 = new Pen(Color.FromArgb(90,216,191,145),1f))
+68:         using (Pen pg2 = new Pen(Color.FromArgb(70,117,87,55),1f)) {
+69:             for(int i=0;i<9;i++) {
+70:                 int yy = Height-20-i*2;
+71:                 e.Graphics.DrawLine((i%2==0)?pg1:pg2, 35, yy, Math.Max(36,Width-35), yy);
+72:             }
+73:             for(int i=0;i<7;i++) {
+74:                 e.Graphics.DrawLine((i%2==0)?pg1:pg2, 18+i*2, 35, 18+i*2, Math.Max(36,Height-32));
+75:                 e.Graphics.DrawLine((i%2==0)?pg1:pg2, Width-19-i*2, 35, Width-19-i*2, Math.Max(36,Height-32));
+76:             }
+77:         }
+78:     }
+79: }
+80: 
+81: public class BookPagePanel : Panel {
+82:     public bool IsLeftPage { get; set; }
+83:     public BookPagePanel() {
+84:         DoubleBuffered = true; AutoScroll = false;
+85:         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+86:         Resize += delegate { UpdateRegion(); };
+87:     }
+88:     GraphicsPath RR(Rectangle r, int rad) {
+89:         GraphicsPath p = new GraphicsPath(); int d = rad*2;
+90:         p.AddArc(r.X,r.Y,d,d,180,90); p.AddArc(r.Right-d,r.Y,d,d,270,90);
+91:         p.AddArc(r.Right-d,r.Bottom-d,d,d,0,90); p.AddArc(r.X,r.Bottom-d,d,d,90,90); p.CloseFigure(); return p;
+92:     }
+93:     void UpdateRegion() { if(Width<10||Height<10)return; using(GraphicsPath p=RR(new Rectangle(0,0,Width,Height),12)) Region=new Region(p); }
+94:     protected override void OnPaintBackground(PaintEventArgs e) {
+95:         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+96:         Rectangle r = ClientRectangle;
+97:         Color a = IsLeftPage ? Color.FromArgb(244,226,188) : Color.FromArgb(239,218,178);
+98:         Color b = IsLeftPage ? Color.FromArgb(228,201,157) : Color.FromArgb(232,207,164);
+99:         using (LinearGradientBrush paper = new LinearGradientBrush(r,a,b,IsLeftPage?7f:173f)) e.Graphics.FillRectangle(paper,r);
+100:         // Subtle paper fibres/speckling. Deterministic, so it never flickers during repaint.
+101:         for(int i=0;i<55;i++) {
+102:             int x = 10 + Math.Abs((i*83 + Width*7) % Math.Max(11,Width-20));
+103:             int y = 8 + Math.Abs((i*47 + Height*5) % Math.Max(9,Height-16));
+104:             int alpha = 10 + (i%4)*3;
+105:             using(Brush dot=new SolidBrush(Color.FromArgb(alpha,95,66,38))) e.Graphics.FillEllipse(dot,x,y,(i%3)+1,(i%2)+1);
+106:         }
+107:         // Very faint old stains.
+108:         using(Brush stain=new SolidBrush(Color.FromArgb(10,126,77,39))) {
+109:             e.Graphics.FillEllipse(stain, Width/7, Height/5, Math.Max(24,Width/4), Math.Max(18,Height/7));
+110:             e.Graphics.FillEllipse(stain, Width*3/5, Height*3/4, Math.Max(18,Width/5), Math.Max(16,Height/8));
+111:         }
+112:         using(Pen outer=new Pen(Color.FromArgb(145,111,79,49),1f)) e.Graphics.DrawRectangle(outer,8,8,Math.Max(1,Width-17),Math.Max(1,Height-17));
+113:         using(Pen inner=new Pen(Color.FromArgb(85,154,116,69),1f)) e.Graphics.DrawRectangle(inner,13,13,Math.Max(1,Width-27),Math.Max(1,Height-27));
+114:         // Small archival corner ornaments.
+115:         using(Pen ornament=new Pen(Color.FromArgb(100,116,80,44),1f)) {
+116:             int m=22, l=18;
+117:             e.Graphics.DrawLine(ornament,m,m,m+l,m); e.Graphics.DrawLine(ornament,m,m,m,m+l);
+118:             e.Graphics.DrawLine(ornament,Width-m,m,Width-m-l,m); e.Graphics.DrawLine(ornament,Width-m,m,Width-m,m+l);
+119:             e.Graphics.DrawLine(ornament,m,Height-m,m+l,Height-m); e.Graphics.DrawLine(ornament,m,Height-m,m,Height-m-l);
+120:             e.Graphics.DrawLine(ornament,Width-m,Height-m,Width-m-l,Height-m); e.Graphics.DrawLine(ornament,Width-m,Height-m,Width-m,Height-m-l);
+121:         }
+122:         // Gutter shadow gives the flat spread physical depth without an animated turning page.
+123:         Rectangle sh = IsLeftPage ? new Rectangle(Math.Max(0,Width-28),0,28,Height) : new Rectangle(0,0,28,Height);
+124:         Color sc1 = Color.FromArgb(70,54,35,21), sc2 = Color.FromArgb(0,54,35,21);
+125:         using(LinearGradientBrush shadow = IsLeftPage ? new LinearGradientBrush(sh,sc2,sc1,0f) : new LinearGradientBrush(sh,sc1,sc2,0f)) e.Graphics.FillRectangle(shadow,sh);
+126:     }
+127: }
+128: 
+129: public class BookTabButton : Button {
+130:     public Color Tone { get; set; }
+131:     public bool ActiveTab { get; set; }
+132:     public BookTabButton() {
+133:         Tone = Color.FromArgb(91,71,52); FlatStyle=Flat; FlatAppearance.BorderSize=0; Cursor=Cursors.Hand;
+134:         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+135:     }
+136:     protected override void OnPaint(PaintEventArgs e) {
+137:         e.Graphics.SmoothingMode=SmoothingMode.AntiAlias;
+138:         Rectangle r=new Rectangle(2,2,Math.Max(1,Width-5),Math.Max(1,Height-5));
+139:         Color t=ActiveTab?ControlPaint.Light(Tone,.25f):Tone;
+140:         using(LinearGradientBrush b=new LinearGradientBrush(r,ControlPaint.Light(t,.10f),ControlPaint.Dark(t,.10f),90f)) e.Graphics.FillRectangle(b,r);
+141:         using(Pen edge=new Pen(Color.FromArgb(185,184,139,69),ActiveTab?2f:1f)) e.Graphics.DrawRectangle(edge,r);
+142:         using(Pen stitch=new Pen(Color.FromArgb(120,236,211,168),1f)){stitch.DashStyle=DashStyle.Dot;e.Graphics.DrawRectangle(stitch,7,7,Math.Max(1,Width-15),Math.Max(1,Height-15));}
+143:         TextRenderer.DrawText(e.Graphics,Text,Font,r,Color.FromArgb(246,226,191),TextFormatFlags.HorizontalCenter|TextFormatFlags.VerticalCenter|TextFormatFlags.EndEllipsis);
+144:     }
+145: }
+146: 
+147: public class BookStatusTabButton : Button {
+148:     public bool ActiveTab { get; set; }
+149:     public BookStatusTabButton(){FlatStyle=Flat;FlatAppearance.BorderSize=0;Cursor=Cursors.Hand;SetStyle(ControlStyles.AllPaintingInWmPaint|ControlStyles.OptimizedDoubleBuffer|ControlStyles.UserPaint,true);}
+150:     protected override void OnPaint(PaintEventArgs e){
+151:         e.Graphics.SmoothingMode=SmoothingMode.AntiAlias;
+152:         Point[] pts=new Point[]{new Point(8,Height-2),new Point(8,12),new Point(22,3),new Point(Width-22,3),new Point(Width-8,12),new Point(Width-8,Height-2)};
+153:         Color c=ActiveTab?Color.FromArgb(236,210,163):Color.FromArgb(191,150,94);
+154:         using(Brush b=new SolidBrush(c))e.Graphics.FillPolygon(b,pts);
+155:         using(Pen p=new Pen(Color.FromArgb(164,108,68,36),1.5f))e.Graphics.DrawPolygon(p,pts);
+156:         TextRenderer.DrawText(e.Graphics,Text,Font,new Rectangle(7,8,Width-14,Height-10),Color.FromArgb(62,43,28),TextFormatFlags.HorizontalCenter|TextFormatFlags.VerticalCenter|TextFormatFlags.EndEllipsis);
+157:     }
+158: }
+159: 
+160: public class OrnateButton : Button {
+161:     public OrnateButton(){FlatStyle=Flat;FlatAppearance.BorderSize=0;Cursor=Cursors.Hand;SetStyle(ControlStyles.AllPaintingInWmPaint|ControlStyles.OptimizedDoubleBuffer|ControlStyles.UserPaint,true);}
+162:     protected override void OnPaint(PaintEventArgs e){
+163:         e.Graphics.SmoothingMode=SmoothingMode.AntiAlias;
+164:         Rectangle r=new Rectangle(1,1,Math.Max(1,Width-3),Math.Max(1,Height-3));
+165:         using(LinearGradientBrush b=new LinearGradientBrush(r,Color.FromArgb(235,211,168),Color.FromArgb(203,171,117),90f))e.Graphics.FillRectangle(b,r);
+166:         using(Pen p=new Pen(Color.FromArgb(150,105,70,39),1f))e.Graphics.DrawRectangle(p,r);
+167:         TextRenderer.DrawText(e.Graphics,Text,Font,r,Color.FromArgb(58,40,27),TextFormatFlags.HorizontalCenter|TextFormatFlags.VerticalCenter|TextFormatFlags.EndEllipsis);
+168:     }
+169: }
+170: "@ -ErrorAction Stop
+171: } catch {}
+172: 
+173: 
+174: $script:AppRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+175: $script:DataRoot = Join-Path $env:LOCALAPPDATA 'TheFiles\Data'
+176: $script:MediaRoot = Join-Path $script:DataRoot 'Media'
+177: $script:CharactersPath = Join-Path $script:DataRoot 'characters.json'
+178: $script:SettingsPath = Join-Path $script:DataRoot 'settings.json'
+179: $script:VersionPath = Join-Path $script:AppRoot 'AppVersion.json'
+180: $script:UpdateHostPath = Join-Path $script:AppRoot 'RemoteUpdateHost.ps1'
+181: $script:UpdateAppDir = $script:AppRoot
+182: $script:UpdateDataDir = $script:DataRoot
+183: $script:UpdateLauncherPath = Join-Path $script:AppRoot 'Launch The Files.vbs'
+184: $script:UpdateExpectedMain = 'TheFiles.ps1'
+185: $script:UpdateWorkRoot = Join-Path $script:DataRoot 'Updates'
+186: $script:UpdateAppId = 'the-files'
+187: $script:UpdateAppName = 'The Files'
+188: $script:CurrentAppVersion = '0.2.15'
+189: $script:UpdateManifestUrl = 'https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-files/manifest.json'
+190: 
+191: New-Item -ItemType Directory -Force -Path $script:DataRoot | Out-Null
+192: New-Item -ItemType Directory -Force -Path $script:MediaRoot | Out-Null
+193: 
+194: function Show-Info([string]$Message) {
+195:     [System.Windows.Forms.MessageBox]::Show($Message,'The Files',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Information) | Out-Null
+196: }
+197: function Show-Error([string]$Message) {
+198:     [System.Windows.Forms.MessageBox]::Show($Message,'The Files',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Error) | Out-Null
+199: }
+200: function Show-Confirm([string]$Message) {
+201:     return [System.Windows.Forms.MessageBox]::Show($Message,'The Files',[System.Windows.Forms.MessageBoxButtons]::YesNo,[System.Windows.Forms.MessageBoxIcon]::Question)
+202: }
+203: 
+204: try {
+205:     if (Test-Path -LiteralPath $script:VersionPath) {
+206:         $vc = Get-Content -LiteralPath $script:VersionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+207:         if ([string]$vc.appId -eq $script:UpdateAppId) {
+208:             if (-not [string]::IsNullOrWhiteSpace([string]$vc.version)) { $script:CurrentAppVersion = [string]$vc.version }
+209:             if (-not [string]::IsNullOrWhiteSpace([string]$vc.manifestUrl)) { $script:UpdateManifestUrl = [string]$vc.manifestUrl }
+210:         }
+211:     }
+212: } catch {}
+213: 
+214: $script:Parchment = [System.Drawing.Color]::FromArgb(239,221,183)
+215: $script:Parchment2 = [System.Drawing.Color]::FromArgb(232,211,169)
+216: $script:Ink = [System.Drawing.Color]::FromArgb(55,39,28)
+217: $script:Dark = [System.Drawing.Color]::FromArgb(25,22,19)
+218: $script:Dark2 = [System.Drawing.Color]::FromArgb(38,31,25)
+219: $script:Gold = [System.Drawing.Color]::FromArgb(188,148,78)
+220: $script:Leather = [System.Drawing.Color]::FromArgb(74,48,31)
+221: $script:Muted = [System.Drawing.Color]::FromArgb(112,90,66)
+222: $script:SelectedTab = [System.Drawing.Color]::FromArgb(126,86,50)
+223: $script:FontSerif = New-Object System.Drawing.Font('Georgia',10)
+224: $script:FontSmall = New-Object System.Drawing.Font('Georgia',9)
+225: $script:FontHeading = New-Object System.Drawing.Font('Georgia',16,[System.Drawing.FontStyle]::Bold)
+226: $script:FontTitle = New-Object System.Drawing.Font('Georgia',26,[System.Drawing.FontStyle]::Bold)
+227: $script:FontTab = New-Object System.Drawing.Font('Georgia',10,[System.Drawing.FontStyle]::Bold)
+228: 
+229: $script:FieldDefs = [ordered]@{
+230:     'Overview' = @(
+231:         @{Key='FullName';Label='Full Name';Type='Text'},
+232:         @{Key='Nicknames';Label='Nickname';Type='Text'},
+233:         @{Key='StoryTitle';Label='Story Title';Type='Text'},
+234:         @{Key='Partner';Label='Love Interest';Type='Text'},
+235:         @{Key='CharacterRole';Label='Story Role';Type='Choice';Options=@('Main Character','Secondary Main','Supporting Character','Love Interest','Antagonist','Villain','Rival','Mentor','Sidekick','Confidant','Comic Relief','Minor Character','Background Character','Other / Custom')},
+236:         @{Key='LifeStatus';Label='Status';Type='Choice';Options=@('Alive','Dead','Missing','Unknown','Undead','Other')},
+237:         @{Key='Pronouns';Label='Pronouns';Type='Text'},
+238:         @{Key='Gender';Label='Gender';Type='Text'},
+239:         @{Key='Age';Label='Age';Type='Text'},
+240:         @{Key='Birthday';Label='Birthday';Type='Text'},
+241:         @{Key='Species';Label='Species';Type='Text'},
+242:         @{Key='Residence';Label='Residence';Type='Text'},
+243:         @{Key='FreedomStatus';Label='Freedom Status';Type='Choice';Options=@('Free','Restricted','Confined','Detained','Imprisoned','Captive','Under Guard','House Arrest','Institutionalized','Missing / Unknown','Other')},
+244:         @{Key='Occupation';Label='Occupation';Type='Text'},
+245:         @{Key='SocialStatus';Label='Social Status';Type='Choice';Options=@('Lower Class','Working Class','Middle Class','Upper Class','Wealthy','Elite','Aristocracy / Nobility','Royalty','Outcast','Social Pariah','Unknown','Other')}
+246:     )
+247:     'Appearance' = @(
+248:         @{Key='HairColor';Label='Hair Color';Type='Swatch';Options=@('Black','Dark Brown','Brown','Light Brown','Auburn','Red','Strawberry Blonde','Blonde','Platinum Blonde','Gray','White','Dyed / Fantasy','Multicolored','Custom','Unknown')},
+249:         @{Key='EyeColor';Label='Eye Color';Type='Swatch';Options=@('Brown','Dark Brown','Hazel','Amber','Green','Blue','Gray','Blue-Gray','Green-Gray','Heterochromia','Custom','Unknown')},
+250:         @{Key='SkinTone';Label='Skin Tone';Type='Swatch';Options=@('Very Fair','Fair','Light','Light-Medium','Medium','Medium-Tan','Tan','Medium-Brown','Brown','Deep Brown','Very Deep','Albinism','Custom','Unknown')},
+251:         @{Key='Scars';Label='Scars';Type='Multi'},
+252:         @{Key='HealthNotes';Label='Health Notes';Type='Multi'},
+253:         @{Key='PhysicalDescription';Label='Full Physical Description';Type='Large'}
+254:     )
+255:     'Personality' = @(
+256:         @{Key='CorePersonality';Label='Core Personality';Type='MultiChoice';Options=@('Reserved','Outgoing','Introverted','Extroverted','Calm','Intense','Gentle','Assertive','Cautious','Impulsive','Optimistic','Pessimistic','Pragmatic','Idealistic','Logical','Emotional','Empathetic','Detached','Trusting','Suspicious','Independent','Dependent','Adaptable','Stubborn','Patient','Impatient','Serious','Playful','Confident','Insecure','Easygoing','High-Strung','Rebellious','Dutiful','Competitive','Cooperative','Private','Open','Protective','Nurturing','Dominant','Submissive','Curious','Cynical','Other / Custom')},
+257:         @{Key='PositiveTraits';Label='Positive Traits';Type='MultiChoice';Options=@('Adaptable','Brave','Calm','Compassionate','Confident','Cooperative','Creative','Curious','Dependable','Determined','Diplomatic','Disciplined','Empathetic','Forgiving','Generous','Honest','Humble','Independent','Kind','Loyal','Observant','Open-Minded','Optimistic','Patient','Protective','Reliable','Resilient','Resourceful','Responsible','Selfless','Thoughtful','Trustworthy','Other / Custom')},
+258:         @{Key='NegativeTraits';Label='Negative Traits';Type='MultiChoice';Options=@('Arrogant','Avoidant','Controlling','Cruel','Cynical','Defensive','Detached','Dishonest','Hot-Tempered','Impatient','Impulsive','Insecure','Jealous','Judgmental','Manipulative','Naive','Obsessive','Overprotective','Passive-Aggressive','Pessimistic','Possessive','Prideful','Reckless','Secretive','Self-Destructive','Selfish','Stubborn','Suspicious','Unreliable','Vindictive','Other / Custom')},
+259:         @{Key='Strengths';Label='Strengths';Type='MultiChoice';Options=@('Adaptability','Bravery','Communication','Creativity','Discipline','Emotional Resilience','Empathy','Endurance','Focus','Improvisation','Independence','Leadership','Loyalty','Negotiation','Observation','Patience','Problem-Solving','Protectiveness','Quick Thinking','Resourcefulness','Self-Control','Strategic Thinking','Teamwork','Other / Custom')},
+260:         @{Key='Weaknesses';Label='Weaknesses';Type='MultiChoice';Options=@('Avoids Conflict','Confrontational','Difficulty Asking for Help','Fear of Vulnerability','Holds Grudges','Impulsive','Indecisive','Jealousy','Need for Control','Overconfidence','Overly Self-Sacrificing','Poor Boundaries','Poor Communication','Poor Impulse Control','Pride','Recklessness','Secretive','Self-Doubt','Stubbornness','Trust Issues','Other / Custom')},
+261:         @{Key='Likes';Label='Likes';Type='MultiChoice';Options=@('Animals','Art','Books','Cities','Cold Weather','Competition','Cooking','Crowds','Dancing','Food','Forests','Games','Gardening','History','Learning','Music','Nature','Nighttime','Parties','Rain','Routine','Silence','Solitude','Sports','Storms','Sunlight','Technology','Travel','Warm Weather','Water / Ocean','Other / Custom')},
+262:         @{Key='Dislikes';Label='Dislikes';Type='MultiChoice';Options=@('Animals','Authority','Chaos','Cold Weather','Conflict','Crowds','Dishonesty','Heat','Hospitals','Loud Noise','Mess','Nature','Physical Contact','Routine','Rules','Silence','Small Talk','Social Events','Spicy Food','Technology','Travel','Violence','Waiting','Water / Ocean','Other / Custom')},
+263:         @{Key='Fears';Label='Fears';Type='MultiChoice';Options=@('Abandonment','Being Forgotten','Being Trapped','Change','Crowds','Darkness','Death','Failure','Heights','Illness','Intimacy','Isolation','Losing Control','Losing Loved Ones','Pain','Powerlessness','Public Humiliation','Rejection','The Unknown','Water / Drowning','Becoming Like Someone They Hate','Other / Custom')},
+264:         @{Key='PetPeeves';Label='Pet Peeves';Type='MultiChoice';Options=@('Arrogance','Being Ignored','Being Interrupted','Being Lied To','Being Touched Without Permission','Disorganization','Dishonesty','Incompetence','Interruptions','Invading Personal Space','Lateness','Loud Chewing','Messiness','People Touching Their Things','Poor Manners','Repetition','Small Talk','Unnecessary Noise','Wasted Food','Other / Custom')}
+265:     )
+266:     'Background' = @(
+267:         @{Key='Childhood';Label='Childhood';Type='MultiChoice';Options=@('Stable','Loving','Happy','Privileged','Sheltered','Strict','Religious','Rural','Urban','Nomadic','Poor','Unstable','Chaotic','Neglectful','Abusive','Isolated','Lonely','Orphaned','Foster Care','Institutionalized','Raised by Relatives','Single-Parent Household','Large Family','Only Child','Parentified','Military Family','Frequently Relocated','Homeless / Housing Insecure','War / Conflict','Persecution','Criminal Environment','Traumatic','Other / Custom','Unknown')},
+268:         @{Key='Education';Label='Education';Type='EditChoice';Options=@('No Formal Education','Primary / Elementary Education','Some Secondary / High School','High School Diploma / GED','Trade / Vocational School','Apprenticeship','Some College / University','Associate Degree / Equivalent','Bachelor Degree / Equivalent','Graduate Degree','Doctorate / Professional Degree','Military Training','Religious Education','Private Tutoring','Homeschooled','Self-Taught','Other / Custom','Unknown')},
+269:         @{Key='PastOccupations';Label='Past Occupation';Type='EditChoice';Options=@('None / Never Employed','Student','Military','Law Enforcement','Government / Civil Service','Healthcare','Education','Research / Academia','Skilled Trade','Manual Labor','Agriculture / Farming','Hospitality / Food Service','Retail / Customer Service','Office / Administration','Business / Management','Finance','Legal','Arts / Creative','Entertainment','Media / Journalism','Technology','Science','Religious / Clergy','Security','Transportation','Caretaking / Domestic Work','Criminal / Illegal Work','Other / Custom','Unknown')},
+270:         @{Key='MajorLifeEvents';Label='Major Life Events';Type='LifeEvents';Options=@('Loss / Death','Birth / New Family Member','Marriage / Partnership','Breakup / Divorce','Friendship Change','Betrayal','Abandonment','Abuse','Neglect','Poverty / Financial Hardship','Homelessness / Displacement','Illness / Diagnosis','Serious Injury','Disability / Health Change','Accident','Disaster','War / Armed Conflict','Persecution / Discrimination','Crime / Violence','Arrest / Legal Trouble','Imprisonment / Captivity','Escape / Rescue','Major Move / Relocation','Immigration / Exile','Education Milestone','Career Change','Major Achievement / Award','Skill Mastery','Leadership / Promotion','Failure / Defeat','Missed Opportunity','Broken Promise','Hurt Someone','Failed to Act','Crime They Committed','Secret Revealed','Major Discovery','Joined / Left a Group','Religious / Belief Change','Identity / Self-Discovery','Supernatural Event','Near-Death Experience','Other Hardship / Trauma','Regret / Past Mistake','Other / Custom')},
+271:         @{Key='Secrets';Label='Secrets';Type='Large'}
+272:     )
+273:     'Family' = @(
+274:         @{Key='Parent1Name';Label='Parent One — Name';Type='Text'},
+275:         @{Key='Parent1Gender';Label='Parent One — Gender';Type='Choice';Options=@('Man','Woman','Nonbinary','Genderfluid','Agender','Unknown','Other / Custom')},
+276:         @{Key='Parent1Type';Label='Parent One — Parent Type';Type='Choice';Options=@('Mother','Father','Parent','Biological Parent','Adoptive Parent','Step-Parent','Foster Parent','Guardian','Spouse','Other')},
+277:         @{Key='Parent1Spouse';Label='Parent One — Spouse / Partner';Type='Text'},
+278:         @{Key='Parent1Status';Label='Parent One — Status';Type='Choice';Options=@('Alive','Dead','Missing','Estranged','Unknown','Other')},
+279:         @{Key='Parent1Occupation';Label='Parent One — Occupation';Type='EditChoice';Options=@('None / Never Employed','Student','Military','Law Enforcement','Government / Civil Service','Healthcare','Education','Research / Academia','Skilled Trade','Manual Labor','Agriculture / Farming','Hospitality / Food Service','Retail / Customer Service','Office / Administration','Business / Management','Finance','Legal','Arts / Creative','Entertainment','Media / Journalism','Technology','Science','Religious / Clergy','Security','Transportation','Caretaking / Domestic Work','Criminal / Illegal Work','Other / Custom','Unknown')},
+280:         @{Key='Parent1Relationship';Label='Parent One — Relationship Dynamic';Type='MultiChoice';Options=@('Close','Loving','Supportive','Protective','Respectful','Warm','Complicated','Distant','Estranged','Hostile','Fearful','Abusive','Neglectful','Controlling','Dependent','Codependent','Formal','Awkward','Grieving','Reconnecting','Unknown','Other / Custom')},
