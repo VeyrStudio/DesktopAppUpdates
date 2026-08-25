@@ -1,0 +1,476 @@
+### Add-TopBookHeader
+function Add-TopBookHeader([System.Windows.Forms.Panel]$page,[string]$text,[bool]$left=$false,[string]$kicker='') {
+    if([string]::IsNullOrWhiteSpace($kicker)){if($left){$kicker='CHARACTER FILE'}else{$kicker='ARCHIVE DETAILS'}}
+    $k=New-Object System.Windows.Forms.Label;$k.Text=$kicker.ToUpper();$k.Font=New-Object System.Drawing.Font('Georgia',7,[System.Drawing.FontStyle]::Bold);$k.ForeColor=[System.Drawing.Color]::FromArgb(128,87,50);$k.AutoSize=$true;$k.Location=New-Object System.Drawing.Point(26,13);$page.Controls.Add($k)
+    $lbl=New-Object System.Windows.Forms.Label;$lbl.Text=$text;if($left){$lbl.Font=New-Object System.Drawing.Font('Georgia',20,[System.Drawing.FontStyle]::Bold)}else{$lbl.Font=New-Object System.Drawing.Font('Georgia',13,[System.Drawing.FontStyle]::Bold)};$lbl.ForeColor=$script:Ink;$lbl.AutoEllipsis=$true;$lbl.Location=New-Object System.Drawing.Point(26,29);$lbl.Size=New-Object System.Drawing.Size([math]::Max(140,$page.ClientSize.Width-52),30);$lbl.Anchor='Top,Left,Right';$page.Controls.Add($lbl)
+    $rule=New-Object System.Windows.Forms.Panel;$rule.Height=1;$rule.BackColor=[System.Drawing.Color]::FromArgb(138,103,62);$rule.Location=New-Object System.Drawing.Point(25,61);$rule.Width=[math]::Max(100,$page.ClientSize.Width-50);$rule.Anchor='Top,Left,Right';$page.Controls.Add($rule)
+}
+
+# ---------------- FAMILY AUDIT: structured, folded, repeatable editor ----------------
+if($null -eq $script:FamilyFoldState){
+    $script:FamilyFoldState=@{Parent1=$false;Parent2=$false;Siblings=$false;Children=$false;OtherFamily=$false;FamilyHistory=$false}
+}
+if($null -eq $script:FamilyEntryFoldState){$script:FamilyEntryFoldState=@{}}
+$script:FamilyGenderOptions=@('Man','Woman','Nonbinary','Genderfluid','Agender','Unknown','Other / Custom')
+$script:FamilyStatusOptions=@('Alive','Dead','Missing','Estranged','Unknown','Other')
+$script:FamilyOccupationOptions=@('None / Never Employed','Student','Military','Law Enforcement','Government / Civil Service','Healthcare','Education','Research / Academia','Skilled Trade','Manual Labor','Agriculture / Farming','Hospitality / Food Service','Retail / Customer Service','Office / Administration','Business / Management','Finance','Legal','Arts / Creative','Entertainment','Media / Journalism','Technology','Science','Religious / Clergy','Security','Transportation','Caretaking / Domestic Work','Criminal / Illegal Work','Other / Custom','Unknown')
+$script:FamilyDynamicOptions=@('Close','Loving','Supportive','Protective','Respectful','Warm','Complicated','Distant','Estranged','Hostile','Fearful','Abusive','Neglectful','Controlling','Dependent','Codependent','Formal','Awkward','Grieving','Reconnecting','Unknown','Other / Custom')
+$script:FamilyHistoryOptions=@('Adoption','Divorce / Separation','Estrangement','Death / Loss','Missing Relative','Family Secret','Abuse','Neglect','Addiction','Mental Illness','Chronic Illness','Disability','Incarceration','Crime','Poverty / Financial Hardship','Wealth / Inheritance','Immigration / Displacement','War / Conflict','Religious Conflict','Family Feud','Scandal','Supernatural Heritage','Found Family','Other / Custom')
+
+
+
+---
+
+### New-PageContent
+function New-PageContent([System.Windows.Forms.Panel]$page) {
+    try{$contentHost=New-Object BookContentPanel}catch{$contentHost=New-Object System.Windows.Forms.Panel;$contentHost.AutoScroll=$true;$contentHost.BackColor=$script:Parchment}
+    $contentHost.Location=New-Object System.Drawing.Point(18,66)
+    $contentHost.Size=New-Object System.Drawing.Size([math]::Max(120,$page.ClientSize.Width-36),[math]::Max(120,$page.ClientSize.Height-128))
+    $contentHost.Anchor='Top,Bottom,Left,Right'
+    $contentHost.AutoScroll=$true
+    $contentHost.Add_MouseWheel({
+        param($sender,$e)
+        try {
+            $old=$sender.VerticalScroll.Value
+            $target=$old-[int]($e.Delta/120)*70
+            $target=[math]::Max($sender.VerticalScroll.Minimum,[math]::Min($target,$sender.VerticalScroll.Maximum-$sender.VerticalScroll.LargeChange+1))
+            $sender.AutoScrollPosition=New-Object System.Drawing.Point(0,$target)
+        } catch {}
+    })
+    $contentHost.Add_MouseEnter({try{$this.Focus()}catch{}})
+    $page.Controls.Add($contentHost)
+    return $contentHost
+}
+
+
+---
+
+### Add-BookActions
+function Add-BookActions([System.Windows.Forms.Panel]$page) {
+    $y=[math]::Max(80,$page.ClientSize.Height-55)
+    $section=New-LabeledActionButton 'RANDOMIZE SECTION' 16 $y 154;$section.Add_Click({Randomize-Section});$page.Controls.Add($section);$section.BringToFront();$script:ToolTip.SetToolTip($section,'Randomize every unlocked field in the current section')
+    $random=New-LabeledActionButton 'RANDOMIZE CHARACTER' 176 $y 174;$random.Add_Click({Randomize-Character});$page.Controls.Add($random);$random.BringToFront();$script:ToolTip.SetToolTip($random,'Randomize every unlocked field in this character')
+    $undo=New-LabeledActionButton 'UNDO RANDOMIZE' 356 $y 132;$undo.Add_Click({Undo-Character});$page.Controls.Add($undo);$undo.BringToFront();$script:ToolTip.SetToolTip($undo,'Restore the character to the state before the last randomization')
+}
+
+
+---
+
+### Render-NotesSection
+function Render-NotesSection($c,$leftContainer,$rightContainer){
+    $y=10;$y=Render-NotesListEditor $leftContainer 'Aliases' 'ALIASES' $y 160;$y+=10;$y=Render-NotesListEditor $leftContainer 'Tags' 'TAGS' $y 180;$y+=10;Render-ImportantObjectsEditor $leftContainer $y
+    $r=10;$r=Render-MoodBoardEditor $rightContainer $r 330;$r+=10;$r=Render-NotesListEditor $rightContainer 'AestheticTags' 'AESTHETIC TAGS' $r 155;$r+=10;[void](Render-ColorPaletteEditor $rightContainer $r 170)
+}
+# --- End custom Notes workspace -------------------------------------------
+
+
+
+---
+
+### Render-CurrentCharacter
+function Render-CurrentCharacter {
+    $script:Rendering=$true
+    try {
+        foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+        foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+        $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+        $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+        $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+        Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+        Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+        $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+        if($script:CurrentSection -eq 'Overview'){
+            Add-OverviewExtras $c $leftHost
+            $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+            $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+            $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+            $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+        } elseif($script:CurrentSection -eq 'Family'){
+            Render-FamilySection $c $leftHost $rightHost
+        } elseif($script:CurrentSection -eq 'Relationships'){
+            Render-RelationshipsSection $c $leftHost $rightHost
+        } elseif($script:CurrentSection -eq 'Timeline'){
+            Render-TimelineSection $c $leftHost $rightHost
+        } elseif($script:CurrentSection -eq 'Powers'){
+            Render-PowersSection $c $leftHost $rightHost
+        } elseif($script:CurrentSection -eq 'Notes'){
+            Render-NotesSection $c $leftHost $rightHost
+        } else {
+            $split=[math]::Ceiling($defs.Count/2);$leftDefs=@($defs|Select-Object -First $split);$rightDefs=@($defs|Select-Object -Skip $split)
+            $y=12;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+            $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+        }
+        foreach($key in $script:FieldControls.Keys){
+            $ctrl=$script:FieldControls[$key];$value=[string]$c.Fields[$key];$def=Get-FieldDefinition $key;$type=if($null -eq $def){''}else{[string]$def.Type}
+            if($type -eq 'MultiChoice'){$ctrl.Text=Get-MultiChoiceSummary $value}
+            elseif($type -eq 'LifeEvents'){}
+            elseif($ctrl -is [System.Windows.Forms.ComboBox]){
+                if($type -eq 'EditChoice'){$ctrl.Text=$value}
+                elseif($ctrl.Items.Contains($value)){$ctrl.SelectedItem=$value}
+                elseif($ctrl.Items.Count -gt 0){$ctrl.SelectedIndex=0}
+            }else{$ctrl.Text=$value}
+            foreach($pnl in @($leftHost,$rightHost)){foreach($p in @($pnl.Controls)){if($p -is [System.Windows.Forms.Button] -and [string]$p.Tag -eq $key -and $p.Width -eq 30){if($p.Location.X -gt ($pnl.ClientSize.Width-55)){if(Get-LockState $c $key){$p.Text='🔒'}else{$p.Text='🔓'}}}}}
+        }
+        Add-BookActions $leftPage;Update-NavLabels;Apply-BookMasterSkin
+    } finally {$script:Rendering=$false}
+}
+
+
+---
+
+### Update-NavLabels
+function Update-NavLabels {
+    $c=Get-CurrentCharacter
+    if($null -eq $c){ $currentNav.Text='NO CHARACTER'; $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›'; return }
+    $name='Untitled Character'; if($c.Fields.FullName){$name=[string]$c.Fields.FullName}
+    $currentNav.Text="CURRENT`r`n$name"
+    if($script:Filtered.Count -gt 1){
+        $pi=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $ni=($script:CurrentIndex+1)%$script:Filtered.Count
+        $pn='Untitled'; if($script:Filtered[$pi].Fields.FullName){$pn=$script:Filtered[$pi].Fields.FullName}
+        $nn='Untitled'; if($script:Filtered[$ni].Fields.FullName){$nn=$script:Filtered[$ni].Fields.FullName}
+        $prevBtn.Text="‹  PREVIOUS`r`n$pn"; $nextBtn.Text="NEXT  ›`r`n$nn"
+    } else { $prevBtn.Text='‹ PREVIOUS'; $nextBtn.Text='NEXT ›' }
+}
+
+
+---
+
+### Refresh-Navigation
+function Refresh-Navigation {
+    param([string]$KeepId='', [switch]$NoRender)
+    if(-not $KeepId){ $cur=Get-CurrentCharacter; if($null -ne $cur){$KeepId=[string]$cur.Id} }
+    $q=$searchBox.Text.Trim().ToLowerInvariant(); $sf=[string]$storyFilter.SelectedItem
+    $list=@($script:Characters | Where-Object {
+        $_.FileStatus -eq $script:ActiveStatus -and
+        (($sf -eq '' -or $sf -eq 'All Stories') -or ([string]$_.Fields.StoryTitle -eq $sf)) -and
+        (($q -eq '') -or ([string]$_.Fields.FullName).ToLowerInvariant().Contains($q) -or ([string]$_.Fields.StoryTitle).ToLowerInvariant().Contains($q) -or ([string]$_.Fields.Partner).ToLowerInvariant().Contains($q))
+    } | Sort-Object FileNumber)
+    $script:Filtered=$list; $script:CurrentIndex=-1
+    for($i=0;$i -lt $list.Count;$i++){if($list[$i].Id -eq $KeepId){$script:CurrentIndex=$i;break}}
+    if($script:CurrentIndex -lt 0 -and $list.Count -gt 0){$script:CurrentIndex=0}
+    $wasRendering=$script:Rendering;$script:Rendering=$true
+    try {
+        $jumpCombo.Items.Clear(); foreach($c in $list){$nm='Untitled Character'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; [void]$jumpCombo.Items.Add(('{0:0000} — {1}' -f [int]$c.FileNumber,$nm))}
+        if($script:CurrentIndex -ge 0 -and $jumpCombo.Items.Count -gt $script:CurrentIndex){$jumpCombo.SelectedIndex=$script:CurrentIndex}
+    } finally {$script:Rendering=$wasRendering}
+    Refresh-StoryFilter
+    if(-not $NoRender){Render-CurrentCharacter}else{Update-NavLabels}
+}
+
+$prevBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages -1 1 $true; $script:CurrentIndex=($script:CurrentIndex-1+$script:Filtered.Count)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+$nextBtn.Add_Click({ if($script:Filtered.Count -gt 0){ Save-BrowseState; Animate-BookPages 1 1 $true; $script:CurrentIndex=($script:CurrentIndex+1)%$script:Filtered.Count; $script:Rendering=$true;try{$jumpCombo.SelectedIndex=$script:CurrentIndex}finally{$script:Rendering=$false};Render-CurrentCharacter;Save-BrowseState } })
+$newBtn.Add_Click({ $c=New-CharacterRecord; $script:Characters+=,$c; $script:ActiveStatus='Blank'; Schedule-Save; Refresh-Navigation -KeepId $c.Id })
+$deleteBtn.Add_Click({ $c=Get-CurrentCharacter; if($null -eq $c){return}; $nm='this blank file'; if($c.Fields.FullName){$nm=$c.Fields.FullName}; if((Show-Confirm "Delete $nm?`r`n`r`nThis removes the character record. Portrait files are left in your data folder for safety.") -eq [System.Windows.Forms.DialogResult]::Yes){ $id=$c.Id; $script:Characters=@($script:Characters | Where-Object {$_.Id -ne $id}); Save-AllData; Refresh-Navigation } })
+$searchBox.Add_TextChanged({ Refresh-Navigation })
+$storyFilter.Add_SelectedIndexChanged({ if(-not $script:Rendering){ Refresh-Navigation } })
+$jumpCombo.Add_SelectedIndexChanged({ if(-not $script:Rendering -and $jumpCombo.SelectedIndex -ge 0 -and $jumpCombo.SelectedIndex -lt $script:Filtered.Count){Save-BrowseState;$dir=if($jumpCombo.SelectedIndex -ge $script:CurrentIndex){1}else{-1};Animate-BookPages $dir 1 $true;$script:CurrentIndex=$jumpCombo.SelectedIndex;Render-CurrentCharacter;Save-BrowseState} })
+$form.Add_FormClosing({ Save-BrowseState; Save-AllData })
+
+# First-run convenience: start with one genuinely blank page, not a fake example character.
+if($script:Characters.Count -eq 0){ $script:Characters += ,(New-CharacterRecord); Save-AllData; $script:ActiveStatus='Blank' }
+
+Refresh-StoryFilter
+Refresh-Navigation -KeepId ([string]$script:Settings.LastCharacterId)
+
+# Final layout pass after the real window handle, DPI scale, and Dock layout exist.
+# Without this, some Windows setups can retain startup bounds for the right page and
+# leave header/navigation controls piled at their default 0,0 positions.
+$form.Add_Shown({
+    try {
+        Layout-Book
+        Render-CurrentCharacter
+        Layout-Book
+    } catch { Write-LayoutError 'shown-pass' $_ }
+})
+
+# Delayed automatic update check so startup remains fast.
+if(Should-AutoCheck){
+    # legacy in-UI updater disabled; bootstrap handles updates
+    # legacy in-UI updater disabled; bootstrap handles updates
+    # legacy in-UI updater disabled; bootstrap handles updates
+}
+
+[void]$form.ShowDialog()
+
+
+---
+
+### REGION $leftPage=
+
+$searchBox=New-Object System.Windows.Forms.TextBox; $searchBox.Font=$script:FontSmall; $searchBox.Width=205; $searchBox.Height=28; $searchBox.BackColor=[System.Drawing.Color]::FromArgb(31,28,24); $searchBox.ForeColor=[System.Drawing.Color]::FromArgb(238,219,183); $searchBox.BorderStyle='FixedSingle'; $header.Controls.Add($searchBox)
+$searchHint=New-Object System.Windows.Forms.Label; $searchHint.Text='Search characters…'; $searchHint.Font=$script:FontSmall; $searchHint.ForeColor=[System.Drawing.Color]::FromArgb(132,111,83); $searchHint.AutoSize=$true; $searchHint.Add_Click({$searchBox.Focus()}); $header.Controls.Add($searchHint)
+$storyFilter=New-Object System.Windows.Forms.ComboBox; $storyFilter.DropDownStyle='DropDownList'; $storyFilter.Width=170; $storyFilter.Font=$script:FontSmall; $storyFilter.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($storyFilter)
+$jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+$updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+
+try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+$main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+
+try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+$book.Anchor='None'; $main.Controls.Add($book)
+try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+$leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+$gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+
+$script:StatusButtons=@{}
+foreach($st in @('Existing','In Progress','Blank')) {
+    try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+    $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+}
+
+$script:SectionButtons=@{}
+$leftNames=@('Overview','Appearance','Personality','Background','Family')
+$rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+$script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+$tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+$i=0
+foreach($nm in $leftNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+$i=0
+foreach($nm in $rightNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+
+$bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+$prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+$nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+$currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+$newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+$deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+$script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Control
+
+---
+
+### REGION $rightPage=
+
+$searchHint=New-Object System.Windows.Forms.Label; $searchHint.Text='Search characters…'; $searchHint.Font=$script:FontSmall; $searchHint.ForeColor=[System.Drawing.Color]::FromArgb(132,111,83); $searchHint.AutoSize=$true; $searchHint.Add_Click({$searchBox.Focus()}); $header.Controls.Add($searchHint)
+$storyFilter=New-Object System.Windows.Forms.ComboBox; $storyFilter.DropDownStyle='DropDownList'; $storyFilter.Width=170; $storyFilter.Font=$script:FontSmall; $storyFilter.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($storyFilter)
+$jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+$updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+
+try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+$main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+
+try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+$book.Anchor='None'; $main.Controls.Add($book)
+try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+$leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+$gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+
+$script:StatusButtons=@{}
+foreach($st in @('Existing','In Progress','Blank')) {
+    try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+    $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+}
+
+$script:SectionButtons=@{}
+$leftNames=@('Overview','Appearance','Personality','Background','Family')
+$rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+$script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+$tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+$i=0
+foreach($nm in $leftNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+$i=0
+foreach($nm in $rightNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+
+$bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+$prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+$nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+$currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+$newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+$deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+$script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+
+function Write-LayoutError([string]$Stage,$ErrorRecord) {
+    try {
+        $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " 
+
+---
+
+### REGION $book=
+
+$searchBox=New-Object System.Windows.Forms.TextBox; $searchBox.Font=$script:FontSmall; $searchBox.Width=205; $searchBox.Height=28; $searchBox.BackColor=[System.Drawing.Color]::FromArgb(31,28,24); $searchBox.ForeColor=[System.Drawing.Color]::FromArgb(238,219,183); $searchBox.BorderStyle='FixedSingle'; $header.Controls.Add($searchBox)
+$searchHint=New-Object System.Windows.Forms.Label; $searchHint.Text='Search characters…'; $searchHint.Font=$script:FontSmall; $searchHint.ForeColor=[System.Drawing.Color]::FromArgb(132,111,83); $searchHint.AutoSize=$true; $searchHint.Add_Click({$searchBox.Focus()}); $header.Controls.Add($searchHint)
+$storyFilter=New-Object System.Windows.Forms.ComboBox; $storyFilter.DropDownStyle='DropDownList'; $storyFilter.Width=170; $storyFilter.Font=$script:FontSmall; $storyFilter.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($storyFilter)
+$jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+$updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+
+try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+$main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+
+try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+$book.Anchor='None'; $main.Controls.Add($book)
+try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+$leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+$gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+
+$script:StatusButtons=@{}
+foreach($st in @('Existing','In Progress','Blank')) {
+    try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+    $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+}
+
+$script:SectionButtons=@{}
+$leftNames=@('Overview','Appearance','Personality','Background','Family')
+$rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+$script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+$tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+$i=0
+foreach($nm in $leftNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+$i=0
+foreach($nm in $rightNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+
+$bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+$prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+$nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+$currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+$newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+$deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+$script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$scr
+
+---
+
+### REGION $script:SectionButtons=
+
+$updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+
+try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+$main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+
+try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+$book.Anchor='None'; $main.Controls.Add($book)
+try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+$leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+$gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+
+$script:StatusButtons=@{}
+foreach($st in @('Existing','In Progress','Blank')) {
+    try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+    $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+}
+
+$script:SectionButtons=@{}
+$leftNames=@('Overview','Appearance','Personality','Background','Family')
+$rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+$script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+$tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+$i=0
+foreach($nm in $leftNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+$i=0
+foreach($nm in $rightNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+
+$bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+$prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+$nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+$currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+$newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+$deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+$script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+
+function Write-LayoutError([string]$Stage,$ErrorRecord) {
+    try {
+        $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+        Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+    } catch {}
+}
+function Layout-Book {
+    if($null -eq $main -or $null -eq $book){return}
+
+    # The normal open-book spread is used when there is enough width. When Windows
+    # snaps The Files beside another app, switch to a compact book layout instead of
+    # forcing a desktop-sized minimum width. Compact mode keeps full-width readable
+    # pages and lets the book itself scroll horizontally between the left and right page.
+    $isCompact=([int]$form.ClientSize.Width -lt 1050)
+    $desiredHeader=if($isCompact){88}else{52}
+    $desiredBottom=if($isCompact){94}else{70}
+    if($header.Height -ne $desiredHeader){$header.Height=$desiredHeader;return}
+    if($bottom.Height -ne $desiredBottom){$bottom.Height=$desiredBottom;return}
+
+    $w=[int]$main.ClientSize.Width; $h=[int]$main.ClientSize.Height
+    if($w -lt 5
+
+---
+
+### REGION $script:StatusButtons=
+
+$storyFilter=New-Object System.Windows.Forms.ComboBox; $storyFilter.DropDownStyle='DropDownList'; $storyFilter.Width=170; $storyFilter.Font=$script:FontSmall; $storyFilter.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($storyFilter)
+$jumpCombo=New-Object System.Windows.Forms.ComboBox; $jumpCombo.DropDownStyle='DropDownList'; $jumpCombo.Width=205; $jumpCombo.Font=$script:FontSmall; $jumpCombo.BackColor=[System.Drawing.Color]::FromArgb(236,216,179); $header.Controls.Add($jumpCombo)
+$updateBtn=New-Object System.Windows.Forms.Button; $updateBtn.Text='CHECK UPDATES'; $updateBtn.Width=105; $updateBtn.Height=28; $updateBtn.FlatStyle='Flat'; $updateBtn.FlatAppearance.BorderColor=$script:Gold; $updateBtn.ForeColor=$script:Gold; $updateBtn.BackColor=[System.Drawing.Color]::FromArgb(20,19,17); $updateBtn.Font=$script:FontSmall; $updateBtn.Add_Click({Show-Info 'Updates are checked automatically when The Files starts.'}); $header.Controls.Add($updateBtn)
+
+try { $main=New-Object BookDeskPanel } catch { $main=New-Object System.Windows.Forms.Panel; $main.BackColor=[System.Drawing.Color]::FromArgb(31,23,18) }
+$main.Dock='Fill'; $form.Controls.Add($main); $header.BringToFront()
+
+try { $book=New-Object BookFramePanel } catch { $book=New-Object System.Windows.Forms.Panel; $book.BackColor=$script:Leather }
+$book.Anchor='None'; $main.Controls.Add($book)
+try { $leftPage=New-Object BookPagePanel; $leftPage.IsLeftPage=$true } catch { $leftPage=New-Object System.Windows.Forms.Panel; $leftPage.BackColor=$script:Parchment }
+try { $rightPage=New-Object BookPagePanel; $rightPage.IsLeftPage=$false } catch { $rightPage=New-Object System.Windows.Forms.Panel; $rightPage.BackColor=$script:Parchment2 }
+$leftPage.Anchor='None'; $rightPage.Anchor='None'; $book.Controls.Add($leftPage); $book.Controls.Add($rightPage)
+$gutter=New-Object System.Windows.Forms.Panel; $gutter.BackColor=[System.Drawing.Color]::FromArgb(58,38,25); $gutter.Anchor='None'; $book.Controls.Add($gutter)
+
+$script:StatusButtons=@{}
+foreach($st in @('Existing','In Progress','Blank')) {
+    try { $b=New-Object BookStatusTabButton } catch { $b=New-Object System.Windows.Forms.Button; $b.FlatStyle='Flat' }
+    $b.Text=$st.ToUpper(); $b.Tag=$st; $b.Width=132; $b.Height=42; $b.Font=$script:FontTab; $b.Add_Click({Save-BrowseState;$script:ActiveStatus=[string]$this.Tag;$script:Settings.LastStatus=$script:ActiveStatus;Animate-BookPages 1 2 $false;Refresh-Navigation;Schedule-Save}); $main.Controls.Add($b); $script:StatusButtons[$st]=$b
+}
+
+$script:SectionButtons=@{}
+$leftNames=@('Overview','Appearance','Personality','Background','Family')
+$rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+$script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+$tabColors=@([System.Drawing.Color]::FromArgb(166,135,88),[System.Drawing.Color]::FromArgb(81,92,63),[System.Drawing.Color]::FromArgb(52,62,79),[System.Drawing.Color]::FromArgb(105,62,41),[System.Drawing.Color]::FromArgb(70,55,88),[System.Drawing.Color]::FromArgb(105,49,37),[System.Drawing.Color]::FromArgb(46,72,70))
+$i=0
+foreach($nm in $leftNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[$i % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button; $b.BackColor=$tabColors[$i % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)}); $main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+$i=0
+foreach($nm in $rightNames){
+    try{$b=New-Object BookTabButton; $b.Tone=$tabColors[($i+2) % $tabColors.Count]}catch{$b=New-Object System.Windows.Forms.Button;$b.BackColor=$tabColors[($i+2) % $tabColors.Count];$b.ForeColor=[System.Drawing.Color]::FromArgb(246,226,191);$b.FlatStyle='Flat'}
+    $b.Text=$nm; $b.Tag=$nm; $b.Width=138; $b.Height=52; $b.Font=$script:FontTab; $b.Add_Click({Go-ToSection ([string]$this.Tag)});$main.Controls.Add($b);$script:SectionButtons[$nm]=$b;$i++
+}
+
+$bottom=New-Object System.Windows.Forms.Panel; $bottom.Dock='Bottom'; $bottom.Height=70; $bottom.BackColor=[System.Drawing.Color]::FromArgb(22,20,17); $main.Controls.Add($bottom); $bottom.BringToFront()
+$prevBtn=New-Object System.Windows.Forms.Button; $prevBtn.Text='‹  PREVIOUS'; $prevBtn.Width=205; $prevBtn.Height=45; $prevBtn.FlatStyle='Flat';$prevBtn.FlatAppearance.BorderColor=$script:Gold;$prevBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$prevBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$prevBtn.Font=$script:FontTab;$bottom.Controls.Add($prevBtn)
+$nextBtn=New-Object System.Windows.Forms.Button;$nextBtn.Text='NEXT  ›';$nextBtn.Width=205;$nextBtn.Height=45;$nextBtn.FlatStyle='Flat';$nextBtn.FlatAppearance.BorderColor=$script:Gold;$nextBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$nextBtn.ForeColor=[System.Drawing.Color]::FromArgb(222,186,116);$nextBtn.Font=$script:FontTab;$bottom.Controls.Add($nextBtn)
+$currentNav=New-Object System.Windows.Forms.Label;$currentNav.Text='CURRENT';$currentNav.TextAlign='MiddleCenter';$currentNav.Width=260;$currentNav.Height=45;$currentNav.ForeColor=[System.Drawing.Color]::FromArgb(239,220,183);$currentNav.Font=$script:FontTab;$bottom.Controls.Add($currentNav)
+$newBtn=New-Object System.Windows.Forms.Button;$newBtn.Text='+ NEW BLANK FILE';$newBtn.Width=158;$newBtn.Height=38;$newBtn.FlatStyle='Flat';$newBtn.FlatAppearance.BorderColor=$script:Gold;$newBtn.ForeColor=$script:Gold;$newBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$newBtn.Font=$script:FontSmall;$bottom.Controls.Add($newBtn)
+$deleteBtn=New-Object System.Windows.Forms.Button;$deleteBtn.Text='DELETE';$deleteBtn.Width=72;$deleteBtn.Height=38;$deleteBtn.FlatStyle='Flat';$deleteBtn.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(150,65,45);$deleteBtn.ForeColor=[System.Drawing.Color]::FromArgb(218,126,92);$deleteBtn.BackColor=[System.Drawing.Color]::FromArgb(28,25,21);$bottom.Controls.Add($deleteBtn)
+$script:SaveStateLabel=New-Object System.Windows.Forms.Label;$script:SaveStateLabel.Text='AUTO-SAVE READY';$script:SaveStateLabel.AutoSize=$true;$script:SaveStateLabel.ForeColor=[System.Drawing.Color]::FromArgb(137,177,120);$script:SaveStateLabel.Font=$script:FontSmall;$bottom.Controls.Add($script:SaveStateLabel)
+
+function Write-LayoutError([string]$Stage,$ErrorRecord) {
+    try {
+        $msg = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Stage] " + [string]$ErrorRecord.Exception.Message
+        Add-Content -LiteralPath (Join-Path $script:DataRoot 'layout-error.txt') -Value $msg -Encoding UTF8
+    } catch {}
+}
+function Layout-Book {
+    if($null -eq $main -or $null -eq $book){return}
+
+    # The normal open-book spread is used when there is enough width. When Windows
+    # snaps The Files beside another app, switch to a compact book layout instead of
+    # forcing a desktop-sized mi
