@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-cipher",
   "appName": "The Cipher",
-  "version": "1.0.2",
-  "payloadSha256": "aa6480b496f89a93a7c4f6e6e1af3c2334d6d1e948c287055024220111c2a260",
+  "version": "1.0.3",
+  "payloadSha256": "f6560bdc7e4a39d0eadab62ff69be32cd1a9381a24a035604b49bc8c307afffb",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.2.txt",
-      "sha256": "aa6480b496f89a93a7c4f6e6e1af3c2334d6d1e948c287055024220111c2a260"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-cipher/payload-1.0.3.txt",
+      "sha256": "f6560bdc7e4a39d0eadab62ff69be32cd1a9381a24a035604b49bc8c307afffb"
     }
   ],
-  "notes": "Fixes garbled decorative symbols and punctuation caused by Windows PowerShell text encoding."
+  "notes": "Updates The Cipher app icon to the new forbidden-love artwork for the window, taskbar/Alt+Tab, and shortcuts."
 }
