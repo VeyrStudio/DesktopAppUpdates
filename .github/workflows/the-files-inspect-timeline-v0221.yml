@@ -1,0 +1,40 @@
+name: Inspect The Files v0.2.21 Timeline
+on:
+  push:
+    paths:
+      - '.github/workflows/the-files-inspect-timeline-v0221.yml'
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract Timeline definitions
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,base64
+          r=Path('.')
+          m=json.loads((r/'the-files/manifest.json').read_text())
+          b=b''.join((r/'the-files'/p['url'].rsplit('/',1)[-1]).read_bytes() for p in m['payloadParts'])
+          p=json.loads(b.decode())
+          fs={f['path']:f for f in p['files']}
+          core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']).decode('utf-8-sig')
+          lines=core.splitlines()
+          keys=('Timeline','LifeStoryTimeline','MajorLifeEvents','EventName','EventType','Importance')
+          out=[]
+          for i,line in enumerate(lines,1):
+              if any(k in line for k in keys): out.append(f'{i}: {line}')
+          (r/'tools/current-timeline-v0.2.21.txt').write_text('\n'.join(out),encoding='utf-8')
+      - name: Commit inspection
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add tools/current-timeline-v0.2.21.txt
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Inspect The Files v0.2.21 Timeline definitions';git pull --rebase origin main;git push origin main}
