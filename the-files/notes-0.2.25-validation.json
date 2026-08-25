@@ -1,0 +1,25 @@
+﻿{
+    "version":  "0.2.25",
+    "baseVersion":  "0.2.24",
+    "payload":  "payload-0.2.25-notes-audit-part-001.txt",
+    "payloadSha256":  "67d3ce5c19a47882f29305a0b9b05766c6969321a495d055a3d9658f654c017c",
+    "requirements":  {
+                         "notesExactlySixFields":  true,
+                         "aliases":  true,
+                         "tags":  true,
+                         "moodBoard":  true,
+                         "aestheticTags":  true,
+                         "colorPalette":  true,
+                         "importantObjects":  true,
+                         "obsoleteNotesFieldsRemoved":  true,
+                         "existingAestheticDataPreservedAsMoodBoard":  true,
+                         "timelinePreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "allInternalHashesVerified":  true,
+                         "compressedCoreMatchesRunnableCore":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
