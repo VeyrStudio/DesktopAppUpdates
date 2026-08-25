@@ -1,0 +1,61 @@
+233:         @{Key='StoryTitle';Label='Story Title';Type='Text'},
+235:         @{Key='CharacterRole';Label='Character Role';Type='Choice';Options=@('Main Character','Secondary Main','Supporting Character','Love Interest','Antagonist','Villain','Rival','Mentor','Sidekick','Minor Character','Background Character','Other')},
+307:     'Story' = @(
+308:         @{Key='StoryTitle';Label='Story Title';Type='Text'},
+309:         @{Key='CharacterTier';Label='Character Tier';Type='Choice';Options=@('Primary','Secondary','Tertiary','Minor','Background')},
+310:         @{Key='StoryRole';Label='Story Role';Type='Choice';Options=@('Protagonist','Love Interest','Antagonist','Deuteragonist','Supporting','Mentor','Rival','Confidant','Comic Relief','Other')},
+311:         @{Key='POVStatus';Label='POV Status';Type='Choice';Options=@('Main POV','Occasional POV','Never POV','Unknown')},
+312:         @{Key='FirstAppearance';Label='First Appearance';Type='Text'},
+313:         @{Key='LastAppearance';Label='Last Appearance';Type='Text'},
+314:         @{Key='MainGoal';Label='Main Goal';Type='Large'},
+317:         @{Key='Motivation';Label='Motivation';Type='Large'},
+321:         @{Key='InternalConflict';Label='Internal Conflict';Type='Large'},
+322:         @{Key='ExternalConflict';Label='External Conflict';Type='Large'},
+323:         @{Key='RelationshipConflict';Label='Relationship Conflict';Type='Large'},
+324:         @{Key='FatalFlaw';Label='Fatal Flaw / Major Weakness';Type='Large'},
+327:         @{Key='MiddleState';Label='Middle State';Type='Large'},
+329:         @{Key='EndingState';Label='Ending State';Type='Large'},
+330:         @{Key='ImportantScenes';Label='Important Scenes';Type='Large'},
+331:         @{Key='PlotRelevance';Label='Plot Relevance';Type='Large'}
+504:     StoryTitle = @('Where the Pines Remember','The Last Light','Black River','A House Without Shadows','The Wild Road','Beneath Hollow Stars','The Quiet Between','No Road Home','The Long Winter','Ash & Briar')
+506:     CharacterTier = @('Primary','Secondary','Tertiary','Minor','Background')
+507:     StoryRole = @('Protagonist','Love Interest','Antagonist','Deuteragonist','Supporting','Mentor','Rival','Confidant')
+508:     CharacterRole = @('Main Character','Secondary Main','Supporting Character','Love Interest','Antagonist','Villain','Rival','Mentor','Sidekick','Minor Character','Background Character')
+537:     POVStatus = @('Main POV','Occasional POV','Never POV')
+603:     if ($Key -eq 'MainGoal') { return [string](Get-Random -InputObject @('Protect the person he loves, even if it costs him the life he planned.','Find the truth behind the event that destroyed his family.','Build a quiet life somewhere nobody knows his past.','Keep his community safe while refusing to become the thing they fear.')) }
+604:     if ($Key -eq 'InternalConflict') { return [string](Get-Random -InputObject @('He wants intimacy but treats vulnerability as a threat.','He believes his value comes from being useful to everyone else.','He cannot decide whether survival justifies becoming someone he hates.')) }
+605:     if ($Key -eq 'ExternalConflict') { return [string](Get-Random -InputObject @('Someone powerful is actively trying to force him out of the life he built.','A dangerous secret from his past has followed him home.','The place he is trying to protect is becoming increasingly unsafe.')) }
+606:     if ($Key -eq 'RelationshipConflict') { return [string](Get-Random -InputObject @('They want each other, but neither trusts the other enough to surrender control.','Their loyalties put them on opposite sides of the same problem.','One is ready to build a life together; the other still expects everything good to disappear.')) }
+609:     if ($Key -match 'Description|History|Secrets|MajorLifeEvents|Relationship|Romantic|Attraction|LoveLanguage|Affection|Jealousy|Conflict|Intimacy|Skills|Powers|Limits|Weaknesses|Equipment|Weapons|SelfImage|Worldview|Moral|Boundaries|Coping|Defense|Insecurities|Triggers|Refuses|RuleBreaking|Desire|Fear|BreakingPoint|CoreBelief|FalseBelief|Goal|Motivation|Want|Need|Abandon|FatalFlaw|State|TurningPoints|Scenes|Relevance|Aliases|Quotes|Playlist|Aesthetic|Inspirations|Objects|Knowledge|Notes|Trivia|CustomFields|Siblings|Children|OtherFamily|Guardians|StepParents|Friends|Enemies|Rivals|Mentors|Dependents|ImportantRelationships|Mannerisms|PetPeeves|SenseHumor|Temper|SocialBehavior|ComfortableBehavior|Health|Disabilities|Injuries|HealthNotes|Scars') {
+619:     $fields['CharacterTier'] = 'Primary'
+620:     $fields['StoryRole'] = 'Protagonist'
+621:     $fields['CharacterRole'] = 'Main Character'
+629:     $fields['POVStatus'] = 'Main POV'
+653:     if ([string]::IsNullOrWhiteSpace([string]$fields['CharacterRole'])) {
+655:         try { if ($null -ne $raw.Fields.PSObject.Properties['StoryRole']) { $oldRole=[string]$raw.Fields.StoryRole } } catch {}
+656:         try { if ($null -ne $raw.Fields.PSObject.Properties['CharacterTier']) { $oldTier=[string]$raw.Fields.CharacterTier } } catch {}
+658:             'Protagonist' { $fields['CharacterRole']='Main Character' }
+659:             'Love Interest' { $fields['CharacterRole']='Love Interest' }
+660:             'Antagonist' { $fields['CharacterRole']='Antagonist' }
+661:             'Deuteragonist' { $fields['CharacterRole']='Secondary Main' }
+662:             'Supporting' { $fields['CharacterRole']='Supporting Character' }
+663:             'Mentor' { $fields['CharacterRole']='Mentor' }
+664:             'Rival' { $fields['CharacterRole']='Rival' }
+665:             'Confidant' { $fields['CharacterRole']='Supporting Character' }
+666:             'Comic Relief' { $fields['CharacterRole']='Supporting Character' }
+668:         if ([string]::IsNullOrWhiteSpace([string]$fields['CharacterRole'])) {
+670:                 'Primary' { $fields['CharacterRole']='Main Character' }
+671:                 'Secondary' { $fields['CharacterRole']='Secondary Main' }
+672:                 'Tertiary' { $fields['CharacterRole']='Supporting Character' }
+673:                 'Minor' { $fields['CharacterRole']='Minor Character' }
+674:                 'Background' { $fields['CharacterRole']='Background Character' }
+675:                 default { $fields['CharacterRole']='Main Character' }
+1019: $rightNames=@('Relationships','Powers','Story','Timeline','Notes')
+1020: $script:SectionOrder=@('Overview','Appearance','Personality','Background','Family','Relationships','Powers','Story','Timeline','Notes')
+1113:             $row2=@('Powers','Story','Timeline','Notes')
+1747:     if($c.FileStatus -eq 'Blank' -and -not [string]::IsNullOrWhiteSpace($value)){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress';$moved=$true};Schedule-Save;if($moved -or $key -eq 'FullName' -or $key -eq 'StoryTitle'){Refresh-Navigation -KeepId $c.Id -NoRender};Update-NavLabels
+1769:     $role=New-Object System.Windows.Forms.Label;$role.Text=([string]$c.Fields.CharacterRole).ToUpper();$role.Font=New-Object System.Drawing.Font('Georgia',8,[System.Drawing.FontStyle]::Bold);$role.ForeColor=[System.Drawing.Color]::FromArgb(131,67,45);$role.AutoSize=$true;$role.Location=New-Object System.Drawing.Point(210,38);$contentHost.Controls.Add($role)
+1857:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1954:         $stories=@($script:Characters | ForEach-Object {[string]$_.Fields.StoryTitle} | Where-Object {$_} | Sort-Object -Unique)
+1965:         (($sf -eq '' -or $sf -eq 'All Stories') -or ([string]$_.Fields.StoryTitle -eq $sf)) -and
+1966:         (($q -eq '') -or ([string]$_.Fields.FullName).ToLowerInvariant().Contains($q) -or ([string]$_.Fields.StoryTitle).ToLowerInvariant().Contains($q) -or ([string]$_.Fields.Partner).ToLowerInvariant().Contains($q))
