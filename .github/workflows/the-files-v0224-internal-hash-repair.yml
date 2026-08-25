@@ -1,0 +1,66 @@
+name: The Files v0.2.24 internal hash repair
+on:
+  push:
+    paths:
+      - 'tools/the-files-v0224-internal-hash-repair.py'
+      - '.github/workflows/the-files-v0224-internal-hash-repair.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build corrected package
+        shell: pwsh
+        run: python tools/the-files-v0224-internal-hash-repair.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.v0224-validation/TheFiles.ps1','.v0224-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/v0.2.24-internal-hash-repair-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Re-run updater-style internal verification
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,base64,hashlib,gzip
+          r=Path('.')
+          v=json.loads((r/'the-files/v0.2.24-internal-hash-repair-validation.json').read_text(encoding='utf-8-sig'))
+          b=(r/'the-files'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='0.2.24'
+          fs={f['path']:f for f in p['files']}
+          for f in p['files']:
+              raw=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(raw).hexdigest().lower()==f['sha256'].lower(), f['path']
+          core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64'])
+          gz=base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64'])
+          assert gzip.decompress(gz)==core
+          c=core.decode('utf-8-sig')
+          assert 'function Render-TimelineSection' in c
+          assert 'function Add-TimelineField($container,' in c
+          assert 'function Render-PowersSection' in c
+          assert "'Story' = @(" in c
+          print('All updater-style per-file hashes verified')
+      - name: Commit validated payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.24-internal-hash-repair-part-001.txt' 'the-files/v0.2.24-internal-hash-repair-validation.json'
+          if(-not (git diff --cached --quiet)){
+            git commit -m 'Stage validated The Files v0.2.24 internal hash repair'
+            git pull --rebase --autostash origin main
+            git push origin main
+          }
