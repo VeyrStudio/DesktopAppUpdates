@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-files",
   "appName": "The Files",
-  "version": "0.2.30",
-  "payloadSha256": "17ea04faf5f3b148d2becf95b4eda3e118394525758008c345a6fc8c17a5d67e",
+  "version": "0.2.31",
+  "payloadSha256": "c78fcfcae779fb5c98eb5fa3e4322f618fb4636f59386684519315ca6f5af28f",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/5f04175acfb1a7b5c7b4705f2cd7d982c040629c/the-files/payload-0.2.30-color-reader-fix-part-001.txt",
-      "sha256": "17ea04faf5f3b148d2becf95b4eda3e118394525758008c345a6fc8c17a5d67e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/5e007bf2d82a90acbe0f49080e0b8507aa82c764/the-files/payload-0.2.31-book-master-skin-part-001.txt",
+      "sha256": "c78fcfcae779fb5c98eb5fa3e4322f618fb4636f59386684519315ca6f5af28f"
     }
   ],
-  "notes": "Color Palette refresh repair on stable v0.2.29. Fixes Windows PowerShell's JSON-array unwrapping behavior so a one-color palette survives Notes refreshes exactly like a multi-color palette. The same reader fix also protects one-item Aliases, Tags, and Aesthetic Tags. Preserves permanent custom color-picker slots, custom Notes, Timeline, Story, Powers, launcher behavior, separate user data, and verified package hashes. Windows PowerShell tests passed for both one-item and multi-item swatch round trips before publish."
+  "notes": "Visual master skin release based on the approved open-book reference. Deepens the dark wood/leather surround, warms the parchment pages, strengthens antique-brass borders and stitched tabs, shifts headings and character titles toward an elegant book-like Georgia treatment, and harmonizes ordinary inputs/buttons with the parchment UI. The skin is reapplied after every character/section render so navigation and refreshes keep the look. The existing page-turn animation is disabled to match the approved reference. Preserves the book frame/page controls, status and section tabs, Notes, Timeline, Story, Powers, custom color-picker persistence, updater behavior, and separate user data. Windows PowerShell parsing and package/hash verification passed before publish."
 }
