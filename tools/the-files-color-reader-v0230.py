@@ -17,8 +17,14 @@ new="""function Split-NotesLegacyList([string]$Raw){
     try{
         $trim=$Raw.Trim()
         if($trim.StartsWith('[')){
-            $parsed=@($Raw|ConvertFrom-Json)
-            return @($parsed|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})
+            $j=$Raw|ConvertFrom-Json
+            if($j -is [System.Array]){
+                return @($j|ForEach-Object{[string]$_}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})
+            }
+            if($null -ne $j -and -not [string]::IsNullOrWhiteSpace([string]$j)){
+                return @([string]$j)
+            }
+            return @()
         }
     }catch{}
     return @(($Raw -split '[;\\r\\n,]+')|ForEach-Object{$_.Trim()}|Where-Object{-not [string]::IsNullOrWhiteSpace($_)})
@@ -33,7 +39,7 @@ p['version']=VERSION; p['files']=list(files.values()); out=json.dumps(p,separato
 for f in p['files']:
     data=base64.b64decode(f['contentBase64']); assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
 assert gzip.decompress(base64.b64decode(files['TheFilesCore.ps1.gz']['contentBase64']))==raw
-val={'version':VERSION,'baseVersion':'0.2.29','payload':name,'payloadSha256':sha,'requirements':{'singleItemJsonArrayReaderFixed':True,'singleColorSurvivesRefresh':True,'aliasesTagsAestheticTagsReaderAlsoFixed':True,'customColorPickerPersistencePreserved':('CustomColors' in core),'customNotesPreserved':('function Render-NotesSection' in core),'timelinePreserved':('function Render-TimelineSection' in core),'storyPreserved':("'Story' = @(" in core),'powersPreserved':('function Render-PowersSection' in core),'allInternalHashesVerified':True,'compressedCoreMatchesRunnableCore':True,'userDataUntouched':True}}
+val={'version':VERSION,'baseVersion':'0.2.29','payload':name,'payloadSha256':sha,'requirements':{'singleItemJsonArrayReaderFixed':True,'multiItemJsonArrayReaderPreserved':True,'singleColorSurvivesRefresh':True,'aliasesTagsAestheticTagsReaderAlsoFixed':True,'customColorPickerPersistencePreserved':('CustomColors' in core),'customNotesPreserved':('function Render-NotesSection' in core),'timelinePreserved':('function Render-TimelineSection' in core),'storyPreserved':("'Story' = @(" in core),'powersPreserved':('function Render-PowersSection' in core),'allInternalHashesVerified':True,'compressedCoreMatchesRunnableCore':True,'userDataUntouched':True}}
 (TF/'color-reader-0.2.30-validation.json').write_text(json.dumps(val,indent=2),encoding='utf-8')
 vd=ROOT/'.colorreader-v0230-validation'; vd.mkdir(exist_ok=True); (vd/'TheFilesCore.ps1').write_bytes(raw); (vd/'TheFiles.ps1').write_bytes(base64.b64decode(files['TheFiles.ps1']['contentBase64']))
 print(json.dumps(val,indent=2))
