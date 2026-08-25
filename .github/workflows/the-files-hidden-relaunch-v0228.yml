@@ -1,0 +1,47 @@
+name: The Files Hidden Relaunch v0.2.28
+on:
+  push:
+    paths:
+      - 'tools/the-files-hidden-relaunch-v0228.py'
+      - '.github/workflows/the-files-hidden-relaunch-v0228.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build hidden relaunch release
+        shell: pwsh
+        run: python tools/the-files-hidden-relaunch-v0228.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.hidden-v0228-validation/TheFiles.ps1','.hidden-v0228-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/hidden-relaunch-0.2.28-validation.json';$r=Get-Content $p -Raw|ConvertFrom-Json;$r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force;$r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate package and hidden handoff markers
+        shell: python
+        run: |
+          import json,pathlib,hashlib,base64,gzip
+          r=pathlib.Path('.');v=json.loads((r/'the-files/hidden-relaunch-0.2.28-validation.json').read_text(encoding='utf-8-sig'));b=(r/'the-files'/v['payload']).read_bytes();assert hashlib.sha256(b).hexdigest()==v['payloadSha256'];p=json.loads(b.decode());assert p['version']=='0.2.28';fs={f['path']:f for f in p['files']};assert {'TheFiles.ps1','TheFilesCore.ps1','TheFilesCore.ps1.gz','AppVersion.json'}<=set(fs)
+          for f in p['files']:
+              data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
+          launcher=base64.b64decode(fs['TheFiles.ps1']['contentBase64']).decode('utf-8-sig');core=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==core
+          for s in ['THEFILES_HIDDEN_BOOTSTRAP','wscript.exe','WindowStyle Hidden','Hidden bootstrap relaunch']:
+              assert s in launcher,s
+          for s in [b'function Render-NotesSection',b'function Render-TimelineSection',b'function Render-PowersSection',b"'Story' = @("]:
+              assert s in core,s
+          print('Hidden relaunch package validated')
+      - name: Commit validated payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.28-hidden-relaunch-part-001.txt' 'the-files/hidden-relaunch-0.2.28-validation.json';git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){git commit -m 'Stage validated The Files v0.2.28 hidden relaunch';git pull --rebase origin main;git push origin main}
