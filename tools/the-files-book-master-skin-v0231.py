@@ -38,10 +38,8 @@ if marker not in core:
 function Apply-BookMasterSkin {
     if($null -eq $script:MainForm){return}
     $paper=[System.Drawing.Color]::FromArgb(232,207,164)
-    $paper2=[System.Drawing.Color]::FromArgb(218,187,139)
     $ink=[System.Drawing.Color]::FromArgb(48,32,22)
     $brass=[System.Drawing.Color]::FromArgb(153,108,52)
-    $leather=[System.Drawing.Color]::FromArgb(35,22,16)
     $deep=[System.Drawing.Color]::FromArgb(24,15,11)
     try{
         $script:MainForm.BackColor=$deep
@@ -60,7 +58,7 @@ function Apply-BookMasterSkin {
             } elseif($ctrl -is [System.Windows.Forms.CheckBox] -or $ctrl -is [System.Windows.Forms.RadioButton]){
                 $ctrl.ForeColor=$ink;$ctrl.Font=$script:FontSerif
             } elseif($ctrl -is [System.Windows.Forms.Label]){
-                if($ctrl.ForeColor.R -gt 175 -and $ctrl.ForeColor.G -gt 175 -and $ctrl.ForeColor.B -gt 175){}else{$ctrl.ForeColor=$ink}
+                if(-not ($ctrl.ForeColor.R -gt 175 -and $ctrl.ForeColor.G -gt 175 -and $ctrl.ForeColor.B -gt 175)){$ctrl.ForeColor=$ink}
                 if($ctrl.Font.Size -ge 15){$ctrl.Font=$script:FontHeading}elseif($ctrl.Font.Size -le 9.5){$ctrl.Font=$script:FontSmall}else{$ctrl.Font=$script:FontSerif}
             } elseif($ctrl -is [System.Windows.Forms.GroupBox]){
                 $ctrl.ForeColor=$ink;$ctrl.Font=$script:FontSerif
@@ -82,21 +80,18 @@ function Apply-BookMasterSkin {
     Style-BookControl $script:MainForm
 }
 '''
-    # Put function before the final startup block, choosing a stable function boundary near the end.
     idx=core.rfind('\nfunction ')
     if idx<0: raise SystemExit('could not locate insertion boundary')
     core=core[:idx]+insert+core[idx:]
 
-# Ensure skin is applied after the controls have been created, immediately before the modal loop.
-call='Apply-BookMasterSkin'
-if core.count(call)<2: # function definition + startup call expected after patch
-    patterns=[r'(?m)^(\s*)\[void\]\$script:MainForm\.ShowDialog\(\)',r'(?m)^(\s*)\$script:MainForm\.ShowDialog\(\)\s*\|\s*Out-Null',r'(?m)^(\s*)\$script:MainForm\.ShowDialog\(\)']
-    done=False
-    for pat in patterns:
-        mm=re.search(pat,core)
-        if mm:
-            indent=mm.group(1); core=core[:mm.start()]+indent+'Apply-BookMasterSkin\n'+core[mm.start():];done=True;break
-    if not done: raise SystemExit('ShowDialog startup point not found')
+# The app starts through Application.Run rather than a direct ShowDialog call. Hook the form's
+# Shown event so the complete control tree exists before the recursive skin pass runs.
+if core.count('Apply-BookMasterSkin')<2:
+    mm=re.search(r'(?m)^\s*\$script:MainForm\s*=\s*New-Object\s+System\.Windows\.Forms\.Form\s*$',core)
+    if not mm:
+        mm=re.search(r'(?m)^\s*\$script:MainForm\s*=\s*New-Object[^\r\n]*Form[^\r\n]*$',core)
+    if not mm: raise SystemExit('MainForm creation point not found')
+    core=core[:mm.end()]+"\n$script:MainForm.Add_Shown({ Apply-BookMasterSkin })"+core[mm.end():]
 
 # Strengthen existing custom-drawn shell colors without changing geometry.
 repls={
@@ -126,8 +121,8 @@ for f in p['files']:
     data=base64.b64decode(f['contentBase64']);assert hashlib.sha256(data).hexdigest()==f['sha256'],f['path']
 assert gzip.decompress(base64.b64decode(files['TheFilesCore.ps1.gz']['contentBase64']))==raw
 checks={
-'bookMasterSkin':marker in core,'skinCalledBeforeShowDialog':core.find('Apply-BookMasterSkin',core.find(marker)+1)>=0,
-'customBookFramePreserved':'class BookFramePanel' in core,'customStatusTabsPreserved':'class BookStatusTabButton' in core,
+'bookMasterSkin':marker in core,'skinHookedOnShown':"$script:MainForm.Add_Shown({ Apply-BookMasterSkin })" in core,
+'customBookFramePreserved':'class BookFramePanel' in core,'customBookPagePreserved':'class BookPagePanel' in core,'customTabsPreserved':'class BookTabButton' in core,'customStatusTabsPreserved':'class BookStatusTabButton' in core,
 'ornateButtonsPreserved':'class OrnateButton' in core,'customNotesPreserved':'function Render-NotesSection' in core,
 'timelinePreserved':'function Render-TimelineSection' in core,'storyPreserved':"'Story' = @(" in core,'powersPreserved':'function Render-PowersSection' in core,
 'colorPickerPersistencePreserved':'CustomColors' in core,'noPageTurnAnimation':True,'userDataSeparate':"TheFiles\\Data" in core,
