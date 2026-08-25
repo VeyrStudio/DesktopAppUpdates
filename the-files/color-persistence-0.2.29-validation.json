@@ -1,0 +1,22 @@
+﻿{
+    "version":  "0.2.29",
+    "baseVersion":  "0.2.28",
+    "payload":  "payload-0.2.29-color-persistence-part-001.txt",
+    "payloadSha256":  "7a45eaa463972e52b0d5f407a1587fb95469e5bb12a354bd2cfd4d55c9dd2723",
+    "requirements":  {
+                         "singleItemNotesArraysPersist":  true,
+                         "colorPalettePersistsAcrossRender":  true,
+                         "colorPaletteImmediatelySaved":  true,
+                         "colorDialogCustomColorsPersistInSettings":  true,
+                         "aliasesTagsAestheticTagsSerializerFixed":  true,
+                         "customNotesPreserved":  true,
+                         "timelinePreserved":  true,
+                         "storyPreserved":  true,
+                         "powersPreserved":  true,
+                         "allInternalHashesVerified":  true,
+                         "compressedCoreMatchesRunnableCore":  true,
+                         "userDataSeparate":  true,
+                         "manifestRepairRequired":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
