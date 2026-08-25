@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/the-tome-v010-build.yml'
-      - 'the-tome/build/source-v0.1.0.zip'
+      - 'the-tome/build/source-parts/**'
 
 permissions:
   contents: read
@@ -21,13 +21,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Expand source
+      - name: Reassemble and expand source
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path tome-build | Out-Null
-          $encoded = (Get-Content 'the-tome/build/source-v0.1.0.zip' -Raw).Trim()
-          [IO.File]::WriteAllBytes('the-tome-source-real.zip', [Convert]::FromBase64String($encoded))
-          python -c "import zipfile; zipfile.ZipFile(r'the-tome-source-real.zip').extractall(r'tome-build')"
+          $parts = Get-ChildItem 'the-tome/build/source-parts/part*.txt' | Sort-Object Name
+          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+          [IO.File]::WriteAllBytes('the-tome-source.zip', [Convert]::FromBase64String($encoded))
+          python -c "import zipfile; z=zipfile.ZipFile(r'the-tome-source.zip'); z.testzip() is None or (_ for _ in ()).throw(Exception('bad zip member')); z.extractall(r'tome-build')"
           New-Item -ItemType Directory -Force -Path tome-build/assets | Out-Null
       - name: Create bundled artwork assets
         shell: pwsh
