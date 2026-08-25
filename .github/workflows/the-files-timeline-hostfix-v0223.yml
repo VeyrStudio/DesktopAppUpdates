@@ -1,0 +1,44 @@
+name: The Files Timeline Host Fix v0.2.23
+on:
+  push:
+    paths:
+      - 'tools/the-files-timeline-hostfix-v0223.py'
+      - '.github/workflows/the-files-timeline-hostfix-v0223.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Build cumulative Host fix
+        shell: pwsh
+        run: python tools/the-files-timeline-hostfix-v0223.py
+      - name: Parse launcher and core under Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.timeline-v0223-validation/TheFiles.ps1','.timeline-v0223-validation/TheFilesCore.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)};throw "PowerShell parse failed: $f"}
+          }
+          $p='the-files/timeline-0.2.23-hostfix-validation.json';$r=Get-Content $p -Raw|ConvertFrom-Json;$r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force;$r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+      - name: Revalidate package and read-only Host fix
+        shell: python
+        run: |
+          import json,pathlib,hashlib,base64,gzip
+          r=pathlib.Path('.');v=json.loads((r/'the-files/timeline-0.2.23-hostfix-validation.json').read_text(encoding='utf-8-sig'));b=(r/'the-files'/v['payload']).read_bytes();assert hashlib.sha256(b).hexdigest()==v['payloadSha256'];p=json.loads(b.decode());assert p['version']=='0.2.23';fs={f['path']:f for f in p['files']};raw=base64.b64decode(fs['TheFilesCore.ps1']['contentBase64']);assert gzip.decompress(base64.b64decode(fs['TheFilesCore.ps1.gz']['contentBase64']))==raw;c=raw.decode('utf-8-sig');assert 'function Add-TimelineField($container,' in c;assert 'function Add-TimelineField($host,' not in c;assert 'function Render-TimelineSection' in c;assert "CurrentSection -eq 'Timeline'" in c;print('Timeline Host collision removed and package validated')
+      - name: Commit validated payload and report
+        shell: pwsh
+        run: |
+          git config user.name 'VeyrStudio Update Bot';git config user.email 'actions@users.noreply.github.com'
+          git add 'the-files/payload-0.2.23-timeline-hostfix-part-001.txt' 'the-files/timeline-0.2.23-hostfix-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Files v0.2.23 Timeline Host fix'
+            git pull --rebase --autostash origin main
+            git push origin main
+          }
