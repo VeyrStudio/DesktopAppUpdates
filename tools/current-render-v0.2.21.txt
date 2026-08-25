@@ -1,0 +1,442 @@
+1650: 
+1651:     if($type -eq 'Choice' -or $type -eq 'EditChoice' -or $type -eq 'Swatch'){
+1652:         $control=New-Object System.Windows.Forms.ComboBox
+1653:         if($type -eq 'EditChoice'){$control.DropDownStyle='DropDown'}else{$control.DropDownStyle='DropDownList'}
+1654:         [void]$control.Items.AddRange([object[]]$def.Options);$control.Location=New-Object System.Drawing.Point($inputX,($y-3));$control.Width=$inputW;$control.Font=$script:FontSmall;$control.Tag=$key
+1655:         if($type -eq 'Swatch'){
+1656:             $control.DrawMode='OwnerDrawFixed';$control.ItemHeight=24
+1657:             $control.Add_DrawItem({
+1658:                 param($sender,$e)
+1659:                 try {
+1660:                     $e.DrawBackground()
+1661:                     if($e.Index -ge 0){
+1662:                         $text=[string]$sender.Items[$e.Index];$hex=''
+1663:                         try {$map=$script:SwatchColors[[string]$sender.Tag];if($null -ne $map -and $map.ContainsKey($text)){$hex=[string]$map[$text]}} catch {}
+1664:                         $swatchColor=if([string]::IsNullOrWhiteSpace($hex)){[System.Drawing.Color]::LightGray}else{Convert-HexToColor $hex}
+1665:                         $swatchBrush=New-Object System.Drawing.SolidBrush($swatchColor);try{$e.Graphics.FillRectangle($swatchBrush,$e.Bounds.X+5,$e.Bounds.Y+4,18,16)}finally{$swatchBrush.Dispose()}
+1666:                         $e.Graphics.DrawRectangle([System.Drawing.Pens]::DimGray,$e.Bounds.X+5,$e.Bounds.Y+4,18,16)
+1667:                         $selected=(($e.State -band [System.Windows.Forms.DrawItemState]::Selected) -ne 0);$textColor=if($selected){[System.Drawing.SystemColors]::HighlightText}else{$script:Ink}
+1668:                         $textBrush=New-Object System.Drawing.SolidBrush($textColor);try{$e.Graphics.DrawString($text,$sender.Font,$textBrush,[float]($e.Bounds.X+30),[float]($e.Bounds.Y+4))}finally{$textBrush.Dispose()}
+1669:                     }
+1670:                     $e.DrawFocusRectangle()
+1671:                 } catch {}
+1672:             })
+1673:         }
+1674:         $control.Add_SelectedIndexChanged({if($script:Rendering){return};Field-ControlChanged $this})
+1675:         if($type -eq 'EditChoice'){$control.Add_TextChanged({if($script:Rendering){return};Field-ControlChanged $this})}
+1676:     }
+1677:     elseif($type -eq 'MultiChoice'){
+1678:         $control=New-Object System.Windows.Forms.Button;$control.Height=29;$control.Location=New-Object System.Drawing.Point($inputX,($y-3));$control.Width=$inputW;$control.Font=$script:FontSmall;$control.Tag=$key
+1679:         $control.FlatStyle='Flat';$control.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(132,91,51);$control.TextAlign='MiddleLeft';$control.AutoEllipsis=$true
+1680:         $value='';$c=Get-CurrentCharacter;if($null -ne $c){$value=[string]$c.Fields[$key]};$selected=@(Split-MultiChoiceValue $value);$control.Text=Get-MultiChoiceSummary $value
+1681:         $menu=New-Object System.Windows.Forms.ContextMenuStrip;$menu.ShowCheckMargin=$true;$menu.Font=$script:FontSmall
+1682:         $menu.Add_Closing({param($sender,$e);if($e.CloseReason -eq [System.Windows.Forms.ToolStripDropDownCloseReason]::ItemClicked){$e.Cancel=$true}})
+1683:         $menuOptions=New-Object System.Collections.Generic.List[string]
+1684:         foreach($opt in @($def.Options)){if(-not $menuOptions.Contains([string]$opt)){[void]$menuOptions.Add([string]$opt)}}
+1685:         foreach($existing in $selected){if(-not $menuOptions.Contains([string]$existing)){[void]$menuOptions.Add([string]$existing)}}
+1686:         foreach($opt in $menuOptions){
+1687:             $item=New-Object System.Windows.Forms.ToolStripMenuItem;$item.Text=$opt;$item.CheckOnClick=$true;$item.Checked=($selected -contains $opt);$item.Tag=[pscustomobject]@{Key=$key;Option=$opt}
+1688:             $item.Add_Click({if($script:Rendering){return};$t=$this.Tag;Set-MultiChoiceSelection ([string]$t.Key) ([string]$t.Option) ([bool]$this.Checked)})
+1689:             [void]$menu.Items.Add($item)
+1690:         }
+1691:         $control.ContextMenuStrip=$menu
+1692:         $control.Add_Click({try{$this.ContextMenuStrip.Show($this,(New-Object System.Drawing.Point(0,$this.Height)))}catch{}})
+1693:     }
+1694:     elseif($type -eq 'LifeEvents'){
+1695:         $control=New-Object System.Windows.Forms.Button;$control.Height=29;$control.Location=New-Object System.Drawing.Point($inputX,($y-3));$control.Width=$inputW;$control.Font=$script:FontSmall;$control.Tag=$key
+1696:         $control.FlatStyle='Flat';$control.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(132,91,51);$control.TextAlign='MiddleLeft';$control.AutoEllipsis=$true
+1697:         $value='';$c=Get-CurrentCharacter;if($null -ne $c){$value=[string]$c.Fields[$key]};$eventMap=ConvertFrom-LifeEvents $value
+1698:         if($eventMap.Count -eq 0){$control.Text='Select life events...  ▼'}elseif($eventMap.Count -eq 1){$control.Text=([string](@($eventMap.Keys)[0])+'  ▼')}else{$control.Text=('{0} selected  ▼' -f $eventMap.Count)}
+1699:         $menu=New-Object System.Windows.Forms.ContextMenuStrip;$menu.ShowCheckMargin=$true;$menu.Font=$script:FontSmall
+1700:         $menuOptions=New-Object System.Collections.Generic.List[string]
+1701:         foreach($opt in @($def.Options)){if(-not $menuOptions.Contains([string]$opt)){[void]$menuOptions.Add([string]$opt)}}
+1702:         foreach($existing in @($eventMap.Keys)){if(-not $menuOptions.Contains([string]$existing)){[void]$menuOptions.Add([string]$existing)}}
+1703:         foreach($opt in $menuOptions){
+1704:             $item=New-Object System.Windows.Forms.ToolStripMenuItem;$item.Text=$opt;$item.CheckOnClick=$true;$item.Checked=$eventMap.Contains($opt);$item.Tag=[pscustomobject]@{Key=$key;Category=$opt}
+1705:             $item.Add_Click({if($script:Rendering){return};$t=$this.Tag;Set-LifeEventSelection ([string]$t.Key) ([string]$t.Category) ([bool]$this.Checked)})
+1706:             [void]$menu.Items.Add($item)
+1707:         }
+1708:         $control.ContextMenuStrip=$menu;$control.Add_Click({try{$this.ContextMenuStrip.Show($this,(New-Object System.Drawing.Point(0,$this.Height)))}catch{}})
+1709:         $noteY=$y+36
+1710:         foreach($category in @($eventMap.Keys)){
+1711:             $noteLabel=New-Object System.Windows.Forms.Label;$noteLabel.Text=([string]$category+' — notes');$noteLabel.Font=New-Object System.Drawing.Font('Georgia',8,[System.Drawing.FontStyle]::Bold);$noteLabel.ForeColor=$script:Muted;$noteLabel.Location=New-Object System.Drawing.Point($inputX,$noteY);$noteLabel.Size=New-Object System.Drawing.Size($inputW,20);$noteLabel.Anchor='Top,Left,Right';$page.Controls.Add($noteLabel)
+1712:             $noteBox=New-Object System.Windows.Forms.TextBox;$noteBox.Multiline=$true;$noteBox.ScrollBars='Vertical';$noteBox.BorderStyle='FixedSingle';$noteBox.Font=$script:FontSmall;$noteBox.BackColor=[System.Drawing.Color]::FromArgb(247,233,202);$noteBox.ForeColor=$script:Ink;$noteBox.Location=New-Object System.Drawing.Point($inputX,($noteY+20));$noteBox.Size=New-Object System.Drawing.Size($inputW,58);$noteBox.Anchor='Top,Left,Right';$noteBox.Text=[string]$eventMap[$category];$noteBox.Tag=[pscustomobject]@{Key=$key;Category=[string]$category}
+1713:             $noteBox.Add_TextChanged({if($script:Rendering){return};$t=$this.Tag;Set-LifeEventNote ([string]$t.Key) ([string]$t.Category) ([string]$this.Text)})
+1714:             $page.Controls.Add($noteBox);$noteY+=86
+1715:         }
+1716:         $height=[math]::Max(48,(42+($eventMap.Count*86)))
+1717:     }
+1718:     else{
+1719:         $control=New-Object System.Windows.Forms.TextBox;$control.Location=New-Object System.Drawing.Point($inputX,($y-3));$control.Width=$inputW;$control.Font=$script:FontSmall;$control.Tag=$key;$control.BorderStyle='FixedSingle'
+1720:         if($isMulti){$control.Multiline=$true;$control.ScrollBars='Vertical';if($type -eq 'Large'){$control.Height=118}else{$control.Height=62};$height=$control.Height+14}
+1721:         $control.Add_TextChanged({if($script:Rendering){return};Field-ControlChanged $this})
+1722:     }
+1723:     $control.BackColor=[System.Drawing.Color]::FromArgb(247,233,202);$control.ForeColor=$script:Ink;$control.Anchor='Top,Left,Right';if(-not $isMulti){$control.Add_MouseWheel({param($s,$e);Scroll-BookHost $this $e.Delta})};$page.Controls.Add($control);$script:FieldControls[$key]=$control
+1724:     $dice=New-Object System.Windows.Forms.Button;$dice.Text='🎲';$dice.Tag=$key;$dice.Width=30;$dice.Height=27;$dice.Location=New-Object System.Drawing.Point(($w-68),($y-3));$dice.Anchor='Top,Right';$dice.FlatStyle='Flat';$dice.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(146,109,65);$dice.BackColor=[System.Drawing.Color]::FromArgb(227,202,159);$dice.ForeColor=$script:Ink;$dice.Font=New-Object System.Drawing.Font('Segoe UI Emoji',9);$dice.Add_Click({Randomize-OneField ([string]$this.Tag)});$dice.Add_MouseWheel({param($s,$e);Scroll-BookHost $this $e.Delta});$page.Controls.Add($dice);$script:ToolTip.SetToolTip($dice,'Randomize this field')
+1725:     $lock=New-Object System.Windows.Forms.Button;$lock.Tag=$key;$lock.Width=30;$lock.Height=27;$lock.Location=New-Object System.Drawing.Point(($w-36),($y-3));$lock.Anchor='Top,Right';$lock.FlatStyle='Flat';$lock.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(146,109,65);$lock.BackColor=[System.Drawing.Color]::FromArgb(227,202,159);$lock.ForeColor=$script:Ink;$lock.Font=New-Object System.Drawing.Font('Segoe UI Emoji',9);$lock.Add_Click({Toggle-Lock ([string]$this.Tag)});$lock.Add_MouseWheel({param($s,$e);Scroll-BookHost $this $e.Delta});$page.Controls.Add($lock);$script:ToolTip.SetToolTip($lock,'Lock / unlock this field')
+1726:     return $height
+1727: }
+1728: function Field-ControlChanged($ctrl) {
+1729:     $c=Get-CurrentCharacter;if($null -eq $c){return};$key=[string]$ctrl.Tag;$value=[string]$ctrl.Text
+1730:     if($ctrl -is [System.Windows.Forms.ComboBox]){$def=Get-FieldDefinition $key;if($null -ne $def -and [string]$def.Type -eq 'EditChoice'){$value=[string]$ctrl.Text}else{$value=[string]$ctrl.SelectedItem}}
+1731:     $c.Fields[$key]=$value;$c.Modified=(Get-Date).ToString('o');$moved=$false
+1732:     if($c.FileStatus -eq 'Blank' -and -not [string]::IsNullOrWhiteSpace($value)){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress';$moved=$true};Schedule-Save;if($moved -or $key -eq 'FullName' -or $key -eq 'StoryTitle'){Refresh-Navigation -KeepId $c.Id -NoRender};Update-NavLabels
+1733: }
+1734: function New-LabeledActionButton([string]$text,[int]$x,[int]$y,[int]$width) {
+1735:     $b=New-Object System.Windows.Forms.Button
+1736:     $b.Text=$text;$b.Width=$width;$b.Height=36;$b.Location=New-Object System.Drawing.Point($x,$y);$b.Anchor='Bottom,Left'
+1737:     $b.Font=New-Object System.Drawing.Font('Georgia',8,[System.Drawing.FontStyle]::Bold);$b.FlatStyle='Flat';$b.FlatAppearance.BorderSize=1
+1738:     $b.FlatAppearance.BorderColor=[System.Drawing.Color]::FromArgb(132,91,51);$b.BackColor=[System.Drawing.Color]::FromArgb(219,190,142);$b.ForeColor=[System.Drawing.Color]::FromArgb(55,37,24)
+1739:     return $b
+1740: }
+1741: function Add-BookActions([System.Windows.Forms.Panel]$page) {
+1742:     $y=[math]::Max(80,$page.ClientSize.Height-55)
+1743:     $section=New-LabeledActionButton 'RANDOMIZE SECTION' 16 $y 154;$section.Add_Click({Randomize-Section});$page.Controls.Add($section);$section.BringToFront();$script:ToolTip.SetToolTip($section,'Randomize every unlocked field in the current section')
+1744:     $random=New-LabeledActionButton 'RANDOMIZE CHARACTER' 176 $y 174;$random.Add_Click({Randomize-Character});$page.Controls.Add($random);$random.BringToFront();$script:ToolTip.SetToolTip($random,'Randomize every unlocked field in this character')
+1745:     $undo=New-LabeledActionButton 'UNDO RANDOMIZE' 356 $y 132;$undo.Add_Click({Undo-Character});$page.Controls.Add($undo);$undo.BringToFront();$script:ToolTip.SetToolTip($undo,'Restore the character to the state before the last randomization')
+1746: }
+1747: function Add-OverviewExtras($c,[System.Windows.Forms.Panel]$contentHost) {
+1748:     $frame=New-Object System.Windows.Forms.Panel;$frame.Location=New-Object System.Drawing.Point(12,8);$frame.Size=New-Object System.Drawing.Size(178,216);$frame.BackColor=[System.Drawing.Color]::FromArgb(137,101,60);$contentHost.Controls.Add($frame)
+1749:     $portraitBox=New-Object System.Windows.Forms.PictureBox;$portraitBox.Location=New-Object System.Drawing.Point(5,5);$portraitBox.Size=New-Object System.Drawing.Size(168,206);$portraitBox.SizeMode='Zoom';$portraitBox.BackColor=[System.Drawing.Color]::FromArgb(218,194,151);$frame.Controls.Add($portraitBox)
+1750:     if($c.PortraitPath -and (Test-Path -LiteralPath $c.PortraitPath)){try{$img=[System.Drawing.Image]::FromFile($c.PortraitPath);$portraitBox.Image=New-Object System.Drawing.Bitmap($img);$img.Dispose()}catch{}}
+1751:     try{$portraitBtn=New-Object OrnateButton}catch{$portraitBtn=New-Object System.Windows.Forms.Button};$portraitBtn.Text='ADD / CHANGE PORTRAIT';$portraitBtn.Width=124;$portraitBtn.Height=29;$portraitBtn.Location=New-Object System.Drawing.Point(12,230);$portraitBtn.Font=$script:FontSmall;$portraitBtn.Add_Click({Choose-Portrait});$contentHost.Controls.Add($portraitBtn)
+1752:     try{$portraitRemove=New-Object OrnateButton}catch{$portraitRemove=New-Object System.Windows.Forms.Button};$portraitRemove.Text='REMOVE';$portraitRemove.Width=50;$portraitRemove.Height=29;$portraitRemove.Location=New-Object System.Drawing.Point(140,230);$portraitRemove.Font=New-Object System.Drawing.Font('Georgia',7);$portraitRemove.Add_Click({Remove-Portrait});$contentHost.Controls.Add($portraitRemove)
+1753:     $fileNo=New-Object System.Windows.Forms.Label;$fileNo.Text=('FILE {0:0000}' -f [int]$c.FileNumber);$fileNo.Font=$script:FontTab;$fileNo.ForeColor=[System.Drawing.Color]::FromArgb(131,67,45);$fileNo.AutoSize=$true;$fileNo.Location=New-Object System.Drawing.Point(210,12);$contentHost.Controls.Add($fileNo)
+1754:     $role=New-Object System.Windows.Forms.Label;$role.Text=([string]$c.Fields.CharacterRole).ToUpper();$role.Font=New-Object System.Drawing.Font('Georgia',8,[System.Drawing.FontStyle]::Bold);$role.ForeColor=[System.Drawing.Color]::FromArgb(131,67,45);$role.AutoSize=$true;$role.Location=New-Object System.Drawing.Point(210,38);$contentHost.Controls.Add($role)
+1755:     $completion=Get-Completion $c;$comp=New-Object System.Windows.Forms.Label;$comp.Text="COMPLETION  $completion%";$comp.Font=$script:FontSmall;$comp.ForeColor=$script:Muted;$comp.AutoSize=$true;$comp.Location=New-Object System.Drawing.Point(210,66);$contentHost.Controls.Add($comp)
+1756:     $fsLabel=New-Object System.Windows.Forms.Label;$fsLabel.Text='FILE STATUS';$fsLabel.Font=New-Object System.Drawing.Font('Georgia',8,[System.Drawing.FontStyle]::Bold);$fsLabel.ForeColor=$script:Ink;$fsLabel.AutoSize=$true;$fsLabel.Location=New-Object System.Drawing.Point(210,99);$contentHost.Controls.Add($fsLabel)
+1757:     $fs=New-Object System.Windows.Forms.ComboBox;$fs.DropDownStyle='DropDownList';[void]$fs.Items.AddRange([object[]]@('Existing','In Progress','Blank'));$fs.Location=New-Object System.Drawing.Point(210,119);$fs.Width=[math]::Max(120,$contentHost.ClientSize.Width-225);$fs.Anchor='Top,Left,Right';$fs.Font=$script:FontSmall;$fs.SelectedItem=$c.FileStatus;$fs.Add_SelectedIndexChanged({if($script:Rendering){return};$cc=Get-CurrentCharacter;if($null -ne $cc){$cc.FileStatus=[string]$this.SelectedItem;$cc.Modified=(Get-Date).ToString('o');Schedule-Save;$script:ActiveStatus=$cc.FileStatus;Refresh-Navigation -KeepId $cc.Id}});$contentHost.Controls.Add($fs)
+1758:     $hint=New-Object System.Windows.Forms.Label;$hint.Text='Locked fields survive section and full-character randomization.';$hint.Font=New-Object System.Drawing.Font('Georgia',7,[System.Drawing.FontStyle]::Italic);$hint.ForeColor=$script:Muted;$hint.Location=New-Object System.Drawing.Point(210,158);$hint.Size=New-Object System.Drawing.Size([math]::Max(120,$contentHost.ClientSize.Width-225),54);$hint.Anchor='Top,Left,Right';$contentHost.Controls.Add($hint)
+1759: }
+1760: function Get-Completion($c) {
+1761:     $filled=0; $total=0
+1762:     foreach($key in $script:AllFieldKeys){ $total++; if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields[$key])){$filled++} }
+1763:     if($total -eq 0){return 0}; return [math]::Round(($filled/$total)*100)
+1764: }
+1765: function Remove-Portrait {
+1766:     $c=Get-CurrentCharacter;if($null -eq $c){return}
+1767:     $c.PortraitPath='';$c.Modified=(Get-Date).ToString('o');Schedule-Save;Render-CurrentCharacter
+1768: }
+1769: 
+1770: function Choose-Portrait {
+1771:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1772:     $dlg=New-Object System.Windows.Forms.OpenFileDialog; $dlg.Filter='Images|*.png;*.jpg;*.jpeg;*.bmp;*.gif|All files|*.*'
+1773:     if($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){
+1774:         try { $ext=[System.IO.Path]::GetExtension($dlg.FileName); $dest=Join-Path $script:MediaRoot ($c.Id+$ext); Copy-Item -LiteralPath $dlg.FileName -Destination $dest -Force; $c.PortraitPath=$dest; $c.Modified=(Get-Date).ToString('o'); Schedule-Save; Render-CurrentCharacter } catch { Show-Error $_.Exception.Message }
+1775:     }
+1776: }
+1777: 
+1778: 
+1779: # ---------------- POWERS AUDIT -------------------------------------------------
+1780: $script:PowerFoldState=$false
+1781: $script:PowerEntryFoldState=@{}
+1782: $script:PowerAbilityOptions=@('Telepathy','Telekinesis','Empathy','Precognition','Clairvoyance','Healing','Regeneration','Super Strength','Super Speed','Enhanced Senses','Flight','Invisibility','Shapeshifting','Illusion','Mind Control','Dream Manipulation','Fear Manipulation','Shadow Manipulation','Light Manipulation','Fire Manipulation','Water Manipulation','Air Manipulation','Earth Manipulation','Ice Manipulation','Electricity Manipulation','Plant Manipulation','Animal Communication','Necromancy','Spirit Communication','Portal Creation','Teleportation','Time Manipulation','Reality Manipulation','Magic / Spellcasting','Curse / Hex','Protective Warding','Immortality','Other / Custom')
+1783: $script:PowerTypeOptions=@('Physical','Mental / Psychic','Elemental','Magical','Spiritual','Biological','Cosmic','Technological','Divine','Demonic','Fae','Reality-Altering','Other / Custom','Unknown')
+1784: $script:PowerStrengthOptions=@('Minimal','Low','Moderate','Strong','Very Strong','Extreme','Variable','Unknown')
+1785: $script:PowerControlOptions=@('Uncontrolled','Poor','Developing','Moderate','Good','Excellent','Mastered','Variable','Unknown')
+1786: $script:PowerLimitOptions=@('Requires Concentration','Limited Range','Limited Duration','Cooldown Required','Causes Exhaustion','Causes Pain','Requires Touch','Requires Line of Sight','Emotion-Dependent','Environment-Dependent','Only Works at Certain Times','Cannot Affect Self','Cannot Affect Others','Limited Uses','Unpredictable','Power Suppression Possible','Other / Custom')
+1787: $script:PowerWeaknessOptions=@('Physical Exhaustion','Mental Exhaustion','Pain','Loss of Consciousness','Specific Material','Specific Weapon','Magic','Technology','Sunlight','Darkness','Water','Fire','Cold','Heat','Sound','Emotional Distress','Fear','Injury','Power Overload','Power Dampening','Other / Custom')
+1788: $script:PowerSourceOptions=@('Innate / Born With It','Inherited','Learned','Magic','Artifact / Object','Experiment','Mutation','Technology','Divine Gift','Demonic Source','Fae Source','Curse','Contract / Pact','Unknown','Other / Custom')
+1789: $script:PowerVisibilityOptions=@('Invisible / Internal','Subtle','Visible Effect','Obvious / Dramatic','Transforms Body','Only Visible to Certain Beings','Variable','Unknown')
+1790: function Get-PowerArray {
+1791:     $c=Get-CurrentCharacter;if($null -eq $c){return @()};$raw=[string]$c.Fields['Powers'];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1792:     try{$o=$raw|ConvertFrom-Json;if($null -eq $o){return @()};return @($o)}catch{return @([pscustomobject]@{PowerAbility=$raw;PowerType='';StrengthLevel='';ControlLevel='';Limitations='';Weaknesses='';Source='';Visibility='';Notes=''})}
+1793: }
+1794: function Set-PowerArray($Items){$c=Get-CurrentCharacter;if($null -eq $c){return};$json=ConvertTo-Json -InputObject @($Items) -Depth 8 -Compress;$c.Fields['Powers']=$json;Mark-CharacterChanged $json}
+1795: function Get-PowerFields{return @(
+1796:  [pscustomobject]@{Field='PowerAbility';Label='Power / Ability';Type='EditChoice';Options=$script:PowerAbilityOptions},
+1797:  [pscustomobject]@{Field='PowerType';Label='Power Type';Type='Choice';Options=$script:PowerTypeOptions},
+1798:  [pscustomobject]@{Field='StrengthLevel';Label='Strength Level';Type='Choice';Options=$script:PowerStrengthOptions},
+1799:  [pscustomobject]@{Field='ControlLevel';Label='Control Level';Type='Choice';Options=$script:PowerControlOptions},
+1800:  [pscustomobject]@{Field='Limitations';Label='Limitations';Type='MultiChoice';Options=$script:PowerLimitOptions},
+1801:  [pscustomobject]@{Field='Weaknesses';Label='Weaknesses';Type='MultiChoice';Options=$script:PowerWeaknessOptions},
+1802:  [pscustomobject]@{Field='Source';Label='Source';Type='EditChoice';Options=$script:PowerSourceOptions},
+1803:  [pscustomobject]@{Field='Visibility';Label='Visibility';Type='Choice';Options=$script:PowerVisibilityOptions},
+1804:  [pscustomobject]@{Field='Notes';Label='Notes';Type='Multi';Options=@()}
+1805: )}
+1806: function New-PowerEntry{$o=[ordered]@{};foreach($d in @(Get-PowerFields)){$o[[string]$d.Field]=''};return [pscustomobject]$o}
+1807: function Set-PowerValue([int]$Index,[string]$Field,[string]$Value){$items=@(Get-PowerArray);if($Index -lt 0 -or $Index -ge $items.Count){return};$items[$Index]|Add-Member -NotePropertyName $Field -NotePropertyValue $Value -Force;Set-PowerArray $items}
+1808: function Power-Changed($ctrl){if($script:Rendering){return};$t=$ctrl.Tag;if($null -eq $t){return};Set-PowerValue ([int]$t.Index) ([string]$t.Field) ([string]$ctrl.Text)}
+1809: function Toggle-PowerSection{$script:PowerFoldState=-not [bool]$script:PowerFoldState;Render-CurrentCharacter}
+1810: function Toggle-PowerEntry([int]$Index){$k=[string]$Index;if(-not $script:PowerEntryFoldState.ContainsKey($k)){$script:PowerEntryFoldState[$k]=$false};$script:PowerEntryFoldState[$k]=-not [bool]$script:PowerEntryFoldState[$k];Render-CurrentCharacter}
+1811: function Set-PowerMulti([int]$Index,[string]$Field,[string]$Option,[bool]$Selected){$items=@(Get-PowerArray);if($Index -lt 0 -or $Index -ge $items.Count){return};$vals=New-Object System.Collections.Generic.List[string];foreach($v in @(Split-MultiChoiceValue ([string]$items[$Index].$Field))){[void]$vals.Add([string]$v)};if($Selected){if(-not $vals.Contains($Option)){[void]$vals.Add($Option)}}else{[void]$vals.Remove($Option)};Set-PowerValue $Index $Field (Join-MultiChoiceValue $vals);Render-CurrentCharacter}
+1812: function Get-PowerRandom([string]$Field){switch($Field){'PowerAbility'{return [string](Get-Random -InputObject $script:PowerAbilityOptions)}'PowerType'{return [string](Get-Random -InputObject $script:PowerTypeOptions)}'StrengthLevel'{return [string](Get-Random -InputObject $script:PowerStrengthOptions)}'ControlLevel'{return [string](Get-Random -InputObject $script:PowerControlOptions)}'Limitations'{return ((Get-Random -InputObject $script:PowerLimitOptions -Count (Get-Random -Minimum 1 -Maximum 4))-join '; ')}'Weaknesses'{return ((Get-Random -InputObject $script:PowerWeaknessOptions -Count (Get-Random -Minimum 1 -Maximum 4))-join '; ')}'Source'{return [string](Get-Random -InputObject $script:PowerSourceOptions)}'Visibility'{return [string](Get-Random -InputObject $script:PowerVisibilityOptions)}'Notes'{return [string](Get-Random -InputObject @('Using this power has a meaningful cost.','Control improves with practice.','The character hides this ability from most people.','The power becomes less reliable under stress.'))}default{return ''}}}
+1813: function Randomize-PowerField($Tag){Push-UndoState;$v=Get-PowerRandom ([string]$Tag.Field);Set-PowerValue ([int]$Tag.Index) ([string]$Tag.Field) $v;Render-CurrentCharacter}
+1814: function Get-RandomPowerStructuredValue{$o=New-PowerEntry;foreach($d in @(Get-PowerFields)){$o|Add-Member -NotePropertyName ([string]$d.Field) -NotePropertyValue (Get-PowerRandom ([string]$d.Field)) -Force};return (ConvertTo-Json -InputObject @($o) -Depth 6 -Compress)}
+1815: function Add-PowerField($page,[int]$Index,$Def,[int]$Y){$items=@(Get-PowerArray);if($Index -ge $items.Count){return 0};$obj=$items[$Index];$field=[string]$Def.Field;$type=[string]$Def.Type;$w=[math]::Max(320,$page.ClientSize.Width-26);$labelW=132;$inputX=150;$inputW=[math]::Max(115,$w-$inputX-76);$lbl=[System.Windows.Forms.Label]::new();$lbl.Text=[string]$Def.Label;$lbl.Font=$script:FontSmall;$lbl.ForeColor=$script:Ink;$lbl.Location=[System.Drawing.Point]::new(10,$Y);$lbl.Size=[System.Drawing.Size]::new($labelW,38);$page.Controls.Add($lbl);$tag=[pscustomobject]@{Index=$Index;Field=$field};$ctrl=$null;$height=44
+1816:  if($type -eq 'Choice' -or $type -eq 'EditChoice'){$ctrl=[System.Windows.Forms.ComboBox]::new();$ctrl.DropDownStyle=if($type -eq 'EditChoice'){'DropDown'}else{'DropDownList'};[void]$ctrl.Items.AddRange([object[]]$Def.Options);$ctrl.Location=[System.Drawing.Point]::new($inputX,$Y-3);$ctrl.Width=$inputW;$ctrl.Font=$script:FontSmall;$ctrl.Tag=$tag;$ctrl.Add_SelectedIndexChanged({Power-Changed $this});if($type -eq 'EditChoice'){$ctrl.Add_TextChanged({Power-Changed $this})};$ctrl.Text=[string]$obj.$field}
+1817:  elseif($type -eq 'MultiChoice'){$ctrl=[System.Windows.Forms.Button]::new();$ctrl.Height=29;$ctrl.Location=[System.Drawing.Point]::new($inputX,$Y-3);$ctrl.Width=$inputW;$ctrl.Font=$script:FontSmall;$ctrl.Tag=$tag;$ctrl.FlatStyle='Flat';$ctrl.TextAlign='MiddleLeft';$val=[string]$obj.$field;$ctrl.Text=Get-MultiChoiceSummary $val;$menu=[System.Windows.Forms.ContextMenuStrip]::new();$menu.ShowCheckMargin=$true;foreach($opt in @($Def.Options)){$mi=[System.Windows.Forms.ToolStripMenuItem]::new();$mi.Text=[string]$opt;$mi.CheckOnClick=$true;$mi.Checked=@(Split-MultiChoiceValue $val)-contains [string]$opt;$mi.Tag=[pscustomobject]@{Index=$Index;Field=$field;Option=[string]$opt};$mi.Add_Click({$t=$this.Tag;Set-PowerMulti ([int]$t.Index) ([string]$t.Field) ([string]$t.Option) ([bool]$this.Checked)});[void]$menu.Items.Add($mi)};$ctrl.ContextMenuStrip=$menu;$ctrl.Add_Click({$this.ContextMenuStrip.Show($this,[System.Drawing.Point]::new(0,$this.Height))})}
+1818:  else{$ctrl=[System.Windows.Forms.TextBox]::new();$ctrl.Location=[System.Drawing.Point]::new($inputX,$Y-3);$ctrl.Width=$inputW;$ctrl.Font=$script:FontSmall;$ctrl.Tag=$tag;$ctrl.Text=[string]$obj.$field;if($type -eq 'Multi'){$ctrl.Multiline=$true;$ctrl.ScrollBars='Vertical';$ctrl.Height=62;$height=76};$ctrl.Add_TextChanged({Power-Changed $this})}
+1819:  $ctrl.BackColor=[System.Drawing.Color]::FromArgb(222,194,145);$ctrl.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$ctrl.Anchor='Top,Left,Right';$page.Controls.Add($ctrl);$d=[System.Windows.Forms.Button]::new();$d.Text='🎲';$d.Tag=$tag;$d.Width=30;$d.Height=27;$d.Location=[System.Drawing.Point]::new($w-68,$Y-3);$d.Anchor='Top,Right';$d.FlatStyle='Flat';$d.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$d.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$d.Add_Click({Randomize-PowerField $this.Tag});$page.Controls.Add($d);return $height}
+1820: function Render-PowersSection($c,$leftHost,$rightHost){$head=[System.Windows.Forms.Button]::new();$head.Text=if($script:PowerFoldState){'[-]  Powers'}else{'[+]  Powers'};$head.Height=36;$head.Location=[System.Drawing.Point]::new(8,12);$head.Width=[math]::Max(190,$leftHost.ClientSize.Width-22);$head.Anchor='Top,Left,Right';$head.TextAlign='MiddleLeft';$head.Font=[System.Drawing.Font]::new('Georgia',9,[System.Drawing.FontStyle]::Bold);$head.FlatStyle='Flat';$head.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$head.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$head.Add_Click({Toggle-PowerSection});$leftHost.Controls.Add($head);$rand=[System.Windows.Forms.Button]::new();$rand.Text='🎲 RANDOMIZE POWERS';$rand.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$rand.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$rand.Height=34;$rand.Width=180;$rand.Location=[System.Drawing.Point]::new(8,58);$rand.Add_Click({Push-UndoState;$c=Get-CurrentCharacter;if($null -ne $c){$c.Fields['Powers']=Get-RandomPowerStructuredValue;Mark-CharacterChanged ([string]$c.Fields['Powers']);Render-CurrentCharacter}});$leftHost.Controls.Add($rand);if(-not $script:PowerFoldState){return};$items=@(Get-PowerArray);$y=104;for($i=0;$i -lt $items.Count;$i++){$k=[string]$i;$open=if($script:PowerEntryFoldState.ContainsKey($k)){[bool]$script:PowerEntryFoldState[$k]}else{$false};$b=[System.Windows.Forms.Button]::new();$nm=[string]$items[$i].PowerAbility;if([string]::IsNullOrWhiteSpace($nm)){$nm='Power '+($i+1)};$b.Text=if($open){'[-]  '+$nm}else{'[+]  '+$nm};$b.Tag=$i;$b.Height=32;$b.Location=[System.Drawing.Point]::new(8,$y);$b.Width=[math]::Max(190,$leftHost.ClientSize.Width-70);$b.Anchor='Top,Left,Right';$b.TextAlign='MiddleLeft';$b.FlatStyle='Flat';$b.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$b.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$b.Add_Click({Toggle-PowerEntry ([int]$this.Tag)});$leftHost.Controls.Add($b);$rm=[System.Windows.Forms.Button]::new();$rm.Text='X';$rm.Tag=$i;$rm.Width=34;$rm.Height=32;$rm.Location=[System.Drawing.Point]::new([math]::Max(200,$leftHost.ClientSize.Width-54),$y);$rm.Anchor='Top,Right';$rm.FlatStyle='Flat';$rm.BackColor=[System.Drawing.Color]::FromArgb(120,67,42);$rm.ForeColor=[System.Drawing.Color]::FromArgb(248,233,200);$rm.Add_Click({Push-UndoState;$a=@(Get-PowerArray);$idx=[int]$this.Tag;$n=@();for($j=0;$j -lt $a.Count;$j++){if($j -ne $idx){$n+=,$a[$j]}};Set-PowerArray $n;Render-CurrentCharacter});$leftHost.Controls.Add($rm);$y+=38;if($open){foreach($d in @(Get-PowerFields)){$h=Add-PowerField $leftHost $i $d $y;$y+=$h};$y+=8}};$add=[System.Windows.Forms.Button]::new();$add.Text='+ ADD POWER';$add.Width=150;$add.Height=32;$add.Location=[System.Drawing.Point]::new(8,$y);$add.FlatStyle='Flat';$add.BackColor=[System.Drawing.Color]::FromArgb(210,180,128);$add.ForeColor=[System.Drawing.Color]::FromArgb(45,24,10);$add.Add_Click({Push-UndoState;$a=@(Get-PowerArray);$a+=,(New-PowerEntry);Set-PowerArray $a;Render-CurrentCharacter});$leftHost.Controls.Add($add);$hint=[System.Windows.Forms.Label]::new();$hint.Text='Powers are repeatable. Each ability keeps its own type, strength, control, limitations, weaknesses, source, visibility, and notes.';$hint.AutoSize=$false;$hint.Size=[System.Drawing.Size]::new([math]::Max(220,$rightHost.ClientSize.Width-24),120);$hint.Location=[System.Drawing.Point]::new(10,14);$hint.Font=$script:FontSmall;$hint.ForeColor=$script:Muted;$rightHost.Controls.Add($hint)}
+1821: 
+1822: function Render-EmptyState {
+1823:     $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1824:     Add-TopBookHeader $leftPage 'NO FILES HERE' $true $script:ActiveStatus
+1825:     $contentHost=New-PageContent $leftPage
+1826:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text="This section of the book is empty.`r`n`r`nUse + NEW BLANK FILE to start a character.";$lbl.Font=$script:FontHeading;$lbl.ForeColor=$script:Muted;$lbl.Size=New-Object System.Drawing.Size([math]::Max(260,$contentHost.ClientSize.Width-50),150);$lbl.Location=New-Object System.Drawing.Point(28,80);$contentHost.Controls.Add($lbl)
+1827:     Add-TopBookHeader $rightPage $script:ActiveStatus.ToUpper() $false 'BOOK DIVIDER'
+1828: }
+1829: function Render-CurrentCharacter {
+1830:     $script:Rendering=$true
+1831:     try {
+1832:         foreach($nm in $script:SectionButtons.Keys){$btn=$script:SectionButtons[$nm];try{$btn.ActiveTab=($nm -eq $script:CurrentSection);$btn.Invalidate()}catch{if($nm -eq $script:CurrentSection){$btn.FlatAppearance.BorderSize=3}else{$btn.FlatAppearance.BorderSize=1}}}
+1833:         foreach($st in $script:StatusButtons.Keys){$btn=$script:StatusButtons[$st];try{$btn.ActiveTab=($st -eq $script:ActiveStatus);$btn.Invalidate()}catch{if($st -eq $script:ActiveStatus){$btn.BackColor=$script:Parchment}else{$btn.BackColor=$script:Parchment2}}}
+1834:         $leftPage.Controls.Clear();$rightPage.Controls.Clear();$script:FieldControls=@{}
+1835:         $c=Get-CurrentCharacter;if($null -eq $c){Render-EmptyState;Update-NavLabels;return}
+1836:         $name='UNTITLED CHARACTER';if(-not [string]::IsNullOrWhiteSpace([string]$c.Fields.FullName)){$name=[string]$c.Fields.FullName}
+1837:         Add-TopBookHeader $leftPage $name $true ('FILE {0:0000}' -f [int]$c.FileNumber)
+1838:         Add-TopBookHeader $rightPage ($script:CurrentSection.ToUpper()) $false 'CHARACTER DETAILS'
+1839:         $leftHost=New-PageContent $leftPage;$rightHost=New-PageContent $rightPage;$script:LeftHost=$leftHost;$script:RightHost=$rightHost;$defs=@($script:FieldDefs[$script:CurrentSection])
+1840:         if($script:CurrentSection -eq 'Overview'){
+1841:             Add-OverviewExtras $c $leftHost
+1842:             $overviewLeftKeys=@('FullName','Nicknames','StoryTitle','Partner','CharacterRole','LifeStatus')
+1843:             $leftDefs=@($defs|Where-Object{$overviewLeftKeys -contains $_.Key});$rightDefs=@($defs|Where-Object{$overviewLeftKeys -notcontains $_.Key})
+1844:             $y=278;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1845:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1846:         } elseif($script:CurrentSection -eq 'Family'){
+1847:             Render-FamilySection $c $leftHost $rightHost
+1848:         } elseif($script:CurrentSection -eq 'Relationships'){
+1849:             Render-RelationshipsSection $c $leftHost $rightHost
+1850:         } elseif($script:CurrentSection -eq 'Powers'){
+1851:             Render-PowersSection $c $leftHost $rightHost
+1852:         } else {
+1853:             $split=[math]::Ceiling($defs.Count/2);$leftDefs=@($defs|Select-Object -First $split);$rightDefs=@($defs|Select-Object -Skip $split)
+1854:             $y=12;foreach($d in $leftDefs){$h=Add-FieldControl $leftHost $d $y;$y+=$h}
+1855:             $y=12;foreach($d in $rightDefs){$h=Add-FieldControl $rightHost $d $y;$y+=$h}
+1856:         }
+1857:         foreach($key in $script:FieldControls.Keys){
+1858:             $ctrl=$script:FieldControls[$key];$value=[string]$c.Fields[$key];$def=Get-FieldDefinition $key;$type=if($null -eq $def){''}else{[string]$def.Type}
+1859:             if($type -eq 'MultiChoice'){$ctrl.Text=Get-MultiChoiceSummary $value}
+1860:             elseif($type -eq 'LifeEvents'){}
+1861:             elseif($ctrl -is [System.Windows.Forms.ComboBox]){
+1862:                 if($type -eq 'EditChoice'){$ctrl.Text=$value}
+1863:                 elseif($ctrl.Items.Contains($value)){$ctrl.SelectedItem=$value}
+1864:                 elseif($ctrl.Items.Count -gt 0){$ctrl.SelectedIndex=0}
+1865:             }else{$ctrl.Text=$value}
+1866:             foreach($pnl in @($leftHost,$rightHost)){foreach($p in @($pnl.Controls)){if($p -is [System.Windows.Forms.Button] -and [string]$p.Tag -eq $key -and $p.Width -eq 30){if($p.Location.X -gt ($pnl.ClientSize.Width-55)){if(Get-LockState $c $key){$p.Text='🔒'}else{$p.Text='🔓'}}}}}
+1867:         }
+1868:         Add-BookActions $leftPage;Update-NavLabels
+1869:     } finally {$script:Rendering=$false}
+1870: }
+1871: function Save-BrowseState {
+1872:     $c=Get-CurrentCharacter
+1873:     if($null -ne $c){$script:Settings.LastCharacterId=[string]$c.Id}
+1874:     $script:Settings.LastSection=[string]$script:CurrentSection
+1875:     $script:Settings.LastStatus=[string]$script:ActiveStatus
+1876:     try{if($null -ne $script:LeftHost){$script:Settings.ScrollLeft=[math]::Abs([int]$script:LeftHost.AutoScrollPosition.Y)}}catch{}
+1877:     try{if($null -ne $script:RightHost){$script:Settings.ScrollRight=[math]::Abs([int]$script:RightHost.AutoScrollPosition.Y)}}catch{}
+1878:     Schedule-Save
+1879: }
+1880: 
+1881: function Animate-BookPages([int]$Direction,[int]$Count,[bool]$Whole=$false) {
+1882:     if($null -eq $book -or $book.ClientSize.Width -lt 300 -or $book.ClientSize.Height -lt 200){return}
+1883:     $count=[math]::Max(1,[math]::Min(6,$Count))
+1884:     $center=[int]($book.ClientSize.Width/2);$half=[int](($book.ClientSize.Width-56)/2);$top=22;$height=[math]::Max(120,$book.ClientSize.Height-44)
+1885:     $frames=if($Whole){10}else{6};$pause=if($Whole){18}else{10}
+1886:     for($n=0;$n -lt $count;$n++){
+1887:         $sheet=New-Object System.Windows.Forms.Panel;$sheet.BackColor=if(($n%2)-eq 0){[System.Drawing.Color]::FromArgb(245,225,188)}else{[System.Drawing.Color]::FromArgb(234,210,170)}
+1888:         $sheet.Top=$top;$sheet.Height=$height;$sheet.Width=$half;$sheet.Left=if($Direction -ge 0){$center}else{$center-$half}
+1889:         $sheet.BorderStyle='FixedSingle';$book.Controls.Add($sheet);$sheet.BringToFront();$book.Refresh()
+1890:         # Fold the source page toward the gutter.
+1891:         for($f=0;$f -le $frames;$f++){
+1892:             $remain=[math]::Max(10,[int]($half*(1-($f/$frames))))
+1893:             $sheet.Width=$remain
+1894:             if($Direction -ge 0){$sheet.Left=$center}else{$sheet.Left=$center-$remain}
+1895:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+1896:         }
+1897:         # Open the sheet onto the destination side.
+1898:         for($f=1;$f -le $frames;$f++){
+1899:             $grow=[math]::Max(10,[int]($half*($f/$frames)));$sheet.Width=$grow
+1900:             if($Direction -ge 0){$sheet.Left=$center-$grow}else{$sheet.Left=$center}
+1901:             $sheet.Refresh();$book.Refresh();[System.Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds $pause
+1902:         }
+1903:         $book.Controls.Remove($sheet);$sheet.Dispose();$book.Refresh()
+1904:     }
+1905: }
+1906: 
+1907: function Go-ToSection([string]$Target) {
+1908:     if([string]::IsNullOrWhiteSpace($Target) -or $Target -eq $script:CurrentSection){return}
+1909:     $from=[array]::IndexOf($script:SectionOrder,$script:CurrentSection)
+1910:     $to=[array]::IndexOf($script:SectionOrder,$Target)
+1180:         $i=0
+1181:         foreach($nm in $rightNames){
+1182:             $b=$script:SectionButtons[$nm]
+1183:             if($null -ne $b){$b.Width=138;$b.Height=52;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($w-145),($tabY+$i*61));$b.Visible=$true;$b.BringToFront()}
+1184:             $i++
+1185:         }
+1186:     } catch { Write-LayoutError 'right-tabs' $_ }
+1187: 
+1188:     try {
+1189:         $statusStart=$bookLeft+[int](($bookWidth-408)/2); $i=0
+1190:         foreach($st in @('Existing','In Progress','Blank')){
+1191:             $b=$script:StatusButtons[$st]
+1192:             if($null -ne $b){$b.Width=132;$b.Height=42;$b.Font=$script:FontTab;$b.Location=New-Object System.Drawing.Point(($statusStart+$i*138),2);$b.Visible=$true;$b.BringToFront()}
+1193:             $i++
+1194:         }
+1195:     } catch { Write-LayoutError 'status-tabs' $_ }
+1196: 
+1197:     try {
+1198:         $prevBtn.Width=205;$nextBtn.Width=205;$currentNav.Width=260
+1199:         $prevBtn.Height=45;$nextBtn.Height=45;$currentNav.Height=45
+1200:         $prevBtn.Font=$script:FontTab;$nextBtn.Font=$script:FontTab;$currentNav.Font=$script:FontTab
+1201:         $newBtn.Width=158;$newBtn.Height=38;$deleteBtn.Width=72;$deleteBtn.Height=38
+1202:         $navTotal=670; $navX=[math]::Max(260,[int](($w-$navTotal)/2))
+1203:         $prevBtn.Location=New-Object System.Drawing.Point($navX,12)
+1204:         $currentNav.Location=New-Object System.Drawing.Point(($navX+205),12)
+1205:         $nextBtn.Location=New-Object System.Drawing.Point(($navX+465),12)
+1206:         $newBtn.Location=New-Object System.Drawing.Point(14,15)
+1207:         $deleteBtn.Location=New-Object System.Drawing.Point(177,15)
+1208:         $script:SaveStateLabel.Location=New-Object System.Drawing.Point([math]::Max(930,$w-150),27)
+1209:         $newBtn.BringToFront();$deleteBtn.BringToFront();$prevBtn.BringToFront();$currentNav.BringToFront();$nextBtn.BringToFront();$script:SaveStateLabel.BringToFront()
+1210:     } catch { Write-LayoutError 'bottom-nav' $_ }
+1211: }
+1212: $form.Add_Resize({Layout-Book})
+1213: $main.Add_Resize({Layout-Book})
+1214: $searchBox.Add_Enter({$searchHint.Visible=$false});$searchBox.Add_Leave({if($searchBox.Text.Length -eq 0){$searchHint.Visible=$true}})
+1215: Layout-Book
+1216: 
+1217: $script:ActiveStatus='Existing'
+1218: if(@('Existing','In Progress','Blank') -contains [string]$script:Settings.LastStatus){$script:ActiveStatus=[string]$script:Settings.LastStatus}
+1219: $script:CurrentSection='Overview'
+1220: if($script:SectionOrder -contains [string]$script:Settings.LastSection){$script:CurrentSection=[string]$script:Settings.LastSection}
+1221: $script:Filtered=@()
+1222: $script:CurrentIndex=-1
+1223: $script:FieldControls=@{}
+1224: $script:Rendering=$false
+1225: $script:UndoStacks=@{}
+1226: $script:ToolTip=New-Object System.Windows.Forms.ToolTip
+1227: $script:ToolTip.AutoPopDelay=8000;$script:ToolTip.InitialDelay=350;$script:ToolTip.ReshowDelay=100
+1228: $script:LeftHost=$null;$script:RightHost=$null
+1229: 
+1230: function Get-CurrentCharacter {
+1231:     if ($script:CurrentIndex -lt 0 -or $script:CurrentIndex -ge $script:Filtered.Count) { return $null }
+1232:     return $script:Filtered[$script:CurrentIndex]
+1233: }
+1234: function Get-LockState($c,[string]$key) { return (@($c.Locks) -contains $key) }
+1235: function Toggle-Lock([string]$key) {
+1236:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1237:     $locks=@($c.Locks)
+1238:     if($locks -contains $key){ $c.Locks=@($locks | Where-Object {$_ -ne $key}) } else { $c.Locks=@($locks + $key) }
+1239:     $c.Modified=(Get-Date).ToString('o'); Schedule-Save; Render-CurrentCharacter
+1240: }
+1241: function Push-UndoState {
+1242:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1243:     $id=[string]$c.Id
+1244:     if(-not $script:UndoStacks.ContainsKey($id)){ $script:UndoStacks[$id]=New-Object System.Collections.ArrayList }
+1245:     $json=($c | ConvertTo-Json -Depth 8 -Compress)
+1246:     [void]$script:UndoStacks[$id].Add($json)
+1247:     while($script:UndoStacks[$id].Count -gt 10){ $script:UndoStacks[$id].RemoveAt(0) }
+1248: }
+1249: function Undo-Character {
+1250:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1251:     $id=[string]$c.Id
+1252:     if(-not $script:UndoStacks.ContainsKey($id) -or $script:UndoStacks[$id].Count -lt 1){ return }
+1253:     $stack=$script:UndoStacks[$id]; $json=[string]$stack[$stack.Count-1]; $stack.RemoveAt($stack.Count-1)
+1254:     $restored=Convert-ToCharacterRecord ($json | ConvertFrom-Json)
+1255:     for($i=0;$i -lt $script:Characters.Count;$i++){ if($script:Characters[$i].Id -eq $id){ $script:Characters[$i]=$restored; break } }
+1256:     Refresh-Navigation -KeepId $id; Schedule-Save
+1257: }
+1258: function Set-RandomizedFieldValue($c,[string]$key) {
+1259:     if($null -eq $c -or [string]::IsNullOrWhiteSpace($key) -or (Get-LockState $c $key)){return $false}
+1260:     $v=if($key -eq 'Powers'){Get-RandomPowerStructuredValue}elseif($key -eq 'Nicknames'){Get-SmartNickname}else{Get-RandomText $key}
+1261:     if($key -eq 'Nicknames' -and [string]::IsNullOrWhiteSpace([string]$v)){$v='Ace'}
+1262:     if([string]::IsNullOrWhiteSpace([string]$v)){return $false}
+1263:     $c.Fields[$key]=[string]$v
+1264:     if($script:FieldControls.ContainsKey($key)){
+1265:         $was=$script:Rendering;$script:Rendering=$true
+1266:         try{$ctrl=$script:FieldControls[$key];if($ctrl -is [System.Windows.Forms.ComboBox]){if($ctrl.Items.Contains([string]$v)){$ctrl.SelectedItem=[string]$v}}else{$ctrl.Text=[string]$v}}finally{$script:Rendering=$was}
+1267:     }
+1268:     return $true
+1269: }
+1270: function Randomize-OneField([string]$key) {
+1271:     $c=Get-CurrentCharacter; if($null -eq $c -or (Get-LockState $c $key)){return}
+1272:     Push-UndoState
+1273:     if(Set-RandomizedFieldValue $c $key){
+1274:         if($c.FileStatus -eq 'Blank'){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress'}
+1275:         $c.Modified=(Get-Date).ToString('o');Schedule-Save;Render-CurrentCharacter;Update-NavLabels
+1276:     }
+1277: }
+1278: function Randomize-Section {
+1279:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1280:     Push-UndoState
+1281:     foreach($d in $script:FieldDefs[$script:CurrentSection]){[void](Set-RandomizedFieldValue $c ([string]$d.Key))}
+1282:     $c.Modified=(Get-Date).ToString('o'); if($c.FileStatus -eq 'Blank'){$c.FileStatus='In Progress';$script:ActiveStatus='In Progress'}
+1283:     Schedule-Save;Refresh-Navigation -KeepId $c.Id -NoRender;Render-CurrentCharacter
+1284: }
+1285: function Randomize-Character {
+1286:     $c=Get-CurrentCharacter; if($null -eq $c){return}
+1287:     if((Show-Confirm 'Randomize every unlocked field in this character?') -ne [System.Windows.Forms.DialogResult]::Yes){return}
+1288:     Push-UndoState
+1289:     # FullName is randomized first so Nickname(s) can derive from the newly generated name.
+1290:     if(-not (Get-LockState $c 'FullName')){[void](Set-RandomizedFieldValue $c 'FullName')}
+1291:     foreach($key in $script:AllFieldKeys){if($key -ne 'FullName'){[void](Set-RandomizedFieldValue $c ([string]$key))}}
+1292:     if([string]::IsNullOrWhiteSpace([string]$c.Fields.Nicknames) -and -not (Get-LockState $c 'Nicknames')){$c.Fields.Nicknames=[string](Get-SmartNickname)}
+1293:     $c.FileStatus='In Progress'; $script:ActiveStatus='In Progress'; $c.Modified=(Get-Date).ToString('o')
+1294:     Schedule-Save;Refresh-Navigation -KeepId $c.Id -NoRender;Render-CurrentCharacter
+1295: }
+1296: 
+1297: function Scroll-BookHost($ctrl,[int]$delta) {
+1298:     try {
+1299:         $scrollHost=$ctrl
+1300:         while($null -ne $scrollHost -and -not ($scrollHost -is [System.Windows.Forms.ScrollableControl])){$scrollHost=$scrollHost.Parent}
+1301:         # Prefer the nearest auto-scrolling page-content panel.
+1302:         $walk=$ctrl
+1303:         while($null -ne $walk){
+1304:             if($walk.AutoScroll){
+1305:                 $old=[math]::Abs([int]$walk.AutoScrollPosition.Y)
+1306:                 $target=$old-[int]($delta/120)*70
+1307:                 $max=[math]::Max(0,$walk.VerticalScroll.Maximum-$walk.VerticalScroll.LargeChange+1)
+1308:                 $target=[math]::Max(0,[math]::Min($target,$max))
+1309:                 $walk.AutoScrollPosition=New-Object System.Drawing.Point(0,$target)
+1310:                 return
+1311:             }
+1312:             $walk=$walk.Parent
+1313:         }
+1314:     } catch {}
+1315: }
+1316: 
+1317: function New-PageContent([System.Windows.Forms.Panel]$page) {
+1318:     try{$contentHost=New-Object BookContentPanel}catch{$contentHost=New-Object System.Windows.Forms.Panel;$contentHost.AutoScroll=$true;$contentHost.BackColor=$script:Parchment}
+1319:     $contentHost.Location=New-Object System.Drawing.Point(18,66)
+1320:     $contentHost.Size=New-Object System.Drawing.Size([math]::Max(120,$page.ClientSize.Width-36),[math]::Max(120,$page.ClientSize.Height-128))
+1321:     $contentHost.Anchor='Top,Bottom,Left,Right'
+1322:     $contentHost.AutoScroll=$true
+1323:     $contentHost.Add_MouseWheel({
+1324:         param($sender,$e)
+1325:         try {
+1326:             $old=$sender.VerticalScroll.Value
+1327:             $target=$old-[int]($e.Delta/120)*70
+1328:             $target=[math]::Max($sender.VerticalScroll.Minimum,[math]::Min($target,$sender.VerticalScroll.Maximum-$sender.VerticalScroll.LargeChange+1))
+1329:             $sender.AutoScrollPosition=New-Object System.Drawing.Point(0,$target)
+1330:         } catch {}
+1331:     })
+1332:     $contentHost.Add_MouseEnter({try{$this.Focus()}catch{}})
+1333:     $page.Controls.Add($contentHost)
+1334:     return $contentHost
+1335: }
+1336: function Add-TopBookHeader([System.Windows.Forms.Panel]$page,[string]$text,[bool]$left=$false,[string]$kicker='') {
+1337:     if([string]::IsNullOrWhiteSpace($kicker)){if($left){$kicker='CHARACTER FILE'}else{$kicker='ARCHIVE DETAILS'}}
+1338:     $k=New-Object System.Windows.Forms.Label;$k.Text=$kicker.ToUpper();$k.Font=New-Object System.Drawing.Font('Georgia',7,[System.Drawing.FontStyle]::Bold);$k.ForeColor=[System.Drawing.Color]::FromArgb(128,87,50);$k.AutoSize=$true;$k.Location=New-Object System.Drawing.Point(26,13);$page.Controls.Add($k)
+1339:     $lbl=New-Object System.Windows.Forms.Label;$lbl.Text=$text;if($left){$lbl.Font=New-Object System.Drawing.Font('Georgia',20,[System.Drawing.FontStyle]::Bold)}else{$lbl.Font=New-Object System.Drawing.Font('Georgia',13,[System.Drawing.FontStyle]::Bold)};$lbl.ForeColor=$script:Ink;$lbl.AutoEllipsis=$true;$lbl.Location=New-Object System.Drawing.Point(26,29);$lbl.Size=New-Object System.Drawing.Size([math]::Max(140,$page.ClientSize.Width-52),30);$lbl.Anchor='Top,Left,Right';$page.Controls.Add($lbl)
+1340:     $rule=New-Object System.Windows.Forms.Panel;$rule.Height=1;$rule.BackColor=[System.Drawing.Color]::FromArgb(138,103,62);$rule.Location=New-Object System.Drawing.Point(25,61);$rule.Width=[math]::Max(100,$page.ClientSize.Width-50);$rule.Anchor='Top,Left,Right';$page.Controls.Add($rule)
+1341: }
+1342: 
+1343: # ---------------- FAMILY AUDIT: structured, folded, repeatable editor ----------------
+1344: if($null -eq $script:FamilyFoldState){
+1345:     $script:FamilyFoldState=@{Parent1=$false;Parent2=$false;Siblings=$false;Children=$false;OtherFamily=$false;FamilyHistory=$false}
+1346: }
+1347: if($null -eq $script:FamilyEntryFoldState){$script:FamilyEntryFoldState=@{}}
+1348: $script:FamilyGenderOptions=@('Man','Woman','Nonbinary','Genderfluid','Agender','Unknown','Other / Custom')
+1349: $script:FamilyStatusOptions=@('Alive','Dead','Missing','Estranged','Unknown','Other')
+1350: $script:FamilyOccupationOptions=@('None / Never Employed','Student','Military','Law Enforcement','Government / Civil Service','Healthcare','Education','Research / Academia','Skilled Trade','Manual Labor','Agriculture / Farming','Hospitality / Food Service','Retail / Customer Service','Office / Administration','Business / Management','Finance','Legal','Arts / Creative','Entertainment','Media / Journalism','Technology','Science','Religious / Clergy','Security','Transportation','Caretaking / Domestic Work','Criminal / Illegal Work','Other / Custom','Unknown')
+1351: $script:FamilyDynamicOptions=@('Close','Loving','Supportive','Protective','Respectful','Warm','Complicated','Distant','Estranged','Hostile','Fearful','Abusive','Neglectful','Controlling','Dependent','Codependent','Formal','Awkward','Grieving','Reconnecting','Unknown','Other / Custom')
+1352: $script:FamilyHistoryOptions=@('Adoption','Divorce / Separation','Estrangement','Death / Loss','Missing Relative','Family Secret','Abuse','Neglect','Addiction','Mental Illness','Chronic Illness','Disability','Incarceration','Crime','Poverty / Financial Hardship','Wealth / Inheritance','Immigration / Displacement','War / Conflict','Religious Conflict','Family Feud','Scandal','Supernatural Heritage','Found Family','Other / Custom')
+1353: 
+1354: function Get-FamilyArray([string]$Key){
+1355:     $c=Get-CurrentCharacter;if($null -eq $c){return @()}
+1356:     $raw=[string]$c.Fields[$Key];if([string]::IsNullOrWhiteSpace($raw)){return @()}
+1357:     try{$obj=$raw|ConvertFrom-Json;if($null -eq $obj){return @()};return @($obj)}catch{
+1358:         if($Key -eq 'Siblings'){return @([pscustomobject]@{Name='';Gender='';SiblingType='';AgeRelationship='';Status='';Occupation='';RelationshipDynamic='';Notes=$raw})}
+1359:         if($Key -eq 'Children'){return @([pscustomobject]@{Name='';Gender='';ChildType='';AgeLifeStage='';Status='';Occupation='';OtherParent='';RelationshipDynamic='';Notes=$raw})}
+1360:         if($Key -eq 'OtherFamily'){return @([pscustomobject]@{Name='';Gender='';Relationship='';Status='';Occupation='';RelationshipDynamic='';Importance='';Notes=$raw})}
