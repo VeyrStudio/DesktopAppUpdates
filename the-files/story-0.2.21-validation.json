@@ -1,0 +1,24 @@
+﻿{
+    "version":  "0.2.21",
+    "baseVersion":  "0.2.20",
+    "payload":  "payload-0.2.21-story-audit-part-001.txt",
+    "payloadSha256":  "9fe287bd2f9c9243d313733f1a0692367525737c114a2d9630cbf5eafcc255f7",
+    "requirements":  {
+                         "storyRoleMergedIntoOverview":  true,
+                         "storyRoleDataKeyPreservedAsCharacterRole":  true,
+                         "storyHasTenAuditedFields":  true,
+                         "removedPovAppearancesGoalsWantNeedAbandonRelationshipConflictTurningPointImportantScenes":  true,
+                         "motivationInternalExternalDropdowns":  true,
+                         "fatalFlawDropdown":  true,
+                         "archetypeDropdown":  true,
+                         "beginningMiddleEndingDropdowns":  true,
+                         "plotRelevanceDropdown":  true,
+                         "powersPreserved":  true,
+                         "bootstrapUpdaterPreserved":  true,
+                         "legacyUiUpdaterFixPreserved":  true,
+                         "compressedCoreIncluded":  true,
+                         "uncompressedCoreIncluded":  true,
+                         "userDataUntouched":  true
+                     },
+    "powershellParse":  "passed-windows-powershell-parser"
+}
