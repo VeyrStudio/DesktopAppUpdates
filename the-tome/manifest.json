@@ -1,7 +1,7 @@
 {
-  "version": "0.1.2",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.2/The_Tome_Setup_0.1.2.exe",
-  "sha256": "da6acb98fd9b9d18be3a2a9f5b5a933d8e5b1cac895f4d7fc0a0002ea284c779",
-  "notes": "Gothic library interface overhaul.",
-  "published": "2026-08-25T05:54:30.7940188Z"
+  "version": "0.1.3",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.3/The_Tome_Setup_0.1.3.exe",
+  "sha256": "f17d400e764bb59cd6b2459c1674f945179ec47f7cfe6b9dcec323f507a5e6d3",
+  "notes": "Updater repair plus gothic library interface overhaul.",
+  "published": "2026-08-26T09:03:43.8527930Z"
 }
