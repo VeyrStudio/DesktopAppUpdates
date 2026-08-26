@@ -1,0 +1,169 @@
+name: Build and Publish The Tome v0.1.4
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/the-tome-v014-build.yml'
+      - 'tools/the-tome-v014-ui.css'
+      - 'tools/the-tome-v014-ui.py'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      VERSION: '0.1.4'
+      TAG: 'the-tome-v0.1.4'
+      ASSET_NAME: 'The_Tome_Setup_0.1.4.exe'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Reassemble source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path tome-build | Out-Null
+          $parts = Get-ChildItem 'the-tome/build/source-parts/part*.txt' | Sort-Object Name
+          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+          [IO.File]::WriteAllBytes('the-tome-source.zip', [Convert]::FromBase64String($encoded))
+          python -c "import zipfile; z=zipfile.ZipFile(r'the-tome-source.zip'); bad=z.testzip(); assert bad is None, bad; z.extractall(r'tome-build')"
+          New-Item -ItemType Directory -Force -Path tome-build/assets | Out-Null
+
+      - name: Add updater foundation
+        run: python tools/the-tome-v011-patch.py
+
+      - name: Apply v0.1.2 interface base
+        shell: pwsh
+        run: |
+          Add-Content -Path tome-build/styles.css -Value "`n" -Encoding utf8
+          Get-Content tools/the-tome-v012-interface.css | Add-Content tome-build/styles.css -Encoding utf8
+          $main = Get-Content tome-build/main.js -Raw
+          $main = $main.Replace("const APP_VERSION = '0.1.1';", "const APP_VERSION = '0.1.2';")
+          Set-Content tome-build/main.js -Value $main -Encoding utf8
+          $pkg = Get-Content tome-build/package.json -Raw | ConvertFrom-Json
+          $pkg.version = '0.1.2'
+          $pkg | ConvertTo-Json -Depth 20 | Set-Content tome-build/package.json -Encoding utf8
+
+      - name: Apply v0.1.3 updater repair
+        run: python tools/the-tome-v013-updater-fix.py
+
+      - name: Apply v0.1.4 layout overhaul
+        shell: pwsh
+        run: |
+          Add-Content -Path tome-build/styles.css -Value "`n" -Encoding utf8
+          Get-Content tools/the-tome-v014-ui.css | Add-Content tome-build/styles.css -Encoding utf8
+          python tools/the-tome-v014-ui.py
+
+      - name: Validate source
+        shell: pwsh
+        run: |
+          node --check tome-build/main.js
+          node --check tome-build/renderer.js
+          $pkg = Get-Content tome-build/package.json -Raw | ConvertFrom-Json
+          if ($pkg.version -ne $env:VERSION) { throw 'package version mismatch' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern "APP_VERSION = '0.1.4'" -Quiet)) { throw 'app version marker missing' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern 'net.fetch' -Quiet)) { throw 'repaired updater transport missing' }
+          if (-not (Select-String -Path tome-build/styles.css -Pattern 'full library/detail UI overhaul' -Quiet)) { throw 'v0.1.4 UI patch missing' }
+          if (-not (Select-String -Path tome-build/renderer.js -Pattern 'formatPublicationDate' -Quiet)) { throw 'date formatting patch missing' }
+
+      - name: Create bundled artwork assets
+        shell: pwsh
+        run: |
+          python -m pip install pillow
+          @'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          p=Path('tome-build/assets')
+          w,h=1400,900
+          im=Image.new('RGB',(w,h))
+          px=im.load()
+          for y in range(h):
+              t=y/(h-1)
+              for x in range(w):
+                  edge=min(x,w-1-x,y,h-1-y)/min(w,h)
+                  glow=max(0,min(1,edge*5))
+                  r=int(20+18*(1-t)+7*glow); g=int(8+7*glow); b=int(31+24*(1-t)+12*glow)
+                  px[x,y]=(r,g,b)
+          d=ImageDraw.Draw(im,'RGBA')
+          for off in (24,34,44): d.rounded_rectangle((off,off,w-off,h-off),radius=28,outline=(145,105,170,45),width=2)
+          for x in range(60,w-60,160):
+              d.arc((x-70,-85,x+70,85),0,180,fill=(190,145,205,28),width=2)
+              d.arc((x-70,h-85,x+70,h+85),180,360,fill=(190,145,205,28),width=2)
+          im.save(p/'background.jpg',quality=91)
+          ico=Image.new('RGBA',(256,256),(22,8,31,255)); q=ImageDraw.Draw(ico,'RGBA')
+          q.rounded_rectangle((48,24,204,232),radius=17,fill=(73,37,100,255),outline=(201,171,108,255),width=7)
+          q.line((62,42,62,217),fill=(130,92,154,255),width=4)
+          q.rounded_rectangle((185,76,220,179),radius=8,fill=(76,62,72,255),outline=(194,168,118,255),width=5)
+          q.ellipse((86,68,165,147),fill=(220,211,226,255))
+          q.ellipse((109,58,176,136),fill=(73,37,100,255))
+          q.arc((67,41,187,203),210,510,fill=(173,139,184,150),width=3)
+          ico.save(p/'TheTome.ico',sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])
+          '@ | Set-Content -Encoding UTF8 make_assets.py
+          python make_assets.py
+
+      - name: Install dependencies
+        working-directory: tome-build
+        run: npm install --no-audit --no-fund
+
+      - name: Build Windows installer
+        working-directory: tome-build
+        shell: pwsh
+        run: npx electron-builder --win nsis --x64
+
+      - name: Prepare release installer
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem 'tome-build/dist' -File -Filter '*.exe' | Where-Object { $_.Name -like '*Setup*' } | Select-Object -First 1
+          if (-not $installer) { throw 'Installer was not produced.' }
+          Copy-Item $installer.FullName $env:ASSET_NAME -Force
+          $hash = (Get-FileHash $env:ASSET_NAME -Algorithm SHA256).Hash.ToLower()
+          "SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "SHA256 $hash"
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view $env:TAG --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) { gh release delete $env:TAG --repo $env:GITHUB_REPOSITORY --cleanup-tag -y }
+          gh release create $env:TAG $env:ASSET_NAME --repo $env:GITHUB_REPOSITORY --title "The Tome v$env:VERSION" --notes "Major UI overhaul: denser realistic dark-wood shelves, reduced dead space, tighter cover layout, improved series stacks, richer gothic header and panels, redesigned book details hierarchy, improved favorite/read/progress controls, cleaner metadata cards, and human-readable publication dates. Includes the repaired automatic updater from v0.1.3."
+
+      - name: Publish update manifest
+        shell: pwsh
+        run: |
+          git pull --rebase origin main
+          $manifest = [ordered]@{
+            version = $env:VERSION
+            url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG/$env:ASSET_NAME"
+            sha256 = $env:SHA256
+            notes = 'Major bookshelf and book-details interface overhaul.'
+            published = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json
+          Set-Content -Path the-tome/manifest.json -Value $manifest -Encoding utf8
+          git config user.name "VeyrStudio Update Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add the-tome/manifest.json
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Publish The Tome v$env:VERSION update manifest"
+            git pull --rebase origin main
+            git push
+          }
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: The-Tome-v0.1.4-Windows-Installer
+          path: The_Tome_Setup_0.1.4.exe
+          if-no-files-found: error
+          retention-days: 30
