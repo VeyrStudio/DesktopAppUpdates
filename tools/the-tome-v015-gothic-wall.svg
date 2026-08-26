@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+ <radialGradient id="g" cx="70%" cy="18%" r="85%"><stop offset="0" stop-color="#a56bc3"/><stop offset=".23" stop-color="#713b8c"/><stop offset=".58" stop-color="#351744"/><stop offset="1" stop-color="#100716"/></radialGradient>
+ <linearGradient id="v" x1="0" x2="1"><stop stop-color="#07030b" stop-opacity=".88"/><stop offset=".2" stop-color="#210b2c" stop-opacity=".18"/><stop offset=".8" stop-color="#4a215e" stop-opacity=".12"/><stop offset="1" stop-color="#09030d" stop-opacity=".82"/></linearGradient>
+ <filter id="noise"><feTurbulence baseFrequency=".42" numOctaves="3" seed="7" type="fractalNoise"/><feColorMatrix values=".22 0 0 0 .18 0 .12 0 0 .05 0 0 .28 0 .22 0 0 0 .18 0"/><feBlend mode="overlay" in="SourceGraphic"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="1.25"/></filter>
+ <pattern id="damask" width="180" height="180" patternUnits="userSpaceOnUse"><path d="M90 10c-12 26-42 32-42 58 0 18 16 29 42 54 26-25 42-36 42-54 0-26-30-32-42-58zm0 46c9 15 19 19 19 30 0 9-8 17-19 28-11-11-19-19-19-28 0-11 10-15 19-30z" fill="none" stroke="#c48ddd" stroke-opacity=".08" stroke-width="2"/><path d="M0 90c26-12 32-42 58-42M180 90c-26-12-32-42-58-42M0 90c26 12 32 42 58 42M180 90c-26 12-32 42-58 42" fill="none" stroke="#c48ddd" stroke-opacity=".06" stroke-width="2"/></pattern>
+</defs>
+<rect width="1600" height="900" fill="url(#g)"/>
+<rect width="1600" height="900" fill="url(#damask)" opacity=".75"/>
+<g fill="none" stroke="#14061c" stroke-width="24" opacity=".72"><path d="M-10 680V250Q160 5 335 250v430"/><path d="M1265 680V250Q1440 5 1610 250v430"/></g>
+<g fill="none" stroke="#8d55a6" stroke-opacity=".28" stroke-width="4"><path d="M20 675V260Q160 52 310 260v415"/><path d="M1290 675V260Q1440 52 1580 260v415"/><path d="M350 0c120 50 180 110 245 190 62-86 132-142 250-190 106 50 188 112 240 200"/></g>
+<g stroke="#c895dc" stroke-opacity=".22" fill="none" stroke-width="3" filter="url(#soft)"><path d="M30 880c150-20 150-150 250-220-40 100 0 170 90 200-120 10-220 35-340 20z"/><path d="M1570 880c-150-20-150-150-250-220 40 100 0 170-90 200 120 10 220 35 340 20z"/><path d="M570 0c25 105 85 142 230 160 145-18 205-55 230-160-62 62-132 91-230 98-98-7-168-36-230-98z"/></g>
+<rect width="1600" height="900" fill="url(#v)"/><rect width="1600" height="900" filter="url(#noise)" opacity=".55"/>
+</svg>
