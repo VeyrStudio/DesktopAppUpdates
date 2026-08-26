@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="120" viewBox="0 0 800 120">
+<defs>
+ <linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5d351b"/><stop offset=".18" stop-color="#3d2212"/><stop offset=".48" stop-color="#251309"/><stop offset=".78" stop-color="#402413"/><stop offset="1" stop-color="#180b05"/></linearGradient>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".012 .22" numOctaves="3" seed="11"/><feColorMatrix values=".5 0 0 0 .12 .2 .16 0 0 .04 .08 0 .05 0 .01 0 0 0 .42 0"/><feBlend mode="multiply" in="SourceGraphic"/></filter>
+ <pattern id="carve" width="94" height="120" patternUnits="userSpaceOnUse"><path d="M0 12h94M0 108h94" stroke="#a56b39" stroke-opacity=".22"/><path d="M47 21c-9 12-22 18-31 24 11 4 21 13 31 27 10-14 20-23 31-27-9-6-22-12-31-24z" fill="none" stroke="#b57b46" stroke-opacity=".18" stroke-width="2"/></pattern>
+</defs>
+<rect width="800" height="120" fill="url(#w)"/><rect width="800" height="120" filter="url(#grain)" opacity=".88"/><rect width="800" height="120" fill="url(#carve)"/><path d="M0 7h800M0 112h800" stroke="#d49a59" stroke-opacity=".17" stroke-width="2"/>
+</svg>
