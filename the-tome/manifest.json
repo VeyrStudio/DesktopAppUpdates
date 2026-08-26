@@ -1,7 +1,7 @@
 {
-  "version": "0.1.5",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.5/The_Tome_Setup_0.1.5.exe",
-  "sha256": "98e02295a71d38cd83ca37defa78f712059cdb129ec49581dbede0863effc29b",
-  "notes": "Realistic two-shelf gothic bookcase and title-spine library redesign.",
-  "published": "2026-08-26T10:03:16.2531221Z"
+  "version": "0.1.6",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.6/The_Tome_Setup_0.1.6.exe",
+  "sha256": "56b89629cfefdeba753169a4f858db13eefd1af7df2fa5a9f0cd19e8c62eb4cb",
+  "notes": "Supplied-art gothic bookshelf, real image-backed spines, empty filler books, and scrollbar cleanup.",
+  "published": "2026-08-26T10:45:53.4729126Z"
 }
