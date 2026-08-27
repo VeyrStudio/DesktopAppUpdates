@@ -1,0 +1,18 @@
+{
+  "version": "1.0.9",
+  "baseVersion": "1.0.8",
+  "payload": "payload-1.0.9-full-wrap-temporary.txt",
+  "payloadSha256": "922776c9bdd7f7801902c5432e84944ed1e8e36cddde8e2787cf301973c4d4d8",
+  "requirements": {
+    "recordFunctionWrapped": true,
+    "fullWrapSuppressed": true,
+    "fullCoverSuppressed": true,
+    "wrapSuppressed": true,
+    "sourceCleanup": true,
+    "cleanupLimitedToData": true,
+    "normalRecordsForwarded": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed"
+}
