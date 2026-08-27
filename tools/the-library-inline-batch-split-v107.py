@@ -9,7 +9,7 @@ m=json.loads((TF/"manifest.json").read_text(encoding="utf-8"))
 if m.get("version")!="1.0.6":
     raise SystemExit(f"Expected live base 1.0.6, got {m.get('version')}")
 
-patcher=rt"""$ErrorActionPreference='Stop'
+patcher=r"""$ErrorActionPreference='Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
