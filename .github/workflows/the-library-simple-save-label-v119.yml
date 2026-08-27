@@ -1,0 +1,78 @@
+name: The Library Simple Save Label v1.0.19
+on:
+  push:
+    paths:
+      - 'tools/the-library-simple-save-label-v119.py'
+      - '.github/workflows/the-library-simple-save-label-v119.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.19 payload
+        shell: pwsh
+        run: python tools/the-library-simple-save-label-v119.py
+
+      - name: Parse updater and drop-in
+        shell: powershell
+        run: |
+          foreach($path in @(
+            '.library-v119-validation/CoverVault.ps1',
+            '.library-v119-validation/BatchSplitDropIn.ps1'
+          )){
+            $tokens=$null
+            $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error ($path+' line '+$_.Extent.StartLineNumber+': '+$_.Message)}
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Verify save labels
+        shell: powershell
+        run: |
+          $drop=Get-Content '.library-v119-validation/BatchSplitDropIn.ps1' -Raw
+          if(-not $drop.Contains("$btnSaveSplit.Text='SAVE'")){throw 'Regular save button is not SAVE.'}
+          if(-not $drop.Contains("$save.Text='SAVE'")){throw 'Multi-cover save button is not SAVE.'}
+          if($drop.Contains('SAVE BACK + SPINE + FRONT')){throw 'Old save label still exists.'}
+
+      - name: Validate payload hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/simple-save-label-1.0.19-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.19'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit payload
+        shell: pwsh
+        run: |
+          $p='the-library/simple-save-label-1.0.19-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName saveLabelTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.19-simple-save-label.txt' 'the-library/simple-save-label-1.0.19-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.19 simple Save label'
+            git pull --rebase origin main
+            git push origin main
+          }
