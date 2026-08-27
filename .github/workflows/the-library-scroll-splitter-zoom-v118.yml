@@ -339,7 +339,7 @@ jobs:
 
           Show-LibraryUnifiedWrapPaths -Paths $paths
 
-          if(@($script:LibraryMultiScrollStates).Count -ne 4){throw 'Four dropped covers did not create four scroll editors.'}
+          if(@($script:LibraryMultiScrollStates).Count -ne 4){throw ('Four dropped covers did not create four scroll editors. Errors: '+($script:Errors -join ' | ')+' Infos: '+($script:Infos -join ' | '))}
           if($null -eq $script:LibraryMultiScrollHost){throw 'Scroll host was not created.'}
           if($script:LibraryMultiScrollHost.Height -lt 3200){throw ('Scroll host is not tall enough for vertical scrolling: '+$script:LibraryMultiScrollHost.Height)}
           if($tabSplit.AutoScrollMinSize.Height -le 3200){throw 'Tab did not become a long scrolling page.'}
