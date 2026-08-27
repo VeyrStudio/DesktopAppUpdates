@@ -389,6 +389,8 @@ function New-LibraryScrollCard([string]$Path,[int]$Ordinal,[int]$Total){
         Picture=$picture
         LeftNum=$leftNum
         RightNum=$rightNum
+        Left=0
+        Right=0
         BackDims=$backDims
         SpineDims=$spineDims
         FrontDims=$frontDims
