@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.8",
-  "payloadSha256": "0564d871c0da1093b2443a24a3c4d64d461523a86400e6f68ec0ad882589f419",
+  "version": "1.0.9",
+  "payloadSha256": "922776c9bdd7f7801902c5432e84944ed1e8e36cddde8e2787cf301973c4d4d8",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/76474216ffb9d909f807d83dc2c10abd7b8f851a/the-library/payload-1.0.8-multi-loader-fix.txt",
-      "sha256": "0564d871c0da1093b2443a24a3c4d64d461523a86400e6f68ec0ad882589f419"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f1e93a5a3d221bb22e76e8e8d54afa0cf5d3a81c/the-library/payload-1.0.9-full-wrap-temporary.txt",
+      "sha256": "922776c9bdd7f7801902c5432e84944ed1e8e36cddde8e2787cf301973c4d4d8"
     }
   ],
-  "notes": "Fixes multi-cover loading in The Library. The multiple-wrap splitter now uses the same existing Load-ImageUnlocked path as the working single-cover splitter instead of a separate image loader. It also replaces the previous v1.0.7 inline batch code cleanly so only one batch system remains. If any selected file still fails to open, the app now reports the specific filename/error instead of silently collapsing everything into a generic message. The batch editor remains inside the Split tab, keeps per-cover Title/Book, Ship, Fandom, Extra Tags, Cover Type and spine guides, and each cover can still be saved individually to The Library. Windows PowerShell parsing, synthetic v1.0.7-to-v1.0.8 patching, payload validation, and all internal SHA-256 checks passed before publish."
+  "notes": "Full-wrap images are now temporary source files in The Library. The Library record path now refuses Full Wrap, Full Cover, Wrap, Complete Wrap, and Complete Cover records and cleans up the copied source image from the app Data folder. Back Cover, Spine, and Front Cover records continue through the normal Library save path unchanged. This rule applies regardless of whether a split came from the normal single-wrap splitter or the multi-wrap splitter, so only the three split pieces should remain in The Library. Windows PowerShell parsing, synthetic current-source patching, payload validation, and all internal SHA-256 checks passed before publish."
 }
