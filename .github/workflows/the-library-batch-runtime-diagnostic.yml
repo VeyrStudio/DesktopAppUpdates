@@ -1,0 +1,32 @@
+name: The Library Batch Runtime Diagnostic
+on:
+  push:
+    paths:
+      - 'tools/the-library-batch-runtime-test.py'
+      - '.github/workflows/the-library-batch-runtime-diagnostic.yml'
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build runtime harness
+        shell: pwsh
+        run: python tools/the-library-batch-runtime-test.py
+      - name: Parse harness
+        shell: powershell
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-batch-runtime-test.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Harness parse failed.'
+          }
+      - name: Run actual batch panel
+        shell: powershell
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.library-batch-runtime-test.ps1'
