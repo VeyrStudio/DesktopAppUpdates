@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.16",
-  "payloadSha256": "5984d9053c2a57a4901ef409d9d1e6d28de8a354da399e910dd529303b675e81",
+  "version": "1.0.17",
+  "payloadSha256": "2371326b59fbac7d14e1ecf84637282119ed69d8f4c906c0183d46856173ede6",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/a95ffde4e2552af964be298a1940367d7cc97491/the-library/payload-1.0.16-wrap-drop-multiselect.txt",
-      "sha256": "5984d9053c2a57a4901ef409d9d1e6d28de8a354da399e910dd529303b675e81"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/569fe54da9938d67b2891dc53ea400f9b356971e/the-library/payload-1.0.17-regular-splitter-queue.txt",
+      "sha256": "2371326b59fbac7d14e1ecf84637282119ed69d8f4c906c0183d46856173ede6"
     }
   ],
-  "notes": "Fixes the actual File Explorer drag-and-drop workflow for full cover wraps. The original wrap drop handler explicitly used only files[0], so dropping five selected covers could only ever load the first one. The drop target now keeps the normal single-wrap splitter when exactly one image is dropped, but when two or more valid image files are dropped together it sends the complete dropped file list into the multi-cover splitter. This update targets the drag/drop handler itself rather than the file-picker button."
+  "notes": "Replaces the failing separate multi-cover batch editor with a queue that uses The Library's existing regular Split Full Cover screen. Multiple File Explorer drops are kept together, the first cover opens in the normal splitter, Previous/Next lets you move through the dropped covers, and each cover keeps its own guide positions and metadata while you navigate. Saving a cover creates only Back Cover, Spine, and Front Cover, removes that item from the queue, and automatically loads the next one. This bypasses the batch-panel code responsible for the repeated null-valued-expression failure. Windows validation passed with six simultaneous covers, navigation/state preservation, live WinForms processing, and all 18 expected split images/records saved."
 }
