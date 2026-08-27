@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.13",
-  "payloadSha256": "b8e9b1a65e0790d1f1d641c4bfc44b2090a2a756bb9645d69046fa00cfa81ba4",
+  "version": "1.0.14",
+  "payloadSha256": "b95f739d5219894933d69e958c73a9407821ccd786094a03f9ec5edb36e6632c",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/d520dd3653e82620aa4d5be2c5f9e66ea80e0a38/the-library/payload-1.0.13-batch-split-drop-in.txt",
-      "sha256": "b8e9b1a65e0790d1f1d641c4bfc44b2090a2a756bb9645d69046fa00cfa81ba4"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/a8951ea54e3000867da038d93a18417e18e04e74/the-library/payload-1.0.14-unified-full-wrap-picker.txt",
+      "sha256": "b95f739d5219894933d69e958c73a9407821ccd786094a03f9ec5edb36e6632c"
     }
   ],
-  "notes": "Replaces the multi-wrap Batch Split with a true drop-in component. The new BatchSplitDropIn.ps1 is self-contained for batch image loading, panel creation, persistent per-cover state, guide painting/dragging, cropping, and saving. The main Library script only receives a small startup hook and the old batch button is replaced, while the existing single-cover splitter and the rest of The Library remain untouched. Validation passed with five simultaneous PNG cover panels, live paint/guide events, and 15 saved split-piece records."
+  "notes": "Removes the separate multi-wrap button and folds multi-select into the regular full-cover button. The regular button keeps its existing label and styling, but its file picker now accepts one or many wrap images. One file creates one splitter panel; multiple files create one panel per cover through the exact same code path. All old Multiple/Batch Split buttons are removed at startup. Validation passed for the one-button UI, one-cover loading/saving, five-cover loading/saving, live paint/guide events, and 18 split-piece records across the 1+5 cover test."
 }
