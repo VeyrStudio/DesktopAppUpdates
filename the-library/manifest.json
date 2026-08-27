@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.19",
-  "payloadSha256": "4e5b750945fabe27e828a31fc0400e31417db9ccfc5bb9259283ed90599bb8e0",
+  "version": "1.0.20",
+  "payloadSha256": "f3f7e8e92da7893a7cc8e4f374e55045eb0dd58f487a4ac0c8a6583e1a51a83a",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/03c5cb372e61f4209f3e1d86dd925378fdb2900d/the-library/payload-1.0.19-simple-save-label.txt",
-      "sha256": "4e5b750945fabe27e828a31fc0400e31417db9ccfc5bb9259283ed90599bb8e0"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f60681cb024c85333938a1665e0e2ee704cae8a5/the-library/payload-1.0.20-save-all-clear-all.txt",
+      "sha256": "f3f7e8e92da7893a7cc8e4f374e55045eb0dd58f487a4ac0c8a6583e1a51a83a"
     }
   ],
-  "notes": "Simplifies the Split Full Cover save button label to just SAVE. This applies to both the regular single-wrap splitter and each multi-cover scroll editor. No saving behavior changes."
+  "notes": "Adds SAVE ALL and CLEAR ALL for multi-cover Split Full Cover sessions. SAVE ALL saves every unsaved cover currently loaded, skips covers already saved individually so nothing is duplicated, and clears the whole multi-cover queue after all saves succeed. CLEAR ALL removes the entire current multi-cover queue without saving, with a confirmation prompt. The existing per-cover SAVE buttons remain. Windows validation passed for individual-save-then-Save-All without duplicates, automatic queue clearing after Save All, and Clear All discarding the queue without creating records."
 }
