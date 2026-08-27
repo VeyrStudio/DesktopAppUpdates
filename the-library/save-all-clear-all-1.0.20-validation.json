@@ -1,0 +1,20 @@
+{
+  "version": "1.0.20",
+  "baseVersion": "1.0.19",
+  "payload": "payload-1.0.20-save-all-clear-all.txt",
+  "payloadSha256": "f3f7e8e92da7893a7cc8e4f374e55045eb0dd58f487a4ac0c8a6583e1a51a83a",
+  "requirements": {
+    "saveAllButton": true,
+    "clearAllButton": true,
+    "saveAllSkipsAlreadySaved": true,
+    "saveAllClosesOnSuccess": true,
+    "clearAllConfirmation": true,
+    "clearAllForceForTesting": true,
+    "simpleSaveLabelsPreserved": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "saveAllAfterIndividualSaveTest": "passed",
+  "clearQueueAfterSaveAllTest": "passed",
+  "clearAllWithoutSavingTest": "passed"
+}
