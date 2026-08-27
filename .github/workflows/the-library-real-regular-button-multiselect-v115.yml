@@ -1,0 +1,196 @@
+name: The Library Real Regular Button Multiselect v1.0.15
+on:
+  push:
+    paths:
+      - 'tools/the-library-real-regular-button-multiselect-v115.py'
+      - '.github/workflows/the-library-real-regular-button-multiselect-v115.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.15 payload
+        shell: pwsh
+        run: python tools/the-library-real-regular-button-multiselect-v115.py
+
+      - name: Parse files
+        shell: powershell
+        run: |
+          foreach($path in @(
+            '.library-v115-validation/CoverVault.ps1',
+            '.library-v115-validation/BatchSplitDropIn.ps1'
+          )){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error ($path+' line '+$_.Extent.StartLineNumber+': '+$_.Message)}
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Test actual regular button outside Split tab
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v115-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          $data=Join-Path $root 'Data'
+          New-Item -ItemType Directory -Force -Path $app,$backup,$data|Out-Null
+
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          $appRoot=Split-Path -Parent $PSScriptRoot
+          $form=New-Object Windows.Forms.Form
+          $form.Size=New-Object Drawing.Size(1300,1000)
+
+          $tabs=New-Object Windows.Forms.TabControl
+          $tabs.Dock='Fill'
+          $form.Controls.Add($tabs)
+
+          $tabAdd=New-Object Windows.Forms.TabPage
+          $tabAdd.Text='Add'
+          $tabs.TabPages.Add($tabAdd)
+
+          $tabSplit=New-Object Windows.Forms.TabPage
+          $tabSplit.Text='Split'
+          $tabs.TabPages.Add($tabSplit)
+
+          $nested=New-Object Windows.Forms.Panel
+          $nested.Location=New-Object Drawing.Point(20,20)
+          $nested.Size=New-Object Drawing.Size(400,120)
+          $tabAdd.Controls.Add($nested)
+
+          $regular=New-Object Windows.Forms.Button
+          $regular.Name='RealRegularFullCoverButton'
+          $regular.Text='CHOOSE FULL COVER'
+          $regular.Location=New-Object Drawing.Point(12,12)
+          $regular.Size=New-Object Drawing.Size(190,36)
+          $regular.Add_Click({throw 'OLD SINGLE PICKER SHOULD NOT RUN'})
+          $nested.Controls.Add($regular)
+
+          $decoy=New-Object Windows.Forms.Button
+          $decoy.Text='CENTER FULL COVER'
+          $decoy.Location=New-Object Drawing.Point(12,12)
+          $decoy.Size=New-Object Drawing.Size(190,36)
+          $tabSplit.Controls.Add($decoy)
+
+          $oldBatch=New-Object Windows.Forms.Button
+          $oldBatch.Text='ADD MULTIPLE FULL WRAPS'
+          $oldBatch.Location=New-Object Drawing.Point(220,12)
+          $oldBatch.Size=New-Object Drawing.Size(210,36)
+          $tabSplit.Controls.Add($oldBatch)
+
+          $script:TestRecords=New-Object Collections.Generic.List[object]
+          function Add-LibraryRecord {
+              param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags)
+              $script:TestRecords.Add([pscustomobject]@{Position=$Position;OriginalName=$OriginalName})
+          }
+          function Copy-Or-Move-IntoVault([string]$Path,[bool]$Move){
+              $destDir=Join-Path $appRoot 'Data'
+              New-Item -ItemType Directory -Force -Path $destDir|Out-Null
+              $name=[guid]::NewGuid().ToString('N')+[IO.Path]::GetExtension($Path)
+              Copy-Item -LiteralPath $Path -Destination (Join-Path $destDir $name) -Force
+              return $name
+          }
+          function Refresh-HierarchyTree {}
+          function Refresh-LibraryGrid {}
+
+          [void]$form.ShowDialog()
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.14"}'|Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v115-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+          Copy-Item '.library-v115-validation/BatchSplitDropIn.ps1' (Join-Path $app 'BatchSplitDropIn.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Updater failed.'}
+
+          $patched=Get-Content -LiteralPath (Join-Path $app 'CoverVault.ps1') -Raw
+          $runtime=$patched.Replace('[void]$form.ShowDialog()','# disabled for test')
+          $runtime += @'
+
+          $buttons=@(Get-LibraryAllChildControls $form|Where-Object{$_ -is [Windows.Forms.Button]})
+          $unified=@($buttons|Where-Object{$_.Name -eq 'LibraryUnifiedFullWrapButton'})
+          if($unified.Count -ne 1){throw ("Expected 1 unified button, got "+$unified.Count)}
+          if($unified[0].Text -ne 'CHOOSE FULL COVER'){throw 'Wrong button was replaced.'}
+
+          $old=@($buttons|Where-Object{([string]$_.Text).ToUpperInvariant().Contains('MULTIPLE')})
+          if($old.Count -ne 0){throw 'Old multiple button still exists.'}
+
+          $testDir=Join-Path $env:TEMP ('lib-v115-'+[guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Force -Path $testDir|Out-Null
+          $paths=@()
+          try{
+              for($i=1;$i -le 3;$i++){
+                  $p=Join-Path $testDir ("cover-$i.png")
+                  $bmp=New-Object Drawing.Bitmap((1000+$i*60),(700+$i*20),[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+                  try{
+                      $g=[Drawing.Graphics]::FromImage($bmp)
+                      try{$g.Clear([Drawing.Color]::FromArgb(255,60+$i*20,25,120))}finally{$g.Dispose()}
+                      $bmp.Save($p,[Drawing.Imaging.ImageFormat]::Png)
+                  }finally{$bmp.Dispose()}
+                  $paths += $p
+              }
+
+              Show-LibraryUnifiedWrapPaths $paths
+              if($tabs.SelectedTab -ne $tabSplit){throw 'Unified flow did not switch to Split tab.'}
+              $host=$script:LibraryUnifiedWrapHost
+              if($null -eq $host -or $host.Controls.Count -ne 3){throw 'Three-file flow did not create three panels.'}
+              foreach($panel in @($host.Controls)){
+                  if($null -eq $panel.Tag -or $null -eq $panel.Tag.Bitmap){throw 'Panel state is null.'}
+                  Save-LibraryDropInCover $panel.Tag
+              }
+              if($script:TestRecords.Count -ne 9){throw ("Expected 9 records, got "+$script:TestRecords.Count)}
+          }finally{
+              Remove-Item -LiteralPath $testDir -Force -Recurse -ErrorAction SilentlyContinue
+          }
+          '@
+
+          $runtimePath=Join-Path $app 'runtime-test.ps1'
+          $runtime|Set-Content -LiteralPath $runtimePath -Encoding UTF8
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $runtimePath
+          if($LASTEXITCODE -ne 0){throw 'Runtime test failed.'}
+
+      - name: Validate hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/real-regular-button-multiselect-1.0.15-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.15'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256']
+
+      - name: Commit validated payload
+        shell: pwsh
+        run: |
+          $p='the-library/real-regular-button-multiselect-1.0.15-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName actualButtonOutsideSplitTabTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName threeCoverRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.15-real-regular-button-multiselect.txt' 'the-library/real-regular-button-multiselect-1.0.15-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.15 regular-button multiselect fix'
+            git pull --rebase origin main
+            git push origin main
+          }
