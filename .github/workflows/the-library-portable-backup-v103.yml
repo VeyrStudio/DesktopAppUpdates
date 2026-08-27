@@ -1,0 +1,106 @@
+name: The Library Portable Backup v1.0.3
+on:
+  push:
+    paths:
+      - 'tools/the-library-portable-backup-v103.py'
+      - '.github/workflows/the-library-portable-backup-v103.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build exact v1.0.3 payload
+        shell: pwsh
+        run: python tools/the-library-portable-backup-v103.py
+
+      - name: Parse payload scripts with Windows PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($f in @('.library-v103-validation/CoverVault.ps1','.library-v103-validation/RestoreLibrary.ps1')){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+              throw "PowerShell parse failed: $f"
+            }
+          }
+
+      - name: Test patcher against synthetic current Library
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v103-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+          Copy-Item '.library-v103-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+          Copy-Item '.library-v103-validation/RestoreLibrary.ps1' (Join-Path $app 'RestoreLibrary.ps1')
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          $appRoot=Split-Path -Parent $PSScriptRoot
+          $form=New-Object System.Windows.Forms.Form
+          $tabBackup=New-Object System.Windows.Forms.TabPage
+          [void]$form.ShowDialog()
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+          '{"version":"1.0.2"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Patcher returned failure.'}
+
+          $patched=Get-Content -LiteralPath (Join-Path $app 'CoverVault.ps1') -Raw
+          foreach($marker in @(
+            '# PORTABLE LIBRARY BACKUP v1.0.3',
+            'BACKUP LIBRARY',
+            'RESTORE LIBRARY',
+            'New-LibraryPortableBackup',
+            'Recovery Backups',
+            'RestoreLibrary.ps1'
+          )){
+            if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
+          }
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $app 'CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){$errors|ForEach-Object{Write-Error $_.Message};throw 'Patched Library source does not parse.'}
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.3'){throw 'Patched AppVersion is not 1.0.3.'}
+
+      - name: Revalidate payload JSON and internal hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/portable-backup-1.0.3-validation.json').read_text())
+          b=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='1.0.3'
+          assert {f['path'] for f in p['files']}=={'CoverVault.ps1','RestoreLibrary.ps1','AppVersion.json'}
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit exact payload
+        shell: pwsh
+        run: |
+          $p='the-library/portable-backup-1.0.3-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|Add-Member -NotePropertyName syntheticPatchTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.3-portable-backup.txt' 'the-library/portable-backup-1.0.3-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.3 portable backup'
+            git pull --rebase origin main
+            git push origin main
+          }
