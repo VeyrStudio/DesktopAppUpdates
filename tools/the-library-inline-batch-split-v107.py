@@ -97,7 +97,7 @@ function Add-InlineBatchRecord($bitmap,[string]$sourcePath,[int]$left,[int]$righ
         $pieces=@(
             [pscustomobject]@{Position='Back Cover';Name=($base+' - Back Cover.png');Rect=(New-Object Drawing.Rectangle(0,0,$left,$bitmap.Height))},
             [pscustomobject]@{Position='Spine';Name=($base+' - Spine.png');Rect=(New-Object Drawing.Rectangle($left,0,($right-$left),$bitmap.Height))},
-            [pscustomobject]@{Position='Front Cover';Name=($base+' - Front Cover.png');Rect=(New-Object Drawing.Rectangle($right,0,($bitmap.Width-$right),$bitmap.Height)}
+            [pscustomobject]@{Position='Front Cover';Name=($base+' - Front Cover.png');Rect=(New-Object Drawing.Rectangle($right,0,($bitmap.Width-$right),$bitmap.Height))}
         )
 
         foreach($piece in $pieces){
