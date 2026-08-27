@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.2",
-  "payloadSha256": "e6b4039e386b9fd960d149930c3f2266608d345a03cb5a6b820034009d8ed58b",
+  "version": "1.0.3",
+  "payloadSha256": "9cb0eb12aa27250739f3376b79a47ef094a8ea27a37a6f9d451eef1e0ae075fd",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.2-split-screen.txt",
-      "sha256": "e6b4039e386b9fd960d149930c3f2266608d345a03cb5a6b820034009d8ed58b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/08904b478fde5129e975f59b4ea388bbe788e507/the-library/payload-1.0.3-portable-backup.txt",
+      "sha256": "9cb0eb12aa27250739f3376b79a47ef094a8ea27a37a6f9d451eef1e0ae075fd"
     }
   ],
-  "notes": "Split-screen/Snap compatibility pass. The Library already supported resizing; this update improves compact-width margins and keeps every tab internally scrollable so the app stays usable beside Edge. Cover files and Library data are unchanged."
+  "notes": "Portable Library backup and restore. Adds BACKUP LIBRARY and RESTORE LIBRARY controls to the existing Backup tab. A .librarybackup file contains the entire Library Data folder, including cover files and stored Library data, so it can be moved to another PC. Restore validates that the file belongs to The Library, creates an automatic recovery backup of the current Library first, closes the app before replacing data, then relaunches The Library. The updater patch retains rollback behavior. Windows PowerShell parsing, a synthetic v1.0.2-to-v1.0.3 patch test, payload JSON validation, and all internal SHA-256 checks passed before publish."
 }
