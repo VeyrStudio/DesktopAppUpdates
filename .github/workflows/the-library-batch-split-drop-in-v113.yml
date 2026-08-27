@@ -1,0 +1,260 @@
+name: The Library Batch Split Drop-In v1.0.13
+on:
+  push:
+    paths:
+      - 'tools/the-library-batch-split-drop-in-v113.py'
+      - '.github/workflows/the-library-batch-split-drop-in-v113.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build exact v1.0.13 payload
+        shell: pwsh
+        run: python tools/the-library-batch-split-drop-in-v113.py
+
+      - name: Parse patcher and drop-in with Windows PowerShell
+        shell: powershell
+        run: |
+          foreach($path in @(
+            '.library-v113-validation/CoverVault.ps1',
+            '.library-v113-validation/BatchSplitDropIn.ps1'
+          )){
+            $tokens=$null;$errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error ($path+' line '+$_.Extent.StartLineNumber+': '+$_.Message)}
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Install drop-in over synthetic existing Library
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v113-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          $data=Join-Path $root 'Data'
+          New-Item -ItemType Directory -Force -Path $app,$backup,$data|Out-Null
+
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          $appRoot=Split-Path -Parent $PSScriptRoot
+          $form=New-Object Windows.Forms.Form
+          $form.Size=New-Object Drawing.Size(1300,1000)
+          $tabs=New-Object Windows.Forms.TabControl
+          $tabs.Dock='Fill'
+          $form.Controls.Add($tabs)
+          $tabSplit=New-Object Windows.Forms.TabPage
+          $tabSplit.Text='Split'
+          $tabs.TabPages.Add($tabSplit)
+
+          $script:TestRecords=New-Object Collections.Generic.List[object]
+
+          function Add-LibraryRecord {
+              param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags)
+              $script:TestRecords.Add([pscustomobject]@{
+                  OriginalName=$OriginalName
+                  StoredName=$StoredName
+                  Position=$Position
+                  Project=$Project
+                  Ship=$Ship
+                  Fandom=$Fandom
+                  Tags=$Tags
+              })
+          }
+
+          function Copy-Or-Move-IntoVault([string]$Path,[bool]$Move){
+              $destDir=Join-Path $appRoot 'Data'
+              New-Item -ItemType Directory -Force -Path $destDir|Out-Null
+              $name=[guid]::NewGuid().ToString('N')+[IO.Path]::GetExtension($Path)
+              Copy-Item -LiteralPath $Path -Destination (Join-Path $destDir $name) -Force
+              return $name
+          }
+
+          function Refresh-HierarchyTree {}
+          function Refresh-LibraryGrid {}
+          function SingleSplitSentinel { return 'single-split-still-here' }
+
+          function Start-InlineBatchSplit { throw 'LEGACY BATCH FUNCTION SHOULD NOT RUN' }
+
+          $legacy=New-Object Windows.Forms.Button
+          $legacy.Name='LegacyBatchButton'
+          $legacy.Text='ADD MULTIPLE FULL WRAPS'
+          $legacy.Location=New-Object Drawing.Point(12,12)
+          $legacy.Size=New-Object Drawing.Size(210,36)
+          $legacy.Add_Click({Start-InlineBatchSplit})
+          $tabSplit.Controls.Add($legacy)
+
+          [void]$form.ShowDialog()
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.12"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+
+          Copy-Item '.library-v113-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+          Copy-Item '.library-v113-validation/BatchSplitDropIn.ps1' (Join-Path $app 'BatchSplitDropIn.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Drop-in updater patch failed.'}
+
+          $patchedPath=Join-Path $app 'CoverVault.ps1'
+          $patched=Get-Content -LiteralPath $patchedPath -Raw
+          foreach($marker in @(
+            '# LOAD BATCH SPLIT DROP-IN v1.0.13',
+            "BatchSplitDropIn.ps1",
+            'Initialize-LibraryBatchSplitDropIn',
+            'function SingleSplitSentinel'
+          )){
+            if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
+          }
+
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($patchedPath,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){throw 'Patched Library source does not parse.'}
+
+          $runtimePath=Join-Path $root 'runtime-test.ps1'
+          $runtime=$patched.Replace('[void]$form.ShowDialog()','# modal startup disabled for automated runtime test')
+          $runtime += @'
+
+          if((SingleSplitSentinel) -ne 'single-split-still-here'){throw 'Existing single-cover split code was disturbed.'}
+
+          $buttons=@($tabSplit.Controls|Where-Object{$_ -is [Windows.Forms.Button] -and $_.Text -eq 'ADD MULTIPLE FULL WRAPS'})
+          if($buttons.Count -ne 1){throw ("Expected exactly one drop-in batch button, got "+$buttons.Count)}
+          if($buttons[0].Name -ne 'LibraryDropInBatchButton'){throw 'Legacy batch button was not replaced.'}
+
+          $testDir=Join-Path $env:TEMP ('TheLibrary-v113-'+[guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Force -Path $testDir|Out-Null
+          $paths=New-Object Collections.Generic.List[string]
+
+          try{
+              for($i=1;$i -le 5;$i++){
+                  $w=1200+($i*100)
+                  $h=800+($i*40)
+                  $path=Join-Path $testDir ("cover-$i.png")
+                  $bmp=New-Object Drawing.Bitmap($w,$h,[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+                  try{
+                      $g=[Drawing.Graphics]::FromImage($bmp)
+                      try{$g.Clear([Drawing.Color]::FromArgb(255,40+($i*20),20,120))}finally{$g.Dispose()}
+                      $bmp.Save($path,[Drawing.Imaging.ImageFormat]::Png)
+                  }finally{$bmp.Dispose()}
+                  $paths.Add($path)
+              }
+
+              $host=New-Object Windows.Forms.FlowLayoutPanel
+              $host.Dock='Fill'
+              $host.FlowDirection='TopDown'
+              $host.WrapContents=$false
+              $host.AutoScroll=$true
+              $tabSplit.Controls.Add($host)
+
+              $ordinal=0
+              foreach($path in $paths){
+                  $ordinal++
+                  $panel=New-LibraryDropInBatchPanel $path $ordinal $paths.Count
+                  if($null -eq $panel){throw "Panel $ordinal returned null."}
+                  if($null -eq $panel.Tag -or $null -eq $panel.Tag.Bitmap){throw "Panel $ordinal lost persistent state."}
+                  $panel.Tag.Project.Text=("Book $ordinal")
+                  $panel.Tag.Ship.Text=("Ship $ordinal")
+                  $panel.Tag.Fandom.Text=("Fandom $ordinal")
+                  $panel.Tag.Tags.Text='test,batch'
+                  $panel.Tag.CoverType.Text='Paperback'
+                  $host.Controls.Add($panel)
+              }
+
+              if($host.Controls.Count -ne 5){throw ("Expected 5 batch panels, got "+$host.Controls.Count)}
+
+              $form.Show()
+              for($i=0;$i -lt 12;$i++){
+                  [Windows.Forms.Application]::DoEvents()
+                  Start-Sleep -Milliseconds 40
+              }
+
+              foreach($panel in @($host.Controls)){
+                  $st=$panel.Tag
+                  if($null -eq $st -or $null -eq $st.Pic){throw 'Panel state became null during display.'}
+                  $st.Pic.Invalidate()
+                  $st.LeftNum.Value=[decimal]([math]::Max(1,[int]$st.LeftNum.Value-3))
+                  $st.RightNum.Value=[decimal]([math]::Min([int]$st.RightNum.Maximum,[int]$st.RightNum.Value+3))
+              }
+
+              for($i=0;$i -lt 8;$i++){
+                  [Windows.Forms.Application]::DoEvents()
+                  Start-Sleep -Milliseconds 40
+              }
+
+              foreach($panel in @($host.Controls)){
+                  Save-LibraryDropInCover $panel.Tag
+              }
+
+              if($script:TestRecords.Count -ne 15){
+                  throw ("Expected 15 split-piece records from 5 covers, got "+$script:TestRecords.Count)
+              }
+
+              $positions=@($script:TestRecords|ForEach-Object{$_.Position})
+              if(($positions|Where-Object{$_ -eq 'Back Cover'}).Count -ne 5){throw 'Back Cover record count is wrong.'}
+              if(($positions|Where-Object{$_ -eq 'Spine'}).Count -ne 5){throw 'Spine record count is wrong.'}
+              if(($positions|Where-Object{$_ -eq 'Front Cover'}).Count -ne 5){throw 'Front Cover record count is wrong.'}
+
+              $storedFiles=@(Get-ChildItem -LiteralPath (Join-Path $appRoot 'Data') -File)
+              if($storedFiles.Count -ne 15){throw ("Expected 15 stored split images, got "+$storedFiles.Count)}
+
+              $form.Close()
+          }
+          finally{
+              Remove-Item -LiteralPath $testDir -Force -Recurse -ErrorAction SilentlyContinue
+          }
+          '@
+
+          $runtime | Set-Content -LiteralPath $runtimePath -Encoding UTF8
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $runtimePath
+          if($LASTEXITCODE -ne 0){throw 'Drop-in multi-cover runtime test failed.'}
+
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.13'){throw 'Patched AppVersion is not 1.0.13.'}
+
+      - name: Revalidate payload and hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/batch-split-drop-in-1.0.13-validation.json').read_text())
+          b=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='1.0.13'
+          assert any(f['path']=='BatchSplitDropIn.ps1' for f in p['files'])
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit exact payload
+        shell: pwsh
+        run: |
+          $p='the-library/batch-split-drop-in-1.0.13-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|Add-Member -NotePropertyName fiveCoverPanelRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName paintAndGuideRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName fifteenPieceSaveTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName legacyButtonReplacementTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.13-batch-split-drop-in.txt' 'the-library/batch-split-drop-in-1.0.13-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.13 Batch Split drop-in'
+            git pull --rebase origin main
+            git push origin main
+          }
