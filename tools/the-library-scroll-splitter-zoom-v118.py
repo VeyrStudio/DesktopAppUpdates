@@ -955,22 +955,20 @@ try{
     if(-not $text.Contains('Show-LibraryUnifiedWrapPaths -Paths $valid')){throw 'The multi-file drop route is missing.'}
     if(-not $text.Contains('Initialize-LibraryBatchSplitDropIn')){throw 'The drop-in startup hook is missing.'}
 
-    $singleOld=@'
-            if ($valid.Count -eq 1) {
-                # One dropped wrap keeps the normal single-cover splitter.
-                Set-WrapDroppedFile $valid[0]
-            }
-'@
-    $singleNew=@'
-            if ($valid.Count -eq 1) {
-                # One dropped wrap keeps the normal single-cover splitter.
-                if (Get-Command Close-LibraryMultiWrapScroll -ErrorAction SilentlyContinue) {
+    $dropFunction=$text.IndexOf('function Register-CoverDropTarget')
+    $singleNeedle='Set-WrapDroppedFile $valid[0]'
+    $singleCall=if($dropFunction -ge 0){$text.IndexOf($singleNeedle,$dropFunction)}else{-1}
+    if($singleCall -ge 0){
+        $before=$text.Substring([math]::Max(0,$singleCall-350),[math]::Min(350,$singleCall))
+        if($before.Contains('if ($valid.Count -eq 1)') -and -not $before.Contains('Close-LibraryMultiWrapScroll')){
+            $insert=@'
+if (Get-Command Close-LibraryMultiWrapScroll -ErrorAction SilentlyContinue) {
                     Close-LibraryMultiWrapScroll $true
                 }
-                Set-WrapDroppedFile $valid[0]
-            }
-'@
-    if($text.Contains($singleOld)){$text=$text.Replace($singleOld,$singleNew)}
+                '@
+            $text=$text.Substring(0,$singleCall)+$insert+$text.Substring($singleCall)
+        }
+    }
 
     [IO.File]::WriteAllText($targetMain,$text,(New-Object Text.UTF8Encoding($true)))
 
