@@ -1,0 +1,16 @@
+{
+  "version": "1.0.12",
+  "baseVersion": "1.0.11",
+  "payload": "payload-1.0.12-resilient-batch-split.txt",
+  "payloadSha256": "c45b901d14b3c0ee0ca8f741ee207f62a568de776e851def7582e0cccc87d079",
+  "requirements": {
+    "doesNotRequireV110Marker": true,
+    "addsLoaderIfMissing": true,
+    "replacesSplitterRegardlessOfPriorMarker": true,
+    "persistentControlState": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "missingHelperRuntimeTest": "passed",
+  "helperPresentPatchTest": "passed"
+}
