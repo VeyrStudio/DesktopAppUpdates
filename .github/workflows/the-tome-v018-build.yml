@@ -5,7 +5,8 @@ on:
   push:
     paths:
       - '.github/workflows/the-tome-v018-build.yml'
-      - 'tools/the-tome-v017-updater.py'\n      - 'tools/the-tome-v018-manual-update.py'
+      - 'tools/the-tome-v017-updater.py'
+      - 'tools/the-tome-v018-manual-update.py'
 
 permissions:
   contents: write
@@ -93,7 +94,9 @@ jobs:
           $pkg = Get-Content tome-build/package.json -Raw | ConvertFrom-Json
           if ($pkg.version -ne $env:VERSION) { throw 'package version mismatch' }
           if (-not (Select-String -Path tome-build/main.js -Pattern "APP_VERSION = '0.1.8'" -Quiet)) { throw 'app version marker missing' }
-          if (-not (Select-String -Path tome-build/main.js -Pattern 'VeyrStudio.TheTome.Updater' -Quiet)) { throw 'single-instance updater mutex missing' }\n          if (-not (Select-String -Path tome-build/renderer.js -Pattern 'tome-update-now' -Quiet)) { throw 'manual update button missing' }\n          if (-not (Select-String -Path tome-build/main.js -Pattern '__TOME_FORCE_UPDATE__' -Quiet)) { throw 'manual update signal missing' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern 'VeyrStudio.TheTome.Updater' -Quiet)) { throw 'single-instance updater mutex missing' }
+          if (-not (Select-String -Path tome-build/renderer.js -Pattern 'tome-update-now' -Quiet)) { throw 'manual update button missing' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern '__TOME_FORCE_UPDATE__' -Quiet)) { throw 'manual update signal missing' }
           if (Select-String -Path tome-build/main.js -Pattern 'apply-update.cmd|tasklist /FI|find \"|ping 127.0.0.1' -Quiet) { throw 'legacy cmd updater still present' }
           if (-not (Select-String -Path tome-build/main.js -Pattern 'apply-update.ps1' -Quiet)) { throw 'hidden PowerShell updater helper missing' }
 
