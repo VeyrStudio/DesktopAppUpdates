@@ -1,0 +1,144 @@
+name: The Library Wrap Drop Multiselect v1.0.16
+on:
+  push:
+    paths:
+      - 'tools/the-library-wrap-drop-multiselect-v116.py'
+      - '.github/workflows/the-library-wrap-drop-multiselect-v116.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.16 payload
+        shell: pwsh
+        run: python tools/the-library-wrap-drop-multiselect-v116.py
+
+      - name: Parse updater
+        shell: powershell
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-v116-validation/CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error ($_.Extent.StartLineNumber.ToString()+': '+$_.Message)}
+            throw 'Updater parse failed.'
+          }
+
+      - name: Patch real drag-drop shape
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v116-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $panelSingleDrop=New-Object Windows.Forms.Panel
+          $panelWrapDrop=New-Object Windows.Forms.Panel
+          function Set-SingleDroppedFile([string]$Path){}
+          function Set-WrapDroppedFile([string]$Path){}
+          function Show-LibraryUnifiedWrapPaths([string[]]$Paths){}
+          function Show-Info([string]$Message){}
+          function Show-Error([string]$Message){}
+
+          function Register-CoverDropTarget($Control, [string]$Kind) {
+              $Control.AllowDrop = $true
+              $Control.Tag = $Kind
+
+              $Control.Add_DragEnter({
+                  param($sender,$e)
+                  if ($e.Data.GetDataPresent([System.Windows.Forms.DataFormats]::FileDrop)) {
+                      $e.Effect = [System.Windows.Forms.DragDropEffects]::Copy
+                      if ($sender.Tag -eq "single") {
+                          $panelSingleDrop.BackColor = [System.Drawing.Color]::FromArgb(143, 0, 255)
+                      } else {
+                          $panelWrapDrop.BackColor = [System.Drawing.Color]::FromArgb(143, 0, 255)
+                      }
+                  } else {
+                      $e.Effect = [System.Windows.Forms.DragDropEffects]::None
+                  }
+              })
+
+              $Control.Add_DragLeave({
+                  param($sender,$e)
+                  if ($sender.Tag -eq "single") {
+                      $panelSingleDrop.BackColor = [System.Drawing.Color]::FromArgb(64, 18, 96)
+                  } else {
+                      $panelWrapDrop.BackColor = [System.Drawing.Color]::FromArgb(64, 18, 96)
+                  }
+              })
+
+              $Control.Add_DragDrop({
+                  param($sender,$e)
+                  $files = [string[]]$e.Data.GetData([System.Windows.Forms.DataFormats]::FileDrop)
+                  if ($sender.Tag -eq "single") {
+                      $panelSingleDrop.BackColor = [System.Drawing.Color]::FromArgb(64, 18, 96)
+                      if ($files.Count -gt 0) { Set-SingleDroppedFile $files[0] }
+                  } else {
+                      $panelWrapDrop.BackColor = [System.Drawing.Color]::FromArgb(64, 18, 96)
+                      if ($files.Count -gt 0) { Set-WrapDroppedFile $files[0] }
+                  }
+              })
+          }
+
+          [void]$form.ShowDialog()
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.15"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v116-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Patch failed.'}
+
+          $patchedPath=Join-Path $app 'CoverVault.ps1'
+          $patched=Get-Content -LiteralPath $patchedPath -Raw
+          if(-not $patched.Contains('# WRAP DROP MULTISELECT FIX v1.0.16')){throw 'Drop fix marker missing.'}
+          if(-not $patched.Contains('Show-LibraryUnifiedWrapPaths -Paths $valid')){throw 'Multiple-file batch route missing.'}
+          if(-not $patched.Contains('Set-WrapDroppedFile $valid[0]')){throw 'Single-file wrap route missing.'}
+          if($patched.Contains('if ($files.Count -gt 0) { Set-WrapDroppedFile $files[0] }')){throw 'Old one-file-only handler still exists.'}
+
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($patchedPath,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){throw 'Patched drag-drop source does not parse.'}
+
+      - name: Validate hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/wrap-drop-multiselect-1.0.16-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.16'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256']
+
+      - name: Commit validated payload
+        shell: pwsh
+        run: |
+          $p='the-library/wrap-drop-multiselect-1.0.16-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName actualDropHandlerPatchTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.16-wrap-drop-multiselect.txt' 'the-library/wrap-drop-multiselect-1.0.16-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.16 wrap drop multiselect fix'
+            git pull --rebase origin main
+            git push origin main
+          }
