@@ -1,0 +1,294 @@
+name: The Library Regular Splitter Queue v1.0.17
+on:
+  push:
+    paths:
+      - 'tools/the-library-regular-splitter-queue-v117.py'
+      - '.github/workflows/the-library-regular-splitter-queue-v117.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.17 payload
+        shell: pwsh
+        run: python tools/the-library-regular-splitter-queue-v117.py
+
+      - name: Parse updater and queue drop-in
+        shell: powershell
+        run: |
+          foreach($path in @(
+            '.library-v117-validation/CoverVault.ps1',
+            '.library-v117-validation/BatchSplitDropIn.ps1'
+          )){
+            $tokens=$null
+            $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error ($path+' line '+$_.Extent.StartLineNumber+': '+$_.Message)}
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Exercise six-cover queue through regular splitter
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          $root=Join-Path $PWD '.library-v117-runtime'
+          $filesRoot=Join-Path $root 'Files'
+          $sourceRoot=Join-Path $root 'Source'
+          New-Item -ItemType Directory -Force -Path $root,$filesRoot,$sourceRoot|Out-Null
+
+          $form=New-Object Windows.Forms.Form
+          $form.Size=New-Object Drawing.Size(1250,900)
+          $tabs=New-Object Windows.Forms.TabControl
+          $tabs.Dock='Fill'
+          $form.Controls.Add($tabs)
+          $tabSplit=New-Object Windows.Forms.TabPage
+          $tabSplit.Text='Split Full Cover'
+          $tabs.TabPages.Add($tabSplit)
+
+          $panelWrapDrop=New-Object Windows.Forms.Panel
+          $panelWrapDrop.Location=New-Object Drawing.Point(26,112)
+          $panelWrapDrop.Size=New-Object Drawing.Size(1135,72)
+          $tabSplit.Controls.Add($panelWrapDrop)
+
+          $lblWrapDrop=New-Object Windows.Forms.Label
+          $lblWrapDrop.Location=New-Object Drawing.Point(18,12)
+          $lblWrapDrop.Size=New-Object Drawing.Size(360,24)
+          $panelWrapDrop.Controls.Add($lblWrapDrop)
+
+          $lblWrapDrop2=New-Object Windows.Forms.Label
+          $lblWrapDrop2.Location=New-Object Drawing.Point(18,38)
+          $lblWrapDrop2.Size=New-Object Drawing.Size(530,22)
+          $panelWrapDrop.Controls.Add($lblWrapDrop2)
+
+          $btnChooseWrap=New-Object Windows.Forms.Button
+          $btnChooseWrap.Text='UPLOAD FULL COVER'
+          $btnChooseWrap.Location=New-Object Drawing.Point(900,17)
+          $btnChooseWrap.Size=New-Object Drawing.Size(200,38)
+          $panelWrapDrop.Controls.Add($btnChooseWrap)
+
+          $lblWrapFile=New-Object Windows.Forms.Label
+          $lblWrapFile.Location=New-Object Drawing.Point(26,194)
+          $lblWrapFile.Size=New-Object Drawing.Size(900,26)
+          $tabSplit.Controls.Add($lblWrapFile)
+
+          $pbWrapPreview=New-Object Windows.Forms.PictureBox
+          $pbWrapPreview.Location=New-Object Drawing.Point(26,226)
+          $pbWrapPreview.Size=New-Object Drawing.Size(1135,370)
+          $pbWrapPreview.SizeMode='Zoom'
+          $tabSplit.Controls.Add($pbWrapPreview)
+
+          $pbBackPreview=New-Object Windows.Forms.PictureBox
+          $pbSpinePreview=New-Object Windows.Forms.PictureBox
+          $pbFrontPreview=New-Object Windows.Forms.PictureBox
+          foreach($pb in @($pbBackPreview,$pbSpinePreview,$pbFrontPreview)){
+            $pb.Size=New-Object Drawing.Size(250,160)
+            $tabSplit.Controls.Add($pb)
+          }
+
+          $numSplitLeft=New-Object Windows.Forms.NumericUpDown
+          $numSplitLeft.Minimum=1
+          $numSplitLeft.Maximum=100000
+          $tabSplit.Controls.Add($numSplitLeft)
+
+          $numSplitRight=New-Object Windows.Forms.NumericUpDown
+          $numSplitRight.Minimum=2
+          $numSplitRight.Maximum=100000
+          $tabSplit.Controls.Add($numSplitRight)
+
+          $txtWrapProject=New-Object Windows.Forms.TextBox
+          $txtWrapShip=New-Object Windows.Forms.TextBox
+          $txtWrapFandom=New-Object Windows.Forms.TextBox
+          $txtWrapTags=New-Object Windows.Forms.TextBox
+          $cmbWrapCoverType=New-Object Windows.Forms.ComboBox
+          [void]$cmbWrapCoverType.Items.Add('Paperback')
+          [void]$cmbWrapCoverType.Items.Add('Hardcover')
+          $cmbWrapCoverType.SelectedIndex=0
+          $chkMoveWrap=New-Object Windows.Forms.CheckBox
+          $chkMoveWrap.Checked=$false
+
+          $lblWrapDims=New-Object Windows.Forms.Label
+          $lblBackDims=New-Object Windows.Forms.Label
+          $lblSpineDims=New-Object Windows.Forms.Label
+          $lblFrontDims=New-Object Windows.Forms.Label
+
+          $script:FilesRoot=$filesRoot
+          $script:WrapBitmap=$null
+          $script:SelectedWrapFile=$null
+          $script:SplitLeft=0
+          $script:SplitRight=0
+          $script:PendingCoverType='Unsorted'
+          $script:Records=@()
+          $script:Errors=@()
+          $script:Infos=@()
+
+          function Show-Info([string]$Message){$script:Infos += $Message}
+          function Show-Error([string]$Message){$script:Errors += $Message}
+          function Refresh-HierarchyTree{}
+          function Refresh-LibraryGrid{}
+
+          function Set-PictureImage($PictureBox,$Image){
+              if($null -ne $PictureBox.Image){try{$PictureBox.Image.Dispose()}catch{}}
+              $PictureBox.Image=$Image
+          }
+
+          function Load-ImageUnlocked([string]$Path){
+              $bytes=[IO.File]::ReadAllBytes($Path)
+              $stream=New-Object IO.MemoryStream(,$bytes)
+              try{
+                  $img=[Drawing.Image]::FromStream($stream,$true,$true)
+                  try{return New-Object Drawing.Bitmap($img)}finally{$img.Dispose()}
+              }finally{$stream.Dispose()}
+          }
+
+          function Update-SplitPreview{
+              if($null -eq $script:WrapBitmap){return}
+              $script:SplitLeft=[int]$numSplitLeft.Value
+              $script:SplitRight=[int]$numSplitRight.Value
+          }
+
+          function Center-EqualSplit{
+              if($null -eq $script:WrapBitmap){return}
+              $w=$script:WrapBitmap.Width
+              $center=[int][math]::Round($w/2.0)
+              $half=[int][math]::Max(2,[math]::Round($w*0.04))
+              $numSplitLeft.Value=[decimal][math]::Max(1,$center-$half)
+              $numSplitRight.Value=[decimal][math]::Min($w-1,$center+$half)
+              Update-SplitPreview
+          }
+
+          function Auto-DetectSplit{Center-EqualSplit}
+
+          function Set-WrapDroppedFile([string]$Path){
+              if($script:WrapBitmap -ne $null){
+                  $script:WrapBitmap.Dispose()
+                  $script:WrapBitmap=$null
+              }
+              $script:SelectedWrapFile=$Path
+              $script:WrapBitmap=Load-ImageUnlocked $Path
+              $w=$script:WrapBitmap.Width
+              $numSplitLeft.Maximum=[math]::Max(2,$w-2)
+              $numSplitRight.Maximum=[math]::Max(3,$w-1)
+              Set-PictureImage $pbWrapPreview (New-Object Drawing.Bitmap($script:WrapBitmap))
+              Center-EqualSplit
+          }
+
+          function Make-UniqueStoredName([string]$Extension){
+              return ([guid]::NewGuid().ToString('N')+$Extension)
+          }
+
+          function Make-SplitName([string]$Base,[string]$Piece){
+              return ($Base+' - '+$Piece+'.png')
+          }
+
+          function Save-CropPng([Drawing.Bitmap]$Bitmap,[int]$X,[int]$Width,[string]$Dest){
+              $rect=New-Object Drawing.Rectangle($X,0,$Width,$Bitmap.Height)
+              $crop=$Bitmap.Clone($rect,[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try{$crop.Save($Dest,[Drawing.Imaging.ImageFormat]::Png)}finally{$crop.Dispose()}
+          }
+
+          function Add-LibraryRecord{
+              param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags)
+              $script:Records += [pscustomobject]@{
+                  OriginalName=$OriginalName
+                  StoredName=$StoredName
+                  Position=$Position
+                  Project=$Project
+                  Ship=$Ship
+                  Fandom=$Fandom
+                  Tags=$Tags
+              }
+          }
+
+          . (Resolve-Path '.library-v117-validation/BatchSplitDropIn.ps1')
+          Initialize-LibraryBatchSplitDropIn
+
+          $paths=@()
+          for($i=1;$i -le 6;$i++){
+              $path=Join-Path $sourceRoot ("cover-$i.png")
+              $bmp=New-Object Drawing.Bitmap((1200+$i*70),(800+$i*30),[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try{
+                  $g=[Drawing.Graphics]::FromImage($bmp)
+                  try{$g.Clear([Drawing.Color]::FromArgb(255,40+$i*20,30,120))}finally{$g.Dispose()}
+                  $bmp.Save($path,[Drawing.Imaging.ImageFormat]::Png)
+              }finally{$bmp.Dispose()}
+              $paths += $path
+          }
+
+          Show-LibraryUnifiedWrapPaths -Paths $paths
+
+          if(@($script:LibraryWrapQueue).Count -ne 6){throw 'Six dropped files did not enter the queue.'}
+          if($script:LibraryWrapQueueIndex -ne 0){throw 'Queue did not open the first cover.'}
+          if($script:SelectedWrapFile -ne $paths[0]){throw 'First queued cover was not loaded by the regular splitter.'}
+          if($lblWrapFile.Text -notlike '1 of 6*'){throw ('Queue label is wrong: '+$lblWrapFile.Text)}
+
+          $txtWrapProject.Text='First Book'
+          Save-LibraryWrapQueueUiState
+          Show-LibraryWrapQueueItem 1
+          if($script:SelectedWrapFile -ne $paths[1]){throw 'Next navigation did not load cover 2.'}
+          Show-LibraryWrapQueueItem 0
+          if($txtWrapProject.Text -ne 'First Book'){throw 'Per-cover metadata state did not survive navigation.'}
+
+          $form.Show()
+          for($i=0;$i -lt 6;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+
+          while(@($script:LibraryWrapQueue).Count -gt 0){
+              Save-WrapAndPieces
+              for($i=0;$i -lt 2;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 20}
+          }
+
+          if($script:Errors.Count -ne 0){throw ('Queue produced errors: '+($script:Errors -join ' | '))}
+          if($script:Records.Count -ne 18){throw ("Expected 18 split records, got "+$script:Records.Count)}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Back Cover'})).Count -ne 6){throw 'Back Cover count is wrong.'}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Spine'})).Count -ne 6){throw 'Spine count is wrong.'}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Front Cover'})).Count -ne 6){throw 'Front Cover count is wrong.'}
+          if((Get-ChildItem -LiteralPath $filesRoot -File).Count -ne 18){throw 'Expected 18 physical split PNGs.'}
+          if($null -ne $script:WrapBitmap){throw 'Final queue cleanup left a bitmap loaded.'}
+
+          $form.Close()
+
+      - name: Validate payload hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/regular-splitter-queue-1.0.17-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.17'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit payload
+        shell: pwsh
+        run: |
+          $p='the-library/regular-splitter-queue-1.0.17-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName sixCoverQueueRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName metadataNavigationTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName eighteenPieceSaveTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.17-regular-splitter-queue.txt' 'the-library/regular-splitter-queue-1.0.17-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.17 regular splitter queue'
+            git pull --rebase origin main
+            git push origin main
+          }
