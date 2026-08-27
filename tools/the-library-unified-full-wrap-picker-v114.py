@@ -18,17 +18,15 @@ dropin=match.group(1)
 override=r'''
 # UNIFIED FULL WRAP PICKER v1.0.14
 function Get-LibraryAllChildControls($Root){
-    $list=New-Object Collections.Generic.List[object]
-    if($null -eq $Root){return @()}
+    $list=@()
+    if($null -eq $Root){return $list}
     foreach($control in @($Root.Controls)){
-        [void]$list.Add($control)
+        $list += $control
         if($null -ne $control.Controls -and $control.Controls.Count -gt 0){
-            foreach($child in @(Get-LibraryAllChildControls $control)){
-                [void]$list.Add($child)
-            }
+            $list += @(Get-LibraryAllChildControls $control)
         }
     }
-    return @($list)
+    return $list
 }
 
 function Remove-LibraryUnifiedWrapHost {
