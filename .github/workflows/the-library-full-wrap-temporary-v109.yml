@@ -1,0 +1,109 @@
+name: The Library Full Wrap Temporary v1.0.9
+on:
+  push:
+    paths:
+      - 'tools/the-library-full-wrap-temporary-v109.py'
+      - '.github/workflows/the-library-full-wrap-temporary-v109.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build exact v1.0.9 payload
+        shell: pwsh
+        run: python tools/the-library-full-wrap-temporary-v109.py
+
+      - name: Parse updater with Windows PowerShell
+        shell: powershell
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-v109-validation/CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Updater PowerShell parse failed.'
+          }
+
+      - name: Patch and parse synthetic current Library
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v109-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          @'
+          $appRoot=Split-Path -Parent $PSScriptRoot
+          function Add-LibraryRecord {
+              param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags)
+          }
+          function Get-AutoSplit {}
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.8"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v109-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Updater patch returned failure.'}
+
+          $patched=Get-Content -LiteralPath (Join-Path $app 'CoverVault.ps1') -Raw
+          foreach($marker in @(
+            '# FULL WRAPS ARE TEMPORARY SOURCES v1.0.9',
+            'function Add-LibraryRecordCore',
+            'function Add-LibraryRecord {',
+            "'fullwrap'",
+            "'fullcover'",
+            "'wrap'",
+            'return Add-LibraryRecordCore @forward'
+          )){
+            if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
+          }
+
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $app 'CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Patched Library source does not parse.'
+          }
+
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.9'){throw 'Patched AppVersion is not 1.0.9.'}
+
+      - name: Revalidate payload and hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/full-wrap-temporary-1.0.9-validation.json').read_text())
+          b=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='1.0.9'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit exact payload
+        shell: pwsh
+        run: |
+          $p='the-library/full-wrap-temporary-1.0.9-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|Add-Member -NotePropertyName syntheticPatchTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.9-full-wrap-temporary.txt' 'the-library/full-wrap-temporary-1.0.9-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.9 full-wrap temporary rule'
+            git pull --rebase origin main
+            git push origin main
+          }
