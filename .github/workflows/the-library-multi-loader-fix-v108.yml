@@ -1,0 +1,130 @@
+name: The Library Multi Loader Fix v1.0.8
+on:
+  push:
+    paths:
+      - 'tools/the-library-multi-loader-fix-v108.py'
+      - '.github/workflows/the-library-multi-loader-fix-v108.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build exact v1.0.8 payload
+        shell: pwsh
+        run: python tools/the-library-multi-loader-fix-v108.py
+
+      - name: Parse updater with Windows PowerShell
+        shell: powershell
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-v108-validation/CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Updater PowerShell parse failed.'
+          }
+
+      - name: Patch and parse synthetic current Library
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v107-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $form=New-Object System.Windows.Forms.Form
+          $tabSplit=New-Object System.Windows.Forms.TabPage
+          function Add-LibraryRecord { param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags) }
+          function Copy-Or-Move-IntoVault([string]$Path,[bool]$Move){ return [IO.Path]::GetFileName($Path) }
+          function Load-ImageUnlocked([string]$Path){ return New-Object System.Drawing.Bitmap(10,10) }
+          function Refresh-HierarchyTree {}
+          function Refresh-LibraryGrid {}
+          # BATCH SPLIT WRAPS v1.0.8
+          function Open-BatchSplitWraps {}
+          $btnBatchSplitWraps=New-Object Windows.Forms.Button
+          $btnBatchSplitWraps.Text='BATCH SPLIT WRAPS'
+          $tabSplit.Controls.Add($btnBatchSplitWraps)
+          $tabSplit.Add_Resize({
+              try{$btnBatchSplitWraps.Location=New-Object Drawing.Point(10,12)}catch{}
+          })
+          [void]$form.ShowDialog()
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.8"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v108-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Updater patch returned failure.'}
+
+          $patched=Get-Content -LiteralPath (Join-Path $app 'CoverVault.ps1') -Raw
+          foreach($marker in @(
+            '# INLINE BATCH SPLIT WRAPS v1.0.8',
+            'ADD MULTIPLE FULL WRAPS',
+            'SAVE THIS COVER TO LIBRARY',
+            'TITLE / BOOK',
+            'SHIP',
+            'FANDOM',
+            'EXTRA TAGS',
+            'COVER TYPE',
+            'Add-LibraryRecord',
+            'Copy-Or-Move-IntoVault',
+            'Load-ImageUnlocked $path',
+            'Some covers could not be opened'
+          )){
+            if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
+          }
+          if($patched.Contains('function Open-BatchSplitWraps')){throw 'Old separate-window batch splitter was not removed.'}
+          if($patched.Contains('FolderBrowserDialog')){throw 'Folder export behavior must not remain in the inline batch flow.'}
+          if($patched.ToUpperInvariant().Contains('APPLY TO ALL')){throw 'Apply to All must not exist.'}
+
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $app 'CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Patched Library source does not parse.'
+          }
+
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.8'){throw 'Patched AppVersion is not 1.0.8.'}
+
+      - name: Revalidate payload and hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/multi-loader-fix-1.0.8-validation.json').read_text())
+          b=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='1.0.8'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit exact payload
+        shell: pwsh
+        run: |
+          $p='the-library/multi-loader-fix-1.0.8-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|Add-Member -NotePropertyName syntheticPatchTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.8-multi-loader-fix.txt' 'the-library/multi-loader-fix-1.0.8-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.8 multi-cover loader fix'
+            git pull --rebase origin main
+            git push origin main
+          }
