@@ -32,7 +32,7 @@ try {
     $text=[IO.File]::ReadAllText($backupMain,[Text.Encoding]::UTF8)
 
     # Remove the old v1.0.6 launch button so users cannot enter the separate-window flow.
-    $oldBlockPatternn='(?s)# BATCH SPLIT WRAPS v1\.0\.6.*?\$tabSplit\.Add_Resize\(\\{.*?\\}\)\s*'
+    $oldBlockPattern='(?s)# BATCH SPLIT WRAPS v1\.0\.6.*?(?=\r?\n\s*(?:\[void\]\s*)?\$form\.ShowDialog\(\))'
     $text=[Text.RegularExpressions.Regex]::Replace($text,$oldBlockPattern,'')
 
     $marker='# INLINE BATCH SPLIT WRAPS v1.0.7'
