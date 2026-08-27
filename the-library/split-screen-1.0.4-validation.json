@@ -1,0 +1,14 @@
+{
+  "version": "1.0.4",
+  "baseVersion": "1.0.3",
+  "payload": "payload-1.0.4-split-screen.txt",
+  "payloadSha256": "a02a992de8f4c55b5b61610daf45b055af925fce745e591ae712eeea5646f7e1",
+  "requirements": {
+    "minimumWidthReduced": true,
+    "compactBreakpointReduced": true,
+    "allTabsAutoScroll": true,
+    "backupRestorePreservedByPatchingCurrentSource": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser"
+}
