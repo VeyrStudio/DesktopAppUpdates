@@ -1,0 +1,21 @@
+{
+  "version": "1.0.21",
+  "baseVersion": "1.0.20",
+  "payload": "payload-1.0.21-native-snap.txt",
+  "payloadSha256": "16172bd4424ebdcf7a3f725ee9525aa9e1c1abb17e7db58ababa91870da93967",
+  "requirements": {
+    "nativeSizableBorder": true,
+    "customHeaderHidden": true,
+    "nativeTitlebarColor": true,
+    "narrowMinimumWidth": true,
+    "tabsReclaimTitlebarSpace": true,
+    "tabsAnchorAllSides": true,
+    "allTabsAutoScroll": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "nativeSizableRuntimeTest": "passed",
+  "narrow420WidthTest": "passed",
+  "narrow560WidthTest": "passed",
+  "narrow640WidthTest": "passed"
+}
