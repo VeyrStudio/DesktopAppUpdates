@@ -122,7 +122,7 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile($patchedPath,[ref]$tokens,[ref]$errors)|Out-Null
           if($errors.Count -gt 0){throw 'Patched Library source does not parse.'}
 
-          $runtimePath=Join-Path $root 'runtime-test.ps1'
+          $runtimePath=Join-Path $app 'runtime-test.ps1'
           $runtime=$patched.Replace('[void]$form.ShowDialog()','# modal startup disabled for automated runtime test')
           $runtime += @'
 
