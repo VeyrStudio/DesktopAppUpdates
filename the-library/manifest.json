@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.20",
-  "payloadSha256": "f3f7e8e92da7893a7cc8e4f374e55045eb0dd58f487a4ac0c8a6583e1a51a83a",
+  "version": "1.0.21",
+  "payloadSha256": "16172bd4424ebdcf7a3f725ee9525aa9e1c1abb17e7db58ababa91870da93967",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f60681cb024c85333938a1665e0e2ee704cae8a5/the-library/payload-1.0.20-save-all-clear-all.txt",
-      "sha256": "f3f7e8e92da7893a7cc8e4f374e55045eb0dd58f487a4ac0c8a6583e1a51a83a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/bb789e54fd7bc7323f4afed23728d5e539927ab4/the-library/payload-1.0.21-native-snap.txt",
+      "sha256": "16172bd4424ebdcf7a3f725ee9525aa9e1c1abb17e7db58ababa91870da93967"
     }
   ],
-  "notes": "Adds SAVE ALL and CLEAR ALL for multi-cover Split Full Cover sessions. SAVE ALL saves every unsaved cover currently loaded, skips covers already saved individually so nothing is duplicated, and clears the whole multi-cover queue after all saves succeed. CLEAR ALL removes the entire current multi-cover queue without saving, with a confirmation prompt. The existing per-cover SAVE buttons remain. Windows validation passed for individual-save-then-Save-All without duplicates, automatic queue clearing after Save All, and Clear All discarding the queue without creating records."
+  "notes": "Replaces The Library's custom frameless window chrome with a native sizable Windows title bar so Windows Snap Assist and Snap Layouts work reliably alongside Edge and File Explorer. The custom fake title bar is hidden, the native caption is styled to match The Library, the content reclaims the old title-bar space, the minimum width is reduced to 360 px, the tabs anchor to all sides, and all main tabs retain scrolling at narrow widths. Windows validation passed at 420 px, 560 px, and 640 px widths."
 }
