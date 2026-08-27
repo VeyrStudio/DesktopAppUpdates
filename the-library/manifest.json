@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.6",
-  "payloadSha256": "f31e8743585c6d9b163d7e90fda27d6b0057068359f02096b61b3537047653d5",
+  "version": "1.0.7",
+  "payloadSha256": "4c07e1c72c24888d4bdee5456d5938277387cdd33b5bc98ca1d210ba3497478e",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/b705a94c635848534b765730115019087195cee6/the-library/payload-1.0.6-batch-split-wraps.txt",
-      "sha256": "f31e8743585c6d9b163d7e90fda27d6b0057068359f02096b61b3537047653d5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8506bf0dac162550d3f4617fd022320cef7fb3ed/the-library/payload-1.0.7-inline-batch-split.txt",
+      "sha256": "4c07e1c72c24888d4bdee5456d5938277387cdd33b5bc98ca1d210ba3497478e"
     }
   ],
-  "notes": "Batch Split Wraps for The Library. Adds BATCH SPLIT WRAPS to the Split tab. Select multiple full-wrap cover images in one session, then edit each cover independently with its own left and right spine edges. Guides can be adjusted by dragging them over the preview or by entering pixel values. Each cover keeps its own guide positions while moving through Previous/Next or the queue. Covers can be marked ready individually, skipped/unskipped, or removed from the queue. SAVE ALL READY exports Back.png, Spine.png, and Front.png into a separate folder for each finished cover. There is intentionally no Apply to All control. Existing Library data is not replaced. Windows PowerShell parsing, synthetic patching, payload validation, and all internal SHA-256 checks passed before publish."
+  "notes": "Inline batch-split fix for The Library. Removes the v1.0.6 separate-window batch workflow and replaces it with ADD MULTIPLE FULL WRAPS inside the existing Split tab. Each selected wrap gets its own full splitter block on the same tab with independent spine guides and its own Title/Book, Ship, Fandom, Extra Tags, and Cover Type fields. Each cover has SAVE THIS COVER TO LIBRARY, which splits that one wrap into Back Cover, Spine, and Front Cover and saves those pieces directly into The Library using the existing Library record/storage path. Covers can be saved one at a time in any order; there is no requirement to finish or export the whole batch first, no Downloads/folder-export step, and no Apply to All control. Windows PowerShell parsing, synthetic v1.0.6-to-v1.0.7 patching, payload validation, and all internal SHA-256 checks passed before publish."
 }
