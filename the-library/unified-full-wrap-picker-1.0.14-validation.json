@@ -1,0 +1,20 @@
+{
+  "version": "1.0.14",
+  "baseVersion": "1.0.13",
+  "payload": "payload-1.0.14-unified-full-wrap-picker.txt",
+  "payloadSha256": "b95f739d5219894933d69e958c73a9407821ccd786094a03f9ec5edb36e6632c",
+  "requirements": {
+    "multiselectOnRegularFlow": true,
+    "removesSeparateBatchButtons": true,
+    "findsRegularButton": true,
+    "preservesRegularButtonText": true,
+    "oneOrManySamePath": true,
+    "persistentPanelState": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "oneButtonUiTest": "passed",
+  "oneCoverRuntimeTest": "passed",
+  "fiveCoverRuntimeTest": "passed",
+  "eighteenPieceSaveTest": "passed"
+}
