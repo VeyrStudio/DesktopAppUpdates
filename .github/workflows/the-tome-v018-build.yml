@@ -79,8 +79,11 @@ jobs:
           Get-Content tools/the-tome-v016-library.css | Add-Content tome-build/styles.css -Encoding utf8
           python tools/the-tome-v016-library.py
 
-      - name: Apply v0.1.8 updater fix
-        run: python tools/the-tome-v018-updater.py
+      - name: Apply v0.1.7 updater fix
+        run: python tools/the-tome-v017-updater.py
+
+      - name: Apply v0.1.8 manual update button
+        run: python tools/the-tome-v018-manual-update.py
 
       - name: Validate source
         shell: pwsh
