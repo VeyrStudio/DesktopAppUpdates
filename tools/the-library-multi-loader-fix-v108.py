@@ -31,9 +31,11 @@ try {
     if(-not(Test-Path -LiteralPath $backupMain)){throw 'The updater backup is missing the previous Library app script.'}
     $text=[IO.File]::ReadAllText($backupMain,[Text.Encoding]::UTF8)
 
-    # Remove the old v1.0.6 launch button so users cannot enter the separate-window flow.
+    # Remove older batch implementations before installing the corrected inline version.
     $oldBlockPattern='(?s)# BATCH SPLIT WRAPS v1\.0\.6.*?(?=\r?\n\s*(?:\[void\]\s*)?\$form\.ShowDialog\(\))'
     $text=[Text.RegularExpressions.Regex]::Replace($text,$oldBlockPattern,'')
+    $oldInlinePattern='(?s)# INLINE BATCH SPLIT WRAPS v1\.0\.7.*?(?=\r?\n\s*(?:\[void\]\s*)?\$form\.ShowDialog\(\))'
+    $text=[Text.RegularExpressions.Regex]::Replace($text,$oldInlinePattern,'')
 
     $marker='# INLINE BATCH SPLIT WRAPS v1.0.8'
     if(-not $text.Contains($marker)){
