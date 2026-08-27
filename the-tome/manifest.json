@@ -1,7 +1,7 @@
 {
-  "version": "0.1.7",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.7/The_Tome_Setup_0.1.7.exe",
-  "sha256": "099ee66ea43b860afc9763abceefe413e117a3958b877e32eabc5b9aeea07028",
-  "notes": "Updater repair: hidden single-instance update helper; no cmd/find/tasklist terminal windows.",
-  "published": "2026-08-27T10:39:53.8649043Z"
+  "version": "0.1.8",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.8/The_Tome_Setup_0.1.8.exe",
+  "sha256": "5102fba3140f05c06e13fe6761a8ca03a566c9b8152d6aa2350db724401009fd",
+  "notes": "Adds a manual Update Now button alongside automatic updates; hidden single-instance updater retained.",
+  "published": "2026-08-27T10:49:23.3005020Z"
 }
