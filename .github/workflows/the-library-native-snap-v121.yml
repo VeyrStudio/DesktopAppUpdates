@@ -44,7 +44,7 @@ jobs:
           Add-Type -AssemblyName System.Windows.Forms
           Add-Type -AssemblyName System.Drawing
 
-          Add-Type -TypeDefinition @"
+          Add-Type -ReferencedAssemblies System.Windows.Forms -TypeDefinition @"
           using System.Windows.Forms;
           public class TheLibraryForm : Form {}
           "@
