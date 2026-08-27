@@ -1,0 +1,437 @@
+name: The Library Scroll Splitter Zoom v1.0.18
+on:
+  push:
+    paths:
+      - 'tools/the-library-scroll-splitter-zoom-v118.py'
+      - '.github/workflows/the-library-scroll-splitter-zoom-v118.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.18 payload
+        shell: pwsh
+        run: python tools/the-library-scroll-splitter-zoom-v118.py
+
+      - name: Parse updater and drop-in
+        shell: powershell
+        run: |
+          foreach($path in @(
+            '.library-v118-validation/CoverVault.ps1',
+            '.library-v118-validation/BatchSplitDropIn.ps1'
+          )){
+            $tokens=$null
+            $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error ($path+' line '+$_.Extent.StartLineNumber+': '+$_.Message)}
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Test installer patch
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v118-install'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          @'
+          function Register-CoverDropTarget {
+              param($Control,$Kind)
+              if ($valid.Count -eq 1) {
+                  # One dropped wrap keeps the normal single-cover splitter.
+                  Set-WrapDroppedFile $valid[0]
+              }
+              elseif ($valid.Count -gt 1) {
+                  Show-LibraryUnifiedWrapPaths -Paths $valid
+              }
+          }
+          function Set-WrapDroppedFile([string]$Path){}
+          function Initialize-LibraryBatchSplitDropIn{}
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+          '{"version":"1.0.17"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+
+          Copy-Item '.library-v118-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+          Copy-Item '.library-v118-validation/BatchSplitDropIn.ps1' (Join-Path $app 'BatchSplitDropIn.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Installer patch failed.'}
+
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.18'){throw 'AppVersion did not become 1.0.18.'}
+
+          $patched=Get-Content -LiteralPath (Join-Path $app 'CoverVault.ps1') -Raw
+          if(-not $patched.Contains('Close-LibraryMultiWrapScroll')){throw 'Single-drop cleanup hook was not added.'}
+
+      - name: Exercise scrolling editor zoom and drag modes
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          $root=Join-Path $PWD '.library-v118-runtime'
+          $filesRoot=Join-Path $root 'Files'
+          $sourceRoot=Join-Path $root 'Source'
+          New-Item -ItemType Directory -Force -Path $root,$filesRoot,$sourceRoot|Out-Null
+
+          $form=New-Object Windows.Forms.Form
+          $form.Size=New-Object Drawing.Size(1280,760)
+
+          $tabs=New-Object Windows.Forms.TabControl
+          $tabs.Dock='Fill'
+          $form.Controls.Add($tabs)
+
+          $tabSplit=New-Object Windows.Forms.TabPage
+          $tabSplit.Text='Split Full Cover'
+          $tabSplit.BackColor=[Drawing.Color]::FromArgb(46,13,70)
+          $tabSplit.AutoScroll=$true
+          $tabSplit.AutoScrollMinSize=New-Object Drawing.Size(1180,1460)
+          $tabs.TabPages.Add($tabSplit)
+
+          $panelWrapDrop=New-Object Windows.Forms.Panel
+          $panelWrapDrop.Location=New-Object Drawing.Point(26,112)
+          $panelWrapDrop.Size=New-Object Drawing.Size(1135,72)
+          $panelWrapDrop.BackColor=[Drawing.Color]::FromArgb(64,18,96)
+          $tabSplit.Controls.Add($panelWrapDrop)
+
+          $lblWrapDrop=New-Object Windows.Forms.Label
+          $lblWrapDrop.Text='DROP A FULL COVER IMAGE HERE'
+          $lblWrapDrop.Location=New-Object Drawing.Point(18,12)
+          $lblWrapDrop.Size=New-Object Drawing.Size(360,24)
+          $panelWrapDrop.Controls.Add($lblWrapDrop)
+
+          $lblWrapDrop2=New-Object Windows.Forms.Label
+          $lblWrapDrop2.Text='old text'
+          $lblWrapDrop2.Location=New-Object Drawing.Point(18,38)
+          $lblWrapDrop2.Size=New-Object Drawing.Size(530,22)
+          $panelWrapDrop.Controls.Add($lblWrapDrop2)
+
+          $btnChooseWrap=New-Object Windows.Forms.Button
+          $btnChooseWrap.Text='UPLOAD FULL COVER'
+          $btnChooseWrap.Location=New-Object Drawing.Point(900,17)
+          $btnChooseWrap.Size=New-Object Drawing.Size(200,38)
+          $panelWrapDrop.Controls.Add($btnChooseWrap)
+
+          $oldMulti=New-Object Windows.Forms.Button
+          $oldMulti.Text='ADD MULTIPLE FULL WRAPS'
+          $oldMulti.Location=New-Object Drawing.Point(26,20)
+          $oldMulti.Size=New-Object Drawing.Size(210,36)
+          $tabSplit.Controls.Add($oldMulti)
+
+          $lblWrapFile=New-Object Windows.Forms.Label
+          $lblWrapFile.Text='No full wrap selected'
+          $lblWrapFile.Location=New-Object Drawing.Point(26,194)
+          $lblWrapFile.Size=New-Object Drawing.Size(900,26)
+          $tabSplit.Controls.Add($lblWrapFile)
+
+          $pbWrapPreview=New-Object Windows.Forms.PictureBox
+          $pbWrapPreview.Location=New-Object Drawing.Point(26,226)
+          $pbWrapPreview.Size=New-Object Drawing.Size(1135,370)
+          $pbWrapPreview.BackColor=[Drawing.Color]::FromArgb(38,14,56)
+          $pbWrapPreview.BorderStyle='FixedSingle'
+          $pbWrapPreview.SizeMode='Zoom'
+          $tabSplit.Controls.Add($pbWrapPreview)
+
+          $lblWrapDims=New-Object Windows.Forms.Label
+          $lblWrapDims.Location=New-Object Drawing.Point(26,606)
+          $lblWrapDims.Size=New-Object Drawing.Size(300,22)
+          $tabSplit.Controls.Add($lblWrapDims)
+
+          $numSplitLeft=New-Object Windows.Forms.NumericUpDown
+          $numSplitLeft.Location=New-Object Drawing.Point(195,640)
+          $numSplitLeft.Size=New-Object Drawing.Size(135,27)
+          $numSplitLeft.Minimum=1
+          $numSplitLeft.Maximum=100000
+          $tabSplit.Controls.Add($numSplitLeft)
+
+          $numSplitRight=New-Object Windows.Forms.NumericUpDown
+          $numSplitRight.Location=New-Object Drawing.Point(550,640)
+          $numSplitRight.Size=New-Object Drawing.Size(135,27)
+          $numSplitRight.Minimum=2
+          $numSplitRight.Maximum=100000
+          $tabSplit.Controls.Add($numSplitRight)
+
+          $pbBackPreview=New-Object Windows.Forms.PictureBox
+          $pbBackPreview.Location=New-Object Drawing.Point(26,726)
+          $pbBackPreview.Size=New-Object Drawing.Size(350,230)
+          $tabSplit.Controls.Add($pbBackPreview)
+
+          $pbSpinePreview=New-Object Windows.Forms.PictureBox
+          $pbSpinePreview.Location=New-Object Drawing.Point(414,726)
+          $pbSpinePreview.Size=New-Object Drawing.Size(210,230)
+          $tabSplit.Controls.Add($pbSpinePreview)
+
+          $pbFrontPreview=New-Object Windows.Forms.PictureBox
+          $pbFrontPreview.Location=New-Object Drawing.Point(676,726)
+          $pbFrontPreview.Size=New-Object Drawing.Size(350,230)
+          $tabSplit.Controls.Add($pbFrontPreview)
+
+          $lblBackDims=New-Object Windows.Forms.Label
+          $lblSpineDims=New-Object Windows.Forms.Label
+          $lblFrontDims=New-Object Windows.Forms.Label
+
+          $metaTitle=New-Object Windows.Forms.Label
+          $metaTitle.Text='Tags for the wrap + all 3 pieces'
+          $metaTitle.Location=New-Object Drawing.Point(26,1010)
+          $metaTitle.Size=New-Object Drawing.Size(500,28)
+          $tabSplit.Controls.Add($metaTitle)
+
+          $cmbWrapCoverType=New-Object Windows.Forms.ComboBox
+          $cmbWrapCoverType.Location=New-Object Drawing.Point(160,1051)
+          $cmbWrapCoverType.Size=New-Object Drawing.Size(220,27)
+          [void]$cmbWrapCoverType.Items.Add('Paperback')
+          [void]$cmbWrapCoverType.Items.Add('Hardcover')
+          $cmbWrapCoverType.SelectedIndex=0
+          $tabSplit.Controls.Add($cmbWrapCoverType)
+
+          $txtWrapProject=New-Object Windows.Forms.TextBox
+          $txtWrapProject.Location=New-Object Drawing.Point(160,1096)
+          $tabSplit.Controls.Add($txtWrapProject)
+
+          $txtWrapShip=New-Object Windows.Forms.TextBox
+          $txtWrapShip.Location=New-Object Drawing.Point(705,1096)
+          $tabSplit.Controls.Add($txtWrapShip)
+
+          $txtWrapFandom=New-Object Windows.Forms.TextBox
+          $txtWrapFandom.Location=New-Object Drawing.Point(160,1141)
+          $tabSplit.Controls.Add($txtWrapFandom)
+
+          $txtWrapTags=New-Object Windows.Forms.TextBox
+          $txtWrapTags.Location=New-Object Drawing.Point(705,1141)
+          $tabSplit.Controls.Add($txtWrapTags)
+
+          $chkMoveWrap=New-Object Windows.Forms.CheckBox
+          $chkMoveWrap.Text='Remove outside full-wrap file after safe import'
+          $chkMoveWrap.Location=New-Object Drawing.Point(160,1188)
+          $chkMoveWrap.Checked=$false
+          $tabSplit.Controls.Add($chkMoveWrap)
+
+          $wrapStorageNote=New-Object Windows.Forms.Label
+          $wrapStorageNote.Text='The Library keeps the untouched full wrap in its private storage.'
+          $wrapStorageNote.Location=New-Object Drawing.Point(160,1220)
+          $wrapStorageNote.Size=New-Object Drawing.Size(820,44)
+          $tabSplit.Controls.Add($wrapStorageNote)
+
+          $btnSaveSplit=New-Object Windows.Forms.Button
+          $btnSaveSplit.Text='Save Wrap + 3 Pieces'
+          $btnSaveSplit.Location=New-Object Drawing.Point(160,1277)
+          $btnSaveSplit.Size=New-Object Drawing.Size(225,44)
+          $tabSplit.Controls.Add($btnSaveSplit)
+
+          $script:FilesRoot=$filesRoot
+          $script:WrapBitmap=$null
+          $script:SelectedWrapFile=$null
+          $script:SplitLeft=0
+          $script:SplitRight=0
+          $script:PendingCoverType='Unsorted'
+          $script:Records=@()
+          $script:Errors=@()
+          $script:Infos=@()
+
+          function Show-Info([string]$Message){$script:Infos += $Message}
+          function Show-Error([string]$Message){$script:Errors += $Message}
+          function Refresh-HierarchyTree{}
+          function Refresh-LibraryGrid{}
+
+          function Set-PictureImage($PictureBox,$Image){
+              if($null -ne $PictureBox.Image){try{$PictureBox.Image.Dispose()}catch{}}
+              $PictureBox.Image=$Image
+          }
+
+          function Load-ImageUnlocked([string]$Path){
+              $bytes=[IO.File]::ReadAllBytes($Path)
+              $stream=New-Object IO.MemoryStream(,$bytes)
+              try{
+                  $img=[Drawing.Image]::FromStream($stream,$true,$true)
+                  try{return New-Object Drawing.Bitmap($img)}finally{$img.Dispose()}
+              }finally{$stream.Dispose()}
+          }
+
+          function Get-AutoSplit([Drawing.Bitmap]$Bitmap){
+              $mid=[int][math]::Round($Bitmap.Width/2.0)
+              $half=[int][math]::Max(2,[math]::Round($Bitmap.Width*0.04))
+              return @($mid-$half,$mid+$half)
+          }
+
+          function Update-SplitPreview{
+              if($null -eq $script:WrapBitmap){return}
+              $script:SplitLeft=[int]$numSplitLeft.Value
+              $script:SplitRight=[int]$numSplitRight.Value
+              $pbWrapPreview.Invalidate()
+          }
+
+          function Set-WrapDroppedFile([string]$Path){
+              if($null -ne $script:WrapBitmap){try{$script:WrapBitmap.Dispose()}catch{}}
+              $script:SelectedWrapFile=$Path
+              $script:WrapBitmap=Load-ImageUnlocked $Path
+              $lblWrapFile.Text=[IO.Path]::GetFileName($Path)
+              $w=$script:WrapBitmap.Width
+              $numSplitLeft.Minimum=1
+              $numSplitLeft.Maximum=[math]::Max(2,$w-2)
+              $numSplitRight.Minimum=2
+              $numSplitRight.Maximum=[math]::Max(3,$w-1)
+              Set-PictureImage $pbWrapPreview (New-Object Drawing.Bitmap($script:WrapBitmap))
+              $pair=Get-AutoSplit $script:WrapBitmap
+              $numSplitLeft.Value=[decimal][int]$pair[0]
+              $numSplitRight.Value=[decimal][int]$pair[1]
+              Update-SplitPreview
+          }
+
+          function Make-UniqueStoredName([string]$Extension){return ([guid]::NewGuid().ToString('N')+$Extension)}
+          function Make-SplitName([string]$Base,[string]$Piece){return ($Base+' - '+$Piece+'.png')}
+
+          function Save-CropPng([Drawing.Bitmap]$Bitmap,[int]$X,[int]$Width,[string]$Dest){
+              $rect=New-Object Drawing.Rectangle($X,0,$Width,$Bitmap.Height)
+              $crop=$Bitmap.Clone($rect,[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try{$crop.Save($Dest,[Drawing.Imaging.ImageFormat]::Png)}finally{$crop.Dispose()}
+          }
+
+          function Add-LibraryRecord{
+              param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags)
+              $script:Records += [pscustomobject]@{
+                  OriginalName=$OriginalName
+                  StoredName=$StoredName
+                  Position=$Position
+                  Project=$Project
+                  Ship=$Ship
+                  Fandom=$Fandom
+                  Tags=$Tags
+              }
+          }
+
+          $numSplitLeft.Add_ValueChanged({if($null -ne $script:WrapBitmap){Update-SplitPreview}})
+          $numSplitRight.Add_ValueChanged({if($null -ne $script:WrapBitmap){Update-SplitPreview}})
+          $pbWrapPreview.Add_Paint({param($sender,$e) Draw-SplitGuides $sender $e})
+
+          . (Resolve-Path '.library-v118-validation/BatchSplitDropIn.ps1')
+          Initialize-LibraryBatchSplitDropIn
+
+          if($btnChooseWrap.Visible){throw 'Old file-picker button is still visible.'}
+          if($btnSaveSplit.Text -ne 'SAVE BACK + SPINE + FRONT'){throw ('Save wording is wrong: '+$btnSaveSplit.Text)}
+          if($metaTitle.Text -ne 'Tags for the 3 saved pieces'){throw 'Metadata wording was not fixed.'}
+          if($wrapStorageNote.Text -notlike 'The full wrap is used only as the source image*'){throw 'Storage wording was not fixed.'}
+          if(@(Get-LibraryAllChildControls $tabSplit|Where-Object{$_ -is [Windows.Forms.Button] -and $_.Text -eq 'ADD MULTIPLE FULL WRAPS'}).Count -ne 0){
+              throw 'Old Add Multiple Full Wraps button still exists.'
+          }
+
+          $paths=@()
+          for($i=1;$i -le 4;$i++){
+              $path=Join-Path $sourceRoot ("cover-$i.png")
+              $bmp=New-Object Drawing.Bitmap((1400+$i*80),(900+$i*30),[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try{
+                  $g=[Drawing.Graphics]::FromImage($bmp)
+                  try{$g.Clear([Drawing.Color]::FromArgb(255,45+$i*25,30,125))}finally{$g.Dispose()}
+                  $bmp.Save($path,[Drawing.Imaging.ImageFormat]::Png)
+              }finally{$bmp.Dispose()}
+              $paths += $path
+          }
+
+          Show-LibraryUnifiedWrapPaths -Paths $paths
+
+          if(@($script:LibraryMultiScrollStates).Count -ne 4){throw 'Four dropped covers did not create four scroll editors.'}
+          if($null -eq $script:LibraryMultiScrollHost){throw 'Scroll host was not created.'}
+          if($script:LibraryMultiScrollHost.Height -lt 3200){throw ('Scroll host is not tall enough for vertical scrolling: '+$script:LibraryMultiScrollHost.Height)}
+          if($tabSplit.AutoScrollMinSize.Height -le 3200){throw 'Tab did not become a long scrolling page.'}
+          if(@(Get-LibraryAllChildControls $tabSplit|Where-Object{$_ -is [Windows.Forms.Button] -and $_.Text -in @('NEXT','PREVIOUS')}).Count -ne 0){
+              throw 'Next/Previous queue buttons still exist.'
+          }
+
+          $first=@($script:LibraryMultiScrollStates)[0]
+          $fitWidth=$first.Picture.Width
+          Set-LibraryScrollZoom $first 200
+          if($first.Picture.Width -le $fitWidth){throw '200% zoom did not enlarge the cover.'}
+          Set-LibraryScrollZoom $first 999
+          if($first.ZoomPercent -ne 400){throw 'Zoom did not clamp at 400%.'}
+          Set-LibraryScrollZoom $first 1
+          if($first.ZoomPercent -ne 50){throw 'Zoom did not clamp at 50%.'}
+          Set-LibraryScrollZoom $first 100
+
+          Set-LibraryScrollMode $first 'Drag'
+          if($first.LeftNum.Enabled -or $first.RightNum.Enabled){throw 'Numeric controls stayed enabled in Drag Lines mode.'}
+          $oldLeft=[int]$first.LeftNum.Value
+          Set-LibraryScrollGuideAt $first 'Left' ([int]($first.Picture.ClientSize.Width*0.32))
+          if([int]$first.LeftNum.Value -eq $oldLeft){throw 'Dragging-guide calculation did not move the left guide.'}
+          Set-LibraryScrollMode $first 'Buttons'
+          if(-not $first.LeftNum.Enabled -or -not $first.RightNum.Enabled){throw 'Numeric controls did not return in Buttons mode.'}
+
+          $form.Show()
+          for($i=0;$i -lt 10;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+
+          foreach($st in @($script:LibraryMultiScrollStates)){Save-LibraryScrollCard $st}
+          if($script:Errors.Count -ne 0){throw ('Multi scroll errors: '+($script:Errors -join ' | '))}
+          if($script:Records.Count -ne 12){throw ("Expected 12 records from four covers, got "+$script:Records.Count)}
+          if((Get-ChildItem -LiteralPath $filesRoot -File).Count -ne 12){throw 'Expected 12 physical split images.'}
+
+          Close-LibraryMultiWrapScroll $true
+          if($null -ne $script:LibraryMultiScrollHost){throw 'Scroll host did not close.'}
+          if(-not $pbWrapPreview.Visible){throw 'Regular splitter did not come back after closing multi mode.'}
+
+          Set-WrapDroppedFile $paths[0]
+          for($i=0;$i -lt 4;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+          $regularFit=$pbWrapPreview.Width
+          Set-LibraryRegularZoom 200
+          if($pbWrapPreview.Width -le $regularFit){throw 'Regular splitter zoom did not enlarge the image.'}
+          Set-LibraryRegularSplitMode 'Drag'
+          if($numSplitLeft.Enabled -or $numSplitRight.Enabled){throw 'Regular splitter did not enter Drag Lines mode.'}
+          $regularOld=[int]$numSplitLeft.Value
+          Set-LibraryRegularGuideAt 'Left' ([int]($pbWrapPreview.ClientSize.Width*0.30))
+          if([int]$numSplitLeft.Value -eq $regularOld){throw 'Regular drag-line calculation did not move the guide.'}
+          Set-LibraryRegularSplitMode 'Buttons'
+          Set-LibraryRegularZoom 100
+
+          Save-WrapAndPieces
+          if($script:Records.Count -ne 15){throw ("Expected 15 total records after single save, got "+$script:Records.Count)}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Back Cover'})).Count -ne 5){throw 'Back Cover count is wrong.'}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Spine'})).Count -ne 5){throw 'Spine count is wrong.'}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Front Cover'})).Count -ne 5){throw 'Front Cover count is wrong.'}
+          if((@($script:Records|Where-Object{$_.Position -eq 'Full Wrap'})).Count -ne 0){throw 'A Full Wrap record was saved.'}
+
+          $form.Close()
+
+      - name: Validate payload hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/scroll-splitter-zoom-1.0.18-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.18'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit payload
+        shell: pwsh
+        run: |
+          $p='the-library/scroll-splitter-zoom-1.0.18-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName verticalScrollFourCoverTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName zoom50To400Test -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName dragLinesModeTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName regularSplitterZoomTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName fifteenPieceSaveTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.18-scroll-splitter-zoom.txt' 'the-library/scroll-splitter-zoom-1.0.18-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.18 scroll splitter and zoom'
+            git pull --rebase origin main
+            git push origin main
+          }
