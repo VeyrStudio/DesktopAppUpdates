@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.7",
-  "payloadSha256": "4c07e1c72c24888d4bdee5456d5938277387cdd33b5bc98ca1d210ba3497478e",
+  "version": "1.0.8",
+  "payloadSha256": "0564d871c0da1093b2443a24a3c4d64d461523a86400e6f68ec0ad882589f419",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/8506bf0dac162550d3f4617fd022320cef7fb3ed/the-library/payload-1.0.7-inline-batch-split.txt",
-      "sha256": "4c07e1c72c24888d4bdee5456d5938277387cdd33b5bc98ca1d210ba3497478e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/76474216ffb9d909f807d83dc2c10abd7b8f851a/the-library/payload-1.0.8-multi-loader-fix.txt",
+      "sha256": "0564d871c0da1093b2443a24a3c4d64d461523a86400e6f68ec0ad882589f419"
     }
   ],
-  "notes": "Inline batch-split fix for The Library. Removes the v1.0.6 separate-window batch workflow and replaces it with ADD MULTIPLE FULL WRAPS inside the existing Split tab. Each selected wrap gets its own full splitter block on the same tab with independent spine guides and its own Title/Book, Ship, Fandom, Extra Tags, and Cover Type fields. Each cover has SAVE THIS COVER TO LIBRARY, which splits that one wrap into Back Cover, Spine, and Front Cover and saves those pieces directly into The Library using the existing Library record/storage path. Covers can be saved one at a time in any order; there is no requirement to finish or export the whole batch first, no Downloads/folder-export step, and no Apply to All control. Windows PowerShell parsing, synthetic v1.0.6-to-v1.0.7 patching, payload validation, and all internal SHA-256 checks passed before publish."
+  "notes": "Fixes multi-cover loading in The Library. The multiple-wrap splitter now uses the same existing Load-ImageUnlocked path as the working single-cover splitter instead of a separate image loader. It also replaces the previous v1.0.7 inline batch code cleanly so only one batch system remains. If any selected file still fails to open, the app now reports the specific filename/error instead of silently collapsing everything into a generic message. The batch editor remains inside the Split tab, keeps per-cover Title/Book, Ship, Fandom, Extra Tags, Cover Type and spine guides, and each cover can still be saved individually to The Library. Windows PowerShell parsing, synthetic v1.0.7-to-v1.0.8 patching, payload validation, and all internal SHA-256 checks passed before publish."
 }
