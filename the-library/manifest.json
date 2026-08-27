@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.10",
-  "payloadSha256": "cdca6eaccc31e8d770efc8cb64b2c572a08b13c8d22395467305086a2548328b",
+  "version": "1.0.11",
+  "payloadSha256": "ccc1fc9737519b810f97eeec83cd4d6cbcad0ba6b9990f3beae79591f82ce0b1",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/0bd79705dd3a83835a94363723b3fea5bc3c73f6/the-library/payload-1.0.10-batch-image-loader-safe.txt",
-      "sha256": "cdca6eaccc31e8d770efc8cb64b2c572a08b13c8d22395467305086a2548328b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/a8913dc9a52917c2b6bb4366ef8e9d9a76f380d3/the-library/payload-1.0.11-batch-panel-state-safe.txt",
+      "sha256": "ccc1fc9737519b810f97eeec83cd4d6cbcad0ba6b9990f3beae79591f82ce0b1"
     }
   ],
-  "notes": "Fixes the Batch Split multi-cover image loader that could reject every selected PNG with a null-valued expression error. The multi-wrap flow now uses a dedicated byte-backed safe image loader with guarded stream/image/graphics cleanup, while the working single-wrap loader is left unchanged. The existing inline multi-wrap editor and the v1.0.9 temporary full-wrap rule are preserved. Windows PowerShell parsing, synthetic current-source patching, a valid PNG runtime load test, payload validation, and all internal SHA-256 checks passed before publish."
+  "notes": "Fixes the remaining null-valued-expression failure in multi-wrap Batch Split. The problem was in the per-cover WinForms event handlers: they depended on local variables that could disappear after each cover panel was created, so paint/drag/save events could later see null state. Each cover panel now stores its own persistent state directly on its controls, and all paint, guide-drag, save, and remove handlers read from that persistent state instead. The v1.0.10 safe image loader and v1.0.9 temporary full-wrap behavior are preserved. Windows PowerShell parsing, synthetic current-source patching, full panel creation, visible-form paint-event processing, and payload/hash validation passed before publish."
 }
