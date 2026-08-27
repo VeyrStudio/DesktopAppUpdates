@@ -1,0 +1,148 @@
+name: The Library Batch Image Loader Safe v1.0.10
+on:
+  push:
+    paths:
+      - 'tools/the-library-batch-image-loader-safe-v110.py'
+      - '.github/workflows/the-library-batch-image-loader-safe-v110.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build exact v1.0.10 payload
+        shell: pwsh
+        run: python tools/the-library-batch-image-loader-safe-v110.py
+
+      - name: Parse updater with Windows PowerShell
+        shell: powershell
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-v110-validation/CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Updater PowerShell parse failed.'
+          }
+
+      - name: Patch, parse, and exercise synthetic current Library
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Add-Type -AssemblyName System.Drawing
+          $root=Join-Path $PWD '.library-v110-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          # INLINE BATCH SPLIT WRAPS v1.0.8
+          function Load-ImageUnlocked([string]$Path){ throw 'old loader should not be called by batch split' }
+          function Add-InlineBatchSplitter([string]$path,[int]$ordinal,[int]$total){
+              $bitmap=$null
+              try{
+                  $bitmap=Load-ImageUnlocked $path
+              }catch{
+                  throw ("Could not open image: " + [IO.Path]::GetFileName($path) + " - " + $_.Exception.Message)
+              }
+              if($null -eq $bitmap){throw ("Could not open image: " + [IO.Path]::GetFileName($path))}
+              return $bitmap
+          }
+
+          # FULL WRAPS ARE TEMPORARY SOURCES v1.0.9
+          function Add-LibraryRecordCore {}
+          function Add-LibraryRecord {}
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.9"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v110-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Updater patch returned failure.'}
+
+          $patchedPath=Join-Path $app 'CoverVault.ps1'
+          $patched=Get-Content -LiteralPath $patchedPath -Raw
+          foreach($marker in @(
+            '# BATCH IMAGE LOADER SAFE FIX v1.0.10',
+            'function Load-InlineBatchImageSafe',
+            '$bitmap=Load-InlineBatchImageSafe $path',
+            '# INLINE BATCH SPLIT WRAPS v1.0.8',
+            '# FULL WRAPS ARE TEMPORARY SOURCES v1.0.9'
+          )){
+            if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
+          }
+          if($patched.Contains('$bitmap=Load-ImageUnlocked $path')){throw 'The broken batch loader call is still present.'}
+
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($patchedPath,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Patched Library source does not parse.'
+          }
+
+          . $patchedPath
+
+          $testPng=Join-Path $root 'loader-test.png'
+          $source=New-Object Drawing.Bitmap(31,19,[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+          try{
+              $g=[Drawing.Graphics]::FromImage($source)
+              try{
+                  $g.Clear([Drawing.Color]::FromArgb(255,70,20,140))
+              }finally{$g.Dispose()}
+              $source.Save($testPng,[Drawing.Imaging.ImageFormat]::Png)
+          }finally{$source.Dispose()}
+
+          $loaded=Load-InlineBatchImageSafe $testPng
+          if($null -eq $loaded){throw 'Safe loader returned null for a valid PNG.'}
+          try{
+              if($loaded.Width -ne 31 -or $loaded.Height -ne 19){throw 'Safe loader changed valid PNG dimensions.'}
+          }finally{$loaded.Dispose()}
+
+          $batchLoaded=Add-InlineBatchSplitter $testPng 1 1
+          if($null -eq $batchLoaded){throw 'Batch splitter did not receive an image from the safe loader.'}
+          try{
+              if($batchLoaded.Width -ne 31 -or $batchLoaded.Height -ne 19){throw 'Batch splitter received incorrect image dimensions.'}
+          }finally{$batchLoaded.Dispose()}
+
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.10'){throw 'Patched AppVersion is not 1.0.10.'}
+
+      - name: Revalidate payload and hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/batch-image-loader-safe-1.0.10-validation.json').read_text())
+          b=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='1.0.10'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit exact payload
+        shell: pwsh
+        run: |
+          $p='the-library/batch-image-loader-safe-1.0.10-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|Add-Member -NotePropertyName syntheticPatchTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName validPngRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.10-batch-image-loader-safe.txt' 'the-library/batch-image-loader-safe-1.0.10-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.10 batch image-loader repair'
+            git pull --rebase origin main
+            git push origin main
+          }
