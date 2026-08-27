@@ -961,11 +961,11 @@ try{
     if($singleCall -ge 0){
         $before=$text.Substring([math]::Max(0,$singleCall-350),[math]::Min(350,$singleCall))
         if($before.Contains('if ($valid.Count -eq 1)') -and -not $before.Contains('Close-LibraryMultiWrapScroll')){
-            $insert=@'
-if (Get-Command Close-LibraryMultiWrapScroll -ErrorAction SilentlyContinue) {
-                    Close-LibraryMultiWrapScroll $true
-                }
-                '@
+            $nl=[Environment]::NewLine
+            $insert='if (Get-Command Close-LibraryMultiWrapScroll -ErrorAction SilentlyContinue) {'+$nl+
+                    '                    Close-LibraryMultiWrapScroll $true'+$nl+
+                    '                }'+$nl+
+                    '                '
             $text=$text.Substring(0,$singleCall)+$insert+$text.Substring($singleCall)
         }
     }
