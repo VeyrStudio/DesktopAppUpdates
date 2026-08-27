@@ -1,0 +1,18 @@
+{
+  "version": "1.0.3",
+  "baseVersion": "1.0.2",
+  "payload": "payload-1.0.3-portable-backup.txt",
+  "payloadSha256": "9cb0eb12aa27250739f3376b79a47ef094a8ea27a37a6f9d451eef1e0ae075fd",
+  "requirements": {
+    "portableBackupMarker": true,
+    "backsUpEntireDataFolder": true,
+    "backupManifestValidation": true,
+    "restoreCreatesRecoveryBackup": true,
+    "restoreWaitsForAppExit": true,
+    "restoreRelaunchesApp": true,
+    "rollbackPreserved": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed"
+}
