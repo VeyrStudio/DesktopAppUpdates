@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.18",
-  "payloadSha256": "d763cee2c7bd300816b10811b668ac7961fead6e218c2e6cdff407de98d2dae8",
+  "version": "1.0.19",
+  "payloadSha256": "4e5b750945fabe27e828a31fc0400e31417db9ccfc5bb9259283ed90599bb8e0",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/ca8893af41d633e0816835ac4df2cc31cb444653/the-library/payload-1.0.18-scroll-splitter-zoom.txt",
-      "sha256": "d763cee2c7bd300816b10811b668ac7961fead6e218c2e6cdff407de98d2dae8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/03c5cb372e61f4209f3e1d86dd925378fdb2900d/the-library/payload-1.0.19-simple-save-label.txt",
+      "sha256": "4e5b750945fabe27e828a31fc0400e31417db9ccfc5bb9259283ed90599bb8e0"
     }
   ],
-  "notes": "Reworks Split Full Cover around the drag-and-drop workflow. Multiple dropped wraps now appear as vertically stacked cover editors on one long scrolling page instead of a Previous/Next queue. Removes the leftover Add Multiple Full Wraps button, corrects save/storage wording so the full wrap is clearly only a temporary source and the saved items are Back Cover, Spine, and Front Cover, adds 50–400% zoom with +/-, Fit, Ctrl+mouse-wheel, and scroll/pan, and adds a mode toggle between numeric/button guide adjustment and direct drag-the-split-lines editing. The same zoom and drag-lines controls are also available for a single dropped wrap. Windows validation passed for scrolling multi-cover editors, zoom limits, drag-line mode, regular single-cover zoom, and saving all expected split pieces."
+  "notes": "Simplifies the Split Full Cover save button label to just SAVE. This applies to both the regular single-wrap splitter and each multi-cover scroll editor. No saving behavior changes."
 }
