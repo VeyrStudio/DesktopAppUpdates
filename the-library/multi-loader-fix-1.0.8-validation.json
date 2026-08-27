@@ -1,0 +1,26 @@
+{
+  "version": "1.0.8",
+  "baseVersion": "1.0.7",
+  "payload": "payload-1.0.8-multi-loader-fix.txt",
+  "payloadSha256": "0564d871c0da1093b2443a24a3c4d64d461523a86400e6f68ec0ad882589f419",
+  "requirements": {
+    "removesSeparateWindowFlow": true,
+    "sameSplitTab": true,
+    "multipleWrapSelection": true,
+    "usesExistingImageLoader": true,
+    "showsPerFileLoadErrors": true,
+    "perCoverBookField": true,
+    "perCoverShipField": true,
+    "perCoverFandomField": true,
+    "perCoverTagsField": true,
+    "perCoverTypeField": true,
+    "perCoverSave": true,
+    "savesToLibrary": true,
+    "threePartLibrarySave": true,
+    "noFolderExport": true,
+    "noApplyToAll": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed"
+}
