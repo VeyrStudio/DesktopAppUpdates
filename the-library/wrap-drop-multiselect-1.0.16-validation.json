@@ -1,0 +1,16 @@
+{
+  "version": "1.0.16",
+  "baseVersion": "1.0.15",
+  "payload": "payload-1.0.16-wrap-drop-multiselect.txt",
+  "payloadSha256": "5984d9053c2a57a4901ef409d9d1e6d28de8a354da399e910dd529303b675e81",
+  "requirements": {
+    "targetsActualDropHandler": true,
+    "removesFilesZeroOnlyBehavior": true,
+    "routesMultipleToBatch": true,
+    "keepsSingleDrop": true,
+    "filtersImageTypes": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "actualDropHandlerPatchTest": "passed"
+}
