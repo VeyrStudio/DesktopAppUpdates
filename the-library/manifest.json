@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.4",
-  "payloadSha256": "a02a992de8f4c55b5b61610daf45b055af925fce745e591ae712eeea5646f7e1",
+  "version": "1.0.5",
+  "payloadSha256": "faf5901f7bec42cbb3b70842cf08d37a703b777a5c8a73c06de466542bbfb5c3",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/74f3574e49eab40be11f08c039ab8910ee5e728d/the-library/payload-1.0.4-split-screen.txt",
-      "sha256": "a02a992de8f4c55b5b61610daf45b055af925fce745e591ae712eeea5646f7e1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f0b1cb3b131c44b43b367d9f819dee6ec19148c3/the-library/payload-1.0.5-batch-import.txt",
+      "sha256": "faf5901f7bec42cbb3b70842cf08d37a703b777a5c8a73c06de466542bbfb5c3"
     }
   ],
-  "notes": "Split-screen hardening for The Library. Reduces the minimum supported window size from 520x420 to 420x360, switches to the compact layout sooner, and keeps all Library work tabs scrollable while resized. Portable Backup/Restore from v1.0.3 is preserved because this update patches the current installed source rather than replacing user data. Windows PowerShell parsing and payload/internal SHA-256 validation passed before publish."
+  "notes": "Batch cover importing for The Library. Adds IMPORT MULTIPLE IMAGES to the Add tab so multiple PNG, JPG, JPEG, BMP, TIF, or TIFF files can be selected in one picker and imported together. All selected images use the current Position, Cover Type, Project/Book, Ship, Fandom, and Extra Tags fields. Batch import keeps the original outside image files. Duplicate checks, existing Library record creation, hierarchy refresh, and Library refresh are reused. The split-screen hardening from v1.0.4 is cumulative in this payload, and portable Backup/Restore is preserved because user data is not replaced. Windows PowerShell parsing, synthetic patching, payload validation, and all internal SHA-256 checks passed before publish."
 }
