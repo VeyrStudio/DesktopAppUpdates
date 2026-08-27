@@ -1,0 +1,24 @@
+{
+  "version": "1.0.18",
+  "baseVersion": "1.0.17",
+  "payload": "payload-1.0.18-scroll-splitter-zoom.txt",
+  "payloadSha256": "d763cee2c7bd300816b10811b668ac7961fead6e218c2e6cdff407de98d2dae8",
+  "requirements": {
+    "scrollDownNotNext": true,
+    "saveWordingFixed": true,
+    "zoom50To400": true,
+    "fitButton": true,
+    "ctrlWheelZoom": true,
+    "dragModeToggle": true,
+    "regularSplitterZoom": true,
+    "multiSplitterZoom": true,
+    "removesOldMultiButton": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "verticalScrollFourCoverTest": "passed",
+  "zoom50To400Test": "passed",
+  "dragLinesModeTest": "passed",
+  "regularSplitterZoomTest": "passed",
+  "fifteenPieceSaveTest": "passed"
+}
