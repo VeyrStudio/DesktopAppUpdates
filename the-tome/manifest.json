@@ -1,7 +1,7 @@
 {
-  "version": "0.1.6",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.6/The_Tome_Setup_0.1.6.exe",
-  "sha256": "2127b142a8b1630430e68dbf032ebdf92de6f290ac17532f45598a6442de5ae5",
-  "notes": "Supplied-art gothic bookshelf, real image-backed spines, empty filler books, and scrollbar cleanup.",
-  "published": "2026-08-26T10:46:17.0946975Z"
+  "version": "0.1.7",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.7/The_Tome_Setup_0.1.7.exe",
+  "sha256": "099ee66ea43b860afc9763abceefe413e117a3958b877e32eabc5b9aeea07028",
+  "notes": "Updater repair: hidden single-instance update helper; no cmd/find/tasklist terminal windows.",
+  "published": "2026-08-27T10:39:53.8649043Z"
 }
