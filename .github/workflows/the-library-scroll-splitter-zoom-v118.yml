@@ -325,6 +325,9 @@ jobs:
               throw 'Old Add Multiple Full Wraps button still exists.'
           }
 
+          $form.Show()
+          for($i=0;$i -lt 4;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+
           $paths=@()
           for($i=1;$i -le 4;$i++){
               $path=Join-Path $sourceRoot ("cover-$i.png")
