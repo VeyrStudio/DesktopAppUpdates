@@ -1,0 +1,228 @@
+name: The Library Native Snap v1.0.21
+on:
+  push:
+    paths:
+      - 'tools/the-library-native-snap-v121.py'
+      - '.github/workflows/the-library-native-snap-v121.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.21 payload
+        shell: pwsh
+        run: python tools/the-library-native-snap-v121.py
+
+      - name: Parse updater
+        shell: powershell
+        run: |
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-v121-validation/CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error ($_.Extent.StartLineNumber.ToString()+': '+$_.Message)}
+            throw 'Updater parse failed.'
+          }
+
+      - name: Patch synthetic frameless Library
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v121-install'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          @'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          Add-Type -TypeDefinition @"
+          using System.Windows.Forms;
+          public class TheLibraryForm : Form {}
+          "@
+
+          function Apply-CoverVaultTitleBar {
+              param([System.Windows.Forms.Form]$Window)
+              $script:TitlebarApplied=$true
+          }
+
+          function Resize-CoverVaultLayout {
+              if ($null -eq $form -or $null -eq $tabs) { return }
+              $left = 18
+              $right = 18
+              $bottom = 12
+              $newWidth = [Math]::Max(300, $form.ClientSize.Width - $left - $right)
+              $newHeight = [Math]::Max(220, $form.ClientSize.Height - $tabs.Top - $bottom)
+              $tabs.Left = $left
+              $tabs.Width = $newWidth
+              $tabs.Height = $newHeight
+              if ($null -ne $headerPanel) {
+                  $headerPanel.Width = $form.ClientSize.Width
+              }
+          }
+
+          $form = New-Object TheLibraryForm
+          $form.Text = "The Library"
+          $form.StartPosition = "CenterScreen"
+          $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
+          $form.MaximizeBox = $true
+          $form.MinimizeBox = $true
+          $form.Size = New-Object System.Drawing.Size(1360,920)
+          $form.MinimumSize = New-Object System.Drawing.Size(420,360)
+
+          $headerPanel = New-Object System.Windows.Forms.Panel
+          $headerPanel.Location = New-Object System.Drawing.Point(0,0)
+          $headerPanel.Size = New-Object System.Drawing.Size($form.ClientSize.Width,42)
+          $form.Controls.Add($headerPanel)
+
+          $lblClose=New-Object System.Windows.Forms.Label
+          $lblMaximize=New-Object System.Windows.Forms.Label
+          $lblMinimize=New-Object System.Windows.Forms.Label
+          $title=New-Object System.Windows.Forms.Label
+          $headerPanel.Controls.AddRange(@($lblClose,$lblMaximize,$lblMinimize,$title))
+
+          $tabs = New-Object System.Windows.Forms.TabControl
+          $tabs.Location = New-Object System.Drawing.Point(18,50)
+          $tabs.Size = New-Object System.Drawing.Size(1230,760)
+          $tabs.Anchor = "Top,Left"
+          $form.Controls.Add($tabs)
+
+          $tabLibrary=New-Object System.Windows.Forms.TabPage
+          $tabLibrary.Text='Library'
+          $tabLibrary.AutoScroll=$true
+          $tabLibrary.AutoScrollMinSize=New-Object Drawing.Size(1210,790)
+          $tabs.TabPages.Add($tabLibrary)
+
+          $tabAdd=New-Object System.Windows.Forms.TabPage
+          $tabAdd.Text='Add Covers'
+          $tabAdd.AutoScroll=$true
+          $tabs.TabPages.Add($tabAdd)
+
+          $tabSplit=New-Object System.Windows.Forms.TabPage
+          $tabSplit.Text='Split Full Cover'
+          $tabSplit.AutoScroll=$true
+          $tabs.TabPages.Add($tabSplit)
+
+          $tabBackup=New-Object System.Windows.Forms.TabPage
+          $tabBackup.Text='Backup'
+          $tabBackup.AutoScroll=$true
+          $tabs.TabPages.Add($tabBackup)
+
+          # SPLIT SCREEN HARDENING v1.0.4
+          $form.Add_Resize({
+              try {
+                  Resize-CoverVaultLayout
+                  foreach($page in @($tabLibrary,$tabAdd,$tabSplit,$tabBackup)){
+                      if($null -ne $page){ $page.AutoScroll=$true }
+                  }
+              } catch {}
+          })
+
+          [void]$form.ShowDialog()
+          '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+
+          '{"version":"1.0.20"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v121-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Native snap updater failed.'}
+
+          $patchedPath=Join-Path $app 'CoverVault.ps1'
+          $patched=Get-Content -LiteralPath $patchedPath -Raw
+
+          foreach($needle in @(
+              'FormBorderStyle]::Sizable',
+              '$headerPanel.Visible = $false',
+              '$form.MinimumSize = New-Object System.Drawing.Size(360,320)',
+              '$tabs.Location = New-Object System.Drawing.Point(12,12)',
+              '$tabs.Anchor = "Top,Bottom,Left,Right"',
+              '# NATIVE SNAP TITLEBAR COLOR v1.0.21'
+          )){
+              if(-not $patched.Contains($needle)){throw ("Missing native snap change: "+$needle)}
+          }
+
+          if($patched.Contains('FormBorderStyle]::None')){throw 'Frameless window setting survived the update.'}
+
+          $tokens=$null
+          $errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($patchedPath,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){throw 'Patched app does not parse.'}
+
+          $runtime=$patched.Replace('[void]$form.ShowDialog()','# modal startup disabled for automated test')
+          $runtime += @'
+
+          $form.Show()
+          for($i=0;$i -lt 5;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+
+          if($form.FormBorderStyle -ne [Windows.Forms.FormBorderStyle]::Sizable){throw 'Runtime border is not native sizable.'}
+          if($headerPanel.Visible){throw 'Custom title bar is still visible.'}
+          if($tabs.Top -ne 12){throw ('Tabs did not reclaim titlebar space: '+$tabs.Top)}
+          if($form.MinimumSize.Width -ne 360){throw ('Minimum width is wrong: '+$form.MinimumSize.Width)}
+
+          foreach($size in @(
+              (New-Object Drawing.Size(420,760)),
+              (New-Object Drawing.Size(560,760)),
+              (New-Object Drawing.Size(640,760))
+          )){
+              $form.Size=$size
+              for($i=0;$i -lt 4;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+              Resize-CoverVaultLayout
+              if($tabs.Width -gt $form.ClientSize.Width){throw ('Tabs exceed narrow client width at '+$size.Width)}
+              if($tabs.Width -lt 300){throw ('Tabs became unusably narrow at '+$size.Width)}
+              foreach($page in @($tabLibrary,$tabAdd,$tabSplit,$tabBackup)){
+                  if(-not $page.AutoScroll){throw ('AutoScroll disabled on '+$page.Text)}
+              }
+          }
+
+          if(-not $script:TitlebarApplied){throw 'Native caption styling hook did not run.'}
+          $form.Close()
+          '@
+
+          $runtimePath=Join-Path $app 'runtime-test.ps1'
+          $runtime|Set-Content -LiteralPath $runtimePath -Encoding UTF8
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $runtimePath
+          if($LASTEXITCODE -ne 0){throw 'Native snap narrow-window runtime test failed.'}
+
+      - name: Validate payload hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/native-snap-1.0.21-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.21'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit payload
+        shell: pwsh
+        run: |
+          $p='the-library/native-snap-1.0.21-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName nativeSizableRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName narrow420WidthTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName narrow560WidthTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName narrow640WidthTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.21-native-snap.txt' 'the-library/native-snap-1.0.21-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.21 native Windows snap'
+            git pull --rebase origin main
+            git push origin main
+          }
