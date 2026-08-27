@@ -1,0 +1,17 @@
+{
+  "version": "1.0.15",
+  "baseVersion": "1.0.14",
+  "payload": "payload-1.0.15-real-regular-button-multiselect.txt",
+  "payloadSha256": "7d1a65adee4b7bd05edb1e911f849ca4be4c05ff982eceea2f0c6536858fc6af",
+  "requirements": {
+    "searchesWholeForm": true,
+    "prefersExactRegularButton": true,
+    "realDialogIsMultiselect": true,
+    "removesSeparateBatchGlobally": true,
+    "switchesToSplitTab": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "actualButtonOutsideSplitTabTest": "passed",
+  "threeCoverRuntimeTest": "passed"
+}
