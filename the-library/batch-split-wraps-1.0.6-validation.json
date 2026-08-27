@@ -1,0 +1,21 @@
+{
+  "version": "1.0.6",
+  "baseVersion": "1.0.5",
+  "payload": "payload-1.0.6-batch-split-wraps.txt",
+  "payloadSha256": "f31e8743585c6d9b163d7e90fda27d6b0057068359f02096b61b3537047653d5",
+  "requirements": {
+    "batchSplitButtonPresent": true,
+    "multipleWrapSelection": true,
+    "perCoverGuideStorage": true,
+    "previousNextQueue": true,
+    "dragGuides": true,
+    "noApplyToAll": true,
+    "skipAndRemove": true,
+    "saveAllReady": true,
+    "threePartOutput": true,
+    "rollbackPreserved": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed"
+}
