@@ -1,0 +1,159 @@
+name: The Library Batch Panel State Safe v1.0.11
+on:
+  push:
+    paths:
+      - 'tools/the-library-batch-panel-state-safe-v111.py'
+      - '.github/workflows/the-library-batch-panel-state-safe-v111.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build exact v1.0.11 payload
+        shell: pwsh
+        run: python tools/the-library-batch-panel-state-safe-v111.py
+
+      - name: Parse updater with Windows PowerShell
+        shell: powershell
+        run: |
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path '.library-v111-validation/CoverVault.ps1'),[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Updater PowerShell parse failed.'
+          }
+
+      - name: Patch synthetic current Library and exercise paint events
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=Join-Path $PWD '.library-v111-runtime'
+          $app=Join-Path $root 'App'
+          $backup=Join-Path $root 'UpdateBackup'
+          New-Item -ItemType Directory -Force -Path $app,$backup|Out-Null
+
+          $v108=Get-Content -LiteralPath 'tools/the-library-multi-loader-fix-v108.py' -Raw
+          $fm=[regex]::Match($v108,"(?s)feature=@'\r?\n(.*?)\r?\n'@")
+          if(-not $fm.Success){throw 'Could not extract v1.0.8 feature.'}
+          $feature=$fm.Groups[1].Value
+
+          $v110=Get-Content -LiteralPath 'tools/the-library-batch-image-loader-safe-v110.py' -Raw
+          $hm=[regex]::Match($v110,"(?s)helper=@'\r?\n(.*?)\r?\n'@")
+          if(-not $hm.Success){throw 'Could not extract v1.0.10 loader helper.'}
+          $helper=$hm.Groups[1].Value
+          $feature=$feature.Replace('$bitmap=Load-ImageUnlocked $path','$bitmap=Load-InlineBatchImageSafe $path')
+
+          $synthetic=@'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $form=New-Object Windows.Forms.Form
+          $form.Size=New-Object Drawing.Size(1300,1000)
+          $tabs=New-Object Windows.Forms.TabControl
+          $tabs.Dock='Fill'
+          $form.Controls.Add($tabs)
+          $tabSplit=New-Object Windows.Forms.TabPage
+          $tabSplit.Text='Split'
+          $tabs.TabPages.Add($tabSplit)
+          function Add-LibraryRecord { param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags) }
+          function Copy-Or-Move-IntoVault([string]$Path,[bool]$Move){ return [IO.Path]::GetFileName($Path) }
+          function Load-ImageUnlocked([string]$Path){ throw 'old loader invoked' }
+          function Refresh-HierarchyTree {}
+          function Refresh-LibraryGrid {}
+          $script:PendingCoverType=$null
+          '@
+
+          $synthetic += [Environment]::NewLine + $helper + [Environment]::NewLine + $feature
+          $synthetic += [Environment]::NewLine + '# FULL WRAPS ARE TEMPORARY SOURCES v1.0.9' + [Environment]::NewLine + 'function Add-LibraryRecordCore {}'
+          $synthetic | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
+          '{"version":"1.0.10"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          Copy-Item '.library-v111-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
+          if($LASTEXITCODE -ne 0){throw 'Updater patch returned failure.'}
+
+          $patchedPath=Join-Path $app 'CoverVault.ps1'
+          $patched=Get-Content -LiteralPath $patchedPath -Raw
+          foreach($marker in @(
+            '# BATCH PANEL STATE SAFE v1.0.11',
+            '$pic.Tag=$state',
+            '$save.Tag=$state',
+            'Get-InlineBatchDisplayRect $sender $st.Bitmap'
+          )){
+            if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
+          }
+
+          $tokens=$null;$errors=$null
+          [System.Management.Automation.Language.Parser]::ParseFile($patchedPath,[ref]$tokens,[ref]$errors)|Out-Null
+          if($errors.Count -gt 0){
+            $errors|ForEach-Object{Write-Error (($_.Extent.StartLineNumber.ToString())+': '+$_.Message)}
+            throw 'Patched Library source does not parse.'
+          }
+
+          @'
+          $test=Join-Path $env:TEMP 'the-library-v111-test.png'
+          $b=New-Object Drawing.Bitmap(1800,1200,[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+          try{
+              $g=[Drawing.Graphics]::FromImage($b)
+              try{$g.Clear([Drawing.Color]::FromArgb(255,70,20,140))}finally{$g.Dispose()}
+              $b.Save($test,[Drawing.Imaging.ImageFormat]::Png)
+          }finally{$b.Dispose()}
+          $panel=Add-InlineBatchSplitter $test 1 1
+          if($null -eq $panel){throw 'Batch panel returned null.'}
+          $host=New-Object Windows.Forms.FlowLayoutPanel
+          $host.Dock='Fill'
+          $tabSplit.Controls.Add($host)
+          $host.Controls.Add($panel)
+          $form.Show()
+          for($i=0;$i -lt 10;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 50}
+          $pic=$panel.Controls|Where-Object{ $_ -is [Windows.Forms.PictureBox] }|Select-Object -First 1
+          if($null -eq $pic -or $null -eq $pic.Tag){throw 'PictureBox lost state tag.'}
+          $pic.Invalidate()
+          for($i=0;$i -lt 5;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 50}
+          $form.Close()
+          '@ | Add-Content -LiteralPath $patchedPath -Encoding UTF8
+
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $patchedPath
+          if($LASTEXITCODE -ne 0){throw 'State-safe batch runtime exercise failed.'}
+
+          $ver=Get-Content -LiteralPath (Join-Path $app 'AppVersion.json') -Raw|ConvertFrom-Json
+          if([string]$ver.version -ne '1.0.11'){throw 'Patched AppVersion is not 1.0.11.'}
+
+      - name: Revalidate payload and hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/batch-panel-state-safe-1.0.11-validation.json').read_text())
+          b=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(b).hexdigest()==v['payloadSha256']
+          p=json.loads(b.decode())
+          assert p['version']=='1.0.11'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit exact payload
+        shell: pwsh
+        run: |
+          $p='the-library/batch-panel-state-safe-1.0.11-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed-windows-powershell-parser' -Force
+          $r|Add-Member -NotePropertyName syntheticPatchTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName paintEventRuntimeTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.11-batch-panel-state-safe.txt' 'the-library/batch-panel-state-safe-1.0.11-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.11 batch panel state repair'
+            git pull --rebase origin main
+            git push origin main
+          }
