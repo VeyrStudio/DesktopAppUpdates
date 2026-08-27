@@ -1,0 +1,18 @@
+{
+  "version": "1.0.17",
+  "baseVersion": "1.0.16",
+  "payload": "payload-1.0.17-regular-splitter-queue.txt",
+  "payloadSha256": "2371326b59fbac7d14e1ecf84637282119ed69d8f4c906c0183d46856173ede6",
+  "requirements": {
+    "bypassesBatchPanels": true,
+    "usesRegularSplitter": true,
+    "multiDropAliasUsesQueue": true,
+    "queueNavigation": true,
+    "noFullWrapRecord": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "sixCoverQueueRuntimeTest": "passed",
+  "metadataNavigationTest": "passed",
+  "eighteenPieceSaveTest": "passed"
+}
