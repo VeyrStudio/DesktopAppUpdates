@@ -18,9 +18,15 @@ Add-Type -AssemblyName System.Drawing
 
 $form=New-Object Windows.Forms.Form
 $form.Size=New-Object Drawing.Size(1300,1000)
+$tabs=New-Object Windows.Forms.TabControl
+$tabs.Dock='Fill'
+$form.Controls.Add($tabs)
 $tabSplit=New-Object Windows.Forms.TabPage
-$tabSplit.Size=New-Object Drawing.Size(1200,900)
-$form.Controls.Add($tabSplit)
+$tabSplit.Text='Split'
+$tabs.TabPages.Add($tabSplit)
+$form.CreateControl()
+$tabs.CreateControl()
+$tabSplit.CreateControl()
 
 function Add-LibraryRecord { param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags) }
 function Copy-Or-Move-IntoVault([string]$Path,[bool]$Move){ return [IO.Path]::GetFileName($Path) }
