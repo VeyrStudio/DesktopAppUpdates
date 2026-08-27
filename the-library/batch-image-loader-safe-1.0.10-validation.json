@@ -1,0 +1,21 @@
+{
+  "version": "1.0.10",
+  "baseVersion": "1.0.9",
+  "payload": "payload-1.0.10-batch-image-loader-safe.txt",
+  "payloadSha256": "cdca6eaccc31e8d770efc8cb64b2c572a08b13c8d22395467305086a2548328b",
+  "requirements": {
+    "keepsInlineBatchFlow": true,
+    "keepsTemporaryFullWrapRule": true,
+    "addsDedicatedSafeLoader": true,
+    "loadsFromBytes": true,
+    "usesMemoryStream": true,
+    "validatesDecodedImage": true,
+    "guardsDisposableObjects": true,
+    "batchUsesSafeLoader": true,
+    "normalSingleLoaderUntouched": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed",
+  "validPngRuntimeTest": "passed"
+}
