@@ -1,0 +1,17 @@
+{
+  "version": "1.0.11",
+  "baseVersion": "1.0.10",
+  "payload": "payload-1.0.11-batch-panel-state-safe.txt",
+  "payloadSha256": "ccc1fc9737519b810f97eeec83cd4d6cbcad0ba6b9990f3beae79591f82ce0b1",
+  "requirements": {
+    "keepsSafeImageLoader": true,
+    "replacesBatchSplitter": true,
+    "stateStoredOnControls": true,
+    "paintUsesSenderState": true,
+    "saveUsesControlState": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed",
+  "paintEventRuntimeTest": "passed"
+}
