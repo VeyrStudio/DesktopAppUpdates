@@ -1,0 +1,24 @@
+{
+  "version": "1.0.7",
+  "baseVersion": "1.0.6",
+  "payload": "payload-1.0.7-inline-batch-split.txt",
+  "payloadSha256": "4c07e1c72c24888d4bdee5456d5938277387cdd33b5bc98ca1d210ba3497478e",
+  "requirements": {
+    "removesSeparateWindowFlow": true,
+    "sameSplitTab": true,
+    "multipleWrapSelection": true,
+    "perCoverBookField": true,
+    "perCoverShipField": true,
+    "perCoverFandomField": true,
+    "perCoverTagsField": true,
+    "perCoverTypeField": true,
+    "perCoverSave": true,
+    "savesToLibrary": true,
+    "threePartLibrarySave": true,
+    "noFolderExport": true,
+    "noApplyToAll": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed"
+}
