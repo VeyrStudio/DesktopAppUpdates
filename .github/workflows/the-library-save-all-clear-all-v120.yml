@@ -1,0 +1,308 @@
+name: The Library Save All Clear All v1.0.20
+on:
+  push:
+    paths:
+      - 'tools/the-library-save-all-clear-all-v120.py'
+      - '.github/workflows/the-library-save-all-clear-all-v120.yml'
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build v1.0.20 payload
+        shell: pwsh
+        run: python tools/the-library-save-all-clear-all-v120.py
+
+      - name: Parse updater and drop-in
+        shell: powershell
+        run: |
+          foreach($path in @(
+            '.library-v120-validation/CoverVault.ps1',
+            '.library-v120-validation/BatchSplitDropIn.ps1'
+          )){
+            $tokens=$null
+            $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)|Out-Null
+            if($errors.Count -gt 0){
+              $errors|ForEach-Object{Write-Error ($path+' line '+$_.Extent.StartLineNumber+': '+$_.Message)}
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Exercise Save All and Clear All
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+
+          $root=Join-Path $PWD '.library-v120-runtime'
+          $filesRoot=Join-Path $root 'Files'
+          $sourceRoot=Join-Path $root 'Source'
+          New-Item -ItemType Directory -Force -Path $root,$filesRoot,$sourceRoot|Out-Null
+
+          $form=New-Object Windows.Forms.Form
+          $form.Size=New-Object Drawing.Size(1280,760)
+
+          $tabs=New-Object Windows.Forms.TabControl
+          $tabs.Dock='Fill'
+          $form.Controls.Add($tabs)
+
+          $tabSplit=New-Object Windows.Forms.TabPage
+          $tabSplit.Text='Split Full Cover'
+          $tabSplit.BackColor=[Drawing.Color]::FromArgb(46,13,70)
+          $tabSplit.AutoScroll=$true
+          $tabSplit.AutoScrollMinSize=New-Object Drawing.Size(1180,1460)
+          $tabs.TabPages.Add($tabSplit)
+
+          $panelWrapDrop=New-Object Windows.Forms.Panel
+          $panelWrapDrop.Location=New-Object Drawing.Point(26,112)
+          $panelWrapDrop.Size=New-Object Drawing.Size(1135,72)
+          $panelWrapDrop.BackColor=[Drawing.Color]::FromArgb(64,18,96)
+          $tabSplit.Controls.Add($panelWrapDrop)
+
+          $lblWrapDrop=New-Object Windows.Forms.Label
+          $lblWrapDrop.Location=New-Object Drawing.Point(18,12)
+          $lblWrapDrop.Size=New-Object Drawing.Size(360,24)
+          $panelWrapDrop.Controls.Add($lblWrapDrop)
+
+          $lblWrapDrop2=New-Object Windows.Forms.Label
+          $lblWrapDrop2.Location=New-Object Drawing.Point(18,38)
+          $lblWrapDrop2.Size=New-Object Drawing.Size(530,22)
+          $panelWrapDrop.Controls.Add($lblWrapDrop2)
+
+          $btnChooseWrap=New-Object Windows.Forms.Button
+          $btnChooseWrap.Text='UPLOAD FULL COVER'
+          $btnChooseWrap.Location=New-Object Drawing.Point(900,17)
+          $btnChooseWrap.Size=New-Object Drawing.Size(200,38)
+          $panelWrapDrop.Controls.Add($btnChooseWrap)
+
+          $lblWrapFile=New-Object Windows.Forms.Label
+          $lblWrapFile.Location=New-Object Drawing.Point(26,194)
+          $lblWrapFile.Size=New-Object Drawing.Size(900,26)
+          $tabSplit.Controls.Add($lblWrapFile)
+
+          $pbWrapPreview=New-Object Windows.Forms.PictureBox
+          $pbWrapPreview.Location=New-Object Drawing.Point(26,226)
+          $pbWrapPreview.Size=New-Object Drawing.Size(1135,370)
+          $pbWrapPreview.SizeMode='Zoom'
+          $tabSplit.Controls.Add($pbWrapPreview)
+
+          $lblWrapDims=New-Object Windows.Forms.Label
+          $numSplitLeft=New-Object Windows.Forms.NumericUpDown
+          $numSplitLeft.Minimum=1
+          $numSplitLeft.Maximum=100000
+          $tabSplit.Controls.Add($numSplitLeft)
+
+          $numSplitRight=New-Object Windows.Forms.NumericUpDown
+          $numSplitRight.Minimum=2
+          $numSplitRight.Maximum=100000
+          $tabSplit.Controls.Add($numSplitRight)
+
+          $pbBackPreview=New-Object Windows.Forms.PictureBox
+          $pbSpinePreview=New-Object Windows.Forms.PictureBox
+          $pbFrontPreview=New-Object Windows.Forms.PictureBox
+          foreach($pb in @($pbBackPreview,$pbSpinePreview,$pbFrontPreview)){$tabSplit.Controls.Add($pb)}
+
+          $lblBackDims=New-Object Windows.Forms.Label
+          $lblSpineDims=New-Object Windows.Forms.Label
+          $lblFrontDims=New-Object Windows.Forms.Label
+
+          $metaTitle=New-Object Windows.Forms.Label
+          $metaTitle.Location=New-Object Drawing.Point(26,1010)
+          $metaTitle.Size=New-Object Drawing.Size(500,28)
+          $tabSplit.Controls.Add($metaTitle)
+
+          $cmbWrapCoverType=New-Object Windows.Forms.ComboBox
+          [void]$cmbWrapCoverType.Items.Add('Paperback')
+          [void]$cmbWrapCoverType.Items.Add('Hardcover')
+          $cmbWrapCoverType.SelectedIndex=0
+
+          $txtWrapProject=New-Object Windows.Forms.TextBox
+          $txtWrapShip=New-Object Windows.Forms.TextBox
+          $txtWrapFandom=New-Object Windows.Forms.TextBox
+          $txtWrapTags=New-Object Windows.Forms.TextBox
+
+          $chkMoveWrap=New-Object Windows.Forms.CheckBox
+          $chkMoveWrap.Checked=$false
+
+          $wrapStorageNote=New-Object Windows.Forms.Label
+
+          $btnSaveSplit=New-Object Windows.Forms.Button
+          $btnSaveSplit.Text='Save Wrap + 3 Pieces'
+          $btnSaveSplit.BackColor=[Drawing.Color]::Purple
+          $btnSaveSplit.ForeColor=[Drawing.Color]::White
+          $tabSplit.Controls.Add($btnSaveSplit)
+
+          $script:FilesRoot=$filesRoot
+          $script:WrapBitmap=$null
+          $script:SelectedWrapFile=$null
+          $script:SplitLeft=0
+          $script:SplitRight=0
+          $script:PendingCoverType='Unsorted'
+          $script:Records=@()
+          $script:Errors=@()
+          $script:Infos=@()
+
+          function Show-Info([string]$Message){$script:Infos += $Message}
+          function Show-Error([string]$Message){$script:Errors += $Message}
+          function Refresh-HierarchyTree{}
+          function Refresh-LibraryGrid{}
+
+          function Set-PictureImage($PictureBox,$Image){
+              if($null -ne $PictureBox.Image){try{$PictureBox.Image.Dispose()}catch{}}
+              $PictureBox.Image=$Image
+          }
+
+          function Load-ImageUnlocked([string]$Path){
+              $bytes=[IO.File]::ReadAllBytes($Path)
+              $stream=New-Object IO.MemoryStream(,$bytes)
+              try{
+                  $img=[Drawing.Image]::FromStream($stream,$true,$true)
+                  try{return New-Object Drawing.Bitmap($img)}finally{$img.Dispose()}
+              }finally{$stream.Dispose()}
+          }
+
+          function Get-AutoSplit([Drawing.Bitmap]$Bitmap){
+              $mid=[int][math]::Round($Bitmap.Width/2.0)
+              $half=[int][math]::Max(2,[math]::Round($Bitmap.Width*0.04))
+              return @(($mid-$half),($mid+$half))
+          }
+
+          function Update-SplitPreview{
+              if($null -eq $script:WrapBitmap){return}
+              $script:SplitLeft=[int]$numSplitLeft.Value
+              $script:SplitRight=[int]$numSplitRight.Value
+              $pbWrapPreview.Invalidate()
+          }
+
+          function Set-WrapDroppedFile([string]$Path){
+              if($null -ne $script:WrapBitmap){try{$script:WrapBitmap.Dispose()}catch{}}
+              $script:SelectedWrapFile=$Path
+              $script:WrapBitmap=Load-ImageUnlocked $Path
+              $w=$script:WrapBitmap.Width
+              $numSplitLeft.Maximum=[math]::Max(2,$w-2)
+              $numSplitRight.Maximum=[math]::Max(3,$w-1)
+              Set-PictureImage $pbWrapPreview (New-Object Drawing.Bitmap($script:WrapBitmap))
+              $pair=Get-AutoSplit $script:WrapBitmap
+              $numSplitLeft.Value=[decimal][int]$pair[0]
+              $numSplitRight.Value=[decimal][int]$pair[1]
+              Update-SplitPreview
+          }
+
+          function Make-UniqueStoredName([string]$Extension){return ([guid]::NewGuid().ToString('N')+$Extension)}
+          function Make-SplitName([string]$Base,[string]$Piece){return ($Base+' - '+$Piece+'.png')}
+
+          function Save-CropPng([Drawing.Bitmap]$Bitmap,[int]$X,[int]$Width,[string]$Dest){
+              $rect=New-Object Drawing.Rectangle($X,0,$Width,$Bitmap.Height)
+              $crop=$Bitmap.Clone($rect,[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try{$crop.Save($Dest,[Drawing.Imaging.ImageFormat]::Png)}finally{$crop.Dispose()}
+          }
+
+          function Add-LibraryRecord{
+              param($OriginalName,$StoredName,$Position,$Project,$Ship,$Fandom,$Tags)
+              $script:Records += [pscustomobject]@{
+                  OriginalName=$OriginalName
+                  StoredName=$StoredName
+                  Position=$Position
+                  Project=$Project
+                  Ship=$Ship
+                  Fandom=$Fandom
+                  Tags=$Tags
+              }
+          }
+
+          $numSplitLeft.Add_ValueChanged({if($null -ne $script:WrapBitmap){Update-SplitPreview}})
+          $numSplitRight.Add_ValueChanged({if($null -ne $script:WrapBitmap){Update-SplitPreview}})
+          $pbWrapPreview.Add_Paint({param($sender,$e) Draw-SplitGuides $sender $e})
+
+          . (Resolve-Path '.library-v120-validation/BatchSplitDropIn.ps1')
+          Initialize-LibraryBatchSplitDropIn
+
+          if($btnSaveSplit.Text -ne 'SAVE'){throw 'Regular save label did not stay SAVE.'}
+          if($null -eq $script:LibraryMultiSaveAllButton){throw 'Save All button was not created.'}
+          if($null -eq $script:LibraryMultiClearAllButton){throw 'Clear All button was not created.'}
+          if($script:LibraryMultiSaveAllButton.Text -ne 'SAVE ALL'){throw 'Save All button text is wrong.'}
+          if($script:LibraryMultiClearAllButton.Text -ne 'CLEAR ALL'){throw 'Clear All button text is wrong.'}
+
+          $form.Show()
+          for($i=0;$i -lt 4;$i++){[Windows.Forms.Application]::DoEvents();Start-Sleep -Milliseconds 30}
+
+          $paths=@()
+          for($i=1;$i -le 4;$i++){
+              $path=Join-Path $sourceRoot ("cover-$i.png")
+              $bmp=New-Object Drawing.Bitmap((1400+$i*80),(900+$i*30),[Drawing.Imaging.PixelFormat]::Format32bppArgb)
+              try{
+                  $g=[Drawing.Graphics]::FromImage($bmp)
+                  try{$g.Clear([Drawing.Color]::FromArgb(255,45+$i*25,30,125))}finally{$g.Dispose()}
+                  $bmp.Save($path,[Drawing.Imaging.ImageFormat]::Png)
+              }finally{$bmp.Dispose()}
+              $paths += $path
+          }
+
+          Show-LibraryUnifiedWrapPaths -Paths $paths
+          if(@($script:LibraryMultiScrollStates).Count -ne 4){throw 'Four covers did not load.'}
+          if(-not $script:LibraryMultiSaveAllButton.Visible){throw 'Save All is not visible in multi mode.'}
+          if(-not $script:LibraryMultiClearAllButton.Visible){throw 'Clear All is not visible in multi mode.'}
+
+          $first=@($script:LibraryMultiScrollStates)[0]
+          Save-LibraryScrollCard $first
+          if($script:Records.Count -ne 3){throw 'Individual Save did not create 3 records.'}
+
+          Save-LibraryAllScrollCards
+          if($script:Records.Count -ne 12){throw ("Save All duplicated or missed covers; expected 12 records, got "+$script:Records.Count)}
+          if($null -ne $script:LibraryMultiScrollHost){throw 'Save All did not clear the multi-cover queue after success.'}
+          if($script:LibraryMultiSaveAllButton.Visible){throw 'Save All stayed visible after queue cleared.'}
+          if($script:LibraryMultiClearAllButton.Visible){throw 'Clear All stayed visible after queue cleared.'}
+
+          $clearPaths=@($paths[0],$paths[1],$paths[2])
+          Show-LibraryUnifiedWrapPaths -Paths $clearPaths
+          if(@($script:LibraryMultiScrollStates).Count -ne 3){throw 'Three covers did not reload for Clear All test.'}
+          $recordsBefore=$script:Records.Count
+          Clear-LibraryAllScrollCards -Force
+          if($null -ne $script:LibraryMultiScrollHost){throw 'Clear All did not clear the queue.'}
+          if($script:Records.Count -ne $recordsBefore){throw 'Clear All saved something instead of discarding the queue.'}
+
+          $form.Close()
+
+      - name: Validate payload hashes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib
+          root=pathlib.Path('.')
+          v=json.loads((root/'the-library/save-all-clear-all-1.0.20-validation.json').read_text())
+          raw=(root/'the-library'/v['payload']).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==v['payloadSha256']
+          p=json.loads(raw.decode())
+          assert p['version']=='1.0.20'
+          for f in p['files']:
+              d=base64.b64decode(f['contentBase64'])
+              assert hashlib.sha256(d).hexdigest()==f['sha256'],f['path']
+
+      - name: Mark validation and commit payload
+        shell: pwsh
+        run: |
+          $p='the-library/save-all-clear-all-1.0.20-validation.json'
+          $r=Get-Content $p -Raw|ConvertFrom-Json
+          $r|Add-Member -NotePropertyName powershellParse -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName saveAllAfterIndividualSaveTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName clearQueueAfterSaveAllTest -NotePropertyValue 'passed' -Force
+          $r|Add-Member -NotePropertyName clearAllWithoutSavingTest -NotePropertyValue 'passed' -Force
+          $r|ConvertTo-Json -Depth 10|Set-Content $p -Encoding UTF8
+
+          git config user.name 'VeyrStudio Update Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 'the-library/payload-1.0.20-save-all-clear-all.txt' 'the-library/save-all-clear-all-1.0.20-validation.json'
+          git diff --cached --quiet
+          if($LASTEXITCODE -ne 0){
+            git commit -m 'Stage validated The Library v1.0.20 Save All and Clear All'
+            git pull --rebase origin main
+            git push origin main
+          }
