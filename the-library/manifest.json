@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.12",
-  "payloadSha256": "c45b901d14b3c0ee0ca8f741ee207f62a568de776e851def7582e0cccc87d079",
+  "version": "1.0.13",
+  "payloadSha256": "b8e9b1a65e0790d1f1d641c4bfc44b2090a2a756bb9645d69046fa00cfa81ba4",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/926f36129b59147a0fc229b61ac95c0dbc3188a8/the-library/payload-1.0.12-resilient-batch-split.txt",
-      "sha256": "c45b901d14b3c0ee0ca8f741ee207f62a568de776e851def7582e0cccc87d079"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/d520dd3653e82620aa4d5be2c5f9e66ea80e0a38/the-library/payload-1.0.13-batch-split-drop-in.txt",
+      "sha256": "b8e9b1a65e0790d1f1d641c4bfc44b2090a2a756bb9645d69046fa00cfa81ba4"
     }
   ],
-  "notes": "Recovery update for the multi-wrap Batch Split after v1.0.11 could fail to install when the expected v1.0.10 loader marker was absent. v1.0.12 no longer requires that marker: it detects the actual batch-split functions present in the installed Library, adds the safe image loader only when missing, then replaces the batch splitter with persistent per-cover control state. The repair was tested against both a source with no v1.0.10 helper and a source where that helper already exists, including real PNG loading and visible WinForms paint-event processing."
+  "notes": "Replaces the multi-wrap Batch Split with a true drop-in component. The new BatchSplitDropIn.ps1 is self-contained for batch image loading, panel creation, persistent per-cover state, guide painting/dragging, cropping, and saving. The main Library script only receives a small startup hook and the old batch button is replaced, while the existing single-cover splitter and the rest of The Library remain untouched. Validation passed with five simultaneous PNG cover panels, live paint/guide events, and 15 saved split-piece records."
 }
