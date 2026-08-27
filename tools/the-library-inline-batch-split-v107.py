@@ -28,17 +28,17 @@ function Relaunch-App {
 }
 
 try {
-    if(-not(Test-Path -LiteralPath $backupMain)){throw 'The updater backup is missing the previous Library app script.')}
+    if(-not(Test-Path -LiteralPath $backupMain)){throw 'The updater backup is missing the previous Library app script.'}
     $text=[IO.File]::ReadAllText($backupMain,[Text.Encoding]::UTF8)
 
     # Remove the old v1.0.6 launch button so users cannot enter the separate-window flow.
-    $oldBlockPattern='(?s)# BATCH SPLIT WRAPS v1\.0\.6.*?\$tabSplit\.Add_Resize\(\\{.*?\\}\)\s*'
-    $text=[Text.RegularExpressions.Regex]::Replace($text,$oldBlockPatter,'')
+    $oldBlockPatternn='(?s)# BATCH SPLIT WRAPS v1\.0\.6.*?\$tabSplit\.Add_Resize\(\\{.*?\\}\)\s*'
+    $text=[Text.RegularExpressions.Regex]::Replace($text,$oldBlockPattern,'')
 
     $marker='# INLINE BATCH SPLIT WRAPS v1.0.7'
     if(-not $text.Contains($marker)){
         foreach($needed in @('function Add-LibraryRecord','function Copy-Or-Move-IntoVault','$tabSplit')){
-            if(-not $text.Contains($needed)i{throw "Could not find required Library feature: $needed"}
+            if(-not $text.Contains($needed)){throw "Could not find required Library feature: $needed"}
         }
 
         $feature=@'
@@ -192,7 +192,7 @@ function Add-InlineBatchSplitter([string]$path,[int]$ordinal,[int]$total){
     $status.Text='NOT SAVED'
     $status.AutoSize=$true
     $status.Font=New-Object Drawing.Font('Segoe UI',9,[Drawing.FontStyle]::Bold)
-    $status.ForeColor=[Drawing.Color]::FromArgc(120,70,40)
+    $status.ForeColor=[Drawing.Color]::FromArgb(120,70,40)
     $status.Location=New-Object Drawing.Point(510,365)
     $panel.Controls.Add($status)
 
@@ -227,7 +227,7 @@ function Add-InlineBatchSplitter([string]$path,[int]$ordinal,[int]$total){
         param($sender,$e)
         $rect=Get-InlineBatchDisplayRect $pic $bitmap
         if($rect.Width -le 0){return}
-        $x1=$rect.X+[[int]$leftNum.Value/[double]$bitmap.Width)*$rect.Width
+        $x1=$rect.X+([int]$leftNum.Value/[double]$bitmap.Width)*$rect.Width
         $x2=$rect.X+([int]$rightNum.Value/[double]$bitmap.Width)*$rect.Width
         if([math]::Abs($e.X-$x1) -le [math]::Abs($e.X-$x2)){
             if([math]::Abs($e.X-$x1) -le 16){$dragState.Which='Left'}
@@ -244,7 +244,7 @@ function Add-InlineBatchSplitter([string]$path,[int]$ordinal,[int]$total){
         $px=[math]::Max(1,[math]::Min($bitmap.Width-1,$px))
         if($dragState.Which -eq 'Left'){
             $px=[math]::Min($px,[int]$rightNum.Value-1)
-            $leftNum.Value=[decimal][math]::Max([double]$leftNum.Minimum,[math]::Min(double]$leftNum.Maximum,$px))
+            $leftNum.Value=[decimal][math]::Max([double]$leftNum.Minimum,[math]::Min([double]$leftNum.Maximum,$px))
         }else{
             $px=[math]::Max($px,[int]$leftNum.Value+1)
             $rightNum.Value=[decimal][math]::Max([double]$rightNum.Minimum,[math]::Min([double]$rightNum.Maximum,$px))
@@ -354,7 +354,7 @@ $btnInlineBatchSplit.BringToFront()
 '@
 
         $patterns=@(
-            '(?m)^\s*\[[void\]]\s*\$form\.ShowDialog\(\)\s*$',
+            '(?m)^\s*\[void\]\s*\$form\.ShowDialog\(\)\s*$',
             '(?m)^\s*\$form\.ShowDialog\(\)\s*\|\s*Out-Null\s*$',
             '(?m)^\s*\$form\.ShowDialog\(\)\s*$'
         )
