@@ -604,13 +604,13 @@ function Show-LibraryUnifiedWrapPaths([string[]]$Paths){
     Close-LibraryMultiWrapScroll $true
     Hide-LibraryRegularSplitterForMulti
 
-    $host=New-Object Windows.Forms.Panel
-    $host.Name='LibraryMultiScrollHost'
-    $host.Location=New-Object Drawing.Point(18,224)
-    $host.Size=New-Object Drawing.Size(1145,100)
-    $host.BackColor=[Drawing.Color]::FromArgb(38,14,56)
-    $script:LibraryMultiScrollHost=$host
-    $tabSplit.Controls.Add($host)
+    $multiHost=New-Object Windows.Forms.Panel
+    $multiHost.Name='LibraryMultiScrollHost'
+    $multiHost.Location=New-Object Drawing.Point(18,224)
+    $multiHost.Size=New-Object Drawing.Size(1145,100)
+    $multiHost.BackColor=[Drawing.Color]::FromArgb(38,14,56)
+    $script:LibraryMultiScrollHost=$multiHost
+    $tabSplit.Controls.Add($multiHost)
 
     $states=@()
     $failures=@()
@@ -620,7 +620,7 @@ function Show-LibraryUnifiedWrapPaths([string[]]$Paths){
             $ordinal++
             $state=New-LibraryScrollCard $path $ordinal $valid.Count
             $states += $state
-            $host.Controls.Add($state.Card)
+            $multiHost.Controls.Add($state.Card)
         }catch{
             $failures += ([IO.Path]::GetFileName($path)+': '+$_.Exception.Message)
         }
@@ -636,7 +636,7 @@ function Show-LibraryUnifiedWrapPaths([string[]]$Paths){
 
     Relayout-LibraryMultiScroll
     $tabSplit.AutoScrollPosition=New-Object Drawing.Point(0,0)
-    $host.BringToFront()
+    $multiHost.BringToFront()
 
     if($failures.Count -gt 0){
         Show-Info ("Some covers could not be opened: $($failures.Count)"+[Environment]::NewLine+[Environment]::NewLine+($failures -join [Environment]::NewLine))
