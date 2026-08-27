@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.9",
-  "payloadSha256": "922776c9bdd7f7801902c5432e84944ed1e8e36cddde8e2787cf301973c4d4d8",
+  "version": "1.0.10",
+  "payloadSha256": "cdca6eaccc31e8d770efc8cb64b2c572a08b13c8d22395467305086a2548328b",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f1e93a5a3d221bb22e76e8e8d54afa0cf5d3a81c/the-library/payload-1.0.9-full-wrap-temporary.txt",
-      "sha256": "922776c9bdd7f7801902c5432e84944ed1e8e36cddde8e2787cf301973c4d4d8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/0bd79705dd3a83835a94363723b3fea5bc3c73f6/the-library/payload-1.0.10-batch-image-loader-safe.txt",
+      "sha256": "cdca6eaccc31e8d770efc8cb64b2c572a08b13c8d22395467305086a2548328b"
     }
   ],
-  "notes": "Full-wrap images are now temporary source files in The Library. The Library record path now refuses Full Wrap, Full Cover, Wrap, Complete Wrap, and Complete Cover records and cleans up the copied source image from the app Data folder. Back Cover, Spine, and Front Cover records continue through the normal Library save path unchanged. This rule applies regardless of whether a split came from the normal single-wrap splitter or the multi-wrap splitter, so only the three split pieces should remain in The Library. Windows PowerShell parsing, synthetic current-source patching, payload validation, and all internal SHA-256 checks passed before publish."
+  "notes": "Fixes the Batch Split multi-cover image loader that could reject every selected PNG with a null-valued expression error. The multi-wrap flow now uses a dedicated byte-backed safe image loader with guarded stream/image/graphics cleanup, while the working single-wrap loader is left unchanged. The existing inline multi-wrap editor and the v1.0.9 temporary full-wrap rule are preserved. Windows PowerShell parsing, synthetic current-source patching, a valid PNG runtime load test, payload validation, and all internal SHA-256 checks passed before publish."
 }
