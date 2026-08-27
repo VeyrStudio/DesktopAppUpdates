@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.15",
-  "payloadSha256": "7d1a65adee4b7bd05edb1e911f849ca4be4c05ff982eceea2f0c6536858fc6af",
+  "version": "1.0.16",
+  "payloadSha256": "5984d9053c2a57a4901ef409d9d1e6d28de8a354da399e910dd529303b675e81",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/82bc2248ff2ed443646a45a7c9019a26740dcb5c/the-library/payload-1.0.15-real-regular-button-multiselect.txt",
-      "sha256": "7d1a65adee4b7bd05edb1e911f849ca4be4c05ff982eceea2f0c6536858fc6af"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/a95ffde4e2552af964be298a1940367d7cc97491/the-library/payload-1.0.16-wrap-drop-multiselect.txt",
+      "sha256": "5984d9053c2a57a4901ef409d9d1e6d28de8a354da399e910dd529303b675e81"
     }
   ],
-  "notes": "Fixes the case where The Library's visible regular full-cover button was still opening the old single-select file picker. The updater now searches the entire app window, not only the Split tab, finds the real regular full-cover button, replaces that exact control with the unified picker, removes old separate Multiple/Batch controls everywhere, and explicitly enables multiselect on the picker. After selection it switches to the Split tab and uses the same splitter panels for one or many wraps. Validation passed with the real regular button nested outside the Split tab and with three covers selected and saved through the unified flow."
+  "notes": "Fixes the actual File Explorer drag-and-drop workflow for full cover wraps. The original wrap drop handler explicitly used only files[0], so dropping five selected covers could only ever load the first one. The drop target now keeps the normal single-wrap splitter when exactly one image is dropped, but when two or more valid image files are dropped together it sends the complete dropped file list into the multi-cover splitter. This update targets the drag/drop handler itself rather than the file-picker button."
 }
