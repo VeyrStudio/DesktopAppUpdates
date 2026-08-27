@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.17",
-  "payloadSha256": "2371326b59fbac7d14e1ecf84637282119ed69d8f4c906c0183d46856173ede6",
+  "version": "1.0.18",
+  "payloadSha256": "d763cee2c7bd300816b10811b668ac7961fead6e218c2e6cdff407de98d2dae8",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/569fe54da9938d67b2891dc53ea400f9b356971e/the-library/payload-1.0.17-regular-splitter-queue.txt",
-      "sha256": "2371326b59fbac7d14e1ecf84637282119ed69d8f4c906c0183d46856173ede6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/ca8893af41d633e0816835ac4df2cc31cb444653/the-library/payload-1.0.18-scroll-splitter-zoom.txt",
+      "sha256": "d763cee2c7bd300816b10811b668ac7961fead6e218c2e6cdff407de98d2dae8"
     }
   ],
-  "notes": "Replaces the failing separate multi-cover batch editor with a queue that uses The Library's existing regular Split Full Cover screen. Multiple File Explorer drops are kept together, the first cover opens in the normal splitter, Previous/Next lets you move through the dropped covers, and each cover keeps its own guide positions and metadata while you navigate. Saving a cover creates only Back Cover, Spine, and Front Cover, removes that item from the queue, and automatically loads the next one. This bypasses the batch-panel code responsible for the repeated null-valued-expression failure. Windows validation passed with six simultaneous covers, navigation/state preservation, live WinForms processing, and all 18 expected split images/records saved."
+  "notes": "Reworks Split Full Cover around the drag-and-drop workflow. Multiple dropped wraps now appear as vertically stacked cover editors on one long scrolling page instead of a Previous/Next queue. Removes the leftover Add Multiple Full Wraps button, corrects save/storage wording so the full wrap is clearly only a temporary source and the saved items are Back Cover, Spine, and Front Cover, adds 50–400% zoom with +/-, Fit, Ctrl+mouse-wheel, and scroll/pan, and adds a mode toggle between numeric/button guide adjustment and direct drag-the-split-lines editing. The same zoom and drag-lines controls are also available for a single dropped wrap. Windows validation passed for scrolling multi-cover editors, zoom limits, drag-line mode, regular single-cover zoom, and saving all expected split pieces."
 }
