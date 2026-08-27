@@ -49,18 +49,15 @@ jobs:
           function Load-ImageUnlocked([string]$Path){ return New-Object System.Drawing.Bitmap(10,10) }
           function Refresh-HierarchyTree {}
           function Refresh-LibraryGrid {}
-          # BATCH SPLIT WRAPS v1.0.8
-          function Open-BatchSplitWraps {}
-          $btnBatchSplitWraps=New-Object Windows.Forms.Button
-          $btnBatchSplitWraps.Text='BATCH SPLIT WRAPS'
-          $tabSplit.Controls.Add($btnBatchSplitWraps)
-          $tabSplit.Add_Resize({
-              try{$btnBatchSplitWraps.Location=New-Object Drawing.Point(10,12)}catch{}
-          })
+          # INLINE BATCH SPLIT WRAPS v1.0.7
+          function Start-InlineBatchSplit {}
+          $btnInlineBatchSplit=New-Object Windows.Forms.Button
+          $btnInlineBatchSplit.Text='ADD MULTIPLE FULL WRAPS'
+          $tabSplit.Controls.Add($btnInlineBatchSplit)
           [void]$form.ShowDialog()
           '@ | Set-Content -LiteralPath (Join-Path $backup 'CoverVault.ps1') -Encoding UTF8
 
-          '{"version":"1.0.8"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
+          '{"version":"1.0.7"}' | Set-Content -LiteralPath (Join-Path $backup 'AppVersion.json') -Encoding UTF8
           Copy-Item '.library-v108-validation/CoverVault.ps1' (Join-Path $app 'CoverVault.ps1')
 
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $app 'CoverVault.ps1')
@@ -83,7 +80,7 @@ jobs:
           )){
             if(-not $patched.Contains($marker)){throw "Missing patched marker: $marker"}
           }
-          if($patched.Contains('function Open-BatchSplitWraps')){throw 'Old separate-window batch splitter was not removed.'}
+          if($patched.Contains('# INLINE BATCH SPLIT WRAPS v1.0.7')){throw 'Old v1.0.7 inline batch splitter was not removed.'}
           if($patched.Contains('FolderBrowserDialog')){throw 'Folder export behavior must not remain in the inline batch flow.'}
           if($patched.ToUpperInvariant().Contains('APPLY TO ALL')){throw 'Apply to All must not exist.'}
 
