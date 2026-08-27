@@ -261,7 +261,7 @@ jobs:
           function Get-AutoSplit([Drawing.Bitmap]$Bitmap){
               $mid=[int][math]::Round($Bitmap.Width/2.0)
               $half=[int][math]::Max(2,[math]::Round($Bitmap.Width*0.04))
-              return @($mid-$half,$mid+$half)
+              return @(($mid-$half),($mid+$half))
           }
 
           function Update-SplitPreview{
