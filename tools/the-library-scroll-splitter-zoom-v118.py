@@ -852,10 +852,6 @@ function Initialize-LibraryRegularZoom {
     })
 
     $viewport.Add_Resize({Update-LibraryRegularZoomLayout})
-    $pbWrapPreview.Add_ImageChanged({
-        $script:RegularWrapZoomPercent=100
-        Update-LibraryRegularZoomLayout
-    })
     $pbWrapPreview.Add_MouseEnter({try{$pbWrapPreview.Focus()}catch{}})
     $pbWrapPreview.Add_MouseWheel({
         param($sender,$e)
@@ -967,6 +963,21 @@ try{
                     '                }'+$nl+
                     '                '
             $text=$text.Substring(0,$singleCall)+$insert+$text.Substring($singleCall)
+        }
+    }
+
+    $wrapFunction=$text.IndexOf('function Set-WrapDroppedFile')
+    $autoNeedle='Auto-DetectSplit'
+    $autoCall=if($wrapFunction -ge 0){$text.IndexOf($autoNeedle,$wrapFunction)}else{-1}
+    if($autoCall -ge 0){
+        $lineEnd=$text.IndexOf([char]10,$autoCall)
+        if($lineEnd -lt 0){$lineEnd=$text.Length}else{$lineEnd++}
+        $nearEnd=[math]::Min($text.Length,$lineEnd+220)
+        $afterAuto=$text.Substring($lineEnd,$nearEnd-$lineEnd)
+        if(-not $afterAuto.Contains('Set-LibraryRegularZoom')){
+            $nl=[Environment]::NewLine
+            $zoomHook='        if (Get-Command Set-LibraryRegularZoom -ErrorAction SilentlyContinue) { Set-LibraryRegularZoom 100 }'+$nl
+            $text=$text.Substring(0,$lineEnd)+$zoomHook+$text.Substring($lineEnd)
         }
     }
 
