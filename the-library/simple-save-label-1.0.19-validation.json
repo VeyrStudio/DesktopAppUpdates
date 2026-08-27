@@ -1,0 +1,14 @@
+{
+  "version": "1.0.19",
+  "baseVersion": "1.0.18",
+  "payload": "payload-1.0.19-simple-save-label.txt",
+  "payloadSha256": "4e5b750945fabe27e828a31fc0400e31417db9ccfc5bb9259283ed90599bb8e0",
+  "requirements": {
+    "singleSaveButtonIsSave": true,
+    "multiSaveButtonIsSave": true,
+    "oldSaveButtonWordingGone": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed",
+  "saveLabelTest": "passed"
+}
