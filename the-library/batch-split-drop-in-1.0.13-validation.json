@@ -1,0 +1,21 @@
+{
+  "version": "1.0.13",
+  "baseVersion": "1.0.12",
+  "payload": "payload-1.0.13-batch-split-drop-in.txt",
+  "payloadSha256": "b8e9b1a65e0790d1f1d641c4bfc44b2090a2a756bb9645d69046fa00cfa81ba4",
+  "requirements": {
+    "separateDropInFile": true,
+    "minimalMainHook": true,
+    "replacesButton": true,
+    "persistentPanelState": true,
+    "selfContainedImageLoader": true,
+    "selfContainedCropper": true,
+    "multiSelect": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "fiveCoverPanelRuntimeTest": "passed",
+  "paintAndGuideRuntimeTest": "passed",
+  "fifteenPieceSaveTest": "passed",
+  "legacyButtonReplacementTest": "passed"
+}
