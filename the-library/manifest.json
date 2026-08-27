@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.5",
-  "payloadSha256": "faf5901f7bec42cbb3b70842cf08d37a703b777a5c8a73c06de466542bbfb5c3",
+  "version": "1.0.6",
+  "payloadSha256": "f31e8743585c6d9b163d7e90fda27d6b0057068359f02096b61b3537047653d5",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/f0b1cb3b131c44b43b367d9f819dee6ec19148c3/the-library/payload-1.0.5-batch-import.txt",
-      "sha256": "faf5901f7bec42cbb3b70842cf08d37a703b777a5c8a73c06de466542bbfb5c3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/b705a94c635848534b765730115019087195cee6/the-library/payload-1.0.6-batch-split-wraps.txt",
+      "sha256": "f31e8743585c6d9b163d7e90fda27d6b0057068359f02096b61b3537047653d5"
     }
   ],
-  "notes": "Batch cover importing for The Library. Adds IMPORT MULTIPLE IMAGES to the Add tab so multiple PNG, JPG, JPEG, BMP, TIF, or TIFF files can be selected in one picker and imported together. All selected images use the current Position, Cover Type, Project/Book, Ship, Fandom, and Extra Tags fields. Batch import keeps the original outside image files. Duplicate checks, existing Library record creation, hierarchy refresh, and Library refresh are reused. The split-screen hardening from v1.0.4 is cumulative in this payload, and portable Backup/Restore is preserved because user data is not replaced. Windows PowerShell parsing, synthetic patching, payload validation, and all internal SHA-256 checks passed before publish."
+  "notes": "Batch Split Wraps for The Library. Adds BATCH SPLIT WRAPS to the Split tab. Select multiple full-wrap cover images in one session, then edit each cover independently with its own left and right spine edges. Guides can be adjusted by dragging them over the preview or by entering pixel values. Each cover keeps its own guide positions while moving through Previous/Next or the queue. Covers can be marked ready individually, skipped/unskipped, or removed from the queue. SAVE ALL READY exports Back.png, Spine.png, and Front.png into a separate folder for each finished cover. There is intentionally no Apply to All control. Existing Library data is not replaced. Windows PowerShell parsing, synthetic patching, payload validation, and all internal SHA-256 checks passed before publish."
 }
