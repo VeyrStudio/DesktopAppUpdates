@@ -1,0 +1,19 @@
+{
+  "version": "1.0.5",
+  "baseVersion": "1.0.4",
+  "payload": "payload-1.0.5-batch-import.txt",
+  "payloadSha256": "faf5901f7bec42cbb3b70842cf08d37a703b777a5c8a73c06de466542bbfb5c3",
+  "requirements": {
+    "batchImportFunctionPresent": true,
+    "multiselectEnabled": true,
+    "usesExistingLibraryRecordPath": true,
+    "sharedExistingMetadataControls": true,
+    "keepsOriginalBatchFiles": true,
+    "batchButtonPresent": true,
+    "splitScreenCumulative": true,
+    "rollbackPreserved": true,
+    "allInternalHashesVerified": true
+  },
+  "powershellParse": "passed-windows-powershell-parser",
+  "syntheticPatchTest": "passed"
+}
