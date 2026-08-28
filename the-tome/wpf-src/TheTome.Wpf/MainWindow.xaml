@@ -1,0 +1,202 @@
+<Window x:Class="TheTome.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="The Tome" Width="1280" Height="820" MinWidth="980" MinHeight="650"
+        Background="#120917" Foreground="#F0E7D6" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <DataTemplate x:Key="BookSpineTemplate">
+            <Button Tag="{Binding}" Click="Book_Click" Padding="0" Margin="5" Background="Transparent" BorderThickness="0">
+                <Grid Width="82" Height="218">
+                    <Border CornerRadius="5" BorderBrush="#B28A56" BorderThickness="1"
+                            Background="#4A285E">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="16"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="#6A3A7E" BorderBrush="#B28A56" BorderThickness="0,0,0,1"/>
+                            <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="#F0DDB6"
+                                       FontFamily="Cinzel Decorative, Georgia" FontSize="12" FontWeight="SemiBold"
+                                       TextAlignment="Center" TextWrapping="Wrap" Margin="7,10"
+                                       VerticalAlignment="Center"/>
+                            <Border Grid.Row="2" Background="#6A3A7E" BorderBrush="#B28A56" BorderThickness="0,1,0,0"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SeriesTemplate">
+            <Border Background="#1C1023" BorderBrush="#59425E" BorderThickness="1" CornerRadius="8" Margin="0,0,0,14" Padding="13">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,8">
+                        <TextBlock Text="{Binding CountText}" Foreground="#BDA98C" DockPanel.Dock="Right" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Name}" Foreground="#D6B06A" FontFamily="Cinzel Decorative, Georgia"
+                                   FontSize="18" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Books}" ItemTemplate="{StaticResource BookSpineTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#1B0E22" BorderBrush="#5C3C62" BorderThickness="0,0,0,1" Padding="15,12">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <TextBlock Text="THE TOME" Foreground="#D6B06A" FontFamily="Cinzel Decorative, Georgia"
+                               FontSize="28" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,18,0"/>
+                    <Button Content="+ Add Book" Click="AddBook_Click"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="LibraryModeButton" Content="Library" Click="LibraryMode_Click"/>
+                    <Button x:Name="SeriesModeButton" Content="Series" Click="SeriesMode_Click"/>
+                    <Button Content="Update Now" Click="UpdateNow_Click"/>
+                </StackPanel>
+
+                <Grid Margin="18,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="150"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="SearchBox" Grid.Column="0" Margin="0,0,8,0" VerticalContentAlignment="Center"
+                             ToolTip="Search title, author, or series" TextChanged="SearchBox_TextChanged"/>
+                    <ComboBox x:Name="SortBox" Grid.Column="1" Margin="0,0,8,0" SelectionChanged="SortFilter_Changed">
+                        <ComboBoxItem Content="Recently Added" IsSelected="True"/>
+                        <ComboBoxItem Content="Title"/>
+                        <ComboBoxItem Content="Author"/>
+                        <ComboBoxItem Content="Status"/>
+                    </ComboBox>
+                    <ComboBox x:Name="FilterBox" Grid.Column="2" SelectionChanged="SortFilter_Changed">
+                        <ComboBoxItem Content="All" IsSelected="True"/>
+                        <ComboBoxItem Content="Unread"/>
+                        <ComboBoxItem Content="Reading"/>
+                        <ComboBoxItem Content="Finished"/>
+                        <ComboBoxItem Content="Series"/>
+                        <ComboBoxItem Content="Standalone"/>
+                    </ComboBox>
+                </Grid>
+            </DockPanel>
+        </Border>
+
+        <Border Grid.Row="1" Background="#160C1C" Padding="14,7">
+            <DockPanel>
+                <TextBlock x:Name="UpdateStatusText" DockPanel.Dock="Right" Foreground="#BDA98C"/>
+                <TextBlock x:Name="LibraryCountText" Foreground="#C6B69F"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="22,18,18,28">
+                    <StackPanel x:Name="LibrarySections">
+                        <TextBlock Text="RECENTLY ADDED" Foreground="#D6B06A" FontFamily="Cinzel Decorative, Georgia"
+                                   FontSize="18" Margin="0,0,0,8"/>
+                        <Border Background="#1A0F21" BorderBrush="#4C3652" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,22">
+                            <ItemsControl x:Name="RecentItems" ItemTemplate="{StaticResource BookSpineTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+
+                        <TextBlock Text="ALL BOOKS" Foreground="#D6B06A" FontFamily="Cinzel Decorative, Georgia"
+                                   FontSize="18" Margin="0,0,0,8"/>
+                        <Border Background="#1A0F21" BorderBrush="#4C3652" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <ItemsControl x:Name="AllItems" ItemTemplate="{StaticResource BookSpineTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel x:Name="SeriesSection" Visibility="Collapsed">
+                        <TextBlock Text="SERIES" Foreground="#D6B06A" FontFamily="Cinzel Decorative, Georgia"
+                                   FontSize="18" Margin="0,0,0,10"/>
+                        <ItemsControl x:Name="SeriesItems" ItemTemplate="{StaticResource SeriesTemplate}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Background="#1A0F21" BorderBrush="#4C3652" BorderThickness="1,0,0,0" Padding="18">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="DetailsPanel">
+                        <Border Height="235" Background="#120B17" BorderBrush="#705678" BorderThickness="1" CornerRadius="7" Margin="0,0,0,14">
+                            <Grid>
+                                <TextBlock Text="Select a book" x:Name="CoverPlaceholder" Foreground="#8F7A92"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="CoverImage" Stretch="Uniform" Margin="8"/>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock Text="TITLE" Foreground="#A98D64" FontSize="11"/>
+                        <TextBox x:Name="TitleBox" Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
+                        <TextBlock Text="AUTHOR" Foreground="#A98D64" FontSize="11"/>
+                        <TextBox x:Name="AuthorBox" Text="{Binding Author, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="100"/></Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="SERIES" Foreground="#A98D64" FontSize="11"/>
+                                <TextBox Text="{Binding Series, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="NUMBER" Foreground="#A98D64" FontSize="11"/>
+                                <TextBox Text="{Binding BookNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="STATUS" Foreground="#A98D64" FontSize="11"/>
+                        <ComboBox x:Name="StatusBox" SelectedValue="{Binding Status, Mode=TwoWay}" Margin="0,4,0,10">
+                            <ComboBoxItem Content="Unread"/>
+                            <ComboBoxItem Content="Reading"/>
+                            <ComboBoxItem Content="Finished"/>
+                        </ComboBox>
+
+                        <DockPanel Margin="0,0,0,4">
+                            <TextBlock Text="{Binding Progress, StringFormat={}{0:0}%}" DockPanel.Dock="Right" Foreground="#D6B06A"/>
+                            <TextBlock Text="PROGRESS" Foreground="#A98D64" FontSize="11"/>
+                        </DockPanel>
+                        <Slider Minimum="0" Maximum="100" Value="{Binding Progress, Mode=TwoWay}" Margin="0,0,0,12"/>
+
+                        <TextBlock Text="DESCRIPTION" Foreground="#A98D64" FontSize="11"/>
+                        <TextBox Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="90"
+                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,4,0,10"/>
+
+                        <TextBlock Text="NOTES" Foreground="#A98D64" FontSize="11"/>
+                        <TextBox Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="110"
+                                 TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,4,0,12"/>
+
+                        <UniformGrid Columns="2">
+                            <Button Content="Read" Click="Read_Click"/>
+                            <Button Content="Open Externally" Click="OpenExternal_Click"/>
+                            <Button Content="Save Details" Click="SaveDetails_Click"/>
+                            <Button Content="Change Cover" Click="ChangeCover_Click"/>
+                            <Button Content="Export Original" Click="Export_Click"/>
+                            <Button Content="Remove" Click="Remove_Click"/>
+                        </UniformGrid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
