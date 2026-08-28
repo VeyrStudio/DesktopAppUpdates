@@ -7,7 +7,7 @@ on:
       - '.github/workflows/the-tome-v019-build.yml'
       - 'tools/the-tome-v017-updater.py'
       - 'tools/the-tome-v018-manual-update.py'
-      - 'tools/the-tome-v019-icon-webp-part-*.txt'
+      - 'tools/the-tome-v019-approved-icon.ico'
 
 permissions:
   contents: write
@@ -115,24 +115,18 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install pillow
-          $parts = Get-ChildItem 'tools/the-tome-v019-icon-webp-part-*.txt' | Sort-Object Name
-          if ($parts.Count -ne 4) { throw "Expected 4 Tome icon parts, found $($parts.Count)." }
-          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
-          $webp = 'tome-build/assets/TheTome-icon.webp'
-          [IO.File]::WriteAllBytes($webp, [Convert]::FromBase64String($encoded))
-          if ((Get-Item $webp).Length -lt 15000) { throw 'Reconstructed Tome icon image is unexpectedly small.' }
+          Copy-Item 'tools/the-tome-v019-approved-icon.ico' 'tome-build/assets/TheTome.ico' -Force
           @'
           from PIL import Image
           from pathlib import Path
           p = Path("tome-build/assets")
-          img = Image.open(p / "TheTome-icon.webp").convert("RGBA")
+          img = Image.open(p / "TheTome.ico").convert("RGBA")
           img.save(p / "icon-source.png")
-          img.save(p / "TheTome.ico", sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
-          print("Created TheTome.ico from approved purple crescent book artwork.")
+          print("Using exact user-approved Tome icon artwork.")
           '@ | Set-Content -Encoding UTF8 make_tome_icon.py
           python make_tome_icon.py
           if (-not (Test-Path 'tome-build/assets/TheTome.ico')) { throw 'TheTome.ico was not created.' }
-          if ((Get-Item 'tome-build/assets/TheTome.ico').Length -lt 10000) { throw 'TheTome.ico is unexpectedly small.' }
+          if ((Get-Item 'tome-build/assets/TheTome.ico').Length -lt 5000) { throw 'TheTome.ico is unexpectedly small.' }
 
       - name: Install dependencies
         working-directory: tome-build
@@ -160,7 +154,7 @@ jobs:
         run: |
           gh release view $env:TAG --repo $env:GITHUB_REPOSITORY *> $null
           if ($LASTEXITCODE -eq 0) { gh release delete $env:TAG --repo $env:GITHUB_REPOSITORY --cleanup-tag -y }
-          gh release create $env:TAG $env:ASSET_NAME --repo $env:GITHUB_REPOSITORY --title "The Tome v$env:VERSION" --notes "Restores The Tome's original ornate purple crescent-and-clasp book icon everywhere by removing the procedural placeholder-icon overwrite. Preserves the Update Now button, automatic updates, hidden updater repair, bookshelf artwork, and library data separation."
+          gh release create $env:TAG $env:ASSET_NAME --repo $env:GITHUB_REPOSITORY --title "The Tome v$env:VERSION" --notes "Uses the exact user-approved ornate purple crescent-and-clasp book icon for the app, taskbar, shortcuts, Start menu, and installer. Preserves the Update Now button, automatic updates, hidden updater repair, bookshelf artwork, and library data separation."
 
       - name: Publish update manifest
         shell: pwsh
@@ -170,7 +164,7 @@ jobs:
             version = $env:VERSION
             url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG/$env:ASSET_NAME"
             sha256 = $env:SHA256
-            notes = 'Restores the original Tome icon and removes the procedural placeholder icon overwrite.'
+            notes = 'Uses the exact approved Tome icon everywhere.'
             published = (Get-Date).ToUniversalTime().ToString('o')
           } | ConvertTo-Json
           Set-Content -Path the-tome/manifest.json -Value $manifest -Encoding utf8
