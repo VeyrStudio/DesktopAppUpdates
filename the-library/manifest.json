@@ -2,45 +2,45 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "2.0.1",
-  "payloadSha256": "d9db13f0c21f989d06811514c0b2053d027a80334c82abe66cc2ac9f012261b8",
+  "version": "2.0.2",
+  "payloadSha256": "a61440956347390407b32bde7ac195db3360ce467d0f205e698b95842d128340",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-001.txt",
-      "sha256": "757b486b8f6f7404914d20266342c7a7622740cde503db32e901942a5e79d6ce"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-001.txt",
+      "sha256": "94553d2028e838ff186dae27a5e8f1ff95f9840b58e3ede43e289de06da53b39"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-002.txt",
-      "sha256": "83c70fdd5642fea164a0c8f175b6291283591b1c202b1e0559d9ac396ebbbf40"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-002.txt",
+      "sha256": "29e627d9156a5a066288e6cdecfe9349128aca4ffa103ed84e5b0cc2902daa42"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-003.txt",
-      "sha256": "ef1fd248722d50520f1dadefc2fd0a25cbec80bb13c9c14981349e3ffb8e79da"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-003.txt",
+      "sha256": "5a8cf974e1cd877c007fd39dc710ee5ad4f82de9bcfb629c1169bb5d573ff94c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-004.txt",
-      "sha256": "2fed57ee4aaf2cc4facec09e938b0de3762af1ceced38b3ecae5767c018a13fd"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-004.txt",
+      "sha256": "9c2828e074a1878b8cea02b39b1d90afeb627733b15165c3ccfa274d4450ffea"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-005.txt",
-      "sha256": "ef4c6715e6a6d20b8be6054af0b72c5944d8b755bb1320413657dab350e73dc0"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-005.txt",
+      "sha256": "fa5c412d92e035851a695e01facad176c43af40060426e5acbcf8827b3a7e3b1"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-006.txt",
-      "sha256": "257c7c831b400a1c12f6bcd2f971ff18ec7cb22b73e2a547c4bd799cd2f49a84"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-006.txt",
+      "sha256": "cad791160443468bd1cb6e7d6bc28daf9f25e33c7db1cc50ff500c5b681eaa50"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-007.txt",
-      "sha256": "afa856f67ef7a1caa1df4507d4886e696347b6dafcdb500b0f4f6583e5254ec3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-007.txt",
+      "sha256": "08dcdb123dc7fb76344813d567e74dbecbb90444a2c433af4f40b53d80bf6c49"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-008.txt",
-      "sha256": "c23e03bc3a036aae8765011482cd0e9317b5972f2cb6bb5f444e2bb5880080df"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-008.txt",
+      "sha256": "45991e676a96a7542de663a1e228382e7e11ce09892e55644e0c294f13fe6c93"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-009.txt",
-      "sha256": "8fd91b696d4ef50e9187b5c76c1e81f995b3378d5fb9b51070a4a335e0ddf0e1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.2-wpf-part-009.txt",
+      "sha256": "c46d60ee1870bb2c6707add107013d46e6e3d941b8feedbb6bb8d6dae471806e"
     }
   ],
-  "notes": "The Library 2.0.1 keeps the compiled C# WPF private-archive redesign and fixes startup window sizing so the native Windows title bar, drag area, minimize, maximize, and close controls stay fully reachable on scaled or shorter displays. Existing cover data, stored panels, snapping, imports, wrap splitting, queues, backups, restore, archive controls, and independent updates are preserved. No separate runtime installation is required."
+  "notes": "The Library 2.0.2 applies the private-archive visual redesign from the approved mockups: patterned black leather surfaces, antique-brass frames and controls, warm ivory serif typography, gold plaque primary actions, refined archive cards, a framed archive-record panel, a dedicated Add & Edit workbench with upload queue and centered preview or splitter, and the matching Settings layout. Add & Edit temporarily uses the full window workspace while preserving native Windows title-bar movement and snapping. Existing cover data, imports, splitting, zoom, drag guides, Save All, backups, archive actions, and independent verified updates are preserved."
 }

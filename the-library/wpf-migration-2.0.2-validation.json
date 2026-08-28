@@ -1,0 +1,23 @@
+{
+  "version": "2.0.2",
+  "builtFrom": "0a74ecea2064d35b407fdbadfc7cdc63652e7701",
+  "executableSha256": "9d271fdce13bb538a1aa5ba048261a73bb56b2c03292db5a12123797c9336e43",
+  "executableBytes": 139777042,
+  "payloadSha256": "a61440956347390407b32bde7ac195db3360ce467d0f205e698b95842d128340",
+  "payloadBytes": 186370381,
+  "payloadPartCount": 9,
+  "files": [
+    {
+      "path": "TheLibrary.exe",
+      "sha256": "9d271fdce13bb538a1aa5ba048261a73bb56b2c03292db5a12123797c9336e43"
+    },
+    {
+      "path": "CoverVault.ps1",
+      "sha256": "fb1a53f9bba8113e056d90cf641bea87f23ccc69c4cec05b33605c8c0badf746"
+    },
+    {
+      "path": "AppVersion.json",
+      "sha256": "ac3a04e6a05ba2f6290d8568eb96c043c73891dfe132ea9725bff90d12c63d58"
+    }
+  ]
+}
