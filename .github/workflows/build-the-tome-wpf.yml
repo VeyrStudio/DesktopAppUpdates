@@ -245,7 +245,7 @@ jobs:
       - name: Publish GitHub release
         shell: pwsh
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "the-tome-wpf-v$($env:TOME_WPF_VERSION)"
           $zipName = "The-Tome-WPF-v$($env:TOME_WPF_VERSION)-Windows.zip"
