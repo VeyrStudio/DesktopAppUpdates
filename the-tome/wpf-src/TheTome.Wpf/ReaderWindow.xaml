@@ -1,0 +1,28 @@
+<Window x:Class="TheTome.ReaderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="The Tome Reader" Width="1050" Height="800" MinWidth="760" MinHeight="560"
+        Background="#160B1C" Foreground="#F0E7D6" WindowStartupLocation="CenterOwner">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="#21102A" BorderBrush="#6B4A70" BorderThickness="0,0,0,1" Padding="14">
+            <DockPanel>
+                <Button Content="← Back" Click="Back_Click" DockPanel.Dock="Left"/>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <TextBlock Text="Text size" VerticalAlignment="Center" Margin="8,0"/>
+                    <Slider x:Name="FontSlider" Minimum="15" Maximum="30" Value="20" Width="130" ValueChanged="FontSlider_ValueChanged"/>
+                </StackPanel>
+                <TextBlock x:Name="ReaderTitle" FontFamily="Cinzel Decorative, Georgia" FontSize="22" Foreground="#D6B06A"
+                           VerticalAlignment="Center" Margin="18,0" TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
+
+        <FlowDocumentScrollViewer x:Name="Viewer" Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                  Background="#F1E7D8" Foreground="#25172B"
+                                  FontFamily="Crimson Pro, Georgia" FontSize="20"
+                                  IsSelectionEnabled="True" Padding="55,34"/>
+    </Grid>
+</Window>
