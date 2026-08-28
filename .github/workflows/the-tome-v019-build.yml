@@ -7,6 +7,7 @@ on:
       - '.github/workflows/the-tome-v019-build.yml'
       - 'tools/the-tome-v017-updater.py'
       - 'tools/the-tome-v018-manual-update.py'
+      - 'tools/the-tome-v019-icon-webp-part-*.txt'
 
 permissions:
   contents: write
@@ -110,17 +111,28 @@ jobs:
           if (Select-String -Path tome-build/main.js -Pattern 'apply-update.cmd|tasklist /FI|find \"|ping 127.0.0.1' -Quiet) { throw 'legacy cmd updater still present' }
           if (-not (Select-String -Path tome-build/main.js -Pattern 'apply-update.ps1' -Quiet)) { throw 'hidden PowerShell updater helper missing' }
 
-      - name: Preserve original Tome icon
+      - name: Create approved Tome icon
         shell: pwsh
         run: |
-          $ico = 'tome-build/assets/TheTome.ico'
-          if (-not (Test-Path $ico)) { throw 'Original TheTome.ico is missing from the source package.' }
-          $len = (Get-Item $ico).Length
-          if ($len -lt 10000) { throw 'Original TheTome.ico is unexpectedly small.' }
-          Write-Host "Using original bundled Tome icon: $ico ($len bytes)"
-          if (Test-Path 'tome-build/assets/icon-source.png') {
-            Write-Host "Original icon source PNG is also present."
-          }
+          python -m pip install pillow
+          $parts = Get-ChildItem 'tools/the-tome-v019-icon-webp-part-*.txt' | Sort-Object Name
+          if ($parts.Count -ne 4) { throw "Expected 4 Tome icon parts, found $($parts.Count)." }
+          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+          $webp = 'tome-build/assets/TheTome-icon.webp'
+          [IO.File]::WriteAllBytes($webp, [Convert]::FromBase64String($encoded))
+          if ((Get-Item $webp).Length -lt 15000) { throw 'Reconstructed Tome icon image is unexpectedly small.' }
+          @'
+          from PIL import Image
+          from pathlib import Path
+          p = Path("tome-build/assets")
+          img = Image.open(p / "TheTome-icon.webp").convert("RGBA")
+          img.save(p / "icon-source.png")
+          img.save(p / "TheTome.ico", sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(128,128),(256,256)])
+          print("Created TheTome.ico from approved purple crescent book artwork.")
+          '@ | Set-Content -Encoding UTF8 make_tome_icon.py
+          python make_tome_icon.py
+          if (-not (Test-Path 'tome-build/assets/TheTome.ico')) { throw 'TheTome.ico was not created.' }
+          if ((Get-Item 'tome-build/assets/TheTome.ico').Length -lt 10000) { throw 'TheTome.ico is unexpectedly small.' }
 
       - name: Install dependencies
         working-directory: tome-build
