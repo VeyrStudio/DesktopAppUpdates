@@ -122,7 +122,8 @@ public sealed class LibraryStore
     private void ReadEpubMetadata(string file, BookRecord book)
     {
         using var zip = ZipFile.OpenRead(file);
-        var container = zip.GetEntry("META-INF/container.xml");\n        if (container == null) return;
+        var container = zip.GetEntry("META-INF/container.xml");
+        if (container == null) return;
         XDocument containerXml;
         using (var stream = container.Open()) containerXml = XDocument.Load(stream);
         var rootFile = containerXml.Descendants().FirstOrDefault(x => x.Name.LocalName == "rootfile")?.Attribute("full-path")?.Value;
