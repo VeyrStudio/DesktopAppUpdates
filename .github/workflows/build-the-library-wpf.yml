@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 env:
-  LIBRARY_VERSION: "2.0.1"
+  LIBRARY_VERSION: "2.0.2"
 
 jobs:
   build:
@@ -102,7 +102,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadHash
             payloadParts = $parts
-            notes = 'The Library 2.0.1 keeps the compiled C# WPF private-archive redesign and fixes startup window sizing so the native Windows title bar, drag area, minimize, maximize, and close controls stay fully reachable on scaled or shorter displays. Existing cover data, stored panels, snapping, imports, wrap splitting, queues, backups, restore, archive controls, and independent updates are preserved. No separate runtime installation is required.'
+            notes = 'The Library 2.0.2 applies the private-archive visual redesign from the approved mockups: patterned black leather surfaces, antique-brass frames and controls, warm ivory serif typography, gold plaque primary actions, refined archive cards, a framed archive-record panel, a dedicated Add & Edit workbench with upload queue and centered preview or splitter, and the matching Settings layout. Add & Edit temporarily uses the full window workspace while preserving native Windows title-bar movement and snapping. Existing cover data, imports, splitting, zoom, drag guides, Save All, backups, archive actions, and independent verified updates are preserved.'
           } | ConvertTo-Json -Depth 8
           [IO.File]::WriteAllText((Join-Path $channel 'manifest.json'), $manifest, (New-Object Text.UTF8Encoding($false)))
 

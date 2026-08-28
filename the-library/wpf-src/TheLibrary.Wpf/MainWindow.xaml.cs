@@ -63,6 +63,10 @@ public partial class MainWindow : Window
         ArchivePage.Visibility = page == ArchivePage ? Visibility.Visible : Visibility.Collapsed;
         AddPage.Visibility = page == AddPage ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = page == SettingsPage ? Visibility.Visible : Visibility.Collapsed;
+
+        var workspace = page == AddPage;
+        SidebarBorder.Visibility = workspace ? Visibility.Collapsed : Visibility.Visible;
+        SidebarColumn.Width = workspace ? new GridLength(0) : new GridLength(220);
     }
 
     private void AllCovers_Click(object sender, RoutedEventArgs e) { _scope = ArchiveScope.All; ArchiveHeading.Text = "Cover Archive"; ShowPage(ArchivePage); RefreshArchive(); }
@@ -73,8 +77,21 @@ public partial class MainWindow : Window
     private void Archived_Click(object sender, RoutedEventArgs e) { _scope = ArchiveScope.Archived; ArchiveHeading.Text = "Archive"; ShowPage(ArchivePage); RefreshArchive(); }
     private void AddCovers_Click(object sender, RoutedEventArgs e) => ShowPage(AddPage);
     private void Settings_Click(object sender, RoutedEventArgs e) => ShowPage(SettingsPage);
-    private void SingleMode_Click(object sender, RoutedEventArgs e) { SinglePanel.Visibility = Visibility.Visible; WrapPanel.Visibility = Visibility.Collapsed; }
-    private void WrapMode_Click(object sender, RoutedEventArgs e) { SinglePanel.Visibility = Visibility.Collapsed; WrapPanel.Visibility = Visibility.Visible; }
+    private void SingleMode_Click(object sender, RoutedEventArgs e)
+    {
+        SinglePanel.Visibility = Visibility.Visible;
+        WrapPanel.Visibility = Visibility.Collapsed;
+        SingleModeButton.Style = (Style)FindResource("GoldButton");
+        WrapModeButton.Style = (Style)FindResource("ArchiveButton");
+    }
+
+    private void WrapMode_Click(object sender, RoutedEventArgs e)
+    {
+        SinglePanel.Visibility = Visibility.Collapsed;
+        WrapPanel.Visibility = Visibility.Visible;
+        SingleModeButton.Style = (Style)FindResource("ArchiveButton");
+        WrapModeButton.Style = (Style)FindResource("GoldButton");
+    }
 
     private void ArchiveFilter_Changed(object sender, EventArgs e)
     {
