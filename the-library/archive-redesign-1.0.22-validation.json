@@ -1,0 +1,26 @@
+{
+  "version": "1.0.22",
+  "payloadSha256": "79f5a328cfae116ba0d4cfd2f2bf30bafbc81e2f284fa9797678f2e1a0d5436d",
+  "payloadBytes": 241872,
+  "files": [
+    {
+      "path": "CoverVault.ps1",
+      "sha256": "bd64b0e8feafb43d65b7dc53811ed4299417feedb99c95800fe20da7ce32103a"
+    },
+    {
+      "path": "BatchSplitDropIn.ps1",
+      "sha256": "22211bf6b1906baacef27da7e7fcec3681b085dd53f28985c28c403f33e427d2"
+    },
+    {
+      "path": "AppVersion.json",
+      "sha256": "19a03c95d26cee7aba63a695dd30bbd06ee5e05ef079b098bb2f5205770cb5fe"
+    }
+  ],
+  "checks": {
+    "balancedMainBraces": true,
+    "balancedDropInBraces": true,
+    "fullWrapStoragePositionRemoved": true,
+    "nativeSnapPreserved": true,
+    "batchSaveAllPreserved": true
+  }
+}
