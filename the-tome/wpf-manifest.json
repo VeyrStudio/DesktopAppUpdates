@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "appId": "the-tome-wpf",
+  "appName": "The Tome",
+  "version": "1.0.0",
+  "payloadSha256": "b5fa1adb5ae6e8e1e37585213ab0cb0bffcc893dd5f29c1f3363b5abacae9a07",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-001.txt",
+      "sha256": "d69bcb25a3623d7aea20be7f9fc60978a9d984100be5951d41cf52a212cca4c1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-002.txt",
+      "sha256": "d12f5237d506ec264978a620473ef7f252db9547449adbe72f5c0ddd1dc624ea"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-003.txt",
+      "sha256": "0078394a4f0b08141a5ad9e7f55c0e344c620cb0674bf8183cbde9f4e8b74110"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-004.txt",
+      "sha256": "1512fd4584f735be16b4a00593e2d9a145f5bc0bdfc6fd0aa00823366364853d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-005.txt",
+      "sha256": "b2d7e2b658b8048e46ac3ee57bb8f96574e0cad95821df85c3128b07a7ae1471"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-006.txt",
+      "sha256": "2d3632aba5eb30d92feb7e771ff5840010ed56f7278cde75f727a854a6ca41aa"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-007.txt",
+      "sha256": "4d8305e648aa590980b84ed7f6f78ae6b679682ff4b1da9d51da43ff3ee1b8dd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-008.txt",
+      "sha256": "72ef66dd5a208bdc0ac29c1e38ef4e060bf769ac534fc0bb2f7a715013865df1"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-payload-1.0.0-part-009.txt",
+      "sha256": "c901ebf89259631e8a114e3ff147e4b9e022daf20bb1b45a6b41ae7d116f0fdf"
+    }
+  ],
+  "notes": "First native WPF migration build. Adds the WPF library shell, exact Tome icon, managed-library scan/import, EPUB metadata/reader, series/search/details, and native automatic plus manual updates."
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "builtFrom": "cecd1fb3bac4860a7dcce0c00b3e24bbba66b141",
+  "executableSha256": "c1f2d0d78d7ca4d21e220e5afdbc556a4567271ca6515e7ea24a2b17d277cda9",
+  "executableBytes": 139805696,
+  "payloadSha256": "b5fa1adb5ae6e8e1e37585213ab0cb0bffcc893dd5f29c1f3363b5abacae9a07",
+  "payloadBytes": 186408203,
+  "payloadPartCount": 9
+}
