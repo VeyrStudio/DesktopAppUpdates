@@ -1,0 +1,261 @@
+name: Build The Tome WPF Migration
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "the-tome/wpf-src/**"
+      - ".github/workflows/build-the-tome-wpf.yml"
+
+permissions:
+  contents: write
+
+env:
+  TOME_WPF_VERSION: "1.0.0"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Apply exact approved Tome icon
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path 'the-tome/wpf-src/TheTome.Wpf/Assets' | Out-Null
+          Copy-Item 'tools/the-tome-v019-approved-icon.ico' 'the-tome/wpf-src/TheTome.Wpf/Assets/TheTome.ico' -Force
+          if (-not (Test-Path 'the-tome/wpf-src/TheTome.Wpf/Assets/TheTome.ico')) { throw 'Approved Tome icon missing.' }
+          Write-Host "Exact approved icon SHA256:"
+          Get-FileHash 'the-tome/wpf-src/TheTome.Wpf/Assets/TheTome.ico' -Algorithm SHA256
+
+      - name: Publish self-contained WPF app
+        shell: pwsh
+        run: dotnet publish the-tome/wpf-src/TheTome.Wpf/TheTome.Wpf.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=$env:TOME_WPF_VERSION -o publish
+
+      - name: Verify native app
+        shell: pwsh
+        run: |
+          if (-not (Test-Path publish/TheTome.exe)) { throw "TheTome.exe was not produced." }
+          $size = (Get-Item publish/TheTome.exe).Length
+          if ($size -lt 1000000) { throw "TheTome.exe is unexpectedly small." }
+          Get-FileHash publish/TheTome.exe -Algorithm SHA256
+
+      - name: Create app version metadata
+        shell: pwsh
+        run: |
+          $appVersion = [ordered]@{
+            appId = 'the-tome-wpf'
+            appName = 'The Tome'
+            version = $env:TOME_WPF_VERSION
+            manifestUrl = 'https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/wpf-manifest.json'
+          } | ConvertTo-Json -Depth 4
+          [IO.File]::WriteAllText((Join-Path $PWD 'publish/AppVersion.json'), $appVersion, (New-Object Text.UTF8Encoding($false)))
+
+      - name: Build manual install ZIP
+        shell: pwsh
+        run: |
+          $package = Join-Path $PWD 'package'
+          New-Item -ItemType Directory -Force -Path $package | Out-Null
+          Copy-Item publish/TheTome.exe (Join-Path $package 'TheTome.exe') -Force
+          Copy-Item publish/AppVersion.json (Join-Path $package 'AppVersion.json') -Force
+
+          @'
+          $ErrorActionPreference = 'Stop'
+          $source = $PSScriptRoot
+          $install = Join-Path $env:LOCALAPPDATA 'VeyrStudio\TheTomeWPF'
+          New-Item -ItemType Directory -Force -Path $install | Out-Null
+
+          Get-Process -Name 'TheTome' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Start-Sleep -Milliseconds 400
+
+          Copy-Item (Join-Path $source 'TheTome.exe') (Join-Path $install 'TheTome.exe') -Force
+          Copy-Item (Join-Path $source 'AppVersion.json') (Join-Path $install 'AppVersion.json') -Force
+
+          $shell = New-Object -ComObject WScript.Shell
+          $desktop = [Environment]::GetFolderPath('Desktop')
+          $desktopLink = Join-Path $desktop 'The Tome.lnk'
+          $shortcut = $shell.CreateShortcut($desktopLink)
+          $shortcut.TargetPath = Join-Path $install 'TheTome.exe'
+          $shortcut.WorkingDirectory = $install
+          $shortcut.IconLocation = (Join-Path $install 'TheTome.exe') + ',0'
+          $shortcut.Description = 'The Tome'
+          $shortcut.Save()
+
+          $startDir = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\VeyrStudio'
+          New-Item -ItemType Directory -Force -Path $startDir | Out-Null
+          $startLink = Join-Path $startDir 'The Tome.lnk'
+          $shortcut2 = $shell.CreateShortcut($startLink)
+          $shortcut2.TargetPath = Join-Path $install 'TheTome.exe'
+          $shortcut2.WorkingDirectory = $install
+          $shortcut2.IconLocation = (Join-Path $install 'TheTome.exe') + ',0'
+          $shortcut2.Description = 'The Tome'
+          $shortcut2.Save()
+
+          try { & "$env:SystemRoot\System32\ie4uinit.exe" -ClearIconCache | Out-Null } catch {}
+          Start-Process (Join-Path $install 'TheTome.exe')
+          '@ | Set-Content -Path (Join-Path $package 'Install-The-Tome-WPF.ps1') -Encoding UTF8
+
+          @'
+          @echo off
+          title Install The Tome WPF
+          echo.
+          echo ==========================================
+          echo          INSTALL THE TOME - WPF
+          echo ==========================================
+          echo.
+          echo This installs the new native WPF version of The Tome.
+          echo Your managed ebook library is not deleted or overwritten.
+          echo.
+          pause
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-The-Tome-WPF.ps1"
+          if errorlevel 1 (
+            echo.
+            echo Installation failed.
+            pause
+            exit /b 1
+          )
+          echo.
+          echo The Tome WPF is installed and opening now.
+          echo.
+          pause
+          '@ | Set-Content -Path (Join-Path $package 'INSTALL THE TOME WPF.cmd') -Encoding ASCII
+
+          @'
+          THE TOME — WPF MIGRATION
+
+          1. Extract this ZIP.
+          2. Double-click "INSTALL THE TOME WPF.cmd".
+          3. The installer places the native app in:
+             %LOCALAPPDATA%\VeyrStudio\TheTomeWPF
+          4. The normal Desktop and Start Menu "The Tome" shortcuts are pointed to the WPF app.
+
+          Your existing Electron Tome is left installed as a safety copy.
+          The WPF app scans Documents\The Tome Library so existing managed ebook files remain available.
+          WPF data is stored separately under %LOCALAPPDATA%\VeyrStudio\TheTomeWPF.
+
+          This migration build includes:
+          - native WPF shell and Windows title bar
+          - exact approved Tome icon
+          - one-at-a-time ebook import with verified managed copies
+          - EPUB metadata and cover extraction
+          - title/author/series search
+          - sort and status filters
+          - series grouping
+          - status, progress, notes, description, cover replacement and export
+          - basic built-in EPUB text reader
+          - automatic updates plus Update Now
+          - native self-copy updater with no cmd/find/tasklist loop
+
+          PDF/MOBI/AZW/AZW3 built-in rendering is still being migrated.
+          '@ | Set-Content -Path (Join-Path $package 'README.txt') -Encoding UTF8
+
+          $zipName = "The-Tome-WPF-v$($env:TOME_WPF_VERSION)-Windows.zip"
+          Compress-Archive -Path (Join-Path $package '*') -DestinationPath $zipName -Force
+
+      - name: Build WPF update channel
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $channel = Join-Path $PWD 'the-tome'
+          $version = $env:TOME_WPF_VERSION
+          $exe = Join-Path $PWD 'publish/TheTome.exe'
+          $appVersionPath = Join-Path $PWD 'publish/AppVersion.json'
+
+          $entries = @(
+            [ordered]@{
+              path = 'TheTome.exe'
+              sha256 = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+              contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($exe))
+            },
+            [ordered]@{
+              path = 'AppVersion.json'
+              sha256 = (Get-FileHash $appVersionPath -Algorithm SHA256).Hash.ToLowerInvariant()
+              contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($appVersionPath))
+            }
+          )
+
+          $payload = [ordered]@{
+            schemaVersion = 1
+            appId = 'the-tome-wpf'
+            appName = 'The Tome'
+            version = $version
+            files = $entries
+            delete = @()
+          } | ConvertTo-Json -Depth 8 -Compress
+
+          $payloadBytes = [Text.Encoding]::UTF8.GetBytes($payload)
+          $payloadHash = ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($payloadBytes))).ToLowerInvariant()
+
+          Get-ChildItem $channel -Filter "wpf-payload-$version-part-*.txt" -ErrorAction SilentlyContinue | Remove-Item -Force
+          $partSize = 20MB
+          $parts = @()
+          for ($offset = 0; $offset -lt $payloadBytes.Length; $offset += $partSize) {
+            $count = [Math]::Min($partSize, $payloadBytes.Length - $offset)
+            $name = "wpf-payload-$version-part-{0:000}.txt" -f ($parts.Count + 1)
+            $path = Join-Path $channel $name
+            $slice = New-Object byte[] $count
+            [Array]::Copy($payloadBytes, $offset, $slice, 0, $count)
+            [IO.File]::WriteAllBytes($path, $slice)
+            $parts += [ordered]@{
+              url = "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-tome/$name"
+              sha256 = ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($slice))).ToLowerInvariant()
+            }
+          }
+
+          $manifest = [ordered]@{
+            schemaVersion = 1
+            appId = 'the-tome-wpf'
+            appName = 'The Tome'
+            version = $version
+            payloadSha256 = $payloadHash
+            payloadParts = $parts
+            notes = 'First native WPF migration build. Adds the WPF library shell, exact Tome icon, managed-library scan/import, EPUB metadata/reader, series/search/details, and native automatic plus manual updates.'
+          } | ConvertTo-Json -Depth 8
+          [IO.File]::WriteAllText((Join-Path $channel 'wpf-manifest.json'), $manifest, (New-Object Text.UTF8Encoding($false)))
+
+          $validation = [ordered]@{
+            version = $version
+            builtFrom = $env:GITHUB_SHA
+            executableSha256 = $entries[0].sha256
+            executableBytes = (Get-Item $exe).Length
+            payloadSha256 = $payloadHash
+            payloadBytes = $payloadBytes.Length
+            payloadPartCount = $parts.Count
+          } | ConvertTo-Json -Depth 8
+          [IO.File]::WriteAllText((Join-Path $channel "wpf-$version-validation.json"), $validation, (New-Object Text.UTF8Encoding($false)))
+
+      - name: Publish WPF update channel
+        shell: pwsh
+        run: |
+          git config user.name "VeyrStudio Update Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add the-tome/wpf-manifest.json the-tome/wpf-payload-$env:TOME_WPF_VERSION-part-*.txt the-tome/wpf-$env:TOME_WPF_VERSION-validation.json
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Release The Tome WPF $env:TOME_WPF_VERSION"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          }
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          $tag = "the-tome-wpf-v$($env:TOME_WPF_VERSION)"
+          $zipName = "The-Tome-WPF-v$($env:TOME_WPF_VERSION)-Windows.zip"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) { gh release delete $tag --repo $env:GITHUB_REPOSITORY --cleanup-tag -y }
+          gh release create $tag publish/TheTome.exe $zipName --repo $env:GITHUB_REPOSITORY --title "The Tome WPF v$($env:TOME_WPF_VERSION)" --notes "First native WPF migration build. Existing Electron install is left intact as a safety copy. Uses the exact approved Tome icon and a separate WPF update channel."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: The-Tome-WPF-v1.0.0-Windows
+          path: The-Tome-WPF-v1.0.0-Windows.zip
+          if-no-files-found: error
+          retention-days: 30
