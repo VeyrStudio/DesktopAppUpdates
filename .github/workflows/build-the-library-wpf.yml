@@ -1,0 +1,33 @@
+name: Build The Library WPF
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "the-library/wpf-src/**"
+      - ".github/workflows/build-the-library-wpf.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Publish self-contained WPF app
+        shell: pwsh
+        run: dotnet publish the-library/wpf-src/TheLibrary.Wpf/TheLibrary.Wpf.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
+      - name: Verify output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path publish/TheLibrary.exe)) { throw "TheLibrary.exe was not produced." }
+          Get-FileHash publish/TheLibrary.exe -Algorithm SHA256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TheLibrary-WPF-win-x64
+          path: publish/TheLibrary.exe
+          if-no-files-found: error
