@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "1.0.21",
-  "payloadSha256": "16172bd4424ebdcf7a3f725ee9525aa9e1c1abb17e7db58ababa91870da93967",
+  "version": "1.0.22",
+  "payloadSha256": "79f5a328cfae116ba0d4cfd2f2bf30bafbc81e2f284fa9797678f2e1a0d5436d",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/bb789e54fd7bc7323f4afed23728d5e539927ab4/the-library/payload-1.0.21-native-snap.txt",
-      "sha256": "16172bd4424ebdcf7a3f725ee9525aa9e1c1abb17e7db58ababa91870da93967"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-1.0.22-archive-redesign.txt",
+      "sha256": "79f5a328cfae116ba0d4cfd2f2bf30bafbc81e2f284fa9797678f2e1a0d5436d"
     }
   ],
-  "notes": "Replaces The Library's custom frameless window chrome with a native sizable Windows title bar so Windows Snap Assist and Snap Layouts work reliably alongside Edge and File Explorer. The custom fake title bar is hidden, the native caption is styled to match The Library, the content reclaims the old title-bar space, the minimum width is reduced to 360 px, the tabs anchor to all sides, and all main tabs retain scrolling at narrow widths. Windows validation passed at 420 px, 560 px, and 640 px widths."
+  "notes": "Redesigns The Library as an organized private archive using black leather, antique brass, warm ivory text, and quieter cover cards. Cover cards now emphasize title, fandom, ship, and panel position. The archive, single-panel importer, full-wrap splitter, batch queue, settings, and backup screens share one visual system. Full wraps remain temporary source images: only Back Cover, Spine, and Front Cover panels are saved. Existing Save All, Clear All, zoom, drag guides, backups, update checks, and native Windows snapping are preserved."
 }
