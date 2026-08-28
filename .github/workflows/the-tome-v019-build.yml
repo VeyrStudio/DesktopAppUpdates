@@ -114,20 +114,11 @@ jobs:
       - name: Create approved Tome icon
         shell: pwsh
         run: |
-          python -m pip install pillow
           Copy-Item 'tools/the-tome-v019-approved-icon.ico' 'tome-build/assets/TheTome.ico' -Force
-          @'
-          from PIL import Image
-          from pathlib import Path
-          p = Path("tome-build/assets")
-          img = Image.open(p / "TheTome.ico").convert("RGBA")
-          img.save(p / "icon-source.png")
-          print("Using exact user-approved Tome icon artwork.")
-          '@ | Set-Content -Encoding UTF8 make_tome_icon.py
-          python make_tome_icon.py
-          if (-not (Test-Path 'tome-build/assets/TheTome.ico')) { throw 'TheTome.ico was not created.' }
-          if ((Get-Item 'tome-build/assets/TheTome.ico').Length -lt 5000) { throw 'TheTome.ico is unexpectedly small.' }
-
+          if (-not (Test-Path 'tome-build/assets/TheTome.ico')) { throw 'TheTome.ico was not copied.' }
+          $len = (Get-Item 'tome-build/assets/TheTome.ico').Length
+          if ($len -lt 5000) { throw 'TheTome.ico is unexpectedly small.' }
+          Write-Host "Using exact user-approved Tome icon ($len bytes)."
       - name: Install dependencies
         working-directory: tome-build
         run: npm install --no-audit --no-fund
