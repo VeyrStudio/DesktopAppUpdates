@@ -2,45 +2,45 @@
   "schemaVersion": 1,
   "appId": "the-library",
   "appName": "The Library",
-  "version": "2.0.0",
-  "payloadSha256": "b848ac469950d58b89df7019d57a5c28fa740123ba325e56b1448cc5654e3a29",
+  "version": "2.0.1",
+  "payloadSha256": "d9db13f0c21f989d06811514c0b2053d027a80334c82abe66cc2ac9f012261b8",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-001.txt",
-      "sha256": "47ddc3677fca5726460cefaff6d9664b826aa0fbd27d6acdc0b1ac899df4e312"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-001.txt",
+      "sha256": "757b486b8f6f7404914d20266342c7a7622740cde503db32e901942a5e79d6ce"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-002.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-002.txt",
       "sha256": "83c70fdd5642fea164a0c8f175b6291283591b1c202b1e0559d9ac396ebbbf40"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-003.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-003.txt",
       "sha256": "ef1fd248722d50520f1dadefc2fd0a25cbec80bb13c9c14981349e3ffb8e79da"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-004.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-004.txt",
       "sha256": "2fed57ee4aaf2cc4facec09e938b0de3762af1ceced38b3ecae5767c018a13fd"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-005.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-005.txt",
       "sha256": "ef4c6715e6a6d20b8be6054af0b72c5944d8b755bb1320413657dab350e73dc0"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-006.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-006.txt",
       "sha256": "257c7c831b400a1c12f6bcd2f971ff18ec7cb22b73e2a547c4bd799cd2f49a84"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-007.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-007.txt",
       "sha256": "afa856f67ef7a1caa1df4507d4886e696347b6dafcdb500b0f4f6583e5254ec3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-008.txt",
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-008.txt",
       "sha256": "c23e03bc3a036aae8765011482cd0e9317b5972f2cb6bb5f444e2bb5880080df"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.0-wpf-part-009.txt",
-      "sha256": "360bbd547574d71704884bdb9c817f59ad877d3f3dc8827eb4c03047bd20e779"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/payload-2.0.1-wpf-part-009.txt",
+      "sha256": "8fd91b696d4ef50e9187b5c76c1e81f995b3378d5fb9b51070a4a335e0ddf0e1"
     }
   ],
-  "notes": "The Library has been rebuilt as a compiled C# WPF application. It keeps the existing cover database and stored panels, replaces the PowerShell/WinForms interface with the approved black-leather and antique-brass private archive, adds responsive grouped-set browsing and details, and preserves single-panel import, temporary full-wrap splitting, multi-wrap queues, Save All, Clear All, draggable guides, live previews, zoom, backups, restore, archive controls, native Windows snapping, and independent updates. No separate runtime installation is required."
+  "notes": "The Library 2.0.1 keeps the compiled C# WPF private-archive redesign and fixes startup window sizing so the native Windows title bar, drag area, minimize, maximize, and close controls stay fully reachable on scaled or shorter displays. Existing cover data, stored panels, snapping, imports, wrap splitting, queues, backups, restore, archive controls, and independent updates are preserved. No separate runtime installation is required."
 }
