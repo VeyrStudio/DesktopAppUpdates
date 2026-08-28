@@ -31,6 +31,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ApplyStartupBounds();
         DataContext = this;
         _updates = new UpdateService(_store.AppDir);
         try { _store.Load(); }
@@ -38,6 +39,20 @@ public partial class MainWindow : Window
         StoragePath.Text = _store.DataRoot;
         VersionText.Text = $"Current version: {_updates.CurrentVersion}";
         RefreshArchive();
+    }
+
+    private void ApplyStartupBounds()
+    {
+        const double margin = 16;
+        var workArea = SystemParameters.WorkArea;
+        var maxWidth = Math.Max(MinWidth, workArea.Width - (margin * 2));
+        var maxHeight = Math.Max(MinHeight, workArea.Height - (margin * 2));
+
+        Width = Math.Min(Width, maxWidth);
+        Height = Math.Min(Height, maxHeight);
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = workArea.Left + Math.Max(margin, (workArea.Width - Width) / 2);
+        Top = workArea.Top + Math.Max(margin, (workArea.Height - Height) / 2);
     }
 
     private static string ComboText(ComboBox combo) =>

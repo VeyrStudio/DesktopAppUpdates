@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 env:
-  LIBRARY_VERSION: "2.0.0"
+  LIBRARY_VERSION: "2.0.1"
 
 jobs:
   build:
@@ -102,7 +102,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadHash
             payloadParts = $parts
-            notes = 'The Library has been rebuilt as a compiled C# WPF application. It keeps the existing cover database and stored panels, replaces the PowerShell/WinForms interface with the approved black-leather and antique-brass private archive, adds responsive grouped-set browsing and details, and preserves single-panel import, temporary full-wrap splitting, multi-wrap queues, Save All, Clear All, draggable guides, live previews, zoom, backups, restore, archive controls, native Windows snapping, and independent updates. No separate runtime installation is required.'
+            notes = 'The Library 2.0.1 keeps the compiled C# WPF private-archive redesign and fixes startup window sizing so the native Windows title bar, drag area, minimize, maximize, and close controls stay fully reachable on scaled or shorter displays. Existing cover data, stored panels, snapping, imports, wrap splitting, queues, backups, restore, archive controls, and independent updates are preserved. No separate runtime installation is required.'
           } | ConvertTo-Json -Depth 8
           [IO.File]::WriteAllText((Join-Path $channel 'manifest.json'), $manifest, (New-Object Text.UTF8Encoding($false)))
 
