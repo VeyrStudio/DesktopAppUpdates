@@ -1,7 +1,7 @@
 {
-  "version": "0.1.8",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.8/The_Tome_Setup_0.1.8.exe",
-  "sha256": "5102fba3140f05c06e13fe6761a8ca03a566c9b8152d6aa2350db724401009fd",
-  "notes": "Adds a manual Update Now button alongside automatic updates; hidden single-instance updater retained.",
-  "published": "2026-08-27T10:49:23.3005020Z"
+  "version": "0.1.9",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-tome-v0.1.9/The_Tome_Setup_0.1.9.exe",
+  "sha256": "8d578f394444d4b296852894609f1f2e92f18810a46dab25447344995dbfd480",
+  "notes": "Restores the original Tome icon and removes the procedural placeholder icon overwrite.",
+  "published": "2026-08-28T06:32:17.6669354Z"
 }
