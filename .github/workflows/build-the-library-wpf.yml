@@ -8,7 +8,10 @@ on:
       - ".github/workflows/build-the-library-wpf.yml"
 
 permissions:
-  contents: read
+  contents: write
+
+env:
+  LIBRARY_VERSION: "2.0.0"
 
 jobs:
   build:
@@ -26,6 +29,103 @@ jobs:
         run: |
           if (-not (Test-Path publish/TheLibrary.exe)) { throw "TheLibrary.exe was not produced." }
           Get-FileHash publish/TheLibrary.exe -Algorithm SHA256
+      - name: Build verified migration update
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $channel = Join-Path $PWD 'the-library'
+          $version = $env:LIBRARY_VERSION
+          $exe = Join-Path $PWD 'publish/TheLibrary.exe'
+          $appVersion = [ordered]@{
+            appId = 'the-library'
+            appName = 'The Library'
+            version = $version
+            manifestUrl = 'https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/manifest.json'
+          } | ConvertTo-Json -Depth 4
+          $bridge = @'
+          $ErrorActionPreference = 'Stop'
+          $exe = Join-Path $PSScriptRoot 'TheLibrary.exe'
+          if (-not (Test-Path -LiteralPath $exe)) { throw 'TheLibrary.exe is missing.' }
+          Start-Process -FilePath $exe
+          '@
+
+          $entries = @(
+            [ordered]@{
+              path = 'TheLibrary.exe'
+              sha256 = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+              contentBase64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($exe))
+            },
+            [ordered]@{
+              path = 'CoverVault.ps1'
+              sha256 = ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($bridge)))).ToLowerInvariant()
+              contentBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($bridge))
+            },
+            [ordered]@{
+              path = 'AppVersion.json'
+              sha256 = ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($appVersion)))).ToLowerInvariant()
+              contentBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($appVersion))
+            }
+          )
+          $payload = [ordered]@{
+            schemaVersion = 1
+            appId = 'the-library'
+            appName = 'The Library'
+            version = $version
+            files = $entries
+            delete = @()
+          } | ConvertTo-Json -Depth 8 -Compress
+          $payloadBytes = [Text.Encoding]::UTF8.GetBytes($payload)
+          $payloadHash = ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($payloadBytes))).ToLowerInvariant()
+
+          Get-ChildItem $channel -Filter "payload-$version-wpf-part-*.txt" -ErrorAction SilentlyContinue | Remove-Item -Force
+          $partSize = 20MB
+          $parts = @()
+          for ($offset = 0; $offset -lt $payloadBytes.Length; $offset += $partSize) {
+            $count = [Math]::Min($partSize, $payloadBytes.Length - $offset)
+            $partNumber = $parts.Count + 1
+            $name = "payload-$version-wpf-part-{0:000}.txt" -f $partNumber
+            $path = Join-Path $channel $name
+            $slice = New-Object byte[] $count
+            [Array]::Copy($payloadBytes, $offset, $slice, 0, $count)
+            [IO.File]::WriteAllBytes($path, $slice)
+            $partHash = ([Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($slice))).ToLowerInvariant()
+            $parts += [ordered]@{
+              url = "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-library/$name"
+              sha256 = $partHash
+            }
+          }
+
+          $manifest = [ordered]@{
+            schemaVersion = 1
+            appId = 'the-library'
+            appName = 'The Library'
+            version = $version
+            payloadSha256 = $payloadHash
+            payloadParts = $parts
+            notes = 'The Library has been rebuilt as a compiled C# WPF application. It keeps the existing cover database and stored panels, replaces the PowerShell/WinForms interface with the approved black-leather and antique-brass private archive, adds responsive grouped-set browsing and details, and preserves single-panel import, temporary full-wrap splitting, multi-wrap queues, Save All, Clear All, draggable guides, live previews, zoom, backups, restore, archive controls, native Windows snapping, and independent updates. No separate runtime installation is required.'
+          } | ConvertTo-Json -Depth 8
+          [IO.File]::WriteAllText((Join-Path $channel 'manifest.json'), $manifest, (New-Object Text.UTF8Encoding($false)))
+
+          $validation = [ordered]@{
+            version = $version
+            builtFrom = $env:GITHUB_SHA
+            executableSha256 = $entries[0].sha256
+            executableBytes = (Get-Item $exe).Length
+            payloadSha256 = $payloadHash
+            payloadBytes = $payloadBytes.Length
+            payloadPartCount = $parts.Count
+            files = @($entries | ForEach-Object { [ordered]@{ path=$_.path; sha256=$_.sha256 } })
+          } | ConvertTo-Json -Depth 8
+          [IO.File]::WriteAllText((Join-Path $channel "wpf-migration-$version-validation.json"), $validation, (New-Object Text.UTF8Encoding($false)))
+      - name: Publish migration update to channel
+        shell: pwsh
+        run: |
+          git config user.name "VeyrStudio Update Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add the-library/manifest.json the-library/payload-${env:LIBRARY_VERSION}-wpf-part-*.txt the-library/wpf-migration-${env:LIBRARY_VERSION}-validation.json
+          if (git diff --cached --quiet) { exit 0 }
+          git commit -m "Release The Library ${env:LIBRARY_VERSION} WPF migration"
+          git push origin HEAD:main
       - uses: actions/upload-artifact@v4
         with:
           name: TheLibrary-WPF-win-x64
