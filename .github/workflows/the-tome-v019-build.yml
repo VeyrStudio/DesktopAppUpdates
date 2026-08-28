@@ -1,0 +1,180 @@
+name: Build and Publish The Tome v0.1.9
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/the-tome-v019-build.yml'
+      - 'tools/the-tome-v017-updater.py'
+      - 'tools/the-tome-v018-manual-update.py'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      VERSION: '0.1.9'
+      TAG: 'the-tome-v0.1.9'
+      ASSET_NAME: 'The_Tome_Setup_0.1.9.exe'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Reassemble source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path tome-build | Out-Null
+          $parts = Get-ChildItem 'the-tome/build/source-parts/part*.txt' | Sort-Object Name
+          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+          [IO.File]::WriteAllBytes('the-tome-source.zip', [Convert]::FromBase64String($encoded))
+          python -c "import zipfile; z=zipfile.ZipFile(r'the-tome-source.zip'); bad=z.testzip(); assert bad is None, bad; z.extractall(r'tome-build')"
+          New-Item -ItemType Directory -Force -Path tome-build/assets | Out-Null
+
+      - name: Add updater foundation
+        run: python tools/the-tome-v011-patch.py
+
+      - name: Apply v0.1.2 interface base
+        shell: pwsh
+        run: |
+          Add-Content -Path tome-build/styles.css -Value "`n" -Encoding utf8
+          Get-Content tools/the-tome-v012-interface.css | Add-Content tome-build/styles.css -Encoding utf8
+          $main = Get-Content tome-build/main.js -Raw
+          $main = $main.Replace("const APP_VERSION = '0.1.1';", "const APP_VERSION = '0.1.2';")
+          Set-Content tome-build/main.js -Value $main -Encoding utf8
+          $pkg = Get-Content tome-build/package.json -Raw | ConvertFrom-Json
+          $pkg.version = '0.1.2'
+          $pkg | ConvertTo-Json -Depth 20 | Set-Content tome-build/package.json -Encoding utf8
+
+      - name: Apply v0.1.3 updater repair
+        run: python tools/the-tome-v013-updater-fix.py
+
+      - name: Apply v0.1.4 detail polish
+        shell: pwsh
+        run: |
+          Add-Content -Path tome-build/styles.css -Value "`n" -Encoding utf8
+          Get-Content tools/the-tome-v014-ui.css | Add-Content tome-build/styles.css -Encoding utf8
+          python tools/the-tome-v014-ui.py
+
+      - name: Apply v0.1.5 spine foundation
+        shell: pwsh
+        run: |
+          Copy-Item tools/the-tome-v015-gothic-wall.svg tome-build/assets/gothic-wall.svg -Force
+          Copy-Item tools/the-tome-v015-wood-texture.svg tome-build/assets/wood-texture.svg -Force
+          Add-Content -Path tome-build/styles.css -Value "`n" -Encoding utf8
+          Get-Content tools/the-tome-v015-library.css | Add-Content tome-build/styles.css -Encoding utf8
+          python tools/the-tome-v015-library.py
+
+      - name: Apply v0.1.6 supplied artwork
+        shell: pwsh
+        run: |
+          Add-Content -Path tome-build/styles.css -Value "`n" -Encoding utf8
+          Get-Content tools/the-tome-v016-library.css | Add-Content tome-build/styles.css -Encoding utf8
+          python tools/the-tome-v016-library.py
+
+      - name: Apply v0.1.7 updater fix
+        run: python tools/the-tome-v017-updater.py
+
+      - name: Apply v0.1.8 manual update button
+        run: python tools/the-tome-v018-manual-update.py
+
+      - name: Set v0.1.9 version
+        shell: pwsh
+        run: |
+          $main = Get-Content tome-build/main.js -Raw
+          $main = $main.Replace("const APP_VERSION = '0.1.8';", "const APP_VERSION = '0.1.9';")
+          Set-Content tome-build/main.js -Value $main -Encoding utf8
+          $pkg = Get-Content tome-build/package.json -Raw | ConvertFrom-Json
+          $pkg.version = '0.1.9'
+          $pkg | ConvertTo-Json -Depth 20 | Set-Content tome-build/package.json -Encoding utf8
+
+      - name: Validate source
+        shell: pwsh
+        run: |
+          node --check tome-build/main.js
+          node --check tome-build/renderer.js
+          $pkg = Get-Content tome-build/package.json -Raw | ConvertFrom-Json
+          if ($pkg.version -ne $env:VERSION) { throw 'package version mismatch' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern "APP_VERSION = '0.1.9'" -Quiet)) { throw 'app version marker missing' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern 'VeyrStudio.TheTome.Updater' -Quiet)) { throw 'single-instance updater mutex missing' }
+          if (-not (Select-String -Path tome-build/renderer.js -Pattern 'tome-update-now' -Quiet)) { throw 'manual update button missing' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern '__TOME_FORCE_UPDATE__' -Quiet)) { throw 'manual update signal missing' }
+          if (Select-String -Path tome-build/main.js -Pattern 'apply-update.cmd|tasklist /FI|find \"|ping 127.0.0.1' -Quiet) { throw 'legacy cmd updater still present' }
+          if (-not (Select-String -Path tome-build/main.js -Pattern 'apply-update.ps1' -Quiet)) { throw 'hidden PowerShell updater helper missing' }
+
+      - name: Preserve original Tome icon
+        shell: pwsh
+        run: |
+          $ico = 'tome-build/assets/TheTome.ico'
+          if (-not (Test-Path $ico)) { throw 'Original TheTome.ico is missing from the source package.' }
+          $len = (Get-Item $ico).Length
+          if ($len -lt 10000) { throw 'Original TheTome.ico is unexpectedly small.' }
+          Write-Host "Using original bundled Tome icon: $ico ($len bytes)"
+          if (Test-Path 'tome-build/assets/icon-source.png') {
+            Write-Host "Original icon source PNG is also present."
+          }
+
+      - name: Install dependencies
+        working-directory: tome-build
+        run: npm install --no-audit --no-fund
+
+      - name: Build Windows installer
+        working-directory: tome-build
+        shell: pwsh
+        run: npx electron-builder --win nsis --x64
+
+      - name: Prepare release installer
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem 'tome-build/dist' -File -Filter '*.exe' | Where-Object { $_.Name -like '*Setup*' } | Select-Object -First 1
+          if (-not $installer) { throw 'Installer was not produced.' }
+          Copy-Item $installer.FullName $env:ASSET_NAME -Force
+          $hash = (Get-FileHash $env:ASSET_NAME -Algorithm SHA256).Hash.ToLower()
+          "SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "SHA256 $hash"
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view $env:TAG --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) { gh release delete $env:TAG --repo $env:GITHUB_REPOSITORY --cleanup-tag -y }
+          gh release create $env:TAG $env:ASSET_NAME --repo $env:GITHUB_REPOSITORY --title "The Tome v$env:VERSION" --notes "Restores The Tome's original ornate purple crescent-and-clasp book icon everywhere by removing the procedural placeholder-icon overwrite. Preserves the Update Now button, automatic updates, hidden updater repair, bookshelf artwork, and library data separation."
+
+      - name: Publish update manifest
+        shell: pwsh
+        run: |
+          git pull --rebase origin main
+          $manifest = [ordered]@{
+            version = $env:VERSION
+            url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG/$env:ASSET_NAME"
+            sha256 = $env:SHA256
+            notes = 'Restores the original Tome icon and removes the procedural placeholder icon overwrite.'
+            published = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json
+          Set-Content -Path the-tome/manifest.json -Value $manifest -Encoding utf8
+          git config user.name "VeyrStudio Update Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add the-tome/manifest.json
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Publish The Tome v$env:VERSION update manifest"
+            git pull --rebase origin main
+            git push
+          }
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: The-Tome-v0.1.9-Windows-Installer
+          path: The_Tome_Setup_0.1.9.exe
+          if-no-files-found: error
+          retention-days: 30
