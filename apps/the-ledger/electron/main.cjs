@@ -16,12 +16,15 @@ const recordingsDir = path.join(dataDir, "Recordings");
 const importsDir = path.join(dataDir, "Imports");
 const statePath = path.join(dataDir, "ledger-state.json");
 const sessionsPath = path.join(dataDir, "recording-sessions.json");
+const UPDATE_LAUNCH_ATTEMPTS = 6;
+const UPDATE_LAUNCH_DELAY_MS = 2000;
 const recordingSessions = new Map();
 let mainWindow;
 let sleepBlockerId = null;
 let stagedUpdatePath = null;
 let applyingUpdate = false;
 let allowWindowClose = false;
+let quittingForUpdate = false;
 
 function emptyState() {
   return {
@@ -195,15 +198,51 @@ app.on("before-quit", () => {
   for (const session of recordingSessions.values()) {
     try { fs.closeSync(session.fd); } catch {}
   }
-  if (stagedUpdatePath && !applyingUpdate && process.platform === "win32") launchStagedUpdate();
 });
 
-function launchStagedUpdate() {
-  if (!stagedUpdatePath || !fs.existsSync(stagedUpdatePath)) return false;
-  applyingUpdate = true;
-  const child = spawn(stagedUpdatePath, ["/S"], { detached: true, stdio: "ignore", windowsHide: true });
-  child.unref();
-  return true;
+app.on("before-quit", (event) => {
+  if (!stagedUpdatePath || applyingUpdate || quittingForUpdate || process.platform !== "win32") return;
+  event.preventDefault();
+  quittingForUpdate = true;
+  void launchStagedUpdate().finally(() => {
+    stagedUpdatePath = null;
+    app.quit();
+  });
+});
+
+function wait(delayMs) {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+function spawnInstaller(installerPath) {
+  return new Promise((resolve, reject) => {
+    try {
+      const child = spawn(installerPath, ["/S"], { detached: true, stdio: "ignore", windowsHide: true });
+      child.once("error", reject);
+      child.once("spawn", () => {
+        child.unref();
+        resolve();
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+async function launchStagedUpdate() {
+  if (!stagedUpdatePath || !fs.existsSync(stagedUpdatePath)) return { ok: false, message: "The verified update file is no longer available." };
+  for (let attempt = 1; attempt <= UPDATE_LAUNCH_ATTEMPTS; attempt += 1) {
+    try {
+      await spawnInstaller(stagedUpdatePath);
+      applyingUpdate = true;
+      return { ok: true };
+    } catch (error) {
+      const canRetry = error?.code === "EBUSY" && attempt < UPDATE_LAUNCH_ATTEMPTS;
+      if (!canRetry) return { ok: false, message: `The update could not start: ${error.message}` };
+      await wait(UPDATE_LAUNCH_DELAY_MS);
+    }
+  }
+  return { ok: false, message: "The update could not start." };
 }
 
 ipcMain.handle("ledger:load-state", loadState);
@@ -346,7 +385,8 @@ ipcMain.handle("ledger:stage-update", async (event, { manifest }) => {
     if (!/^[a-f0-9]{64}$/i.test(manifest.sha256 || "")) throw new Error("The update manifest does not contain a valid SHA-256 checksum.");
     const response = await fetch(manifest.url, { cache: "no-store" });
     if (!response.ok || !response.body) throw new Error(`Update download returned ${response.status}.`);
-    const destination = path.join(app.getPath("temp"), `TheLedgerSetup-${manifest.version}.exe`);
+    const safeVersion = String(manifest.version || "update").replace(/[^a-z0-9._-]/gi, "-");
+    const destination = path.join(app.getPath("temp"), `TheLedgerSetup-${safeVersion}-${process.pid}-${Date.now()}.exe`);
     const hash = crypto.createHash("sha256");
     let received = 0;
     const total = Number(response.headers.get("content-length") || 0);
@@ -371,13 +411,12 @@ ipcMain.handle("ledger:stage-update", async (event, { manifest }) => {
   }
 });
 
-ipcMain.handle("ledger:apply-staged-update", () => {
+ipcMain.handle("ledger:apply-staged-update", async () => {
   if (!stagedUpdatePath) return { ok: false, message: "No verified update is ready." };
   if (recordingSessions.size) return { ok: false, message: "Finish the active lecture before updating." };
   if (process.platform !== "win32") return { ok: false, message: "Updates can only be applied from the packaged Windows app." };
-  setImmediate(() => {
-    launchStagedUpdate();
-    app.quit();
-  });
-  return { ok: true };
+  const result = await launchStagedUpdate();
+  if (!result.ok) return result;
+  setImmediate(() => app.quit());
+  return result;
 });

@@ -37,3 +37,12 @@ test("the window keeps a visible, stable main scrollbar", async () => {
   assert.match(css, /#view::\-webkit-scrollbar/);
   assert.match(css, /\.workspace\s*\{[^}]*min-height:\s*0[^}]*overflow:\s*hidden/s);
 });
+
+test("the Windows updater retries a temporarily busy installer without crashing", async () => {
+  const main = await readFile(new URL("../electron/main.cjs", import.meta.url), "utf8");
+  assert.match(main, /UPDATE_LAUNCH_ATTEMPTS\s*=\s*6/);
+  assert.match(main, /error\?\.code\s*===\s*"EBUSY"/);
+  assert.match(main, /await wait\(UPDATE_LAUNCH_DELAY_MS\)/);
+  assert.match(main, /Date\.now\(\)/);
+  assert.match(main, /launchStagedUpdate\(\)\.finally/);
+});
