@@ -81,7 +81,7 @@ public static class UpdateService
         start.ArgumentList.Add(target);
         start.ArgumentList.Add("--pid");
         start.ArgumentList.Add(Environment.ProcessId.ToString());
-        Process.Start(start) ?? throw new InvalidOperationException("The Catalog could not start the updater.");
+        _ = Process.Start(start) ?? throw new InvalidOperationException("The Catalog could not start the updater.");
 
         Application.Current.Dispatcher.BeginInvoke(() => Application.Current.Shutdown());
         return true;
