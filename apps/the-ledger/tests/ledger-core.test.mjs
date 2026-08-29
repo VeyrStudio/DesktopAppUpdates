@@ -1,0 +1,57 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  blankState,
+  classesForDate,
+  currentOrNextClass,
+  formatTime,
+  isNewerVersion,
+  makeLectureTitle,
+  mergeState,
+  searchLedger,
+  toLocalDateKey
+} from "../core/ledger-core.mjs";
+
+test("lecture title uses date, time, and class in the approved order", () => {
+  assert.equal(
+    makeLectureTitle({ date: "2026-08-27", time: "09:00", className: "Introduction to Psychology" }),
+    "August 27, 2026 • 9:00 AM • Introduction to Psychology"
+  );
+});
+
+test("local date keys do not shift through UTC", () => {
+  assert.equal(toLocalDateKey(new Date(2026, 7, 27, 23, 45)), "2026-08-27");
+});
+
+test("classes are sorted by their start time", () => {
+  const monday = new Date(2026, 7, 24, 8, 0);
+  const classes = [
+    { id: "b", days: [1], startTime: "13:30", endTime: "14:45" },
+    { id: "a", days: [1], startTime: "09:00", endTime: "10:15" }
+  ];
+  assert.deepEqual(classesForDate(classes, monday).map((item) => item.id), ["a", "b"]);
+  assert.equal(currentOrNextClass(classes, monday).id, "a");
+});
+
+test("search covers transcript, notes, and extracted assignments", () => {
+  const state = mergeState({
+    ...blankState(),
+    classes: [{ id: "psych", name: "Psychology" }],
+    lectures: [{
+      id: "l1", classId: "psych", title: "Lecture One", originalTranscript: "Memory is reconstructive.", notes: "Check retrieval practice.", review: { assignments: [{ text: "Read chapter four" }] }
+    }]
+  });
+  assert.equal(searchLedger(state, "reconstructive")[0].type, "original transcript");
+  assert.equal(searchLedger(state, "retrieval")[0].type, "notes");
+  assert.equal(searchLedger(state, "chapter four")[0].type, "assignments");
+});
+
+test("time formatting is user-facing", () => {
+  assert.equal(formatTime("13:05"), "1:05 PM");
+});
+
+test("updates only move to a newer version", () => {
+  assert.equal(isNewerVersion("0.2.0", "0.1.9"), true);
+  assert.equal(isNewerVersion("0.1.0", "0.1.0"), false);
+  assert.equal(isNewerVersion("0.0.9", "0.1.0"), false);
+});
