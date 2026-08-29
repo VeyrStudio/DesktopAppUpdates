@@ -41,13 +41,30 @@ jobs:
           [IO.File]::WriteAllBytes('TheCatalog-source.zip', $bytes)
           Expand-Archive -Path 'TheCatalog-source.zip' -DestinationPath 'catalog-source' -Force
 
-      - name: Apply WPF compile fix
+      - name: Apply WPF compile fixes
         shell: pwsh
         run: |
-          $xaml = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/MainWindow.xaml'
+          $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
+
+          $xaml = Join-Path $root 'MainWindow.xaml'
           $text = Get-Content $xaml -Raw
           $text = $text.Replace(' LineHeight="27"', '')
           Set-Content -Path $xaml -Value $text -Encoding utf8
+
+          Get-ChildItem $root -Recurse -Filter '*.cs' | ForEach-Object {
+            $source = Get-Content $_.FullName -Raw
+            if ($source -notmatch '(?m)^using System\.IO;') {
+              Set-Content -Path $_.FullName -Value ("using System.IO;`r`n" + $source) -Encoding utf8
+            }
+          }
+
+          $db = Join-Path $root 'Data/CatalogDb.cs'
+          $dbText = Get-Content $db -Raw
+          $dbText = $dbText.Replace(
+            'await using var transaction = await connection.BeginTransactionAsync();',
+            'using var transaction = connection.BeginTransaction();'
+          )
+          Set-Content -Path $db -Value $dbText -Encoding utf8
 
       - name: Restore
         shell: pwsh
