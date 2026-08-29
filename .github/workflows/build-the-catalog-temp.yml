@@ -66,6 +66,10 @@ jobs:
           )
           Set-Content -Path $db -Value $dbText -Encoding utf8
 
+      - name: Wire updater into The Catalog
+        shell: pwsh
+        run: ./the-catalog/build/patches/ApplyUpdater.ps1
+
       - name: Restore
         shell: pwsh
         run: dotnet restore 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj'
