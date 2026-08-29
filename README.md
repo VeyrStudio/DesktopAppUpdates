@@ -8,6 +8,9 @@ Each app has its own independent channel:
 - `the-library/` — The Library
 - `the-register/` — The Register
 - `the-cipher/` — The Cipher
+- `the-ledger/` — The Ledger
+
+App build sources that belong in this shared repository live under `apps/`.
 
 Future apps get their own folder and manifest in this same repository.
 
