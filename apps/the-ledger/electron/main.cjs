@@ -270,6 +270,35 @@ ipcMain.handle("ledger:process-lecture", async (event, { lectureId, audioPath })
   }
 });
 
+ipcMain.handle("ledger:delete-lecture-files", async (_event, { lectureId, audioPath }) => {
+  try {
+    if (!lectureId) throw new Error("The lecture identifier is missing.");
+    if ([...recordingSessions.values()].some((session) => session.lectureId === lectureId)) {
+      throw new Error("Finish the active lecture before deleting it.");
+    }
+    if (audioPath) {
+      const candidate = path.resolve(audioPath);
+      const approvedRoot = [recordingsDir, importsDir].find((root) => {
+        const relative = path.relative(path.resolve(root), candidate);
+        return relative && !relative.startsWith("..") && !path.isAbsolute(relative);
+      });
+      if (!approvedRoot) throw new Error("The lecture audio is outside The Ledger's private storage.");
+      await fsp.rm(candidate, { force: true });
+    }
+    const sessions = await readSessions();
+    let sessionsChanged = false;
+    for (const [sessionId, session] of Object.entries(sessions)) {
+      if (session.lectureId !== lectureId) continue;
+      delete sessions[sessionId];
+      sessionsChanged = true;
+    }
+    if (sessionsChanged) await writeJsonAtomic(sessionsPath, sessions);
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, message: error.message };
+  }
+});
+
 ipcMain.handle("ledger:choose-import", async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: "Import into The Ledger",

@@ -46,3 +46,16 @@ test("the Windows updater retries a temporarily busy installer without crashing"
   assert.match(main, /Date\.now\(\)/);
   assert.match(main, /launchStagedUpdate\(\)\.finally/);
 });
+
+test("lecture deletion is confirmed in the UI and restricted to private app storage", async () => {
+  const [renderer, preload, main] = await Promise.all([
+    readFile(new URL("../src/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../electron/preload.cjs", import.meta.url), "utf8"),
+    readFile(new URL("../electron/main.cjs", import.meta.url), "utf8")
+  ]);
+  assert.match(renderer, /Delete Lecture/);
+  assert.match(renderer, /This cannot be undone/);
+  assert.match(preload, /ledger:delete-lecture-files/);
+  assert.match(main, /\[recordingsDir, importsDir\]/);
+  assert.match(main, /path\.relative/);
+});

@@ -116,6 +116,13 @@ export function searchLedger(state, rawQuery, filters = {}) {
   return results;
 }
 
+export function removeLecture(state, lectureId) {
+  return {
+    ...state,
+    lectures: (state?.lectures || []).filter((lecture) => lecture.id !== lectureId)
+  };
+}
+
 export function blankState() {
   return {
     schemaVersion: 1,

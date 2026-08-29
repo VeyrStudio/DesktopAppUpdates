@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld("ledgerAPI", {
   appendRecording: (sessionId, bytes) => ipcRenderer.invoke("ledger:recording-append", { sessionId, bytes }),
   finishRecording: (sessionId) => ipcRenderer.invoke("ledger:recording-finish", { sessionId }),
   processLecture: (lectureId, audioPath) => ipcRenderer.invoke("ledger:process-lecture", { lectureId, audioPath }),
+  deleteLectureFiles: (lectureId, audioPath) => ipcRenderer.invoke("ledger:delete-lecture-files", { lectureId, audioPath }),
   checkForUpdates: (force = false) => ipcRenderer.invoke("ledger:check-update", { force }),
   stageUpdate: (manifest) => ipcRenderer.invoke("ledger:stage-update", { manifest }),
   applyStagedUpdate: () => ipcRenderer.invoke("ledger:apply-staged-update"),

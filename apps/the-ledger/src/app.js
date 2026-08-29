@@ -9,7 +9,8 @@ import {
   makeLectureTitle,
   classesForDate,
   currentOrNextClass,
-  searchLedger
+  searchLedger,
+  removeLecture
 } from "../core/ledger-core.mjs";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -101,6 +102,7 @@ function browserFallback() {
     appendRecording: async () => ({ ok: true }),
     finishRecording: async () => ({ ok: true, path: "preview/lecture.webm" }),
     processLecture: async () => ({ ok: false, unavailable: true, message: "Local engine is not part of the browser preview." }),
+    deleteLectureFiles: async () => ({ ok: true }),
     checkForUpdates: async () => ({ ok: true, currentVersion: "0.1.0", manifest: { version: "0.1.0" } }),
     stageUpdate: async () => ({ ok: false, message: "Updates are available in the packaged Windows app." }),
     applyStagedUpdate: async () => ({ ok: false, message: "Updates are available in the packaged Windows app." }),
@@ -349,7 +351,7 @@ function renderNotebook() {
     </section>
   </div>
   <div class="notebook-controls">
-    <div class="toolbar"><button id="notebook-back" class="secondary-button">All Lectures</button><button id="export-lecture" class="secondary-button">Export</button></div>
+    <div class="toolbar"><button id="notebook-back" class="secondary-button">All Lectures</button><button id="export-lecture" class="secondary-button">Export</button>${recording ? "" : `<button id="delete-lecture" class="danger-button">Delete Lecture</button>`}</div>
     ${recording ? `<div class="toolbar"><span id="lecture-timer" class="timer">00:00:00</span><button id="pause-recording" class="secondary-button">Pause</button><button id="finish-recording" class="danger-button">Finish</button></div>` : `<div class="toolbar"><button id="listen-audio" class="secondary-button" ${lecture.audioPath ? "" : "disabled"}>Play Audio</button></div>`}
   </div>`;
   document.querySelector("#lecture-notes").addEventListener("input", (event) => {
@@ -359,6 +361,7 @@ function renderNotebook() {
   document.querySelectorAll("[data-marker]").forEach((button) => button.addEventListener("click", () => addMarker(lecture, button.dataset.marker)));
   document.querySelector("#notebook-back").addEventListener("click", () => { selectedLectureId = null; renderNotebook(); });
   document.querySelector("#export-lecture").addEventListener("click", () => exportLecture(lecture));
+  document.querySelector("#delete-lecture")?.addEventListener("click", () => confirmDeleteLecture(lecture));
   document.querySelector("#pause-recording")?.addEventListener("click", pauseOrResumeRecording);
   document.querySelector("#finish-recording")?.addEventListener("click", () => finishLecture(false));
   document.querySelector("#listen-audio")?.addEventListener("click", () => toast("Audio playback controls will open from the packaged recording file."));
@@ -567,6 +570,34 @@ function addMarker(lecture, type) {
 async function exportLecture(lecture) {
   const result = await api.exportLecture(lecture.id, lecture);
   if (result.ok) toast("Lecture exported.");
+}
+
+function confirmDeleteLecture(lecture) {
+  if (recording && selectedLectureId === lecture.id) return toast("Finish the active lecture before deleting it.", true);
+  if (lecture.status === "processing") return toast("Wait for this lecture to finish processing before deleting it.", true);
+  showModal(`<div class="modal-header"><div><span class="eyebrow">CONFIRM DELETION</span><h2>Delete this lecture?</h2></div><button class="icon-button" data-close-modal type="button">×</button></div>
+    <div class="modal-body"><p><strong>${escapeHtml(lecture.title)}</strong></p><p>This permanently removes its transcript, notes, extracted information, and locally stored audio. This cannot be undone.</p><p id="delete-lecture-error" class="row-subtitle"></p></div>
+    <div class="modal-footer"><button class="secondary-button" data-close-modal type="button">Cancel</button><button id="confirm-delete-lecture" class="danger-button" type="button">Delete Lecture</button></div>`);
+  document.querySelector("#confirm-delete-lecture").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "Deleting…";
+    const result = await api.deleteLectureFiles(lecture.id, lecture.audioPath || "");
+    if (!result.ok) {
+      const error = document.querySelector("#delete-lecture-error");
+      error.textContent = result.message || "The lecture could not be deleted.";
+      error.classList.add("error");
+      button.disabled = false;
+      button.textContent = "Delete Lecture";
+      return;
+    }
+    state = removeLecture(state, lecture.id);
+    selectedLectureId = null;
+    await persist();
+    closeModal();
+    renderNotebook();
+    toast("Lecture deleted.");
+  });
 }
 
 function renderReview() {

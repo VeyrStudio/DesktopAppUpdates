@@ -8,6 +8,7 @@ import {
   isNewerVersion,
   makeLectureTitle,
   mergeState,
+  removeLecture,
   searchLedger,
   toLocalDateKey
 } from "../core/ledger-core.mjs";
@@ -54,4 +55,14 @@ test("updates only move to a newer version", () => {
   assert.equal(isNewerVersion("0.2.0", "0.1.9"), true);
   assert.equal(isNewerVersion("0.1.0", "0.1.0"), false);
   assert.equal(isNewerVersion("0.0.9", "0.1.0"), false);
+});
+
+test("deleting a lecture leaves its class and every other lecture intact", () => {
+  const state = mergeState({
+    classes: [{ id: "history", name: "History" }],
+    lectures: [{ id: "delete-me", classId: "history" }, { id: "keep-me", classId: "history" }]
+  });
+  const next = removeLecture(state, "delete-me");
+  assert.deepEqual(next.lectures.map((lecture) => lecture.id), ["keep-me"]);
+  assert.deepEqual(next.classes, state.classes);
 });
