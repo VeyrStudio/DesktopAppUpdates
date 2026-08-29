@@ -41,6 +41,14 @@ jobs:
           [IO.File]::WriteAllBytes('TheCatalog-source.zip', $bytes)
           Expand-Archive -Path 'TheCatalog-source.zip' -DestinationPath 'catalog-source' -Force
 
+      - name: Apply WPF compile fix
+        shell: pwsh
+        run: |
+          $xaml = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/MainWindow.xaml'
+          $text = Get-Content $xaml -Raw
+          $text = $text.Replace(' LineHeight="27"', '')
+          Set-Content -Path $xaml -Value $text -Encoding utf8
+
       - name: Restore
         shell: pwsh
         run: dotnet restore 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj'
