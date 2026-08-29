@@ -328,7 +328,7 @@ ipcMain.handle("ledger:export-lecture", async (_event, { lectureId, payload }) =
 });
 
 ipcMain.handle("ledger:check-update", async (_event, { force }) => {
-  const url = "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ledger.json";
+  const url = "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-ledger/ledger.json";
   try {
     const response = await fetch(url, { cache: force ? "no-store" : "default" });
     if (!response.ok) throw new Error(`Update server returned ${response.status}.`);
