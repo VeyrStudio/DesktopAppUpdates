@@ -2,7 +2,9 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 
-const version = process.env.npm_package_version;
+const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+const version = process.env.npm_package_version || packageJson.version;
+if (!version) throw new Error("The Ledger version could not be determined.");
 const repository = process.env.GITHUB_REPOSITORY || "VeyrStudio/DesktopAppUpdates";
 const installer = process.argv[2] || join("dist", `TheLedgerSetup-${version}.exe`);
 const bytes = await readFile(installer);

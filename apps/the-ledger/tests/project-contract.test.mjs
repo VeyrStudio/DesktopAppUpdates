@@ -24,3 +24,9 @@ test("renderer is isolated from direct Node access", async () => {
   assert.match(main, /nodeIntegration:\s*false/);
   assert.match(main, /sandbox:\s*true/);
 });
+
+test("update manifests resolve the package version outside npm", async () => {
+  const script = await readFile(new URL("../scripts/build-manifest.mjs", import.meta.url), "utf8");
+  assert.match(script, /packageJson\.version/);
+  assert.match(script, /version could not be determined/);
+});
