@@ -59,3 +59,18 @@ test("lecture deletion is confirmed in the UI and restricted to private app stor
   assert.match(main, /\[recordingsDir, importsDir\]/);
   assert.match(main, /path\.relative/);
 });
+
+test("the Notebook has no subtitle and uses a collapsed Before Class checklist", async () => {
+  const [renderer, css] = await Promise.all([
+    readFile(new URL("../src/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles.css", import.meta.url), "utf8")
+  ]);
+  assert.match(renderer, /setHeader\("Notebook", ""\)/);
+  assert.doesNotMatch(renderer, /Lecture capture, transcript, and your notes/);
+  assert.doesNotMatch(renderer, /Record lectures, create transcripts, and take notes/);
+  assert.match(renderer, /Import Notes or Lecture/);
+  assert.match(renderer, /Your lecture is saved continuously in small chunks/);
+  assert.match(renderer, /<details class="card before-class-card">/);
+  assert.doesNotMatch(renderer, /<details class="card before-class-card"\s+open/);
+  assert.match(css, /\.before-class-card\[open\] \.details-chevron/);
+});

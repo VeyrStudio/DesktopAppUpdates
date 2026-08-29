@@ -215,6 +215,15 @@ button { color: inherit; }
 .card-body { padding: 19px 21px; }
 .card-header { padding: 15px 20px 12px; border-bottom: 1px solid rgba(181,138,72,.24); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .card-header h2, .card-header h3 { margin: 0; font-family: "Segoe UI", sans-serif; color: #d8b975; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.before-class-card > summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+.before-class-card > summary::-webkit-details-marker { display: none; }
+.before-class-card > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -3px; }
+.details-chevron { color: var(--gold); font-size: 20px; line-height: 1; transition: transform .18s ease; }
+.before-class-card[open] .details-chevron { transform: rotate(180deg); }
 .eyebrow { color: #c6a25f; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
 .empty-state { text-align: center; padding: 45px 24px; }
 .empty-state .book-mark { color: var(--gold); font-size: 43px; margin-bottom: 12px; }

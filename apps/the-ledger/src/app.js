@@ -334,7 +334,7 @@ function renderClassDetail() {
 }
 
 function renderNotebook() {
-  setHeader("Notebook", recording ? "Lecture active — your audio is being saved continuously" : "Lecture capture, transcript, and your notes");
+  setHeader("Notebook", "");
   const lecture = selectedLectureId ? lectureById(selectedLectureId) : null;
   if (!lecture) return renderNotebookStart();
   const classItem = classById(lecture.classId);
@@ -373,13 +373,13 @@ function renderNotebookStart() {
   viewRoot.innerHTML = `<div class="view-grid">
     <div class="stack">
       <section class="card"><div class="card-header"><h2>Begin a Lecture</h2></div><div class="card-body">
-        ${state.classes.length ? `<div class="form-group"><label for="notebook-class">Class</label><select id="notebook-class" class="field">${state.classes.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("")}</select></div><div class="button-row"><button id="begin-notes" class="primary-button">Start Notes</button><button id="import-recording" class="secondary-button">Import Recording</button></div>` : `<div class="empty-state"><h2>Add a class first</h2><p>The Ledger needs a class to title and file each lecture.</p><button id="notebook-add-class" class="primary-button">Add Class</button></div>`}
+        ${state.classes.length ? `<div class="form-group"><label for="notebook-class">Class</label><select id="notebook-class" class="field">${state.classes.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join("")}</select></div><div class="button-row"><button id="begin-notes" class="primary-button">Start Notes</button><button id="import-recording" class="secondary-button">Import Notes or Lecture</button></div>` : `<div class="empty-state"><h2>Add a class first</h2><p>The Ledger needs a class to title and file each lecture.</p><button id="notebook-add-class" class="primary-button">Add Class</button></div>`}
       </div></section>
       <section class="card"><div class="card-header"><h2>Saved Lectures</h2></div><div class="lecture-list">${recent.length ? recent.map(lectureRow).join("") : `<div class="card-body"><p class="row-subtitle">No saved lectures yet.</p></div>`}</div></section>
     </div>
-    <section class="card"><div class="card-header"><h2>Before Class</h2></div><div class="card-body class-details">
-      <div class="class-detail"><span>1</span><span>Choose the class.</span></div><div class="class-detail"><span>2</span><span>Check that the correct microphone is selected.</span></div><div class="class-detail"><span>3</span><span>Select Start Notes. The recording is saved continuously in small chunks.</span></div>
-    </div></section>
+    <details class="card before-class-card"><summary class="card-header"><h2>Before Class</h2><span class="details-chevron" aria-hidden="true">⌄</span></summary><div class="card-body class-details">
+      <div class="class-detail"><span>1</span><span>Choose the class.</span></div><div class="class-detail"><span>2</span><span>Check that the correct microphone is selected.</span></div><div class="class-detail"><span>3</span><span>Select Start Notes. Your lecture is saved continuously in small chunks.</span></div>
+    </div></details>
   </div>`;
   document.querySelector("#begin-notes")?.addEventListener("click", () => startLecture(document.querySelector("#notebook-class").value));
   document.querySelector("#import-recording")?.addEventListener("click", () => importRecording(document.querySelector("#notebook-class").value));
