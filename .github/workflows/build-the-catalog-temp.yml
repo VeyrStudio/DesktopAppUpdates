@@ -1,0 +1,69 @@
+name: Build The Catalog Windows
+
+on:
+  push:
+    branches:
+      - catalog-build-v0-2
+    paths:
+      - 'the-catalog/build/**'
+      - '.github/workflows/build-the-catalog-temp.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Reconstruct source archive
+        shell: pwsh
+        run: |
+          $p0 = Get-Content 'the-catalog/build/source-part-00.b64' -Raw
+          $p1 = Get-Content 'the-catalog/build/source-part-01.b64' -Raw
+          $p2 = Get-Content 'the-catalog/build/source-part-02.b64' -Raw
+          $bytes = [Convert]::FromBase64String($p0 + $p1 + $p2)
+          [IO.File]::WriteAllBytes('TheCatalog-source.zip', $bytes)
+          Expand-Archive -Path 'TheCatalog-source.zip' -DestinationPath 'catalog-source' -Force
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj'
+
+      - name: Publish self-contained Windows app
+        shell: pwsh
+        run: |
+          dotnet publish 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj' `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -o 'publish/TheCatalog'
+
+      - name: Verify executable
+        shell: pwsh
+        run: |
+          if (!(Test-Path 'publish/TheCatalog/TheCatalog.exe')) { throw 'TheCatalog.exe was not produced.' }
+          Get-Item 'publish/TheCatalog/TheCatalog.exe' | Format-List Name,Length,LastWriteTime
+          Get-FileHash 'publish/TheCatalog/TheCatalog.exe' -Algorithm SHA256 | Format-List
+
+      - name: Upload Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: TheCatalog-Windows-x64
+          path: publish/TheCatalog/TheCatalog.exe
+          if-no-files-found: error
+          retention-days: 7
