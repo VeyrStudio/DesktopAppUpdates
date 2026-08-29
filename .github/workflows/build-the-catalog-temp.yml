@@ -7,6 +7,12 @@ on:
     paths:
       - 'the-catalog/build/**'
       - '.github/workflows/build-the-catalog-temp.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'the-catalog/build/**'
+      - '.github/workflows/build-the-catalog-temp.yml'
   workflow_dispatch:
 
 permissions:
