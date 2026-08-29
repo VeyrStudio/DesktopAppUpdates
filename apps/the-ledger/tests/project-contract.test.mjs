@@ -30,3 +30,10 @@ test("update manifests resolve the package version outside npm", async () => {
   assert.match(script, /packageJson\.version/);
   assert.match(script, /version could not be determined/);
 });
+
+test("the window keeps a visible, stable main scrollbar", async () => {
+  const css = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(css, /#view\s*\{[^}]*min-height:\s*0[^}]*overflow-y:\s*scroll[^}]*scrollbar-gutter:\s*stable/s);
+  assert.match(css, /#view::\-webkit-scrollbar/);
+  assert.match(css, /\.workspace\s*\{[^}]*min-height:\s*0[^}]*overflow:\s*hidden/s);
+});
