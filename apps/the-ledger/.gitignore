@@ -1,0 +1,9 @@
+node_modules/
+dist/
+vendor/
+resources/bin/*
+resources/models/*
+!resources/bin/README.md
+!resources/models/README.md
+*.tmp
+*.log
