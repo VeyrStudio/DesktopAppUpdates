@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "appId": "the-catalog-wpf",
+  "appName": "The Catalog",
+  "version": "1.0.0",
+  "payloadSha256": "dbde258ccd3edae52f527f41ddce833d94395ddbf812aab8f02d7438df42cd71",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.0-part-001.txt",
+      "sha256": "6a4bca86b1dbc1e6f851559944e220af171583f959e427b3174c76504942d4dd"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.0-part-002.txt",
+      "sha256": "243382b578db6e507af057384aaa1066b1676c3c5c3cb49043c8f2463200ce18"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.0-part-003.txt",
+      "sha256": "e08f3833c3b1f474f26340b8250407f2af58ce457ef557493725ae21e5203670"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.0-part-004.txt",
+      "sha256": "a835cd1702942c64275c15c336b64737ce3445f5222fff39a892b8bbae698009"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.0-part-005.txt",
+      "sha256": "b6563c9a2caf9b880ab3d1ce194b34002920b095b5741c2afd515ff3b2e134b6"
+    }
+  ],
+  "notes": "First native WPF release of The Catalog with local story storage, mood boards, backups, automatic updates, and the manual Update button."
+}
