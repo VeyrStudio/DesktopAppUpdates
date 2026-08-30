@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "apps/the-bookworm/source.zip"
+      - "apps/the-bookworm/source-parts/**"
       - ".github/workflows/build-the-bookworm-wpf.yml"
 
 permissions:
@@ -20,18 +20,30 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Expand Bookworm source
+      - name: Reassemble and expand Bookworm source
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $srcRoot = Join-Path $env:RUNNER_TEMP 'bookworm-src'
           if (Test-Path $srcRoot) { Remove-Item $srcRoot -Recurse -Force }
           New-Item -ItemType Directory -Path $srcRoot -Force | Out-Null
-          $zip = Join-Path $PWD 'apps/the-bookworm/source.zip'
-          if (-not (Test-Path $zip)) { throw 'Bookworm source.zip is missing.' }
+
+          $parts = Get-ChildItem 'apps/the-bookworm/source-parts' -Filter 'part-*.txt' | Sort-Object Name
+          if ($parts.Count -ne 8) { throw "Expected 8 Bookworm source parts, found $($parts.Count)." }
+
+          $base64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ''
+          $zip = Join-Path $env:RUNNER_TEMP 'TheBookworm-source.zip'
+          [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($base64))
+
+          $zipHash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($zipHash -ne '790b2d72beea43e602ffe4209a4961d157f5523e1ec201a78ed5b921ac744a87') {
+            throw "Bookworm source archive hash mismatch: $zipHash"
+          }
+
           tar -tf $zip | Select-Object -First 5
           tar -xf $zip -C $srcRoot
           if ($LASTEXITCODE -ne 0) { throw "tar failed to extract The Bookworm source (exit $LASTEXITCODE)." }
+
           $source = Join-Path $srcRoot 'TheBookworm'
           if (-not (Test-Path (Join-Path $source 'TheBookworm.csproj'))) { throw 'The Bookworm project was not found after extraction.' }
           "BOOKWORM_SOURCE=$source" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
