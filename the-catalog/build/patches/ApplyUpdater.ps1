@@ -10,7 +10,11 @@ $featureHead =
     (Get-Content 'the-catalog/build/v108-feature-part-03.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-04.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-05a.b64' -Raw)
-$featureTail = Get-Content 'the-catalog/build/v108-feature-part-05b.b64' -Raw
+$featureTail =
+    (Get-Content 'the-catalog/build/v108-feature-part-05b0.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-05b1.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-05b2.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-05b3.b64' -Raw)
 $featureExpectedSha = '428a0bbafa91c67836c540fd67f9db78c068ea2584a38a7ac83cec10bf27acf5'
 
 function Get-FeatureSha([byte[]]$bytes) {
