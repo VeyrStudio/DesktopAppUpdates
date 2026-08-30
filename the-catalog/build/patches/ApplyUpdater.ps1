@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
 $patchRoot = 'the-catalog/build/patches'
 
-# Overlay the 1.0.8 story workflow: wider cards, popup editor, and .catalogentry importing.
+# Overlay the 1.0.9 story workflow: wider cards, popup editor, and .catalogentry importing.
 $featureHead =
     (Get-Content 'the-catalog/build/v108-feature-part-00.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-01.b64' -Raw) +
@@ -41,7 +41,7 @@ if ($null -eq $featureBytes) {
         } catch {}
     }
 }
-if ($null -eq $featureBytes) { throw 'The 1.0.8 feature bundle did not match its verified SHA-256.' }
+if ($null -eq $featureBytes) { throw 'The 1.0.9 feature bundle did not match its verified SHA-256.' }
 
 $featureZip = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N') + '.zip')
 $featureStage = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N'))
@@ -84,9 +84,9 @@ New-Item -ItemType Directory -Path $assets -Force | Out-Null
 
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.8</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.8.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.8.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.9</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.9.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.9.0</FileVersion>')
 $text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
 Set-Content -Path $project -Value $text -Encoding utf8
 
@@ -178,7 +178,7 @@ $text = $text.Replace(
 )
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
 
-# 1.0.8 readability pass:
+# 1.0.9 readability pass:
 # - give the dossier more width on large windows without breaking snapped layouts
 # - enlarge both Title Card display areas
 # - enlarge the Summary editor and snap its vertical scrolling to whole lines
@@ -272,3 +272,13 @@ if ($code -notmatch '_summaryScrollViewer') {
     )
 }
 Set-Content -Path $mainCode -Value $code -Encoding utf8
+
+# 1.0.9: make story deletion obvious instead of hiding it only in the ellipsis menu.
+$mainXaml = Join-Path $root 'MainWindow.xaml'
+$text = Get-Content $mainXaml -Raw
+$editButton = '<Button Content="EDIT" Style="{StaticResource PaperButtonStyle}" Padding="10,5" Margin="6,0,4,0" Click="EditStory_Click" ToolTip="Edit this story in its own window"/>'
+$visibleDelete = '<Button Content="DELETE" Style="{StaticResource BurgundyButtonStyle}" Padding="10,5" Margin="0,0,4,0" Click="DeleteStory_Click" ToolTip="Move this story to Recently Deleted"/>'
+if ($text -notmatch 'Content="DELETE"[^>]+Click="DeleteStory_Click"') {
+    $text = $text.Replace($editButton, $editButton + [Environment]::NewLine + '                                ' + $visibleDelete)
+}
+Set-Content -Path $mainXaml -Value $text -Encoding utf8
