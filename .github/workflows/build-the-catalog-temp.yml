@@ -141,7 +141,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadSha
             payloadParts = $parts
-            notes = 'Adds The Catalog's worn burgundy rose icon to the Windows executable and app windows while keeping local story data, backups, automatic updates, and the manual Update button unchanged.'
+            notes = "Adds The Catalog's worn burgundy rose icon to the Windows executable and app windows while keeping local story data, backups, automatic updates, and the manual Update button unchanged."
           }
           [IO.File]::WriteAllText(
             (Join-Path $catalogStage 'manifest.json'),
