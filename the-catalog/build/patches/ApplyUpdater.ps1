@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
 $patchRoot = 'the-catalog/build/patches'
 
-# Overlay the 1.0.10 story workflow: wider cards, popup editor, and .catalogentry importing.
+# Overlay the 1.0.11 story workflow: wider cards, popup editor, and .catalogentry importing.
 $featureHead =
     (Get-Content 'the-catalog/build/v108-feature-part-00.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-01.b64' -Raw) +
@@ -41,7 +41,7 @@ if ($null -eq $featureBytes) {
         } catch {}
     }
 }
-if ($null -eq $featureBytes) { throw 'The 1.0.10 feature bundle did not match its verified SHA-256.' }
+if ($null -eq $featureBytes) { throw 'The 1.0.11 feature bundle did not match its verified SHA-256.' }
 
 $featureZip = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N') + '.zip')
 $featureStage = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N'))
@@ -84,9 +84,9 @@ New-Item -ItemType Directory -Path $assets -Force | Out-Null
 
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.10</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.10.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.10.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.11</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.11.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.11.0</FileVersion>')
 $text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
 Set-Content -Path $project -Value $text -Encoding utf8
 
@@ -178,7 +178,7 @@ $text = $text.Replace(
 )
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
 
-# 1.0.10 readability pass:
+# 1.0.11 readability pass:
 # - give the dossier more width on large windows without breaking snapped layouts
 # - enlarge both Title Card display areas
 # - enlarge the Summary editor and snap its vertical scrolling to whole lines
@@ -273,7 +273,7 @@ if ($code -notmatch '_summaryScrollViewer') {
 }
 Set-Content -Path $mainCode -Value $code -Encoding utf8
 
-# 1.0.10: make story deletion obvious instead of hiding it only in the ellipsis menu.
+# 1.0.11: make story deletion obvious instead of hiding it only in the ellipsis menu.
 $mainXaml = Join-Path $root 'MainWindow.xaml'
 $text = Get-Content $mainXaml -Raw
 $editButton = '<Button Content="EDIT" Style="{StaticResource PaperButtonStyle}" Padding="10,5" Margin="6,0,4,0" Click="EditStory_Click" ToolTip="Edit this story in its own window"/>'
@@ -283,7 +283,7 @@ if ($text -notmatch 'Content="DELETE"[^>]+Click="DeleteStory_Click"') {
 }
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
 
-# 1.0.10: broaden the secondary-name field from 'Original' to 'Other'.
+# 1.0.11: broaden the secondary-name field from 'Original' to 'Other'.
 # Keep the underlying model/database property names unchanged for backward compatibility.
 @(
     (Join-Path $root 'MainWindow.xaml'),
@@ -300,3 +300,62 @@ Set-Content -Path $mainXaml -Value $text -Encoding utf8
     $xaml = $xaml.Replace('Content="ORIGINAL"', 'Content="OTHER"')
     Set-Content -Path $_ -Value $xaml -Encoding utf8
 }
+
+# 1.0.11: make the right Story Dossier column collapsible.
+$mainXaml = Join-Path $root 'MainWindow.xaml'
+$text = Get-Content $mainXaml -Raw
+$text = $text.Replace(
+    '<ColumnDefinition Width="0.85*" MinWidth="430" MaxWidth="700"/>',
+    '<ColumnDefinition x:Name="DossierColumn" Width="0.85*" MinWidth="430" MaxWidth="700"/>'
+)
+$text = $text.Replace(
+    '<Border Grid.Column="2" Margin="0,12,12,12" Background="#11100F" BorderBrush="#82633B" BorderThickness="1" Effect="{StaticResource SmallPaperShadow}">',
+    '<Border x:Name="DossierBorder" Grid.Column="2" Margin="0,12,12,12" Background="#11100F" BorderBrush="#82633B" BorderThickness="1" Effect="{StaticResource SmallPaperShadow}">'
+)
+$storyHeader = '<DockPanel Grid.Row="1" Margin="0,17,0,12">'
+$toggle = '<Button x:Name="DossierToggleButton" Content="HIDE DOSSIER  ‹" DockPanel.Dock="Right" Style="{StaticResource FlatInkButtonStyle}" Foreground="{StaticResource GoldBrush}" FontSize="11" Padding="10,3" Margin="12,0,0,0" Click="DossierToggle_Click" ToolTip="Collapse or restore the Story Dossier"/>'
+if ($text -notmatch 'x:Name="DossierToggleButton"') {
+    $text = $text.Replace($storyHeader, $storyHeader + [Environment]::NewLine + '                        ' + $toggle)
+}
+Set-Content -Path $mainXaml -Value $text -Encoding utf8
+
+$mainCode = Join-Path $root 'MainWindow.xaml.cs'
+$code = Get-Content $mainCode -Raw
+if ($code -notmatch '_dossierCollapsed') {
+    $fieldAnchor = '    private bool _loadingEditor;'
+    if ($code.Contains($fieldAnchor)) {
+        $code = $code.Replace($fieldAnchor, $fieldAnchor + [Environment]::NewLine + '    private bool _dossierCollapsed;')
+    }
+
+    $method = @'
+
+    private void DossierToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_dossierCollapsed)
+        {
+            DossierBorder.Visibility = Visibility.Collapsed;
+            DossierColumn.MinWidth = 0;
+            DossierColumn.MaxWidth = 0;
+            DossierColumn.Width = new GridLength(0);
+            DossierToggleButton.Content = "SHOW DOSSIER  ›";
+            DossierToggleButton.ToolTip = "Restore the Story Dossier";
+            _dossierCollapsed = true;
+        }
+        else
+        {
+            DossierColumn.MaxWidth = 700;
+            DossierColumn.MinWidth = 430;
+            DossierColumn.Width = new GridLength(0.85, GridUnitType.Star);
+            DossierBorder.Visibility = Visibility.Visible;
+            DossierToggleButton.Content = "HIDE DOSSIER  ‹";
+            DossierToggleButton.ToolTip = "Collapse the Story Dossier";
+            _dossierCollapsed = false;
+        }
+    }
+'@
+
+    $lastBrace = $code.LastIndexOf('}')
+    if ($lastBrace -lt 0) { throw 'Could not find MainWindow class closing brace for dossier toggle.' }
+    $code = $code.Insert($lastBrace, $method + [Environment]::NewLine)
+}
+Set-Content -Path $mainCode -Value $code -Encoding utf8
