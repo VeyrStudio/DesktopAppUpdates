@@ -120,6 +120,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $splitPreviewPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.7: one continuous background + editable required tag/warning boxes.
+          $requiredTagsPatchPath = 'apps/ao3-skin-studio/patches/0.1.7/unified-background-required-tags.html'
+          if (-not (Test-Path $requiredTagsPatchPath)) { throw 'AO3 Skin Studio 0.1.7 required-tags patch was not found.' }
+          $requiredTagsPatch = Get-Content $requiredTagsPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.7.' }
+          $studioText = $studioText.Replace('</body>', $requiredTagsPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.6: keep the native Windows title-bar buttons fully inside the visible work area.
           $mainWindowXaml = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml'
           $mainWindowXamlText = Get-Content $mainWindowXaml -Raw
@@ -164,16 +173,16 @@ jobs:
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.6</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.6.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.6.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.7</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.7.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.7.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.6" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.7" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -247,7 +256,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds Split Screen preview with Results / Browse and Inside a Fic side-by-side with independent scrolling. Also fixes the desktop window sizing so the native minimize, maximize, and close buttons stay visible instead of being clipped off-screen. Keeps all prior tools.'
+            notes = 'Makes the page, AO3 header area, and footer use one continuous Background control with no separate header/footer background controls. Adds the AO3 required-tag grid to Results preview and editable box colors, font, font size, and font colors for ratings, warning states, categories, completion states, and external works. Keeps Split Screen and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

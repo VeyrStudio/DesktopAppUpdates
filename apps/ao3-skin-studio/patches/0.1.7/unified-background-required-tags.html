@@ -1,0 +1,603 @@
+<style id="ao3-unified-background-required-tags-styles">
+/* 0.1.7 — the site background now visually continues through header and footer. */
+#mock .ao3-header,
+#mock .ao3-footer{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+#mock .header-image-stack{display:none !important}
+
+.unified-background-note{
+  margin-top:8px;
+  padding:9px 10px;
+  border:1px solid #3c323e;
+  border-radius:8px;
+  background:#111014;
+  color:#a99aa7;
+  font-size:9px;
+  line-height:1.45;
+}
+
+.required-tags-section .section-body{padding-top:10px}
+.required-font-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.required-style-group{
+  margin-top:10px;
+  border:1px solid #302a32;
+  border-radius:9px;
+  overflow:hidden;
+  background:#0e0d10;
+}
+.required-style-group > summary{
+  cursor:pointer;
+  padding:10px 11px;
+  font-size:10px;
+  font-weight:800;
+  color:#dfd3dd;
+  list-style:none;
+}
+.required-style-group > summary::-webkit-details-marker{display:none}
+.required-style-group[open] > summary{border-bottom:1px solid #302a32}
+.required-style-list{padding:7px}
+.required-style-row{
+  display:grid;
+  grid-template-columns:minmax(115px,1fr) minmax(118px,.9fr) minmax(118px,.9fr);
+  gap:7px;
+  align-items:center;
+  padding:7px;
+  border-radius:7px;
+}
+.required-style-row + .required-style-row{border-top:1px solid #211d23}
+.required-style-name{
+  font-size:9px;
+  font-weight:800;
+  line-height:1.25;
+  color:#d8cbd6;
+}
+.required-color-cell label{
+  display:block;
+  margin-bottom:4px;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.06em;
+  color:#867985;
+  text-transform:uppercase;
+}
+.required-color-inputs{
+  display:grid;
+  grid-template-columns:34px 1fr;
+  gap:5px;
+}
+.required-color-inputs input[type="color"]{
+  width:34px;
+  min-width:34px;
+  height:30px;
+  padding:2px;
+}
+.required-color-inputs input[type="text"]{
+  min-width:0;
+  width:100%;
+  padding:6px 7px;
+  font-size:8px;
+}
+
+/* Required-tag grid inside the visual AO3 results preview. */
+#mock .preview-required-tags,
+#mock .required-tags{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+  width:100%;
+  margin:11px 0;
+  padding:0;
+  list-style:none;
+  position:static;
+  float:none;
+}
+#mock .preview-required-tags li,
+#mock .required-tags li{
+  margin:0;
+  padding:0;
+  min-width:0;
+  list-style:none;
+}
+#mock .preview-required-tags li > span,
+#mock .required-tags li > span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:34px;
+  box-sizing:border-box;
+  padding:6px 8px;
+  border:1px solid var(--p-border);
+  border-radius:var(--p-radius);
+  background-image:none !important;
+  background-repeat:no-repeat;
+  text-align:center;
+  font-family:var(--req-font,var(--p-font));
+  font-size:var(--req-size,11px);
+  font-weight:700;
+  line-height:1.2;
+}
+#mock .preview-required-tags .text,
+#mock .required-tags .text{
+  display:inline !important;
+  position:static !important;
+  width:auto !important;
+  height:auto !important;
+  clip:auto !important;
+  clip-path:none !important;
+  overflow:visible !important;
+  white-space:normal !important;
+}
+
+#mock .rating-general-audience{background:var(--req-rating-general-bg)!important;color:var(--req-rating-general-fg)!important}
+#mock .rating-teen{background:var(--req-rating-teen-bg)!important;color:var(--req-rating-teen-fg)!important}
+#mock .rating-mature{background:var(--req-rating-mature-bg)!important;color:var(--req-rating-mature-fg)!important}
+#mock .rating-explicit{background:var(--req-rating-explicit-bg)!important;color:var(--req-rating-explicit-fg)!important}
+#mock .rating-notrated{background:var(--req-rating-notrated-bg)!important;color:var(--req-rating-notrated-fg)!important}
+#mock .warning-no{background:var(--req-warning-no-bg)!important;color:var(--req-warning-no-fg)!important}
+#mock .warning-choosenotto{background:var(--req-warning-choose-bg)!important;color:var(--req-warning-choose-fg)!important}
+#mock .warning-yes{background:var(--req-warning-yes-bg)!important;color:var(--req-warning-yes-fg)!important}
+#mock .category-slash{background:var(--req-category-slash-bg)!important;color:var(--req-category-slash-fg)!important}
+#mock .category-femslash{background:var(--req-category-femslash-bg)!important;color:var(--req-category-femslash-fg)!important}
+#mock .category-het{background:var(--req-category-het-bg)!important;color:var(--req-category-het-fg)!important}
+#mock .category-gen{background:var(--req-category-gen-bg)!important;color:var(--req-category-gen-fg)!important}
+#mock .category-multi{background:var(--req-category-multi-bg)!important;color:var(--req-category-multi-fg)!important}
+#mock .category-other{background:var(--req-category-other-bg)!important;color:var(--req-category-other-fg)!important}
+#mock .category-none{background:var(--req-category-none-bg)!important;color:var(--req-category-none-fg)!important}
+#mock .complete-yes{background:var(--req-complete-yes-bg)!important;color:var(--req-complete-yes-fg)!important}
+#mock .complete-no{background:var(--req-complete-no-bg)!important;color:var(--req-complete-no-fg)!important}
+#mock .external-work{background:var(--req-external-bg)!important;color:var(--req-external-fg)!important}
+
+.browser.responsive-preview-tablet #mock .preview-required-tags,
+.browser.responsive-preview-tablet #mock .required-tags{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.browser.responsive-preview-mobile #mock .preview-required-tags,
+.browser.responsive-preview-mobile #mock .required-tags{
+  grid-template-columns:1fr;
+}
+
+@media(max-width:560px){
+  .required-font-row{grid-template-columns:1fr}
+  .required-style-row{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-unified-background-required-tags-script">
+(function(){
+  const q = id => document.getElementById(id);
+  const sections = Array.from(document.querySelectorAll('details.section'));
+
+  /* ----- One real Background control ----- */
+  const backgroundSection = sections.find(s => {
+    const t=(s.querySelector('summary')?.textContent || '').trim();
+    return t === 'Page, Header & Footer Background' || t === 'Page & Background';
+  });
+
+  if(backgroundSection){
+    backgroundSection.querySelector('summary').textContent='Background';
+    const body=backgroundSection.querySelector('.section-body');
+    const pageControl=Array.from(body.querySelectorAll('.control')).find(c =>
+      (c.querySelector('label')?.textContent || '').trim()==='Page background'
+    );
+    if(pageControl){
+      const label=pageControl.querySelector('label');
+      if(label) label.textContent='Background — page + header + footer';
+      if(!pageControl.querySelector('.unified-background-note')){
+        pageControl.insertAdjacentHTML('beforeend',
+          '<div class="unified-background-note">This is one continuous site background. It runs behind the page, the AO3 header area, and the footer at the bottom.</div>');
+      }
+    }
+
+    body.querySelectorAll('.background-group-label').forEach(el=>el.style.display='none');
+    const oldHeaderControl=q('headerColor')?.closest('.control');
+    const oldFooterControl=q('footerBgColor')?.closest('.control');
+    if(oldHeaderControl) oldHeaderControl.style.display='none';
+    if(oldFooterControl) oldFooterControl.style.display='none';
+  }
+
+  const navSection=sections.find(s =>
+    (s.querySelector('summary')?.textContent || '').trim()==='Navigation & Accent'
+  );
+  if(navSection){
+    const hiddenHeader=q('headerColor')?.closest('.control');
+    if(hiddenHeader) hiddenHeader.style.display='none';
+  }
+
+  /* Header gradients are no longer a separate surface. */
+  const gradientSelect=q('gradientTarget');
+  if(gradientSelect){
+    const headerOption=gradientSelect.querySelector('option[value="header"]');
+    if(headerOption) headerOption.remove();
+    if(typeof currentGradientTarget!=='undefined' && currentGradientTarget==='header'){
+      currentGradientTarget='page';
+      gradientSelect.value='page';
+      try{ renderGradientEditor(); }catch(e){}
+    }
+  }
+
+  function forceImagesToUnifiedBackground(){
+    try{
+      localImages.forEach(img=>{ img.placement='background'; });
+    }catch(e){}
+  }
+
+  try{
+    const oldRenderImageList=renderImageList;
+    renderImageList=function(){
+      forceImagesToUnifiedBackground();
+      oldRenderImageList();
+      document.querySelectorAll('[data-field="placement"]').forEach(sel=>{
+        sel.innerHTML='<option value="background">Full background</option>';
+        sel.value='background';
+        const mini=sel.closest('.image-mini-control');
+        const label=mini?.querySelector('label');
+        if(label) label.textContent='APPLIES TO';
+      });
+    };
+  }catch(e){}
+
+  try{
+    const oldRenderPreviewImages=renderPreviewImages;
+    renderPreviewImages=function(bgFixed){
+      forceImagesToUnifiedBackground();
+      oldRenderPreviewImages(bgFixed);
+      const headerStack=q('headerImageStack');
+      if(headerStack) headerStack.innerHTML='';
+    };
+  }catch(e){}
+
+  function syncUnifiedBackground(saveNow){
+    const bg=normHex(q('bgColor')?.value) || '#0B0A0B';
+    if(q('headerColor')) q('headerColor').value=bg.toLowerCase();
+    if(q('headerText')) q('headerText').value=bg;
+    if(q('headerHex')) q('headerHex').textContent=bg;
+
+    if(q('footerBgColor')) q('footerBgColor').value=bg.toLowerCase();
+    if(q('footerBgText')) q('footerBgText').value=bg;
+    if(q('footerBgHex')) q('footerBgHex').textContent=bg;
+
+    forceImagesToUnifiedBackground();
+    if(saveNow){
+      try{ save(); }catch(e){}
+    }
+  }
+
+  q('bgColor')?.addEventListener('input',()=>setTimeout(()=>syncUnifiedBackground(true),0));
+  q('bgText')?.addEventListener('input',()=>setTimeout(()=>syncUnifiedBackground(true),0));
+  document.querySelectorAll('.preset').forEach(btn=>{
+    btn.addEventListener('click',()=>setTimeout(()=>{
+      syncUnifiedBackground(true);
+      try{ renderImageList(); renderPreviewImages(q('bgFixed').checked); update(); }catch(e){}
+    },0));
+  });
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    syncUnifiedBackground(true);
+    try{ renderImageList(); renderPreviewImages(q('bgFixed').checked); update(); }catch(e){}
+  },0));
+
+  forceImagesToUnifiedBackground();
+  syncUnifiedBackground(false);
+  try{ renderImageList(); }catch(e){}
+
+  /* ----- Required tags / warnings controls ----- */
+  const requiredTypes=[
+    {group:'Ratings',key:'ratingGeneral',cls:'rating-general-audience',label:'General Audiences',bg:'#31533D',fg:'#F4EFEA'},
+    {group:'Ratings',key:'ratingTeen',cls:'rating-teen',label:'Teen And Up Audiences',bg:'#65572B',fg:'#FFF1C6'},
+    {group:'Ratings',key:'ratingMature',cls:'rating-mature',label:'Mature',bg:'#6A3A32',fg:'#FFE4DD'},
+    {group:'Ratings',key:'ratingExplicit',cls:'rating-explicit',label:'Explicit',bg:'#7A1F2C',fg:'#FFE4E8'},
+    {group:'Ratings',key:'ratingNotrated',cls:'rating-notrated',label:'Not Rated',bg:'#414146',fg:'#F2F2F2'},
+
+    {group:'Archive Warnings',key:'warningNo',cls:'warning-no',label:'No Archive Warnings Apply',bg:'#31533D',fg:'#F4EFEA'},
+    {group:'Archive Warnings',key:'warningChoose',cls:'warning-choosenotto',label:'Creator Chose Not To Warn',bg:'#66502C',fg:'#FFF0C2'},
+    {group:'Archive Warnings',key:'warningYes',cls:'warning-yes',label:'Archive Warnings Apply',bg:'#7A1F2C',fg:'#FFE4E8'},
+
+    {group:'Categories',key:'categorySlash',cls:'category-slash',label:'M/M',bg:'#493B68',fg:'#EEE7FF'},
+    {group:'Categories',key:'categoryFemslash',cls:'category-femslash',label:'F/F',bg:'#70445F',fg:'#FFE7F4'},
+    {group:'Categories',key:'categoryHet',cls:'category-het',label:'F/M',bg:'#684735',fg:'#FFE9DB'},
+    {group:'Categories',key:'categoryGen',cls:'category-gen',label:'Gen',bg:'#3D5962',fg:'#E6F8FF'},
+    {group:'Categories',key:'categoryMulti',cls:'category-multi',label:'Multi',bg:'#574268',fg:'#F2E7FF'},
+    {group:'Categories',key:'categoryOther',cls:'category-other',label:'Other',bg:'#4B4B4F',fg:'#F1F1F1'},
+    {group:'Categories',key:'categoryNone',cls:'category-none',label:'No Category',bg:'#37373B',fg:'#E7E7E7'},
+
+    {group:'Completion',key:'completeYes',cls:'complete-yes',label:'Complete',bg:'#31533D',fg:'#F4EFEA'},
+    {group:'Completion',key:'completeNo',cls:'complete-no',label:'Work in Progress',bg:'#71542A',fg:'#FFF0C8'},
+    {group:'Completion',key:'external',cls:'external-work',label:'External Work',bg:'#344F63',fg:'#E4F4FF'}
+  ];
+
+  const panelSection=sections.find(s =>
+    (s.querySelector('summary')?.textContent || '').trim()==='Panels, Works & Cards'
+  );
+  if(panelSection && !q('requiredTagsSection')){
+    const section=document.createElement('details');
+    section.className='section required-tags-section';
+    section.id='requiredTagsSection';
+    section.open=true;
+    section.innerHTML=`
+      <summary>Required Tags &amp; Warnings</summary>
+      <div class="section-body">
+        <div class="help">These are the boxed required tags shown on AO3 work results: rating, archive-warning status, category, and completion status. Each major type gets its own box and text color.</div>
+
+        <div class="required-font-row">
+          <div class="control">
+            <div class="control-head"><label>Required-tag font</label></div>
+            <select id="requiredTagFont"></select>
+          </div>
+          <div class="control">
+            <div class="control-head"><label>Required-tag text size</label><span class="mini" id="requiredTagSizeValue">11px</span></div>
+            <input type="range" id="requiredTagSize" min="8" max="22" value="11">
+          </div>
+        </div>
+
+        <div id="requiredStyleGroups"></div>
+      </div>`;
+    panelSection.insertAdjacentElement('beforebegin',section);
+
+    const fontSelect=q('requiredTagFont');
+    if(fontSelect && q('fontFamily')) fontSelect.innerHTML=q('fontFamily').innerHTML;
+
+    const groups=q('requiredStyleGroups');
+    [...new Set(requiredTypes.map(x=>x.group))].forEach((groupName,index)=>{
+      const d=document.createElement('details');
+      d.className='required-style-group';
+      d.open=index===0;
+      const items=requiredTypes.filter(x=>x.group===groupName);
+      d.innerHTML=`
+        <summary>${groupName}</summary>
+        <div class="required-style-list">
+          ${items.map(x=>`
+            <div class="required-style-row">
+              <div class="required-style-name">${x.label}</div>
+              <div class="required-color-cell">
+                <label>Box color</label>
+                <div class="required-color-inputs">
+                  <input type="color" id="req_${x.key}_bg" value="${x.bg.toLowerCase()}">
+                  <input type="text" id="req_${x.key}_bg_text" value="${x.bg}">
+                </div>
+              </div>
+              <div class="required-color-cell">
+                <label>Font color</label>
+                <div class="required-color-inputs">
+                  <input type="color" id="req_${x.key}_fg" value="${x.fg.toLowerCase()}">
+                  <input type="text" id="req_${x.key}_fg_text" value="${x.fg}">
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+      groups.appendChild(d);
+    });
+  }
+
+  const requiredIds=['requiredTagFont','requiredTagSize'];
+  requiredTypes.forEach(x=>{
+    requiredIds.push('req_'+x.key+'_bg','req_'+x.key+'_fg');
+  });
+  requiredIds.forEach(id=>{
+    if(typeof idsToSave!=='undefined' && !idsToSave.includes(id)) idsToSave.push(id);
+  });
+
+  try{
+    const saved=JSON.parse(localStorage.getItem('ao3SkinStudio') || '{}');
+    if(q('requiredTagFont')){
+      q('requiredTagFont').value=saved.requiredTagFont || q('fontFamily').value;
+    }
+    if(q('requiredTagSize')){
+      q('requiredTagSize').value=saved.requiredTagSize || '11';
+    }
+    requiredTypes.forEach(x=>{
+      const bg=saved['req_'+x.key+'_bg'] || x.bg;
+      const fg=saved['req_'+x.key+'_fg'] || x.fg;
+      if(q('req_'+x.key+'_bg')) q('req_'+x.key+'_bg').value=bg.toLowerCase();
+      if(q('req_'+x.key+'_fg')) q('req_'+x.key+'_fg').value=fg.toLowerCase();
+      if(q('req_'+x.key+'_bg_text')) q('req_'+x.key+'_bg_text').value=bg.toUpperCase();
+      if(q('req_'+x.key+'_fg_text')) q('req_'+x.key+'_fg_text').value=fg.toUpperCase();
+    });
+  }catch(e){}
+
+  function colorValue(id,fallback){
+    return (normHex(q(id)?.value) || fallback).toUpperCase();
+  }
+
+  function applyRequiredPreview(){
+    if(!q('mock')) return;
+    const font=q('requiredTagFont')?.value || q('fontFamily').value;
+    const size=q('requiredTagSize')?.value || '11';
+    q('mock').style.setProperty('--req-font',font);
+    q('mock').style.setProperty('--req-size',size+'px');
+    if(q('requiredTagSizeValue')) q('requiredTagSizeValue').textContent=size+'px';
+
+    const varMap={
+      ratingGeneral:'rating-general',
+      ratingTeen:'rating-teen',
+      ratingMature:'rating-mature',
+      ratingExplicit:'rating-explicit',
+      ratingNotrated:'rating-notrated',
+      warningNo:'warning-no',
+      warningChoose:'warning-choose',
+      warningYes:'warning-yes',
+      categorySlash:'category-slash',
+      categoryFemslash:'category-femslash',
+      categoryHet:'category-het',
+      categoryGen:'category-gen',
+      categoryMulti:'category-multi',
+      categoryOther:'category-other',
+      categoryNone:'category-none',
+      completeYes:'complete-yes',
+      completeNo:'complete-no',
+      external:'external'
+    };
+
+    requiredTypes.forEach(x=>{
+      const bg=colorValue('req_'+x.key+'_bg',x.bg);
+      const fg=colorValue('req_'+x.key+'_fg',x.fg);
+      q('mock').style.setProperty('--req-'+varMap[x.key]+'-bg',bg);
+      q('mock').style.setProperty('--req-'+varMap[x.key]+'-fg',fg);
+    });
+  }
+
+  requiredTypes.forEach(x=>{
+    ['bg','fg'].forEach(kind=>{
+      const picker=q('req_'+x.key+'_'+kind);
+      const textInput=q('req_'+x.key+'_'+kind+'_text');
+      if(picker && textInput){
+        picker.addEventListener('input',()=>{
+          textInput.value=picker.value.toUpperCase();
+          applyRequiredPreview();
+          try{ cssOutput.value=buildCss(); save(); }catch(e){}
+        });
+        textInput.addEventListener('input',()=>{
+          const v=normHex(textInput.value);
+          if(!v) return;
+          picker.value=v.toLowerCase();
+          textInput.value=v;
+          applyRequiredPreview();
+          try{ cssOutput.value=buildCss(); save(); }catch(e){}
+        });
+      }
+    });
+  });
+
+  ['requiredTagFont','requiredTagSize'].forEach(id=>{
+    q(id)?.addEventListener('input',()=>{
+      applyRequiredPreview();
+      try{ cssOutput.value=buildCss(); save(); }catch(e){}
+    });
+    q(id)?.addEventListener('change',()=>{
+      applyRequiredPreview();
+      try{ cssOutput.value=buildCss(); save(); }catch(e){}
+    });
+  });
+
+  const oldBuildCss=buildCss;
+  buildCss=function(){
+    let css=oldBuildCss();
+
+    const font=(q('requiredTagFont')?.value || q('fontFamily').value).replace(/\n/g,' ');
+    const size=q('requiredTagSize')?.value || '11';
+
+    const rules=requiredTypes.map(x=>{
+      const bg=colorValue('req_'+x.key+'_bg',x.bg);
+      const fg=colorValue('req_'+x.key+'_fg',x.fg);
+      return `.blurb ul.required-tags .${x.cls} { background: ${bg} !important; color: ${fg} !important; }`;
+    }).join('\n');
+
+    return css + `
+
+/* UNIFIED SITE BACKGROUND
+   The page background continues behind the header and footer. */
+#header,
+#footer {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* REQUIRED TAGS / WARNINGS AS EDITABLE TEXT BOXES */
+.blurb ul.required-tags {
+  position: static !important;
+  float: none !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45em;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0.7em 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.blurb ul.required-tags li {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.blurb ul.required-tags li > span,
+.blurb ul.required-tags li > a,
+.blurb ul.required-tags li > strong {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important;
+  min-height: 2.7em;
+  height: auto !important;
+  box-sizing: border-box;
+  padding: 0.45em 0.6em !important;
+  border: 1px solid ${q('borderColor').value.toUpperCase()} !important;
+  border-radius: ${q('radius').value}px !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  text-align: center;
+  text-indent: 0 !important;
+  font-family: ${font} !important;
+  font-size: ${size}px !important;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.blurb ul.required-tags span.text {
+  display: inline !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  clip: auto !important;
+  clip-path: none !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  text-indent: 0 !important;
+}
+
+${rules}
+
+@media only screen and (max-width: 64em) {
+  .blurb ul.required-tags {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media only screen and (max-width: 42em) {
+  .blurb ul.required-tags {
+    grid-template-columns: 1fr;
+  }
+}
+`;
+  };
+
+  /* Ensure all later preview renders retain the unified background and required-tag styles. */
+  document.addEventListener('input',()=>setTimeout(()=>{
+    syncUnifiedBackground(false);
+    applyRequiredPreview();
+  },0),true);
+  document.addEventListener('change',()=>setTimeout(()=>{
+    syncUnifiedBackground(false);
+    applyRequiredPreview();
+  },0),true);
+
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    if(q('requiredTagFont')) q('requiredTagFont').value=q('fontFamily').value;
+    if(q('requiredTagSize')) q('requiredTagSize').value='11';
+    requiredTypes.forEach(x=>{
+      if(q('req_'+x.key+'_bg')) q('req_'+x.key+'_bg').value=x.bg.toLowerCase();
+      if(q('req_'+x.key+'_fg')) q('req_'+x.key+'_fg').value=x.fg.toLowerCase();
+      if(q('req_'+x.key+'_bg_text')) q('req_'+x.key+'_bg_text').value=x.bg;
+      if(q('req_'+x.key+'_fg_text')) q('req_'+x.key+'_fg_text').value=x.fg;
+    });
+    applyRequiredPreview();
+    try{ cssOutput.value=buildCss(); save(); }catch(e){}
+  },0));
+
+  applyRequiredPreview();
+  try{ cssOutput.value=buildCss(); save(); }catch(e){}
+})();
+</script>
