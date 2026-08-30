@@ -1,0 +1,456 @@
+<style id="ao3-responsive-device-styles">
+.preview-shell{gap:10px}
+.device-toolbar{
+  width:min(1040px,100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.device-btn{
+  border:1px solid #45394a;
+  background:#171419;
+  color:#b9abb8;
+  border-radius:8px;
+  padding:7px 11px;
+  font-size:9px;
+  font-weight:800;
+  cursor:pointer;
+}
+.device-btn:hover{background:#211b24;color:#fff}
+.device-btn.active{background:#65009d;border-color:#9d00ff;color:#fff}
+.device-note{font-size:9px;color:#7f737e;margin-left:4px}
+.browser.responsive-preview-desktop{width:min(1040px,100%)}
+.browser.responsive-preview-tablet{width:min(768px,100%)}
+.browser.responsive-preview-mobile{width:min(390px,100%)}
+.browser{transition:width .2s ease}
+.browser.responsive-preview-tablet .ao3-heading{padding:16px 20px}
+.browser.responsive-preview-tablet .ao3-main{padding:24px 4.5%}
+.browser.responsive-preview-mobile .ao3-heading{
+  padding:13px 12px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:7px;
+}
+.browser.responsive-preview-mobile .ao3-nav{flex-wrap:wrap}
+.browser.responsive-preview-mobile .ao3-nav a{
+  flex:1 1 50%;
+  box-sizing:border-box;
+  text-align:center;
+  padding:8px 7px;
+}
+.browser.responsive-preview-mobile .ao3-main{padding:17px 12px}
+.browser.responsive-preview-mobile .mock-panel,
+.browser.responsive-preview-mobile .mock-form{padding:12px;margin:11px 0}
+.browser.responsive-preview-mobile .stats,
+.browser.responsive-preview-mobile .mock-actions{gap:7px;flex-wrap:wrap}
+.browser.responsive-preview-mobile .mock-form input,
+.browser.responsive-preview-mobile .mock-form textarea,
+.browser.responsive-preview-mobile .mock-form select{min-width:0;box-sizing:border-box}
+.browser.responsive-preview-mobile .ao3-footer{padding:17px 12px}
+.browser.responsive-preview-mobile .bottom-border-preview{max-width:100%}
+</style>
+
+<script id="ao3-responsive-device-script">
+(function(){
+  const sectionHtml = `
+    <details class="section" id="responsiveDeviceSection">
+      <summary>Responsive &amp; Devices</summary>
+      <div class="section-body">
+        <div class="check-row">
+          <div>
+            <strong>Responsive mobile CSS</strong>
+            <div class="help">Automatically adds tablet and phone safeguards to the AO3 CSS you export.</div>
+          </div>
+          <input type="checkbox" id="responsiveCss" checked>
+        </div>
+
+        <div class="control">
+          <div class="control-head"><label>Tablet text scale</label><span class="mini" id="tabletScaleValue">94%</span></div>
+          <input type="range" id="tabletScale" min="80" max="100" value="94">
+        </div>
+
+        <div class="control">
+          <div class="control-head"><label>Mobile text scale</label><span class="mini" id="mobileScaleValue">86%</span></div>
+          <input type="range" id="mobileScale" min="70" max="100" value="86">
+        </div>
+
+        <div class="control">
+          <div class="control-head"><label>Mobile side padding</label><span class="mini" id="mobilePaddingValue">12px</span></div>
+          <input type="range" id="mobilePadding" min="8" max="24" value="12">
+        </div>
+
+        <div class="help">Safeguards keep panels, inputs, images, tables, navigation, backgrounds, gradients, metallic text, and the bottom border inside the screen. Fixed backgrounds switch to scroll on phones for better browser compatibility.</div>
+      </div>
+    </details>`;
+
+  const toolbarHtml = `
+    <div class="device-toolbar" aria-label="Preview device size">
+      <button class="device-btn active" data-device="desktop">Desktop</button>
+      <button class="device-btn" data-device="tablet">Tablet</button>
+      <button class="device-btn" data-device="mobile">Mobile</button>
+      <span class="device-note" id="deviceNote">1040px preview</span>
+    </div>`;
+
+  const sidebar = document.querySelector('.sidebar');
+  const quickPresets = Array.from(sidebar.querySelectorAll('details.section'))
+    .find(el => (el.querySelector('summary')?.textContent || '').trim() === 'Quick Presets');
+
+  if(quickPresets && !document.getElementById('responsiveDeviceSection')){
+    quickPresets.insertAdjacentHTML('beforebegin', sectionHtml);
+  }
+
+  const previewShell = document.querySelector('.preview-shell');
+  if(previewShell && !document.querySelector('.device-toolbar')){
+    previewShell.insertAdjacentHTML('afterbegin', toolbarHtml);
+  }
+
+  const browser = document.querySelector('.browser');
+  const responsiveIds = ['responsiveCss','tabletScale','mobileScale','mobilePadding'];
+  responsiveIds.forEach(id => {
+    if(!idsToSave.includes(id)) idsToSave.push(id);
+  });
+
+  try{
+    const saved = JSON.parse(localStorage.getItem('ao3SkinStudio') || '{}');
+    responsiveIds.forEach(id => {
+      if(saved[id] === undefined) return;
+      const el = $(id);
+      if(el.type === 'checkbox') el.checked = !!saved[id];
+      else el.value = saved[id];
+    });
+  }catch(e){}
+
+  let previewDevice = localStorage.getItem('ao3SkinStudioPreviewDevice') || 'desktop';
+  if(!['desktop','tablet','mobile'].includes(previewDevice)) previewDevice = 'desktop';
+
+  const scalePx = (value, percent, minimum=9) =>
+    Math.max(minimum, Math.round((Number(value) * Number(percent) / 100) * 10) / 10);
+
+  function previewScale(){
+    if(previewDevice === 'tablet') return Number($('tabletScale').value);
+    if(previewDevice === 'mobile') return Number($('mobileScale').value);
+    return 100;
+  }
+
+  function setPreviewFontVar(name, id, minimum=9){
+    const value = scalePx($(id).value, previewScale(), minimum);
+    mock.style.setProperty(name, value + 'px');
+    return value;
+  }
+
+  function applyResponsivePreview(){
+    if(!browser) return;
+
+    browser.classList.remove(
+      'responsive-preview-desktop',
+      'responsive-preview-tablet',
+      'responsive-preview-mobile'
+    );
+    browser.classList.add('responsive-preview-' + previewDevice);
+
+    document.querySelectorAll('.device-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.device === previewDevice);
+    });
+
+    $('deviceNote').textContent =
+      previewDevice === 'desktop' ? '1040px preview' :
+      previewDevice === 'tablet' ? '768px preview' :
+      '390px preview';
+
+    $('tabletScaleValue').textContent = $('tabletScale').value + '%';
+    $('mobileScaleValue').textContent = $('mobileScale').value + '%';
+    $('mobilePaddingValue').textContent = $('mobilePadding').value + 'px';
+
+    setPreviewFontVar('--p-size','fontSize',10);
+    setPreviewFontVar('--p-size-logo','logoTextSize',14);
+    setPreviewFontVar('--p-size-user','userTextSize',9);
+    setPreviewFontVar('--p-size-nav','navTextSize',9);
+    setPreviewFontVar('--p-size-heading','headingTextSize',14);
+    setPreviewFontVar('--p-size-title','workTitleTextSize',12);
+    setPreviewFontVar('--p-size-meta','metaTextSize',9);
+    setPreviewFontVar('--p-size-summary','fontSize',10);
+    setPreviewFontVar('--p-size-tag','tagTextSize',9);
+    setPreviewFontVar('--p-size-stats','statsTextSize',9);
+    setPreviewFontVar('--p-size-form-heading','formHeadingTextSize',12);
+    setPreviewFontVar('--p-size-label','labelTextSize',9);
+
+    const inputPreview = setPreviewFontVar('--p-size-input','inputTextSize',12);
+    if(previewDevice === 'mobile' && inputPreview < 16){
+      mock.style.setProperty('--p-size-input','16px');
+    }
+
+    setPreviewFontVar('--p-size-button','buttonTextSize',9);
+    setPreviewFontVar('--p-size-footer','footerTextSize',9);
+
+    if(typeof renderPreviewImages === 'function'){
+      renderPreviewImages($('bgFixed').checked && previewDevice !== 'mobile');
+    }
+  }
+
+  const originalBuildCss = buildCss;
+  buildCss = function(){
+    const base = originalBuildCss();
+    if(!$('responsiveCss').checked) return base;
+
+    const tablet = Number($('tabletScale').value);
+    const mobile = Number($('mobileScale').value);
+    const pad = Number($('mobilePadding').value);
+
+    const bodyTablet = scalePx($('fontSize').value,tablet,10);
+    const logoTablet = scalePx($('logoTextSize').value,tablet,14);
+    const userTablet = scalePx($('userTextSize').value,tablet,9);
+    const navTablet = scalePx($('navTextSize').value,tablet,9);
+    const headingTablet = scalePx($('headingTextSize').value,tablet,14);
+    const titleTablet = scalePx($('workTitleTextSize').value,tablet,12);
+    const metaTablet = scalePx($('metaTextSize').value,tablet,9);
+    const tagTablet = scalePx($('tagTextSize').value,tablet,9);
+    const statsTablet = scalePx($('statsTextSize').value,tablet,9);
+    const formTablet = scalePx($('formHeadingTextSize').value,tablet,12);
+    const labelTablet = scalePx($('labelTextSize').value,tablet,9);
+    const inputTablet = scalePx($('inputTextSize').value,tablet,12);
+    const buttonTablet = scalePx($('buttonTextSize').value,tablet,9);
+    const footerTablet = scalePx($('footerTextSize').value,tablet,9);
+
+    const bodyMobile = scalePx($('fontSize').value,mobile,10);
+    const logoMobile = scalePx($('logoTextSize').value,mobile,14);
+    const userMobile = scalePx($('userTextSize').value,mobile,9);
+    const navMobile = scalePx($('navTextSize').value,mobile,9);
+    const headingMobile = scalePx($('headingTextSize').value,mobile,14);
+    const titleMobile = scalePx($('workTitleTextSize').value,mobile,12);
+    const metaMobile = scalePx($('metaTextSize').value,mobile,9);
+    const tagMobile = scalePx($('tagTextSize').value,mobile,9);
+    const statsMobile = scalePx($('statsTextSize').value,mobile,9);
+    const formMobile = scalePx($('formHeadingTextSize').value,mobile,12);
+    const labelMobile = scalePx($('labelTextSize').value,mobile,9);
+    const inputMobile = scalePx($('inputTextSize').value,mobile,16);
+    const buttonMobile = scalePx($('buttonTextSize').value,mobile,9);
+    const footerMobile = scalePx($('footerTextSize').value,mobile,9);
+
+    return base + `
+
+/* RESPONSIVE TABLET / MOBILE SAFEGUARDS
+   Generated automatically by AO3 Skin Studio. */
+@media only screen and (max-width: 64em) {
+  body,
+  .userstuff,
+  .blurb p,
+  .blurb blockquote,
+  .summary,
+  p,
+  li,
+  dd,
+  dt { font-size: ${bodyTablet}px; }
+
+  #header .heading,
+  #header .heading a,
+  #header .logo { font-size: ${logoTablet}px; }
+
+  #header .user,
+  #header .user a,
+  #header .secondary { font-size: ${userTablet}px; }
+
+  #header .primary a,
+  #header .menu a,
+  #header .dropdown-menu a { font-size: ${navTablet}px; }
+
+  h1, h2, h3, .heading { font-size: ${headingTablet}px; }
+  .blurb h4, .blurb h4 a { font-size: ${titleTablet}px; }
+  .datetime, .byline, .meta, .notice, .footnote { font-size: ${metaTablet}px; }
+  .tag, .tags a, .required { font-size: ${tagTablet}px; }
+  .stats, .stats dl, .stats dt, .stats dd { font-size: ${statsTablet}px; }
+  fieldset h3, form h3, .filters h3 { font-size: ${formTablet}px; }
+  label, .label { font-size: ${labelTablet}px; }
+  input, textarea, select { font-size: ${inputTablet}px; }
+  .actions a, .actions input, .actions button, button { font-size: ${buttonTablet}px; }
+  #footer { font-size: ${footerTablet}px; }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .blurb,
+  .module,
+  .wrapper,
+  fieldset,
+  form,
+  .region,
+  .bookmark .user,
+  .dashboard .own,
+  .listbox {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media only screen and (max-width: 42em) {
+  body,
+  .userstuff,
+  .blurb p,
+  .blurb blockquote,
+  .summary,
+  p,
+  li,
+  dd,
+  dt { font-size: ${bodyMobile}px; }
+
+  #header .heading,
+  #header .heading a,
+  #header .logo { font-size: ${logoMobile}px; }
+
+  #header .user,
+  #header .user a,
+  #header .secondary { font-size: ${userMobile}px; }
+
+  #header .primary a,
+  #header .menu a,
+  #header .dropdown-menu a { font-size: ${navMobile}px; }
+
+  h1, h2, h3, .heading { font-size: ${headingMobile}px; }
+  .blurb h4, .blurb h4 a { font-size: ${titleMobile}px; }
+  .datetime, .byline, .meta, .notice, .footnote { font-size: ${metaMobile}px; }
+  .tag, .tags a, .required { font-size: ${tagMobile}px; }
+  .stats, .stats dl, .stats dt, .stats dd { font-size: ${statsMobile}px; }
+  fieldset h3, form h3, .filters h3 { font-size: ${formMobile}px; }
+  label, .label { font-size: ${labelMobile}px; }
+  input, textarea, select { font-size: ${inputMobile}px; }
+  .actions a, .actions input, .actions button, button { font-size: ${buttonMobile}px; }
+  #footer { font-size: ${footerMobile}px; }
+
+  body,
+  #outer,
+  #inner,
+  #header {
+    background-attachment: scroll !important;
+  }
+
+  #main,
+  #dashboard,
+  #workskin,
+  .userstuff {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  #main,
+  #workskin {
+    padding-left: ${pad}px;
+    padding-right: ${pad}px;
+  }
+
+  #header .primary,
+  #header .secondary,
+  #header .user,
+  #header ul,
+  .navigation,
+  .actions {
+    white-space: normal;
+  }
+
+  .actions,
+  .navigation,
+  .stats,
+  .tags {
+    flex-wrap: wrap;
+  }
+
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="url"],
+  textarea,
+  select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  a,
+  p,
+  li,
+  dd,
+  dt,
+  .blurb,
+  .module {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  #footer::after {
+    max-width: 100%;
+  }
+}
+`;
+  };
+
+  function refreshResponsive(){
+    applyResponsivePreview();
+    cssOutput.value = buildCss();
+    save();
+  }
+
+  document.querySelectorAll('.device-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      previewDevice = btn.dataset.device;
+      localStorage.setItem('ao3SkinStudioPreviewDevice', previewDevice);
+      refreshResponsive();
+    });
+  });
+
+  ['responsiveCss','tabletScale','mobileScale','mobilePadding'].forEach(id => {
+    const el = $(id);
+    el.addEventListener(el.type === 'range' ? 'input' : 'change', refreshResponsive);
+  });
+
+  document.addEventListener('input', e => {
+    if(e.target && e.target.closest && e.target.closest('#responsiveDeviceSection')) return;
+    setTimeout(() => {
+      applyResponsivePreview();
+      cssOutput.value = buildCss();
+    }, 0);
+  }, true);
+
+  document.addEventListener('change', e => {
+    if(e.target && e.target.closest && e.target.closest('#responsiveDeviceSection')) return;
+    setTimeout(() => {
+      applyResponsivePreview();
+      cssOutput.value = buildCss();
+    }, 0);
+  }, true);
+
+  $('resetBtn').addEventListener('click', () => {
+    setTimeout(() => {
+      $('responsiveCss').checked = true;
+      $('tabletScale').value = '94';
+      $('mobileScale').value = '86';
+      $('mobilePadding').value = '12';
+      previewDevice = 'desktop';
+      localStorage.setItem('ao3SkinStudioPreviewDevice','desktop');
+      refreshResponsive();
+    }, 0);
+  });
+
+  applyResponsivePreview();
+  cssOutput.value = buildCss();
+  save();
+})();
+</script>
