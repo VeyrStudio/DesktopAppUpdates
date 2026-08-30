@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.6",
-  "payloadSha256": "806020464eaf636704fac32e12afb951eef87b8cdcac8c0c8fd8dbc9fe43c601",
+  "version": "1.0.7",
+  "payloadSha256": "558b5c0620ea04e1b31e53d9f37fbf871db84323770dfcf3c14fe1d4d6bfae20",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-001.txt",
-      "sha256": "03cca86c9159c046055fca27da719d4f65b5eed54c55cf2aae38867f87add769"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-001.txt",
+      "sha256": "ba22623357c687bd814ded50e6ab38da7b46ee9f5f24a6627c613673957c04f8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-002.txt",
-      "sha256": "2ca95468e74ee81a0a3add76e0c252ffc6127c9a8ffe4e89cc12fbd64e72bfdc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-002.txt",
+      "sha256": "eddc2b04cd1df33f6be80a68d89f3b4095d104fc152f17b7a5b27d54f41c1b47"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-003.txt",
-      "sha256": "84a142bfc1e529025cc03b7597dc277e386051ed5be07fa0fbf5f16c09b7ef19"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-003.txt",
+      "sha256": "6b620da2049b00aeb012e35decd4daccd6ff0240a86da5be040a8e495ab3d9e8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-004.txt",
-      "sha256": "43b5ed478cdba361385409a0e2cec0979caf890b481c64ebec6c7c24b13c7fe1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-004.txt",
+      "sha256": "e0ed0b3f2c19a215a73fedae16553e2b7af3c982b670d02e0c4ee128104e0b3e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-005.txt",
-      "sha256": "cd623334ad329ae5879586dc923602315853bbb231918dda7cef9ace73db1852"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-005.txt",
+      "sha256": "86e753e7ac045bdde6ce19c0d53793033b8aaca42b490256a66e90aed8b4089f"
     }
   ],
-  "notes": "Adds native Windows snapping and split-screen behavior to the antique custom title bar: drag-to-edge/top, Win+Arrow, maximize/restore, and Windows 11 Snap Layouts while keeping the custom window design."
+  "notes": "Readability/layout update: widens the Story Dossier on large windows, enlarges the Summary editor and Title Card areas, and snaps Summary scrolling to whole text lines so lines are not clipped in half."
 }
