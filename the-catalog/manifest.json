@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.11",
-  "payloadSha256": "165ed2464e904e013d40041f1f5fca5edc0e56b29840e652c79748e2de928914",
+  "version": "1.0.12",
+  "payloadSha256": "fefacaadc7bf66173b1285759af74d8166c067f1b20af301996c4ddec09cf941",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-001.txt",
-      "sha256": "43d43532189598e9a3430d0b3ebb8a2249a4ab89a452fa15a2662489aaa40fe6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.12-part-001.txt",
+      "sha256": "f8357f41450dac44cb4bc55b450c63cb9c1a6510b21bb847aef77a5361fe28e5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-002.txt",
-      "sha256": "db3d4dd74d3a7222c207486eaab955685845b8a0e20c8b6513d7eaacb740fce5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.12-part-002.txt",
+      "sha256": "a6187a4d8b460562132eece33c95b5b30e4875f229634fa57ea4e456629cda97"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-003.txt",
-      "sha256": "172d9a7f82d09bd2857ffe750f6974ca58c85434d1b28799fd619c95d991974b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.12-part-003.txt",
+      "sha256": "2b44fd26843f39be3a9a0ed4f799a8deb84c7452d6e200e7b7853b775c1c5be6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-004.txt",
-      "sha256": "189a989414622b1d0265f2580f5827598b33203bb14db0793025e844eea841f5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.12-part-004.txt",
+      "sha256": "eb9b66f1d8871f32b6132768eca0449f05859ba4fcab1903c7beefacd65a1636"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-005.txt",
-      "sha256": "02d2015dcfa73be98e40db5ca49c2eb58d5b305673359ddfcabdcf63a014bcbf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.12-part-005.txt",
+      "sha256": "f1725aadc2590bdb9ba9fe3ff87c4570b7294b92761309b7be11f0f6d4406d12"
     }
   ],
-  "notes": "Adds a collapsible Story Dossier/right column. HIDE DOSSIER collapses it completely so the story grid reclaims the space; SHOW DOSSIER restores it."
+  "notes": "Replaces the side-by-side story grid with one centered carousel card and large previous/next arrows. Title Cards now display at full portrait proportion instead of being cropped into a short banner."
 }
