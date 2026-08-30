@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.8",
-  "payloadSha256": "5000ec8574a40c7eb02e37c3a8ff4451dba2810b99e2c9b2e34e1c3cab21d7fb",
-  "executableSha256": "96fb210f67d5242c3e2b90350c3feea854bd3e1484f13cc4b37e6608172340b0",
+  "version": "0.1.9",
+  "payloadSha256": "d53e43692bafd7b0b3f0c80ccf25bda5163cb6a3164a543d1a80feb0045362f1",
+  "executableSha256": "f297a8a3e30c47058a83d37b1040cb23ab00763f89b7669992966012af415111",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.8-part-001.txt",
-      "sha256": "bca1a5de114873a6baf784eae895c7687f5e275ecd149e4131fcd0e1d1dbe466"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.9-part-001.txt",
+      "sha256": "90ff81f94efba5cb9f3f3505af9de01ae02085e487752dfd3bc27bccf3a3a1e3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.8-part-002.txt",
-      "sha256": "a88fa829ee7957dddfc44d7fa4379d3db7cc4a7b67bdbf57828ac9cf1a4b3163"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.9-part-002.txt",
+      "sha256": "10a07d1944ddba17a01a74bd2bf3953295dd2a5197ea8a1cbefd35b2dbd146e0"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.8-part-003.txt",
-      "sha256": "366e6206ed09ae5634c18418f4e1ce1d88fac8a1bfe8952cda13cc498b72fc11"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.9-part-003.txt",
+      "sha256": "2fd54a3aaf97ea0f4bff3502827d0d504a8cd9ab67adc3861bd632ef37e5f99b"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.8-part-004.txt",
-      "sha256": "8e255b689e9954e074f77ee01ffaf5c44afc38fc60d8a6ac83aa8091ca6e55ea"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.9-part-004.txt",
+      "sha256": "8243784cb9b9ebacad0c5ad111d3aa77a9753e1acd60f2d03c366853b576c581"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.8-part-005.txt",
-      "sha256": "eb1438a14ff75d76730b2c74d4ce72196bd7339ee3e1195993953a22c80e83e7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.9-part-005.txt",
+      "sha256": "3eb3388e7be4596d1583a46067b5226483070f1ab3fea204e3cfe4c32d22fb9b"
     }
   ],
-  "notes": "Adds explicit animated GIF support for backgrounds and bottom-border images, preserving animation in preview and supporting direct hosted .gif URLs in exported AO3 CSS. Corrects the Results required-tags display to the compact 2x2 block at the left of each work while keeping all per-state box colors, font, font size, and font colors. Keeps all prior tools."
+  "notes": "Finishes the unified Background by removing the separate red navigation-band background so the same background runs behind header, navigation, page, and footer. Rebuilds Results required tags to match AO3 icon ordering and visual language: rating top-left, category top-right, warning bottom-left, completion bottom-right, including blank tiles, !?, !, M/M and F/F symbols, Multi quadrants, and the WIP prohibition icon. GIF support and all prior tools remain."
 }
