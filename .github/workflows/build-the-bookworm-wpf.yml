@@ -73,37 +73,38 @@ jobs:
           }
 
           if ($mainCode -notmatch 'private void UpdateViewButtonState') {
-            $viewMethod = @'
-
-    private void UpdateViewButtonState()
-    {
-        if (CarouselViewButton is null || GridViewButton is null || VerticalViewButton is null) return;
-
-        var normalBackground = (Brush)FindResource("Green800Brush");
-        var normalForeground = (Brush)FindResource("IvoryBrush");
-        var selectedBackground = (Brush)FindResource("GoldGradient");
-        var selectedForeground = (Brush)FindResource("Green950Brush");
-
-        foreach (var button in new[] { CarouselViewButton, GridViewButton, VerticalViewButton })
-        {
-            button.Background = normalBackground;
-            button.Foreground = normalForeground;
-            button.FontWeight = FontWeights.Normal;
-        }
-
-        var selected = _settings.ShelfView switch
-        {
-            "Grid" => GridViewButton,
-            "Vertical" => VerticalViewButton,
-            _ => CarouselViewButton
-        };
-
-        selected.Background = selectedBackground;
-        selected.Foreground = selectedForeground;
-        selected.FontWeight = FontWeights.SemiBold;
-    }
-
-'@
+            $methodLines = @(
+              '',
+              '    private void UpdateViewButtonState()',
+              '    {',
+              '        if (CarouselViewButton is null || GridViewButton is null || VerticalViewButton is null) return;',
+              '',
+              '        var normalBackground = (Brush)FindResource("Green800Brush");',
+              '        var normalForeground = (Brush)FindResource("IvoryBrush");',
+              '        var selectedBackground = (Brush)FindResource("GoldGradient");',
+              '        var selectedForeground = (Brush)FindResource("Green950Brush");',
+              '',
+              '        foreach (var button in new[] { CarouselViewButton, GridViewButton, VerticalViewButton })',
+              '        {',
+              '            button.Background = normalBackground;',
+              '            button.Foreground = normalForeground;',
+              '            button.FontWeight = FontWeights.Normal;',
+              '        }',
+              '',
+              '        var selected = _settings.ShelfView switch',
+              '        {',
+              '            "Grid" => GridViewButton,',
+              '            "Vertical" => VerticalViewButton,',
+              '            _ => CarouselViewButton',
+              '        };',
+              '',
+              '        selected.Background = selectedBackground;',
+              '        selected.Foreground = selectedForeground;',
+              '        selected.FontWeight = FontWeights.SemiBold;',
+              '    }',
+              ''
+            )
+            $viewMethod = ($methodLines -join $nl) + $nl
             $mainCode = $mainCode.Replace('    private void Settings_Click', $viewMethod + '    private void Settings_Click')
           }
 
