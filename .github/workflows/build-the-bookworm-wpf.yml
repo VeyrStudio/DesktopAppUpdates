@@ -64,6 +64,13 @@ jobs:
           $workspaceText = $workspaceText.Replace(' TextBlock.TextWrapping="Wrap"', '')
           Set-Content -Path $workspaceXaml -Value $workspaceText -Encoding utf8
 
+          $updateService = Join-Path $source 'Services/UpdateService.cs'
+          $updateText = Get-Content $updateService -Raw
+          if ($updateText -notmatch 'using System.Net.Http;') {
+            $updateText = $updateText.Replace('using System.Diagnostics;', "using System.Diagnostics;`r`nusing System.Net.Http;")
+          }
+          Set-Content -Path $updateService -Value $updateText -Encoding utf8
+
           "BOOKWORM_SOURCE=$source" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build app and verified update payload
