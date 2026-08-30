@@ -1,0 +1,150 @@
+name: Build AO3 Skin Studio WPF
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "apps/ao3-skin-studio/source.zip"
+      - ".github/workflows/build-ao3-skin-studio-wpf.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Extract AO3 Skin Studio source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $srcRoot = Join-Path $env:RUNNER_TEMP 'ao3-skin-studio-src'
+          if (Test-Path $srcRoot) { Remove-Item $srcRoot -Recurse -Force }
+          New-Item -ItemType Directory -Path $srcRoot -Force | Out-Null
+
+          Expand-Archive -Path 'apps/ao3-skin-studio/source.zip' -DestinationPath $srcRoot -Force
+          $project = Join-Path $srcRoot 'AO3SkinStudio/AO3SkinStudio.csproj'
+          if (-not (Test-Path $project)) { throw 'AO3 Skin Studio project was not found after extraction.' }
+
+          $projectXml = [xml](Get-Content $project -Raw)
+          $version = [string]$projectXml.Project.PropertyGroup.Version
+          if ([string]::IsNullOrWhiteSpace($version)) { throw 'Could not read AO3 Skin Studio version.' }
+
+          "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Publish Windows app
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $publish = Join-Path $env:RUNNER_TEMP 'ao3-publish'
+          if (Test-Path $publish) { Remove-Item $publish -Recurse -Force }
+
+          dotnet publish $env:AO3_PROJECT `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=false `
+            -o $publish
+
+          $exe = Join-Path $publish 'AO3SkinStudio.exe'
+          if (-not (Test-Path $exe)) { throw 'AO3SkinStudio.exe was not produced.' }
+
+          "AO3_PUBLISH=$publish" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build verified update payload
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $channel = Join-Path $PWD 'ao3-skin-studio'
+          New-Item -ItemType Directory -Path $channel -Force | Out-Null
+          Get-ChildItem $channel -Filter 'payload-*.txt' -ErrorAction SilentlyContinue | Remove-Item -Force
+
+          $zip = Join-Path $env:RUNNER_TEMP "AO3SkinStudio-$env:AO3_VERSION-win-x64.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path (Join-Path $env:AO3_PUBLISH '*') -DestinationPath $zip -CompressionLevel Optimal
+
+          $payloadSha = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $exe = Join-Path $env:AO3_PUBLISH 'AO3SkinStudio.exe'
+          $exeSha = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          $exeBytes = (Get-Item $exe).Length
+          $payloadBytes = (Get-Item $zip).Length
+
+          $base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($zip))
+          $chunkSize = 20000000
+          $parts = @()
+          $partNumber = 1
+
+          for ($offset = 0; $offset -lt $base64.Length; $offset += $chunkSize) {
+            $length = [Math]::Min($chunkSize, $base64.Length - $offset)
+            $chunk = $base64.Substring($offset, $length)
+            $name = 'payload-{0}-part-{1:D3}.txt' -f $env:AO3_VERSION, $partNumber
+            $partPath = Join-Path $channel $name
+            [IO.File]::WriteAllText($partPath, $chunk, [Text.UTF8Encoding]::new($false))
+            $partSha = (Get-FileHash $partPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $parts += [ordered]@{
+              url = "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/$name"
+              sha256 = $partSha
+            }
+            $partNumber++
+          }
+
+          $manifest = [ordered]@{
+            schemaVersion = 1
+            appId = 'ao3-skin-studio-wpf'
+            appName = 'AO3 Skin Studio'
+            version = $env:AO3_VERSION
+            payloadSha256 = $payloadSha
+            executableSha256 = $exeSha
+            payloadParts = $parts
+            notes = 'AO3 Skin Studio desktop update.'
+          }
+          $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
+
+          $validation = [ordered]@{
+            version = $env:AO3_VERSION
+            executableSha256 = $exeSha
+            executableBytes = $exeBytes
+            payloadSha256 = $payloadSha
+            payloadBytes = $payloadBytes
+            payloadPartCount = $parts.Count
+          }
+          $validation | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $channel "$env:AO3_VERSION-validation.json") -Encoding utf8
+
+          @"
+          # AO3 Skin Studio update channel
+
+          Automatic-update files for **AO3 Skin Studio** are generated by `.github/workflows/build-ao3-skin-studio-wpf.yml`.
+
+          The app checks `manifest.json` in this folder. User settings and WebView2 data are stored outside the application folder so updates do not overwrite them.
+          "@ | Set-Content (Join-Path $channel 'README.md') -Encoding utf8
+
+          Copy-Item $zip (Join-Path $env:RUNNER_TEMP 'AO3SkinStudio-release.zip') -Force
+
+      - name: Commit update channel
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name "VeyrStudio Update Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add ao3-skin-studio
+          if (git diff --cached --quiet) {
+            Write-Host 'AO3 Skin Studio update channel already matches this build.'
+          } else {
+            git commit -m "Release AO3 Skin Studio $env:AO3_VERSION"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AO3SkinStudio-win-x64-${{ env.AO3_VERSION }}
+          path: ${{ runner.temp }}/AO3SkinStudio-release.zip
+          if-no-files-found: error
