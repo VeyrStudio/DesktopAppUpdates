@@ -3,12 +3,12 @@
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
   "version": "0.1.2",
-  "payloadSha256": "50d63788f7c1c51464bddf31ff4bb04cb1647879d7b0f9b7739dcd905641be43",
+  "payloadSha256": "e26a7f4c73dc8d7a58fc4e74f87eda212e1a5d88a151d32fe9177dc1e1178e40",
   "executableSha256": "2791e55221cc18a423f18cb9cf7c45cf4a2cf9274ecafe9c0abafec11d2c507c",
   "payloadParts": [
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.2-part-001.txt",
-      "sha256": "6daf9806d77ea1495fdca3b100b993f79e445217331e00ba7d78bb0ae16326f0"
+      "sha256": "0a16d726687cef2d4810e0cbfb2b55ad0c5fe947fbcaa40c18ba137f05fdf3ae"
     },
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.2-part-002.txt",
@@ -24,7 +24,7 @@
     },
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.2-part-005.txt",
-      "sha256": "b2bfe900f6a434555ba79774a4b2b81800c7f12ae3d4cf955326982cb5842857"
+      "sha256": "ffa2cc87d59459c917e40ca6e166b98f58068ee9ec7f1b17967794dad4a01cf2"
     }
   ],
   "notes": "Adds elegant serif font choices (Palatino, Garamond, and Baskerville stacks) while keeping the independent text sizing, bottom border image, gradients, metallics, translucency, and all prior tools."
