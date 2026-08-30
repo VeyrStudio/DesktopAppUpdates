@@ -17,9 +17,9 @@ New-Item -ItemType Directory -Path $assets -Force | Out-Null
 
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.6</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.6.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.6.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.7</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.7.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.7.0</FileVersion>')
 $text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
 Set-Content -Path $project -Value $text -Encoding utf8
 
@@ -110,3 +110,98 @@ $text = $text.Replace(
     '<Button Content="×" Click="Close_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Close" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>'
 )
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
+
+# 1.0.7 readability pass:
+# - give the dossier more width on large windows without breaking snapped layouts
+# - enlarge both Title Card display areas
+# - enlarge the Summary editor and snap its vertical scrolling to whole lines
+$mainXaml = Join-Path $root 'MainWindow.xaml'
+$text = Get-Content $mainXaml -Raw
+$text = $text.Replace(
+    '<ColumnDefinition Width="430"/>',
+    '<ColumnDefinition Width="0.85*" MinWidth="430" MaxWidth="700"/>'
+)
+$text = $text.Replace(
+    'Width="282" Height="350" Margin="0,0,16,16"',
+    'Width="306" Height="410" Margin="0,0,16,16"'
+)
+$text = $text.Replace(
+    '<RowDefinition Height="150"/>',
+    '<RowDefinition Height="195"/>'
+)
+$text = $text.Replace(
+    'BorderThickness="1" Height="165" Margin="0,0,0,8" ClipToBounds="True"',
+    'BorderThickness="1" Height="230" Margin="0,0,0,8" ClipToBounds="True"'
+)
+$text = $text.Replace(
+    '<TextBox x:Name="SummaryEditor" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="190" MaxHeight="310" FontSize="14" TextChanged="Editor_TextChanged" SpellCheck.IsEnabled="True"/>',
+    '<TextBox x:Name="SummaryEditor" AcceptsReturn="True" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MinHeight="320" MaxHeight="520" FontSize="14" Padding="12,12,18,12" VerticalContentAlignment="Top" TextOptions.TextFormattingMode="Display" Loaded="SummaryEditor_Loaded" TextChanged="Editor_TextChanged" SpellCheck.IsEnabled="True"/>'
+)
+Set-Content -Path $mainXaml -Value $text -Encoding utf8
+
+$mainCode = Join-Path $root 'MainWindow.xaml.cs'
+$code = Get-Content $mainCode -Raw
+if ($code -notmatch '_summaryScrollViewer') {
+    $code = $code.Replace(
+        '    private bool _loadingEditor;',
+        ('    private bool _loadingEditor;' + [Environment]::NewLine + '    private ScrollViewer? _summaryScrollViewer;' + [Environment]::NewLine + '    private bool _summaryScrollSnapping;')
+    )
+
+    $summaryMethods = @'
+    private void SummaryEditor_Loaded(object sender, RoutedEventArgs e)
+    {
+        _summaryScrollViewer ??= FindVisualChild<ScrollViewer>(SummaryEditor);
+        if (_summaryScrollViewer is null) return;
+
+        _summaryScrollViewer.ScrollChanged -= SummaryScrollViewer_ScrollChanged;
+        _summaryScrollViewer.ScrollChanged += SummaryScrollViewer_ScrollChanged;
+    }
+
+    private void SummaryScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (_summaryScrollSnapping || Math.Abs(e.VerticalChange) < 0.01) return;
+
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (_summaryScrollSnapping || _summaryScrollViewer is null) return;
+
+            var firstLine = SummaryEditor.GetFirstVisibleLineIndex();
+            if (firstLine < 0 || firstLine >= SummaryEditor.LineCount) return;
+
+            var characterIndex = SummaryEditor.GetCharacterIndexFromLineIndex(firstLine);
+            if (characterIndex < 0) return;
+
+            var rect = SummaryEditor.GetRectFromCharacterIndex(characterIndex);
+            if (rect.IsEmpty || rect.Top >= 0) return;
+
+            var nextLine = Math.Min(firstLine + 1, Math.Max(0, SummaryEditor.LineCount - 1));
+            _summaryScrollSnapping = true;
+            _summaryScrollViewer.ScrollChanged -= SummaryScrollViewer_ScrollChanged;
+            SummaryEditor.ScrollToLine(nextLine);
+            _summaryScrollViewer.ScrollChanged += SummaryScrollViewer_ScrollChanged;
+            _summaryScrollSnapping = false;
+        }, DispatcherPriority.Background);
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T match) return match;
+
+            var nested = FindVisualChild<T>(child);
+            if (nested is not null) return nested;
+        }
+
+        return null;
+    }
+
+'@
+
+    $code = $code.Replace(
+        '    private void Editor_TextChanged(object sender, TextChangedEventArgs e) => QueueSave();',
+        ($summaryMethods + '    private void Editor_TextChanged(object sender, TextChangedEventArgs e) => QueueSave();')
+    )
+}
+Set-Content -Path $mainCode -Value $code -Encoding utf8
