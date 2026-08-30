@@ -76,6 +76,20 @@ jobs:
         shell: pwsh
         run: ./the-catalog/build/patches/ApplyUpdater.ps1
 
+      - name: Inspect delete integration points
+        shell: pwsh
+        run: |
+          $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
+          Write-Host '--- MainWindow XAML relevant lines ---'
+          Select-String -Path (Join-Path $root 'MainWindow.xaml') -Pattern 'Import Entry|Edit Story|Dossier|Button|Recently Deleted' -Context 3,5 | ForEach-Object { $_.ToString() | Write-Host }
+          Write-Host '--- MainWindow code relevant lines ---'
+          Select-String -Path (Join-Path $root 'MainWindow.xaml.cs') -Pattern 'ImportEntry|EditStory|Delete|Recently|SelectedStory|LoadStories' -Context 4,8 | ForEach-Object { $_.ToString() | Write-Host }
+          Write-Host '--- EditStoryWindow relevant lines ---'
+          Select-String -Path (Join-Path $root 'Views/EditStoryWindow.xaml') -Pattern 'Button|Close|Save|Delete|Title' -Context 3,5 | ForEach-Object { $_.ToString() | Write-Host }
+          Write-Host '--- DB delete methods ---'
+          Select-String -Path (Join-Path $root 'Data/CatalogDb.cs') -Pattern 'Delete|Deleted|Trash|Restore' -Context 4,10 | ForEach-Object { $_.ToString() | Write-Host }
+          throw 'Inspection-only run: stop before publish.'
+
       - name: Restore
         shell: pwsh
         run: dotnet restore 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj'
