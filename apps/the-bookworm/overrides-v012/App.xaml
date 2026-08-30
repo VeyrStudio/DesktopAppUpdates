@@ -1,0 +1,201 @@
+<Application x:Class="TheBookworm.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <Color x:Key="Green950">#04100C</Color>
+        <Color x:Key="Green900">#071710</Color>
+        <Color x:Key="Green850">#0A2018</Color>
+        <Color x:Key="Green800">#102A20</Color>
+        <Color x:Key="Green750">#15372A</Color>
+        <Color x:Key="Green700">#1A4737</Color>
+        <Color x:Key="Gold600">#8B6B34</Color>
+        <Color x:Key="Gold500">#B08D4E</Color>
+        <Color x:Key="Gold400">#C7AB69</Color>
+        <Color x:Key="Gold300">#DCC98E</Color>
+        <Color x:Key="Parchment">#E9DDBB</Color>
+        <Color x:Key="ParchmentLight">#F2E8CC</Color>
+        <Color x:Key="Ivory">#F4ECD8</Color>
+        <Color x:Key="MutedOlive">#9BAB8B</Color>
+        <Color x:Key="Ink">#2A241C</Color>
+
+        <SolidColorBrush x:Key="Green950Brush" Color="{StaticResource Green950}"/>
+        <SolidColorBrush x:Key="Green900Brush" Color="{StaticResource Green900}"/>
+        <SolidColorBrush x:Key="Green850Brush" Color="{StaticResource Green850}"/>
+        <SolidColorBrush x:Key="Green800Brush" Color="{StaticResource Green800}"/>
+        <SolidColorBrush x:Key="Green750Brush" Color="{StaticResource Green750}"/>
+        <SolidColorBrush x:Key="Green700Brush" Color="{StaticResource Green700}"/>
+        <SolidColorBrush x:Key="Gold600Brush" Color="{StaticResource Gold600}"/>
+        <SolidColorBrush x:Key="Gold500Brush" Color="{StaticResource Gold500}"/>
+        <SolidColorBrush x:Key="Gold400Brush" Color="{StaticResource Gold400}"/>
+        <SolidColorBrush x:Key="Gold300Brush" Color="{StaticResource Gold300}"/>
+        <SolidColorBrush x:Key="ParchmentBrush" Color="{StaticResource Parchment}"/>
+        <SolidColorBrush x:Key="ParchmentLightBrush" Color="{StaticResource ParchmentLight}"/>
+        <SolidColorBrush x:Key="IvoryBrush" Color="{StaticResource Ivory}"/>
+        <SolidColorBrush x:Key="MutedOliveBrush" Color="{StaticResource MutedOlive}"/>
+        <SolidColorBrush x:Key="InkBrush" Color="{StaticResource Ink}"/>
+
+        <LinearGradientBrush x:Key="AntiqueGreenGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#04100C" Offset="0"/>
+            <GradientStop Color="#0A2119" Offset="0.42"/>
+            <GradientStop Color="#071710" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="PanelGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#102A20" Offset="0"/>
+            <GradientStop Color="#0C241B" Offset="0.55"/>
+            <GradientStop Color="#081B14" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ShelfGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#0D261D" Offset="0"/>
+            <GradientStop Color="#071A13" Offset="0.58"/>
+            <GradientStop Color="#06150F" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GoldGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#E0CD91" Offset="0"/>
+            <GradientStop Color="#B18A49" Offset="0.46"/>
+            <GradientStop Color="#7B5A2A" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="PaperGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F3EACF" Offset="0"/>
+            <GradientStop Color="#E8DAB5" Offset="1"/>
+        </LinearGradientBrush>
+
+        <DropShadowEffect x:Key="SoftShadow" BlurRadius="22" ShadowDepth="6" Opacity="0.52" Color="#000000"/>
+        <DropShadowEffect x:Key="GentleShadow" BlurRadius="12" ShadowDepth="3" Opacity="0.28" Color="#000000"/>
+
+        <Style TargetType="Window">
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="Background" Value="{StaticResource AntiqueGreenGradient}"/>
+            <Setter Property="Foreground" Value="{StaticResource IvoryBrush}"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        </Style>
+
+        <Style x:Key="AntiqueButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource IvoryBrush}"/>
+            <Setter Property="Background" Value="#143428"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold600Brush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Outer" CornerRadius="7" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border Margin="3" CornerRadius="5" BorderBrush="#5CC7AB69" BorderThickness="1" IsHitTestVisible="False"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Outer" Property="Background" Value="#1D4636"/>
+                                <Setter TargetName="Outer" Property="BorderBrush" Value="{StaticResource Gold300Brush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Outer" Property="Background" Value="#0A2118"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Outer" Property="Opacity" Value="0.34"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GoldButton" TargetType="Button" BasedOn="{StaticResource AntiqueButton}">
+            <Setter Property="Foreground" Value="#0A1D16"/>
+            <Setter Property="Background" Value="{StaticResource GoldGradient}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#E9D9A8"/>
+        </Style>
+        <Style x:Key="ArrowButton" TargetType="Button" BasedOn="{StaticResource AntiqueButton}">
+            <Setter Property="Width" Value="76"/>
+            <Setter Property="Height" Value="92"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="FontSize" Value="27"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+        </Style>
+        <Style x:Key="ViewButton" TargetType="Button" BasedOn="{StaticResource AntiqueButton}">
+            <Setter Property="Padding" Value="11,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="3"/>
+        </Style>
+
+        <Style x:Key="AntiqueTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#091D16"/>
+            <Setter Property="Foreground" Value="{StaticResource IvoryBrush}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Gold300Brush}"/>
+            <Setter Property="BorderBrush" Value="#806534"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="SelectionBrush" Value="#806E814B"/>
+        </Style>
+        <Style x:Key="PaperTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource PaperGradient}"/>
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}"/>
+            <Setter Property="CaretBrush" Value="#4A3A25"/>
+            <Setter Property="BorderBrush" Value="#92733C"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="22"/>
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="SelectionBrush" Value="#806B7F45"/>
+        </Style>
+
+        <Style x:Key="AntiqueCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource IvoryBrush}"/>
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="Margin" Value="5,4"/>
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold300Brush}"/>
+        </Style>
+        <Style x:Key="SmallGoldLabel" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="Foreground" Value="{StaticResource Gold400Brush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Gold600Brush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource IvoryBrush}"/>
+            <Setter Property="Background" Value="#0D291F"/>
+            <Setter Property="BorderBrush" Value="#765A2D"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="FontFamily" Value="Georgia"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0" CornerRadius="5,5,0,0" Margin="0,0,3,0">
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#1A4333"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource Gold400Brush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Gold300Brush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#163A2D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Application.Resources>
+</Application>
