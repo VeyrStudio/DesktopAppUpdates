@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.7",
-  "payloadSha256": "558b5c0620ea04e1b31e53d9f37fbf871db84323770dfcf3c14fe1d4d6bfae20",
+  "version": "1.0.8",
+  "payloadSha256": "fd7e6f9648b71c67e700b6aa925f8ac1f182eeafef6ff13bec3bf70c57c1da43",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-001.txt",
-      "sha256": "ba22623357c687bd814ded50e6ab38da7b46ee9f5f24a6627c613673957c04f8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-001.txt",
+      "sha256": "280588f6ada55fed5b8dbfc6c40b2988bcaf4f8bbcf5748aeec59e9607589aa8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-002.txt",
-      "sha256": "eddc2b04cd1df33f6be80a68d89f3b4095d104fc152f17b7a5b27d54f41c1b47"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-002.txt",
+      "sha256": "adf034ac90a2719cd7400747206470a193325796ec609126d530d564ef7a42e1"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-003.txt",
-      "sha256": "6b620da2049b00aeb012e35decd4daccd6ff0240a86da5be040a8e495ab3d9e8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-003.txt",
+      "sha256": "fb9f87c7fd91f17f16791d33efe8894e784ae04945ab93f663c68864d100d781"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-004.txt",
-      "sha256": "e0ed0b3f2c19a215a73fedae16553e2b7af3c982b670d02e0c4ee128104e0b3e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-004.txt",
+      "sha256": "c5a324467acf4699ed43b185be7ee029ae45a462a06dee1b66ed6a6e3a11da2e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.7-part-005.txt",
-      "sha256": "86e753e7ac045bdde6ce19c0d53793033b8aaca42b490256a66e90aed8b4089f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-005.txt",
+      "sha256": "74854eef7520d58d242defc5042e483ea1ad48cc2dff142952462e14d153f9f6"
     }
   ],
-  "notes": "Readability/layout update: widens the Story Dossier on large windows, enlarges the Summary editor and Title Card areas, and snaps Summary scrolling to whole text lines so lines are not clipped in half."
+  "notes": "Story workflow update: wider story cards and title-card previews, a dedicated autosaving Edit Story window, and .catalogentry importing by button or drag-and-drop for complete story entries with title card and mood-board images."
 }
