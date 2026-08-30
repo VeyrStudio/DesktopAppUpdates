@@ -76,20 +76,6 @@ jobs:
         shell: pwsh
         run: ./the-catalog/build/patches/ApplyUpdater.ps1
 
-      - name: Inspect delete integration points
-        shell: pwsh
-        run: |
-          $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
-          Write-Host '--- MainWindow XAML relevant lines ---'
-          Select-String -Path (Join-Path $root 'MainWindow.xaml') -Pattern 'Import Entry|Edit Story|Dossier|Button|Recently Deleted' -Context 3,5 | ForEach-Object { $_.ToString() | Write-Host }
-          Write-Host '--- MainWindow code relevant lines ---'
-          Select-String -Path (Join-Path $root 'MainWindow.xaml.cs') -Pattern 'ImportEntry|EditStory|Delete|Recently|SelectedStory|LoadStories' -Context 4,8 | ForEach-Object { $_.ToString() | Write-Host }
-          Write-Host '--- EditStoryWindow relevant lines ---'
-          Select-String -Path (Join-Path $root 'Views/EditStoryWindow.xaml') -Pattern 'Button|Close|Save|Delete|Title' -Context 3,5 | ForEach-Object { $_.ToString() | Write-Host }
-          Write-Host '--- DB delete methods ---'
-          Select-String -Path (Join-Path $root 'Data/CatalogDb.cs') -Pattern 'Delete|Deleted|Trash|Restore' -Context 4,10 | ForEach-Object { $_.ToString() | Write-Host }
-          throw 'Inspection-only run: stop before publish.'
-
       - name: Restore
         shell: pwsh
         run: dotnet restore 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj'
@@ -139,7 +125,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $version = '1.0.8'
+          $version = '1.0.9'
           $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
           $exeBytes = [IO.File]::ReadAllBytes($exe)
           $base64 = [Convert]::ToBase64String($exeBytes)
@@ -181,7 +167,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadSha
             payloadParts = $parts
-            notes = "Story workflow update: wider story cards and title-card previews, a dedicated autosaving Edit Story window, and .catalogentry importing by button or drag-and-drop for complete story entries with title card and mood-board images."
+            notes = "Adds a visible DELETE button beside EDIT in the Story Dossier. Deletion asks for confirmation and moves the story to Recently Deleted so it can still be restored."
           }
           [IO.File]::WriteAllText(
             (Join-Path $catalogStage 'manifest.json'),
@@ -198,7 +184,7 @@ jobs:
             payloadPartCount = $parts.Count
           }
           [IO.File]::WriteAllText(
-            (Join-Path $catalogStage '1.0.8-validation.json'),
+            (Join-Path $catalogStage '1.0.9-validation.json'),
             ($validation | ConvertTo-Json -Depth 5),
             $utf8
           )
@@ -217,7 +203,7 @@ jobs:
           git add the-catalog
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "Release The Catalog WPF 1.0.8"
+            git commit -m "Release The Catalog WPF 1.0.9"
 
             $pushed = $false
             for ($attempt = 1; $attempt -le 5; $attempt++) {
