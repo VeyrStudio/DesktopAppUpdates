@@ -1,0 +1,328 @@
+<style id="ao3-preview-page-modes-styles">
+.preview-page-toolbar{
+  width:min(1040px,100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  flex-wrap:wrap;
+}
+.preview-page-btn{
+  border:1px solid #45394a;
+  background:#171419;
+  color:#b9abb8;
+  border-radius:8px;
+  padding:7px 11px;
+  font-size:9px;
+  font-weight:800;
+  cursor:pointer;
+}
+.preview-page-btn:hover{background:#211b24;color:#fff}
+.preview-page-btn.active{background:#65009d;border-color:#9d00ff;color:#fff}
+.preview-page-note{font-size:9px;color:#7f737e;margin-left:4px}
+
+/* The AO3 preview is now a real viewport with its own scrollbar. */
+.browser{
+  height:min(720px,72vh);
+  min-height:430px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-gutter:stable;
+}
+.browser .ao3-main{
+  min-height:640px;
+}
+.browser.responsive-preview-mobile{
+  min-height:520px;
+}
+
+/* Results page */
+.preview-results-list{
+  display:grid;
+  gap:16px;
+}
+.preview-results-heading{
+  margin-bottom:12px;
+}
+.preview-results-count{
+  opacity:.72;
+  margin-top:4px;
+}
+.preview-result-card{
+  margin:0;
+}
+.preview-result-card .mock-actions{
+  margin-top:10px;
+}
+
+/* Fic page */
+.preview-fic-shell{
+  max-width:920px;
+  margin:0 auto;
+}
+.preview-fic-title{
+  text-align:center;
+  margin-bottom:5px;
+}
+.preview-fic-byline{
+  text-align:center;
+  margin-bottom:20px;
+}
+.preview-fic-meta{
+  margin-bottom:18px;
+}
+.preview-fic-meta dl{
+  display:grid;
+  grid-template-columns:max-content 1fr;
+  gap:5px 12px;
+  margin:0;
+}
+.preview-fic-meta dt{font-weight:700}
+.preview-fic-meta dd{margin:0}
+.preview-fic-actions{
+  justify-content:center;
+  margin:14px 0 22px;
+}
+.preview-fic-summary{
+  margin:16px 0 24px;
+}
+.preview-fic-chapter{
+  max-width:760px;
+  margin:0 auto;
+  line-height:1.7;
+}
+.preview-fic-chapter h3{
+  text-align:center;
+  margin:24px 0;
+}
+.preview-fic-chapter p{
+  margin:0 0 1.1em;
+}
+.preview-fic-end{
+  text-align:center;
+  margin:34px 0 10px;
+  opacity:.75;
+}
+.browser.responsive-preview-mobile .preview-fic-meta dl{
+  grid-template-columns:1fr;
+  gap:2px;
+}
+.browser.responsive-preview-mobile .preview-fic-meta dd{
+  margin-bottom:8px;
+}
+</style>
+
+<script id="ao3-preview-page-modes-script">
+(function(){
+  const previewShell = document.querySelector('.preview-shell');
+  const browser = document.querySelector('.browser');
+  const main = document.querySelector('.ao3-main');
+  if(!previewShell || !browser || !main) return;
+
+  const pageToolbar = document.createElement('div');
+  pageToolbar.className = 'preview-page-toolbar';
+  pageToolbar.innerHTML = `
+    <button class="preview-page-btn active" data-preview-page="results">Results / Browse</button>
+    <button class="preview-page-btn" data-preview-page="fic">Inside a Fic</button>
+    <span class="preview-page-note">Scroll inside the preview</span>
+  `;
+
+  const deviceToolbar = previewShell.querySelector('.device-toolbar');
+  if(deviceToolbar) deviceToolbar.insertAdjacentElement('afterend', pageToolbar);
+  else previewShell.insertAdjacentElement('afterbegin', pageToolbar);
+
+  const originalMainClass = main.className;
+  const originalMainHtml = main.innerHTML;
+
+  const resultsHtml = `
+    <div class="preview-results-heading">
+      <h2 class="heading">Works</h2>
+      <div class="preview-results-count meta">1 - 5 of 125 Works</div>
+    </div>
+
+    <div class="preview-results-list">
+      <article class="mock-panel blurb preview-result-card">
+        <h4><a href="#">The House at the Edge of the Wood</a></h4>
+        <div class="byline">by <a href="#">nightgarden</a></div>
+        <p class="meta">Mature · M/M · No Archive Warnings Apply</p>
+        <div class="tags">
+          <a class="tag" href="#">Slow Burn</a>
+          <a class="tag" href="#">Supernatural Elements</a>
+          <a class="tag" href="#">Protective Characters</a>
+        </div>
+        <blockquote class="summary">
+          A quiet trip into the woods becomes considerably less quiet when something starts knocking after midnight.
+        </blockquote>
+        <div class="stats">Words: 42,183 &nbsp; Chapters: 12/12 &nbsp; Kudos: 1,284 &nbsp; Bookmarks: 306</div>
+      </article>
+
+      <article class="mock-panel blurb preview-result-card">
+        <h4><a href="#">All the Roads We Never Took</a></h4>
+        <div class="byline">by <a href="#">paperghosts</a></div>
+        <p class="meta">Teen And Up Audiences · M/M · Creator Chose Not To Use Archive Warnings</p>
+        <div class="tags">
+          <a class="tag" href="#">Road Trips</a>
+          <a class="tag" href="#">Friends to Lovers</a>
+          <a class="tag" href="#">Mutual Pining</a>
+        </div>
+        <blockquote class="summary">
+          Three states, one terrible motel, and a conversation they have both been avoiding for years.
+        </blockquote>
+        <div class="stats">Words: 18,906 &nbsp; Chapters: 4/4 &nbsp; Kudos: 842 &nbsp; Comments: 91</div>
+      </article>
+
+      <article class="mock-panel blurb preview-result-card">
+        <h4><a href="#">A Study in Red</a></h4>
+        <div class="byline">by <a href="#">velvetstatic</a></div>
+        <p class="meta">Explicit · M/M · Graphic Depictions Of Violence</p>
+        <div class="tags">
+          <a class="tag" href="#">Enemies to Lovers</a>
+          <a class="tag" href="#">Mystery</a>
+          <a class="tag" href="#">Dark Romance</a>
+        </div>
+        <blockquote class="summary">
+          He knows three things for certain: the blood is not his, the door was locked, and the man across the room is lying.
+        </blockquote>
+        <div class="stats">Words: 67,552 &nbsp; Chapters: 19/? &nbsp; Kudos: 2,109 &nbsp; Hits: 31,442</div>
+      </article>
+
+      <article class="mock-panel blurb preview-result-card">
+        <h4><a href="#">The Shape of Summer</a></h4>
+        <div class="byline">by <a href="#">seaglass</a></div>
+        <p class="meta">General Audiences · M/M · No Archive Warnings Apply</p>
+        <div class="tags">
+          <a class="tag" href="#">Summer Romance</a>
+          <a class="tag" href="#">Small Town</a>
+          <a class="tag" href="#">Happy Ending</a>
+        </div>
+        <blockquote class="summary">
+          It was supposed to be one summer. It becomes the beginning of everything else.
+        </blockquote>
+        <div class="stats">Words: 24,771 &nbsp; Chapters: 8/8 &nbsp; Kudos: 994 &nbsp; Bookmarks: 211</div>
+      </article>
+
+      <article class="mock-panel blurb preview-result-card">
+        <h4><a href="#">Where the Stars Go Quiet</a></h4>
+        <div class="byline">by <a href="#">blackriver</a></div>
+        <p class="meta">Mature · M/M · No Archive Warnings Apply</p>
+        <div class="tags">
+          <a class="tag" href="#">Space</a>
+          <a class="tag" href="#">Found Family</a>
+          <a class="tag" href="#">First Kiss</a>
+        </div>
+        <blockquote class="summary">
+          The station has been silent for six years. Then a distress call arrives from someone who should not be alive.
+        </blockquote>
+        <div class="stats">Words: 51,009 &nbsp; Chapters: 14/14 &nbsp; Kudos: 1,603 &nbsp; Comments: 184</div>
+      </article>
+    </div>
+  `;
+
+  const ficHtml = `
+    <div id="workskin" class="preview-fic-shell">
+      <h2 class="heading preview-fic-title">The House at the Edge of the Wood</h2>
+      <div class="byline preview-fic-byline">by <a href="#">nightgarden</a></div>
+
+      <div class="mock-panel preview-fic-meta">
+        <dl>
+          <dt>Rating:</dt><dd>Mature</dd>
+          <dt>Archive Warning:</dt><dd>No Archive Warnings Apply</dd>
+          <dt>Category:</dt><dd>M/M</dd>
+          <dt>Relationship:</dt><dd>Character A/Character B</dd>
+          <dt>Additional Tags:</dt>
+          <dd>
+            <a class="tag" href="#">Slow Burn</a>
+            <a class="tag" href="#">Supernatural Elements</a>
+            <a class="tag" href="#">Protective Characters</a>
+          </dd>
+          <dt>Language:</dt><dd>English</dd>
+          <dt>Words:</dt><dd>42,183</dd>
+        </dl>
+      </div>
+
+      <div class="mock-actions preview-fic-actions">
+        <button>Subscribe</button>
+        <button>Bookmark</button>
+        <button>Mark for Later</button>
+        <button>Comments</button>
+      </div>
+
+      <div class="mock-panel preview-fic-summary">
+        <h3 class="heading">Summary</h3>
+        <blockquote class="summary">
+          A quiet trip into the woods becomes considerably less quiet when something starts knocking after midnight.
+        </blockquote>
+      </div>
+
+      <div class="userstuff preview-fic-chapter">
+        <h3 class="heading">Chapter 1</h3>
+        <p>The rain had started sometime after midnight, soft enough at first that he mistook it for branches brushing the roof.</p>
+        <p>By two in the morning it had become a steady hiss against the windows. The old house seemed to shrink around the sound, every room darker than it had been when the sun went down.</p>
+        <p>He was halfway through convincing himself to go back to sleep when someone knocked at the front door.</p>
+        <p>Three knocks. Slow. Deliberate.</p>
+        <p>He sat up.</p>
+        <p>No headlights had crossed the windows. No tires had sounded on the gravel. The nearest neighboring house was more than a mile away.</p>
+        <p>The knock came again.</p>
+        <p>He crossed the hallway barefoot, stopping several feet from the door. Through the narrow pane of glass beside it, he could see only darkness and the pale suggestion of rain.</p>
+        <p>“Who is it?”</p>
+        <p>For several seconds there was nothing.</p>
+        <p>Then a voice, low and strangely calm, answered from the other side.</p>
+        <p>“You left the light on.”</p>
+        <p>He looked over his shoulder. Every light in the house was off.</p>
+
+        <h3 class="heading">Chapter 2</h3>
+        <p>By morning there were no footprints in the mud.</p>
+        <p>He checked twice.</p>
+        <p>The porch was wet, the steps slick with rain, and the narrow path to the road had become a ribbon of brown water. Nothing had crossed it.</p>
+        <p>Still, when night came again, he found himself watching the door.</p>
+        <p class="preview-fic-end">— End of preview —</p>
+      </div>
+    </div>
+  `;
+
+  let previewPage = localStorage.getItem('ao3SkinStudioPreviewPage') || 'results';
+  if(!['results','fic'].includes(previewPage)) previewPage = 'results';
+
+  function rerunPreviewStyling(){
+    try{
+      if(typeof applyGradientPreview === 'function') applyGradientPreview();
+    }catch(e){}
+    try{
+      if(typeof update === 'function') update();
+    }catch(e){}
+  }
+
+  function renderPreviewPage(){
+    main.className = originalMainClass;
+    main.innerHTML = previewPage === 'fic' ? ficHtml : resultsHtml;
+
+    document.querySelectorAll('.preview-page-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.previewPage === previewPage);
+    });
+
+    browser.scrollTop = 0;
+    localStorage.setItem('ao3SkinStudioPreviewPage', previewPage);
+    rerunPreviewStyling();
+  }
+
+  document.querySelectorAll('.preview-page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      previewPage = btn.dataset.previewPage;
+      renderPreviewPage();
+    });
+  });
+
+  // Keep the new preview contents synchronized when skin controls change.
+  document.addEventListener('input', e => {
+    if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
+    setTimeout(rerunPreviewStyling, 0);
+  }, true);
+
+  document.addEventListener('change', e => {
+    if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
+    setTimeout(rerunPreviewStyling, 0);
+  }, true);
+
+  renderPreviewPage();
+})();
+</script>

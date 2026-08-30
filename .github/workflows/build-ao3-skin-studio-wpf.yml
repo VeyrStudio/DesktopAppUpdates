@@ -102,17 +102,26 @@ jobs:
           $studioText = $studioText.Replace('</body>', $backgroundGroupingPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.5: add scrollable Results/Browse and Inside-a-Fic preview modes.
+          $previewPagesPatchPath = 'apps/ao3-skin-studio/patches/0.1.5/preview-pages-injection.html'
+          if (-not (Test-Path $previewPagesPatchPath)) { throw 'AO3 Skin Studio 0.1.5 preview pages patch was not found.' }
+          $previewPagesPatch = Get-Content $previewPagesPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.5.' }
+          $studioText = $studioText.Replace('</body>', $previewPagesPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.4</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.4.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.4.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.5</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.5.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.5.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.4" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.5" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -186,7 +195,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Moves Page Background, Header Background, and Footer Background into one section. The footer now has its own independent background color instead of inheriting the navigation bar. Keeps responsive previews, gradients, metallics, translucency, bottom border images, and all prior tools.'
+            notes = 'Adds two scrollable AO3 preview page types: Results / Browse and Inside a Fic. Both work with Desktop, Tablet, and Mobile preview sizes and reflect the current skin styling. Keeps all prior background, font, gradient, metallic, translucency, image, and responsive tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
