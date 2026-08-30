@@ -34,12 +34,14 @@ Set-Content -Path $appXaml -Value $text -Encoding utf8
 
 $settingsXaml = Join-Path $root 'Views/SettingsWindow.xaml'
 $text = Get-Content $settingsXaml -Raw
-$text = $text.Replace('<Button Content="Update" Width="120"', '<Button x:Name="UpdateButton" Content="Update" Width="120"')
+if ($text -notmatch 'x:Name="UpdateButton"') {
+    $text = $text.Replace('<Button Content="Update"', '<Button x:Name="UpdateButton" Content="Update"')
+}
 Set-Content -Path $settingsXaml -Value $text -Encoding utf8
 
 $settingsCode = Join-Path $root 'Views/SettingsWindow.xaml.cs'
 $text = Get-Content $settingsCode -Raw
-$pattern = '(?s)    private void Update_Click\(object sender, RoutedEventArgs e\).*?(?=\r?\n    private void Backup_Click)'
+$pattern = '(?s)    private (?:async )?void Update_Click\(object sender, RoutedEventArgs e\).*?(?=\r?\n    private (?:async )?void (?:MakeShortcut_Click|Backup_Click))'
 $replacement = @'
     private async void Update_Click(object sender, RoutedEventArgs e)
     {
