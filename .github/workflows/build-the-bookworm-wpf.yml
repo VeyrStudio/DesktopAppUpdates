@@ -1,0 +1,77 @@
+name: Build The Bookworm WPF
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "apps/the-bookworm/source.zip"
+      - ".github/workflows/build-the-bookworm-wpf.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Expand Bookworm source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $srcRoot = Join-Path $env:RUNNER_TEMP 'bookworm-src'
+          if (Test-Path $srcRoot) { Remove-Item $srcRoot -Recurse -Force }
+          New-Item -ItemType Directory -Path $srcRoot -Force | Out-Null
+          Expand-Archive -Path 'apps/the-bookworm/source.zip' -DestinationPath $srcRoot -Force
+          $source = Join-Path $srcRoot 'TheBookworm'
+          if (-not (Test-Path (Join-Path $source 'TheBookworm.csproj'))) { throw 'The Bookworm project was not found after extraction.' }
+          "BOOKWORM_SOURCE=$source" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build app and verified update payload
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & (Join-Path $env:BOOKWORM_SOURCE 'build-release.ps1')
+          $exe = Join-Path $env:BOOKWORM_SOURCE 'release/publish/TheBookworm.exe'
+          if (-not (Test-Path $exe)) { throw 'TheBookworm.exe was not produced.' }
+          Get-FileHash $exe -Algorithm SHA256
+          New-Item -ItemType Directory -Path 'bookworm-artifact' -Force | Out-Null
+          Copy-Item $exe 'bookworm-artifact/TheBookworm.exe' -Force
+
+      - name: Publish automatic-update channel
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $channel = Join-Path $PWD 'the-bookworm'
+          New-Item -ItemType Directory -Path $channel -Force | Out-Null
+          Get-ChildItem $channel -Filter 'payload-*.txt' -ErrorAction SilentlyContinue | Remove-Item -Force
+          $updateDir = Join-Path $env:BOOKWORM_SOURCE 'release/the-bookworm-update'
+          Copy-Item (Join-Path $updateDir '*') $channel -Force
+          $manifest = Get-Content (Join-Path $channel 'manifest.json') -Raw | ConvertFrom-Json
+          "BOOKWORM_VERSION=$($manifest.version)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Commit update feed
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name "VeyrStudio Update Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add the-bookworm
+          if (git diff --cached --quiet) {
+            Write-Host 'Update channel already matches this build.'
+            exit 0
+          }
+          git commit -m "Release The Bookworm $env:BOOKWORM_VERSION"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TheBookworm-win-x64-${{ env.BOOKWORM_VERSION }}
+          path: bookworm-artifact/TheBookworm.exe
+          if-no-files-found: error
