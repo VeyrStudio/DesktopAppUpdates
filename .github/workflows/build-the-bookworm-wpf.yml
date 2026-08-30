@@ -45,7 +45,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "tar failed to extract The Bookworm source (exit $LASTEXITCODE)." }
 
           $source = Join-Path $srcRoot 'TheBookworm'
-          if (-not (Test-Path (Join-Path $source 'TheBookworm.csproj'))) { throw 'The Bookworm project was not found after extraction.' }
+          $project = Join-Path $source 'TheBookworm.csproj'
+          if (-not (Test-Path $project)) { throw 'The Bookworm project was not found after extraction.' }
+
+          # PdfPig changed its NuGet package ID. Keep the app source compatible with the current stable package.
+          $projectText = Get-Content $project -Raw
+          $projectText = $projectText.Replace('<PackageReference Include="UglyToad.PdfPig" Version="0.1.9" />', '<PackageReference Include="PdfPig" Version="0.1.16" />')
+          Set-Content -Path $project -Value $projectText -Encoding utf8
+
           "BOOKWORM_SOURCE=$source" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build app and verified update payload
