@@ -76,6 +76,16 @@ jobs:
         shell: pwsh
         run: ./the-catalog/build/patches/ApplyUpdater.ps1
 
+      - name: Inspect dossier layout
+        shell: pwsh
+        run: |
+          $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
+          Write-Host '--- Dossier XAML ---'
+          Select-String -Path (Join-Path $root 'MainWindow.xaml') -Pattern 'STORY DOSSIER|Dossier|ColumnDefinition|Grid.Column="2"|EDIT|DELETE' -Context 5,12 | ForEach-Object { $_.ToString() | Write-Host }
+          Write-Host '--- MainWindow fields/methods ---'
+          Select-String -Path (Join-Path $root 'MainWindow.xaml.cs') -Pattern '_selectedStory|EditStory_Click|DeleteStory_Click|LoadStories|partial class MainWindow' -Context 5,12 | ForEach-Object { $_.ToString() | Write-Host }
+          throw 'Inspection-only run: stop before publish.'
+
       - name: Restore
         shell: pwsh
         run: dotnet restore 'catalog-source/TheCatalog-WPF-v0.3-runtime-src/TheCatalog.csproj'
