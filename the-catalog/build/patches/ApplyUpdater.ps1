@@ -3,17 +3,45 @@ $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
 $patchRoot = 'the-catalog/build/patches'
 
 # Overlay the 1.0.8 story workflow: wider cards, popup editor, and .catalogentry importing.
-$featureBase64 =
+$featureHead =
     (Get-Content 'the-catalog/build/v108-feature-part-00.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-01.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-02.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-03.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-04.b64' -Raw) +
-    (Get-Content 'the-catalog/build/v108-feature-part-05a.b64' -Raw) +
-    (Get-Content 'the-catalog/build/v108-feature-part-05b.b64' -Raw)
+    (Get-Content 'the-catalog/build/v108-feature-part-05a.b64' -Raw)
+$featureTail = Get-Content 'the-catalog/build/v108-feature-part-05b.b64' -Raw
+$featureExpectedSha = '428a0bbafa91c67836c540fd67f9db78c068ea2584a38a7ac83cec10bf27acf5'
+
+function Get-FeatureSha([byte[]]$bytes) {
+    return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+}
+
+$featureBytes = $null
+try {
+    $candidateBytes = [Convert]::FromBase64String($featureHead + $featureTail)
+    if ((Get-FeatureSha $candidateBytes) -eq $featureExpectedSha) { $featureBytes = $candidateBytes }
+} catch {}
+
+if ($null -eq $featureBytes) {
+    Write-Host 'Repairing one-character feature-bundle transfer mismatch...'
+    for ($i = 0; $i -lt $featureTail.Length; $i++) {
+        try {
+            $candidate = $featureHead + $featureTail.Remove($i, 1)
+            $candidateBytes = [Convert]::FromBase64String($candidate)
+            if ((Get-FeatureSha $candidateBytes) -eq $featureExpectedSha) {
+                $featureBytes = $candidateBytes
+                Write-Host "Feature bundle repaired at tail index $i."
+                break
+            }
+        } catch {}
+    }
+}
+if ($null -eq $featureBytes) { throw 'The 1.0.8 feature bundle did not match its verified SHA-256.' }
+
 $featureZip = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N') + '.zip')
 $featureStage = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N'))
-[IO.File]::WriteAllBytes($featureZip, [Convert]::FromBase64String($featureBase64))
+[IO.File]::WriteAllBytes($featureZip, $featureBytes)
 Expand-Archive -Path $featureZip -DestinationPath $featureStage -Force
 
 Copy-Item (Join-Path $featureStage 'MainWindow.xaml') (Join-Path $root 'MainWindow.xaml') -Force
