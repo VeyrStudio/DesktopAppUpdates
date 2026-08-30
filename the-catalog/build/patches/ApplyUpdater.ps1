@@ -17,9 +17,9 @@ New-Item -ItemType Directory -Path $assets -Force | Out-Null
 
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.5</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.5.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.5.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.6</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.6.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.6.0</FileVersion>')
 $text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
 Set-Content -Path $project -Value $text -Encoding utf8
 
@@ -89,3 +89,24 @@ $1
 $newText = [regex]::Replace($text, $pattern, $replacement, 1)
 if ($newText -eq $text) { throw 'Could not patch automatic update startup.' }
 Set-Content -Path $mainCode -Value $newText -Encoding utf8
+
+
+# Give the custom antique title bar real Windows caption behavior so Aero Snap,
+# Win+Arrow, drag-to-edge, drag-to-top, and Windows 11 Snap Layouts work.
+$mainXaml = Join-Path $root 'MainWindow.xaml'
+$text = Get-Content $mainXaml -Raw
+$text = $text.Replace('CaptionHeight="0"', 'CaptionHeight="54"')
+$text = $text.Replace(' BorderThickness="0,0,0,1" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">', ' BorderThickness="0,0,0,1">')
+$text = $text.Replace(
+    '<Button Content="—" Click="Minimize_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Minimize"/>',
+    '<Button Content="—" Click="Minimize_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Minimize" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>'
+)
+$text = $text.Replace(
+    '<Button Content="□" Click="Maximize_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Maximize / Restore"/>',
+    '<Button Content="□" Click="Maximize_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Maximize / Restore" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>'
+)
+$text = $text.Replace(
+    '<Button Content="×" Click="Close_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Close"/>',
+    '<Button Content="×" Click="Close_Click" Style="{StaticResource WindowButtonStyle}" ToolTip="Close" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>'
+)
+Set-Content -Path $mainXaml -Value $text -Encoding utf8
