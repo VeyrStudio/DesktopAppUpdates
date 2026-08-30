@@ -74,3 +74,11 @@ test("the Notebook has no subtitle and uses a collapsed Before Class checklist",
   assert.doesNotMatch(renderer, /<details class="card before-class-card"\s+open/);
   assert.match(css, /\.before-class-card\[open\] \.details-chevron/);
 });
+
+test("active lectures can identify the approved speaker roles from the Notebook", async () => {
+  const renderer = await readFile(new URL("../src/app.js", import.meta.url), "utf8");
+  assert.match(renderer, /Identify Voice/);
+  assert.match(renderer, /Who is speaking\?/);
+  assert.match(renderer, /\["Professor", "Me", "Student", "Guest Speaker"\]/);
+  assert.match(renderer, /applySpeakerMarks\(result\.transcriptSegments, lecture\.speakerMarks\)/);
+});

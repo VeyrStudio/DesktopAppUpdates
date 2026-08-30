@@ -304,6 +304,7 @@ button { color: inherit; }
 }
 .notes-panel textarea::placeholder { color: #6f685f; }
 .marker-toolbar { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(181,138,72,.25); }
+.marker-toolbar.has-voice-control { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .marker-toolbar button { border: 0; border-right: 1px solid rgba(181,138,72,.2); padding: 10px 4px; background: transparent; color: #c9b690; cursor: pointer; font-size: 12px; }
 .marker-toolbar button:last-child { border-right: 0; }
 .marker-toolbar button:hover { background: var(--aubergine); color: white; }
@@ -369,6 +370,9 @@ button { color: inherit; }
 .day-chip span { display: grid; place-items: center; height: 33px; border: 1px solid rgba(181,138,72,.35); border-radius: 7px; color: var(--taupe); cursor: pointer; }
 .day-chip input:checked + span { background: var(--aubergine); color: white; border-color: var(--gold); }
 .modal-footer { display: flex; justify-content: flex-end; gap: 9px; padding: 15px 21px 20px; }
+.speaker-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.speaker-choice { min-height: 52px; border: 1px solid rgba(181,138,72,.45); border-radius: 9px; background: rgba(255,255,255,.025); color: var(--ivory); cursor: pointer; }
+.speaker-choice:hover, .speaker-choice:focus-visible { background: var(--aubergine); border-color: var(--gold); outline: none; }
 
 .sidebar-footer .error { color: #e88992; }
 .visually-hidden {
@@ -402,4 +406,5 @@ button { color: inherit; }
   .toggle { justify-self: start; }
   .form-grid { grid-template-columns: 1fr; }
   .form-group.full { grid-column: auto; }
+  .marker-toolbar.has-voice-control { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

@@ -123,6 +123,22 @@ export function removeLecture(state, lectureId) {
   };
 }
 
+export function applySpeakerMarks(segments, speakerMarks) {
+  const marks = [...(speakerMarks || [])]
+    .filter((mark) => Number.isFinite(Number(mark.seconds)) && mark.speaker)
+    .sort((a, b) => Number(a.seconds) - Number(b.seconds));
+  let markIndex = 0;
+  let activeSpeaker = null;
+  return (segments || []).map((segment) => {
+    const segmentBoundary = Number(segment.end ?? segment.start ?? 0);
+    while (markIndex < marks.length && Number(marks[markIndex].seconds) <= segmentBoundary) {
+      activeSpeaker = marks[markIndex].speaker;
+      markIndex += 1;
+    }
+    return activeSpeaker ? { ...segment, speaker: activeSpeaker } : { ...segment };
+  });
+}
+
 export function blankState() {
   return {
     schemaVersion: 1,

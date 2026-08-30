@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  applySpeakerMarks,
   blankState,
   classesForDate,
   currentOrNextClass,
@@ -65,4 +66,15 @@ test("deleting a lecture leaves its class and every other lecture intact", () =>
   const next = removeLecture(state, "delete-me");
   assert.deepEqual(next.lectures.map((lecture) => lecture.id), ["keep-me"]);
   assert.deepEqual(next.classes, state.classes);
+});
+
+test("speaker marks label transcript segments until the next identified voice", () => {
+  const segments = [
+    { start: 0, end: 8, text: "Opening" },
+    { start: 8, end: 18, text: "Lecture" },
+    { start: 18, end: 28, text: "Question" },
+    { start: 28, end: 40, text: "Answer" }
+  ];
+  const marks = [{ seconds: 10, speaker: "Professor" }, { seconds: 24, speaker: "Me" }];
+  assert.deepEqual(applySpeakerMarks(segments, marks).map((segment) => segment.speaker || null), [null, "Professor", "Me", "Me"]);
 });
