@@ -53,6 +53,17 @@ jobs:
           $projectText = $projectText.Replace('<PackageReference Include="UglyToad.PdfPig" Version="0.1.9" />', '<PackageReference Include="PdfPig" Version="0.1.16" />')
           Set-Content -Path $project -Value $projectText -Encoding utf8
 
+          # WPF does not support these UWP-style/attached XAML properties.
+          $mainXaml = Join-Path $source 'MainWindow.xaml'
+          $mainText = Get-Content $mainXaml -Raw
+          $mainText = $mainText.Replace(' CharacterSpacing="80"', '')
+          Set-Content -Path $mainXaml -Value $mainText -Encoding utf8
+
+          $workspaceXaml = Join-Path $source 'BookWorkspaceWindow.xaml'
+          $workspaceText = Get-Content $workspaceXaml -Raw
+          $workspaceText = $workspaceText.Replace(' TextBlock.TextWrapping="Wrap"', '')
+          Set-Content -Path $workspaceXaml -Value $workspaceText -Encoding utf8
+
           "BOOKWORM_SOURCE=$source" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build app and verified update payload
