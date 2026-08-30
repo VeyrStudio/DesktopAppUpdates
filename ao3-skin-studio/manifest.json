@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.0",
-  "payloadSha256": "ba9360b90347aaa403caca272fd0fa39490f9da9d4db1bb56533ca0df1cee53a",
-  "executableSha256": "dd2a6799462f92da1bad8dea02a86c714f034a6c269d07e29fb2bf597d911fdf",
+  "version": "0.1.1",
+  "payloadSha256": "58d0468ec10b097fb2684afe086e0d1569308c6d7074d95f26311f18788a449a",
+  "executableSha256": "13a268723be8115dfc248770f362fbbb6adcbc861f2905f7a35c84e4b0ab4f2c",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-001.txt",
-      "sha256": "a9440b7284bccff72bc72680d80a6817ca7bd42b16b5182113e43d0601441285"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.1-part-001.txt",
+      "sha256": "01a55720e50d052c4103fead20a0e335d97fc67723171352fdeffabe889af72e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-002.txt",
-      "sha256": "bb732fd4c66bb507b3d7441247f0b3a46d3fe22302f6fc18e6a7fffeffc33ff3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.1-part-002.txt",
+      "sha256": "e6fd7e5b41b6ebe91a51acaaed74c162bb0a6d0181189af771398d4eecb76957"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-003.txt",
-      "sha256": "472197eebf4f139feb02b4a919905619c3253f7e4434d36a34f1a1f155cc2841"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.1-part-003.txt",
+      "sha256": "38d9add1aa1f4b44a6fd3a96048eb3189f198d5c47a2a25d435dde42478bd67e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-004.txt",
-      "sha256": "95eac4a15aa4c698e6584fb01c3bb240390537519b537ab1a1f9ba9a808f8cff"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.1-part-004.txt",
+      "sha256": "5c4b2afb9c6ae61d9cc3c7c5ff15a69dbc38b264f502321b351f0cac7d3db573"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-005.txt",
-      "sha256": "25f1c30c29005f9b9a75f927956539907636978a26d1d6d2420809ba4cc9d3fa"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.1-part-005.txt",
+      "sha256": "aa23f9e548be4739da3c0c5a81f5622dd6d1d403342ba9bbeefcd8de24bd483f"
     }
   ],
-  "notes": "AO3 Skin Studio desktop update."
+  "notes": "Independent text-size controls for AO3 interface elements, plus a configurable bottom border image with size, opacity, fit, repeat, local preview, and hosted AO3 URL support."
 }
