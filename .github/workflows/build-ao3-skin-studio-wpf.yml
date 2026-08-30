@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "apps/ao3-skin-studio/source-chunks/**"
+      - "apps/ao3-skin-studio/patches/**"
       - ".github/workflows/build-ao3-skin-studio-wpf.yml"
 
 permissions:
@@ -44,11 +45,39 @@ jobs:
           $project = Join-Path $srcRoot 'AO3SkinStudio/AO3SkinStudio.csproj'
           if (-not (Test-Path $project)) { throw 'AO3 Skin Studio project was not found after extraction.' }
 
+          # Apply the 0.1.1 embedded Studio update.
+          $htmlParts = Get-ChildItem 'apps/ao3-skin-studio/patches/0.1.1/html' -Filter 'chunk-*.txt' | Sort-Object Name
+          if ($htmlParts.Count -ne 9) { throw "Expected 9 AO3 0.1.1 HTML chunks, found $($htmlParts.Count)." }
+
+          $htmlBase64 = ($htmlParts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ''
+          $gzipBytes = [Convert]::FromBase64String($htmlBase64)
+          $inputStream = [IO.MemoryStream]::new($gzipBytes)
+          $gzipStream = [IO.Compression.GZipStream]::new($inputStream, [IO.Compression.CompressionMode]::Decompress)
+          $outputStream = [IO.MemoryStream]::new()
+          $gzipStream.CopyTo($outputStream)
+          $gzipStream.Dispose()
+          $inputStream.Dispose()
+          $htmlBytes = $outputStream.ToArray()
+          $outputStream.Dispose()
+
+          $studioHtml = Join-Path $srcRoot 'AO3SkinStudio/Web/ao3-skin-studio.html'
+          [IO.File]::WriteAllBytes($studioHtml, $htmlBytes)
+          $htmlHash = (Get-FileHash $studioHtml -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($htmlHash -ne '33fce7b5aa726aa4f206dfd83f968c2132b688d81e865b664d75edce0f8da2b7') {
+            throw "AO3 Skin Studio 0.1.1 HTML hash mismatch: $htmlHash"
+          }
+
+          $projectText = Get-Content $project -Raw
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.1</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.1.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.1.0</FileVersion>')
+          [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
+
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -115,7 +144,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'AO3 Skin Studio desktop update.'
+            notes = 'Independent text-size controls for AO3 interface elements, plus a configurable bottom border image with size, opacity, fit, repeat, local preview, and hosted AO3 URL support.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
