@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.1",
-  "payloadSha256": "b0bd6826767c6eaca9a8950c5b3d5a00b68f5461cbd815ac02abc85384324899",
+  "version": "1.0.2",
+  "payloadSha256": "0c65286c3f81dfb39beda2b66594d1f4470d3b56d4d555244ad48c96150c6af4",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.1-part-001.txt",
-      "sha256": "09d141dc7a1038f65d514fa89bd6567611cb2b583b8f495cdc7fbb8ad5ce9c67"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.2-part-001.txt",
+      "sha256": "ce21491d7e4ed40f7b52b7e29a86ff20fc8d91ed66a66acb7945337b588ec0cf"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.1-part-002.txt",
-      "sha256": "443fded6a731cfbdf443aaaf56b409d66c6f07f00a11b0af2bc9ab9ddb925616"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.2-part-002.txt",
+      "sha256": "897a9ea9908e23b425c60d4efcdddd816d42d8c3bdd80df4119d6bbdc8a1ac09"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.1-part-003.txt",
-      "sha256": "5690da72e966b44382c9c44290ba4fa960762efb2a9ed411e93ff2da01fb404a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.2-part-003.txt",
+      "sha256": "45d07ad52a59c2d0fc5338005871ab3138b325c16aa32600b1bc5851d7fca55a"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.1-part-004.txt",
-      "sha256": "df0ff95c0ac167f674d669041dff691a7cabe31ebc1d2af220ba975a6b224b65"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.2-part-004.txt",
+      "sha256": "4793ea4452735f84c28cb9eb618c4298a05cd7c5c0886be7efe591bc511d5485"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.1-part-005.txt",
-      "sha256": "2d283ec710193430940a964c5fedc48253fb015e371b44d5b3f67cfe4ddb67c1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.2-part-005.txt",
+      "sha256": "5dfde41c82578489ea728010c3f7c9a106c3a9ef372ca1886f850bc5ffaf6082"
     }
   ],
-  "notes": "Adds The Catalog's worn burgundy rose icon to the Windows executable and app windows while keeping local story data, backups, automatic updates, and the manual Update button unchanged."
+  "notes": "Startup repair: keeps the worn burgundy rose as the Windows executable icon, removes WPF window-icon loading, and adds crash logging instead of silent startup exits."
 }
