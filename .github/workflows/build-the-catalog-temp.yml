@@ -5,14 +5,12 @@ on:
     branches:
       - catalog-build-v0-2
     paths:
-      - 'the-catalog/build/**'
-      - '.github/workflows/build-the-catalog-temp.yml'
+      - 'the-catalog/build/release-trigger.txt'
   pull_request:
     branches:
       - main
     paths:
-      - 'the-catalog/build/**'
-      - '.github/workflows/build-the-catalog-temp.yml'
+      - 'the-catalog/build/release-trigger.txt'
   workflow_dispatch:
 
 permissions:
@@ -119,7 +117,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $version = '1.0.3'
+          $version = '1.0.4'
           $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
           $exeBytes = [IO.File]::ReadAllBytes($exe)
           $base64 = [Convert]::ToBase64String($exeBytes)
@@ -161,7 +159,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadSha
             payloadParts = $parts
-            notes = "Startup repair: keeps the worn burgundy rose as the Windows executable icon, removes WPF window-icon loading, and adds crash logging instead of silent startup exits."
+            notes = "Antique archive redesign: adds character names with optional Original fields, a clear Pairing dropdown, a non-clipping Mood Board, story cards with a right-side dossier, and Make Desktop Shortcut."
           }
           [IO.File]::WriteAllText(
             (Join-Path $catalogStage 'manifest.json'),
@@ -178,7 +176,7 @@ jobs:
             payloadPartCount = $parts.Count
           }
           [IO.File]::WriteAllText(
-            (Join-Path $catalogStage '1.0.3-validation.json'),
+            (Join-Path $catalogStage '1.0.4-validation.json'),
             ($validation | ConvertTo-Json -Depth 5),
             $utf8
           )
@@ -197,7 +195,7 @@ jobs:
           git add the-catalog
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "Release The Catalog WPF 1.0.3"
+            git commit -m "Release The Catalog WPF 1.0.4"
 
             $pushed = $false
             for ($attempt = 1; $attempt -le 5; $attempt++) {
