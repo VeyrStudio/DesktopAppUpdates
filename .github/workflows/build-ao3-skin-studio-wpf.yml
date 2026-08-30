@@ -130,39 +130,35 @@ jobs:
 
           $mainWindowCode = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml.cs'
           $mainWindowCodeText = Get-Content $mainWindowCode -Raw
-          $constructorAnchor = @'
-        InitializeComponent();
-        Loaded += MainWindow_Loaded;
-'@
-          $constructorReplacement = @'
-        InitializeComponent();
-        FitWindowToVisibleWorkArea();
-        Loaded += MainWindow_Loaded;
-'@
-          if (-not $mainWindowCodeText.Contains($constructorAnchor.TrimEnd())) { throw 'MainWindow constructor anchor was not found.' }
-          $mainWindowCodeText = $mainWindowCodeText.Replace($constructorAnchor.TrimEnd(), $constructorReplacement.TrimEnd())
+          $newline = if ($mainWindowCodeText.Contains("`r`n")) { "`r`n" } else { "`n" }
+
+          $constructorAnchor = '        InitializeComponent();' + $newline + '        Loaded += MainWindow_Loaded;'
+          $constructorReplacement = '        InitializeComponent();' + $newline + '        FitWindowToVisibleWorkArea();' + $newline + '        Loaded += MainWindow_Loaded;'
+          if (-not $mainWindowCodeText.Contains($constructorAnchor)) { throw 'MainWindow constructor anchor was not found.' }
+          $mainWindowCodeText = $mainWindowCodeText.Replace($constructorAnchor, $constructorReplacement)
 
           $loadedAnchor = '    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)'
-          $fitMethod = @'
-    private void FitWindowToVisibleWorkArea()
-    {
-        var workArea = SystemParameters.WorkArea;
-
-        var targetWidth = Math.Min(1500d, Math.Max(320d, workArea.Width - 24d));
-        var targetHeight = Math.Min(900d, Math.Max(320d, workArea.Height - 24d));
-
-        MinWidth = Math.Min(MinWidth, targetWidth);
-        MinHeight = Math.Min(MinHeight, targetHeight);
-        MaxWidth = workArea.Width;
-        MaxHeight = workArea.Height;
-
-        Width = targetWidth;
-        Height = targetHeight;
-        Left = workArea.Left + Math.Max(0d, (workArea.Width - Width) / 2d);
-        Top = workArea.Top + Math.Max(0d, (workArea.Height - Height) / 2d);
-    }
-
-'@
+          $fitMethod = @(
+            '    private void FitWindowToVisibleWorkArea()'
+            '    {'
+            '        var workArea = SystemParameters.WorkArea;'
+            ''
+            '        var targetWidth = Math.Min(1500d, Math.Max(320d, workArea.Width - 24d));'
+            '        var targetHeight = Math.Min(900d, Math.Max(320d, workArea.Height - 24d));'
+            ''
+            '        MinWidth = Math.Min(MinWidth, targetWidth);'
+            '        MinHeight = Math.Min(MinHeight, targetHeight);'
+            '        MaxWidth = workArea.Width;'
+            '        MaxHeight = workArea.Height;'
+            ''
+            '        Width = targetWidth;'
+            '        Height = targetHeight;'
+            '        Left = workArea.Left + Math.Max(0d, (workArea.Width - Width) / 2d);'
+            '        Top = workArea.Top + Math.Max(0d, (workArea.Height - Height) / 2d);'
+            '    }'
+            ''
+            ''
+          ) -join $newline
           if (-not $mainWindowCodeText.Contains($loadedAnchor)) { throw 'MainWindow loaded-method anchor was not found.' }
           $mainWindowCodeText = $mainWindowCodeText.Replace($loadedAnchor, $fitMethod + $loadedAnchor)
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
