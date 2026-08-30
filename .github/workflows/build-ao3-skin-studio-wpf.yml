@@ -44,6 +44,9 @@ jobs:
           $project = Join-Path $srcRoot 'AO3SkinStudio/AO3SkinStudio.csproj'
           if (-not (Test-Path $project)) { throw 'AO3 Skin Studio project was not found after extraction.' }
 
+          # The app uses System.IO types throughout its settings, WebView, and updater services.
+          Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
+
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "AO3_VERSION=0.1.0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
