@@ -28,7 +28,8 @@ jobs:
           if (Test-Path $srcRoot) { Remove-Item $srcRoot -Recurse -Force }
           New-Item -ItemType Directory -Path $srcRoot -Force | Out-Null
 
-          Expand-Archive -Path 'apps/ao3-skin-studio/source.zip' -DestinationPath $srcRoot -Force
+          tar -xf 'apps/ao3-skin-studio/source.zip' -C $srcRoot
+          if ($LASTEXITCODE -ne 0) { throw "tar failed to extract AO3 Skin Studio source (exit $LASTEXITCODE)." }
           $project = Join-Path $srcRoot 'AO3SkinStudio/AO3SkinStudio.csproj'
           if (-not (Test-Path $project)) { throw 'AO3 Skin Studio project was not found after extraction.' }
 
