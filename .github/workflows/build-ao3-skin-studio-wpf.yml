@@ -165,6 +165,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $colorStudioPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.12: expose every AO3 required-tag grid/key state as an editable item.
+          $allRequiredStatesPatchPath = 'apps/ao3-skin-studio/patches/0.1.12/all-required-grid-states.html'
+          if (-not (Test-Path $allRequiredStatesPatchPath)) { throw 'AO3 Skin Studio 0.1.12 required-grid-state patch was not found.' }
+          $allRequiredStatesPatch = Get-Content $allRequiredStatesPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.12.' }
+          $studioText = $studioText.Replace('</body>', $allRequiredStatesPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.6: keep the native Windows title-bar buttons fully inside the visible work area.
           $mainWindowXaml = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml'
           $mainWindowXamlText = Get-Content $mainWindowXaml -Raw
@@ -209,16 +218,16 @@ jobs:
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.11</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.11.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.11.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.12</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.12.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.12.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.11" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.12" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -292,7 +301,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds a full Color Studio for easier custom colors: HEX, RGB, and HSL editing; hue/saturation/lightness sliders; derived shade and tint swatches; 48 standard colors including AO3 reds, grayscale, rainbow colors, browns, golds and metallic-like neutrals; recent colors; favorites; copy HEX; and one-click Apply to the currently selected skin color. Adds a palette shortcut beside existing color pickers so any setting can jump straight into Color Studio. Keeps Gradient Studio, GIF support, AO3-style required-tag icons, Split Screen, and all prior tools.'
+            notes = 'Expands the AO3 Required-Tag Grid editor to cover every state supplied by the AO3 key: all five ratings plus Second Square; F/F, F/M, Gen, M/M, Multi, Other, No Category plus Third Square; Chose Not To Warn, Warnings Apply, No Warnings, External Work globe plus Fourth Square; Complete, WIP, and blank completion. Every state now has its own box color, icon/font color, icon size, border color, and border width. F/M gets separately editable female/male halves and Multi gets four independently editable quadrants. Adds a live All AO3 Grid States reference board and exports the customizations to AO3 CSS. Keeps Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

@@ -1,0 +1,602 @@
+<style id="ao3-all-required-states-styles">
+.required-state-board{
+  margin-top:12px;
+  padding:10px;
+  border:1px solid #332b36;
+  border-radius:10px;
+  background:#0d0c0f;
+}
+.required-state-board-title{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:9px;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:#ad9eaa;
+}
+.required-state-board-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.required-state-column{
+  min-width:0;
+  padding:8px;
+  border:1px solid #282229;
+  border-radius:8px;
+  background:#111014;
+}
+.required-state-column h4{
+  margin:0 0 7px;
+  font-size:8px;
+  color:#d9ccd6;
+}
+.required-state-chip{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:5px 0;
+  min-width:0;
+}
+.required-state-chip span:last-child{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:7px;
+  color:#978995;
+}
+.required-mini-icon{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  width:25px;
+  height:25px;
+  box-sizing:border-box;
+  border-style:solid;
+  border-width:1px;
+  border-color:#8f8f8f;
+  border-radius:0;
+  overflow:hidden;
+  background-image:none;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  font-size:20px;
+  line-height:1;
+  text-align:center;
+}
+.required-style-row{
+  grid-template-columns:minmax(120px,1.05fr) minmax(115px,.9fr) minmax(115px,.9fr) !important;
+}
+.required-state-advanced{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin-top:6px;
+  padding-top:7px;
+  border-top:1px solid #282229;
+}
+.required-state-advanced label,
+.required-special-control label{
+  display:block;
+  margin-bottom:4px;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.05em;
+  color:#807580;
+  text-transform:uppercase;
+}
+.required-state-advanced input[type="number"],
+.required-special-control input[type="number"]{width:100%;box-sizing:border-box}
+.required-specials{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #312a33;
+  border-radius:9px;
+  background:#0f0d11;
+}
+.required-specials-title{
+  margin-bottom:8px;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#a99aa7;
+}
+.required-special-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+.required-special-control .required-color-inputs{
+  grid-template-columns:34px 1fr;
+}
+@media(max-width:720px){
+  .required-state-board-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .required-special-row{grid-template-columns:1fr}
+}
+@media(max-width:500px){
+  .required-state-board-grid{grid-template-columns:1fr}
+  .required-state-advanced{grid-template-columns:1fr}
+}
+
+/* New states + refined AO3-like icons */
+#mock .rating-key-2,
+.required-mini-icon.rating-key-2{
+  background:var(--req-rating-key2-bg,#EDEDEA)!important;
+  color:var(--req-rating-key2-fg,#FFFFFF)!important;
+}
+#mock .rating-key-2::after,.required-mini-icon.rating-key-2::after{content:""}
+
+#mock .category-key-3,
+.required-mini-icon.category-key-3{
+  background:var(--req-category-key3-bg,#EDEDEA)!important;
+  color:var(--req-category-key3-fg,#FFFFFF)!important;
+}
+#mock .category-key-3::after,.required-mini-icon.category-key-3::after{content:""}
+
+#mock .warning-external-work,
+.required-mini-icon.warning-external-work{
+  background-color:var(--req-warning-external-bg,#0759B8)!important;
+  color:var(--req-warning-external-fg,#FFFFFF)!important;
+  background-image:
+    linear-gradient(currentColor,currentColor),
+    linear-gradient(currentColor,currentColor),
+    radial-gradient(circle at center,transparent 0 37%,currentColor 39% 46%,transparent 48% 100%) !important;
+  background-size:2px 70%,70% 2px,70% 70% !important;
+  background-position:center !important;
+  background-repeat:no-repeat !important;
+}
+#mock .warning-external-work::after,.required-mini-icon.warning-external-work::after{content:""}
+
+#mock .warning-key-4,
+.required-mini-icon.warning-key-4{
+  background:var(--req-warning-key4-bg,#EDEDEA)!important;
+  color:var(--req-warning-key4-fg,#FFFFFF)!important;
+}
+#mock .warning-key-4::after,.required-mini-icon.warning-key-4::after{content:""}
+
+#mock .complete-none,
+.required-mini-icon.complete-none{
+  background:var(--req-complete-none-bg,#EDEDEA)!important;
+  color:var(--req-complete-none-fg,#FFFFFF)!important;
+}
+#mock .complete-none::after,.required-mini-icon.complete-none::after{content:""}
+
+/* Closer relationship symbols */
+#mock .category-slash::after,.required-mini-icon.category-slash::after{content:"⚣"!important;font-size:24px!important;letter-spacing:0!important}
+#mock .category-femslash::after,.required-mini-icon.category-femslash::after{content:"⚢"!important;font-size:24px!important;letter-spacing:0!important}
+#mock .category-het::after,.required-mini-icon.category-het::after{content:"⚤"!important;font-size:24px!important;letter-spacing:0!important}
+
+/* Specialized backgrounds remain individually editable. */
+#mock .category-het,.required-mini-icon.category-het{
+  background:linear-gradient(90deg,var(--req-het-left,#B00078) 0 49%,var(--req-het-right,#0759B8) 51% 100%)!important;
+}
+#mock .category-multi,.required-mini-icon.category-multi{
+  background:
+    linear-gradient(90deg,var(--req-multi-tl,#88C900) 0 50%,var(--req-multi-tr,#AA0088) 50% 100%) top/100% 50% no-repeat,
+    linear-gradient(90deg,var(--req-multi-bl,#BD0B0B) 0 50%,var(--req-multi-br,#0759B8) 50% 100%) bottom/100% 50% no-repeat !important;
+}
+</style>
+
+<script id="ao3-all-required-states-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const reqSection=q('requiredTagsSection');
+  if(!reqSection) return;
+
+  reqSection.querySelector('summary').textContent='AO3 Required-Tag Grid';
+  const help=reqSection.querySelector('.help');
+  if(help){
+    help.innerHTML='<strong>Every AO3 grid state is editable here.</strong> Rating is top-left, category top-right, warning bottom-left, and completion bottom-right. This includes unrated/blank states, the AO3 key/legend squares, external-work warnings, and completion blank.';
+  }
+
+  const groups=[...reqSection.querySelectorAll('.required-style-group')];
+  const groupByName=name=>groups.find(g=>(g.querySelector('summary')?.textContent||'').trim()===name);
+  const ratings=groupByName('Ratings');
+  const warnings=groupByName('Archive Warnings');
+  const categories=groupByName('Categories');
+  const completion=groupByName('Completion');
+
+  function colorRow(key,label,bg,fg,extraClass=''){
+    const row=document.createElement('div');
+    row.className='required-style-row '+extraClass;
+    row.dataset.requiredKey=key;
+    row.innerHTML=`
+      <div class="required-style-name">${label}</div>
+      <div class="required-color-cell">
+        <label>Box color</label>
+        <div class="required-color-inputs">
+          <input type="color" id="req_${key}_bg" value="${bg.toLowerCase()}">
+          <input type="text" id="req_${key}_bg_text" value="${bg}">
+        </div>
+      </div>
+      <div class="required-color-cell">
+        <label>Icon / font color</label>
+        <div class="required-color-inputs">
+          <input type="color" id="req_${key}_fg" value="${fg.toLowerCase()}">
+          <input type="text" id="req_${key}_fg_text" value="${fg}">
+        </div>
+      </div>
+      <div class="required-state-advanced">
+        <div>
+          <label>Icon size</label>
+          <input type="number" id="req_${key}_size" min="8" max="40" step="1" value="24">
+        </div>
+        <div>
+          <label>Border width</label>
+          <input type="number" id="req_${key}_borderWidth" min="0" max="8" step="0.5" value="1">
+        </div>
+        <div>
+          <label>Border color</label>
+          <div class="required-color-inputs">
+            <input type="color" id="req_${key}_border" value="#8f8f8f">
+            <input type="text" id="req_${key}_border_text" value="#8F8F8F">
+          </div>
+        </div>
+      </div>
+    `;
+    return row;
+  }
+
+  function appendNew(group,key,label,bg='#EDEDEA',fg='#FFFFFF'){
+    if(!group || q('req_'+key+'_bg')) return;
+    group.querySelector('.required-style-list')?.appendChild(colorRow(key,label,bg,fg));
+  }
+
+  appendNew(ratings,'ratingKey2','Second Square / rating key blank','#EDEDEA','#FFFFFF');
+  appendNew(categories,'categoryKey3','Third Square / category key blank','#EDEDEA','#FFFFFF');
+  appendNew(warnings,'warningExternal','External Work / globe','#0759B8','#FFFFFF');
+  appendNew(warnings,'warningKey4','Fourth Square / warning key blank','#EDEDEA','#FFFFFF');
+  appendNew(completion,'completeNone','Blank completion square','#EDEDEA','#FFFFFF');
+
+  /* Move the old External Work row out of Completion; 0.1.7 put it in the wrong group. */
+  const oldExternal=q('req_external_bg')?.closest('.required-style-row');
+  if(oldExternal){
+    oldExternal.style.display='none';
+    oldExternal.dataset.superseded='warningExternal';
+  }
+
+  /* Give every existing state its own border and icon-size controls too. */
+  const existingKeys=[
+    'ratingGeneral','ratingTeen','ratingMature','ratingExplicit','ratingNotrated',
+    'categoryFemslash','categoryHet','categoryGen','categorySlash','categoryMulti','categoryOther','categoryNone',
+    'warningChoose','warningYes','warningNo',
+    'completeNo','completeYes'
+  ];
+
+  existingKeys.forEach(key=>{
+    const bg=q('req_'+key+'_bg');
+    const row=bg?.closest('.required-style-row');
+    if(!row || row.querySelector('.required-state-advanced')) return;
+    const advanced=document.createElement('div');
+    advanced.className='required-state-advanced';
+    advanced.innerHTML=`
+      <div>
+        <label>Icon size</label>
+        <input type="number" id="req_${key}_size" min="8" max="40" step="1" value="24">
+      </div>
+      <div>
+        <label>Border width</label>
+        <input type="number" id="req_${key}_borderWidth" min="0" max="8" step="0.5" value="1">
+      </div>
+      <div>
+        <label>Border color</label>
+        <div class="required-color-inputs">
+          <input type="color" id="req_${key}_border" value="#8f8f8f">
+          <input type="text" id="req_${key}_border_text" value="#8F8F8F">
+        </div>
+      </div>
+    `;
+    row.appendChild(advanced);
+  });
+
+  /* Specialized AO3 category colors: F/M split + Multi quadrants. */
+  if(!q('requiredSpecialColors')){
+    const specials=document.createElement('div');
+    specials.className='required-specials';
+    specials.id='requiredSpecialColors';
+    specials.innerHTML=`
+      <div class="required-specials-title">Multi-color category icon controls</div>
+      <div class="required-special-row">
+        <div class="required-special-control">
+          <label>F/M — female side</label>
+          <div class="required-color-inputs"><input type="color" id="req_hetLeft" value="#b00078"><input type="text" id="req_hetLeft_text" value="#B00078"></div>
+        </div>
+        <div class="required-special-control">
+          <label>F/M — male side</label>
+          <div class="required-color-inputs"><input type="color" id="req_hetRight" value="#0759b8"><input type="text" id="req_hetRight_text" value="#0759B8"></div>
+        </div>
+      </div>
+      <div class="required-special-row">
+        <div class="required-special-control">
+          <label>Multi — top left</label>
+          <div class="required-color-inputs"><input type="color" id="req_multiTL" value="#88c900"><input type="text" id="req_multiTL_text" value="#88C900"></div>
+        </div>
+        <div class="required-special-control">
+          <label>Multi — top right</label>
+          <div class="required-color-inputs"><input type="color" id="req_multiTR" value="#aa0088"><input type="text" id="req_multiTR_text" value="#AA0088"></div>
+        </div>
+      </div>
+      <div class="required-special-row">
+        <div class="required-special-control">
+          <label>Multi — bottom left</label>
+          <div class="required-color-inputs"><input type="color" id="req_multiBL" value="#bd0b0b"><input type="text" id="req_multiBL_text" value="#BD0B0B"></div>
+        </div>
+        <div class="required-special-control">
+          <label>Multi — bottom right</label>
+          <div class="required-color-inputs"><input type="color" id="req_multiBR" value="#0759b8"><input type="text" id="req_multiBR_text" value="#0759B8"></div>
+        </div>
+      </div>
+    `;
+    q('requiredStyleGroups')?.insertAdjacentElement('afterend',specials);
+  }
+
+  const states=[
+    {group:'Rating',key:'ratingGeneral',cls:'rating-general-audience',label:'General Audiences',bg:'#88C900',fg:'#FFFFFF',symbol:'G'},
+    {group:'Rating',key:'ratingTeen',cls:'rating-teen',label:'Teen And Up',bg:'#F2D20A',fg:'#FFFFFF',symbol:'T'},
+    {group:'Rating',key:'ratingMature',cls:'rating-mature',label:'Mature',bg:'#EF8017',fg:'#FFFFFF',symbol:'M'},
+    {group:'Rating',key:'ratingExplicit',cls:'rating-explicit',label:'Explicit',bg:'#BD0B0B',fg:'#FFFFFF',symbol:'E'},
+    {group:'Rating',key:'ratingNotrated',cls:'rating-notrated',label:'Not Rated',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''},
+    {group:'Rating',key:'ratingKey2',cls:'rating-key-2',label:'Second Square',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''},
+
+    {group:'Category',key:'categoryFemslash',cls:'category-femslash',label:'F/F',bg:'#B00078',fg:'#FFFFFF',symbol:'⚢'},
+    {group:'Category',key:'categoryHet',cls:'category-het',label:'F/M',bg:'#7B4B7F',fg:'#FFFFFF',symbol:'⚤'},
+    {group:'Category',key:'categoryGen',cls:'category-gen',label:'Gen',bg:'#88C900',fg:'#FFFFFF',symbol:'G'},
+    {group:'Category',key:'categorySlash',cls:'category-slash',label:'M/M',bg:'#0759B8',fg:'#FFFFFF',symbol:'⚣'},
+    {group:'Category',key:'categoryMulti',cls:'category-multi',label:'Multi',bg:'#777777',fg:'#FFFFFF',symbol:''},
+    {group:'Category',key:'categoryOther',cls:'category-other',label:'Other',bg:'#777777',fg:'#FFFFFF',symbol:'*'},
+    {group:'Category',key:'categoryNone',cls:'category-none',label:'No Category',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''},
+    {group:'Category',key:'categoryKey3',cls:'category-key-3',label:'Third Square',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''},
+
+    {group:'Warnings',key:'warningChoose',cls:'warning-choosenotto',label:'Chose Not To Warn',bg:'#F18717',fg:'#FFFFFF',symbol:'!?'},
+    {group:'Warnings',key:'warningYes',cls:'warning-yes',label:'Warnings Apply',bg:'#BD0B0B',fg:'#FFFFFF',symbol:'!'},
+    {group:'Warnings',key:'warningNo',cls:'warning-no',label:'No Archive Warnings',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''},
+    {group:'Warnings',key:'warningExternal',cls:'warning-external-work',label:'External Work',bg:'#0759B8',fg:'#FFFFFF',symbol:''},
+    {group:'Warnings',key:'warningKey4',cls:'warning-key-4',label:'Fourth Square',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''},
+
+    {group:'Completion',key:'completeNo',cls:'complete-no',label:'WIP / Incomplete',bg:'#BD0B0B',fg:'#FFFFFF',symbol:''},
+    {group:'Completion',key:'completeYes',cls:'complete-yes',label:'Complete',bg:'#88C900',fg:'#FFFFFF',symbol:'✓'},
+    {group:'Completion',key:'completeNone',cls:'complete-none',label:'Blank Square',bg:'#EDEDEA',fg:'#FFFFFF',symbol:''}
+  ];
+
+  const newKeys=['ratingKey2','categoryKey3','warningExternal','warningKey4','completeNone'];
+  const allKeys=[...existingKeys,...newKeys];
+  const specialIds=['req_hetLeft','req_hetRight','req_multiTL','req_multiTR','req_multiBL','req_multiBR'];
+
+  allKeys.forEach(key=>{
+    ['bg','fg','border','size','borderWidth'].forEach(suffix=>{
+      const id='req_'+key+'_'+suffix;
+      if(typeof idsToSave!=='undefined' && q(id) && !idsToSave.includes(id)) idsToSave.push(id);
+    });
+  });
+  specialIds.forEach(id=>{
+    if(typeof idsToSave!=='undefined' && !idsToSave.includes(id)) idsToSave.push(id);
+  });
+
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem('ao3SkinStudio')||'{}')}catch(e){return {}}})();
+
+  states.forEach(st=>{
+    const bg=q('req_'+st.key+'_bg'),fg=q('req_'+st.key+'_fg');
+    const border=q('req_'+st.key+'_border'),size=q('req_'+st.key+'_size'),bw=q('req_'+st.key+'_borderWidth');
+    if(bg && saved['req_'+st.key+'_bg']) bg.value=saved['req_'+st.key+'_bg'];
+    if(fg && saved['req_'+st.key+'_fg']) fg.value=saved['req_'+st.key+'_fg'];
+    if(border && saved['req_'+st.key+'_border']) border.value=saved['req_'+st.key+'_border'];
+    if(size && saved['req_'+st.key+'_size']!=null) size.value=saved['req_'+st.key+'_size'];
+    if(bw && saved['req_'+st.key+'_borderWidth']!=null) bw.value=saved['req_'+st.key+'_borderWidth'];
+    if(bg && q('req_'+st.key+'_bg_text')) q('req_'+st.key+'_bg_text').value=(normHex(bg.value)||st.bg);
+    if(fg && q('req_'+st.key+'_fg_text')) q('req_'+st.key+'_fg_text').value=(normHex(fg.value)||st.fg);
+    if(border && q('req_'+st.key+'_border_text')) q('req_'+st.key+'_border_text').value=(normHex(border.value)||'#8F8F8F');
+  });
+  specialIds.forEach(id=>{
+    if(q(id)&&saved[id]) q(id).value=saved[id];
+    if(q(id)&&q(id+'_text')) q(id+'_text').value=(normHex(q(id).value)||q(id).value).toUpperCase();
+  });
+
+  /* Full state showcase inside the editor. */
+  if(!q('requiredStateBoard')){
+    const board=document.createElement('div');
+    board.className='required-state-board';
+    board.id='requiredStateBoard';
+    board.innerHTML='<div class="required-state-board-title"><span>All AO3 grid states</span><span>live preview</span></div><div class="required-state-board-grid"></div>';
+    q('requiredSpecialColors')?.insertAdjacentElement('afterend',board);
+
+    const grid=board.querySelector('.required-state-board-grid');
+    ['Rating','Category','Warnings','Completion'].forEach(group=>{
+      const col=document.createElement('div');
+      col.className='required-state-column';
+      col.innerHTML='<h4>'+group+'</h4>';
+      states.filter(x=>x.group===group).forEach(st=>{
+        const chip=document.createElement('div');
+        chip.className='required-state-chip';
+        chip.innerHTML='<span class="required-mini-icon '+st.cls+'" data-required-preview="'+st.key+'"></span><span title="'+st.label+'">'+st.label+'</span>';
+        col.appendChild(chip);
+      });
+      grid.appendChild(col);
+    });
+  }
+
+  function cv(id,fallback){
+    return (normHex(q(id)?.value)||fallback).toUpperCase();
+  }
+  function nv(id,fallback){
+    const n=Number(q(id)?.value);
+    return Number.isFinite(n)?n:fallback;
+  }
+  const varNames={
+    ratingGeneral:'rating-general',ratingTeen:'rating-teen',ratingMature:'rating-mature',ratingExplicit:'rating-explicit',ratingNotrated:'rating-notrated',ratingKey2:'rating-key2',
+    categoryFemslash:'category-femslash',categoryHet:'category-het',categoryGen:'category-gen',categorySlash:'category-slash',categoryMulti:'category-multi',categoryOther:'category-other',categoryNone:'category-none',categoryKey3:'category-key3',
+    warningChoose:'warning-choose',warningYes:'warning-yes',warningNo:'warning-no',warningExternal:'warning-external',warningKey4:'warning-key4',
+    completeNo:'complete-no',completeYes:'complete-yes',completeNone:'complete-none'
+  };
+
+  function applyAllRequiredStates(){
+    const mock=q('mock');
+    states.forEach(st=>{
+      const bg=cv('req_'+st.key+'_bg',st.bg),fg=cv('req_'+st.key+'_fg',st.fg);
+      if(mock){
+        mock.style.setProperty('--req-'+varNames[st.key]+'-bg',bg);
+        mock.style.setProperty('--req-'+varNames[st.key]+'-fg',fg);
+      }
+      document.querySelectorAll('[data-required-preview="'+st.key+'"]').forEach(icon=>{
+        icon.style.backgroundColor=bg;
+        icon.style.color=fg;
+        icon.style.borderColor=cv('req_'+st.key+'_border','#8F8F8F');
+        icon.style.borderWidth=nv('req_'+st.key+'_borderWidth',1)+'px';
+        icon.style.fontSize=nv('req_'+st.key+'_size',24)+'px';
+        if(st.symbol && !['categoryFemslash','categoryHet','categorySlash'].includes(st.key)) icon.textContent=st.symbol;
+      });
+    });
+
+    const hetL=cv('req_hetLeft','#B00078'),hetR=cv('req_hetRight','#0759B8');
+    const tl=cv('req_multiTL','#88C900'),tr=cv('req_multiTR','#AA0088'),bl=cv('req_multiBL','#BD0B0B'),br=cv('req_multiBR','#0759B8');
+    if(mock){
+      mock.style.setProperty('--req-het-left',hetL);mock.style.setProperty('--req-het-right',hetR);
+      mock.style.setProperty('--req-multi-tl',tl);mock.style.setProperty('--req-multi-tr',tr);mock.style.setProperty('--req-multi-bl',bl);mock.style.setProperty('--req-multi-br',br);
+    }
+    q('requiredStateBoard')?.style.setProperty('--req-het-left',hetL);
+    q('requiredStateBoard')?.style.setProperty('--req-het-right',hetR);
+    q('requiredStateBoard')?.style.setProperty('--req-multi-tl',tl);
+    q('requiredStateBoard')?.style.setProperty('--req-multi-tr',tr);
+    q('requiredStateBoard')?.style.setProperty('--req-multi-bl',bl);
+    q('requiredStateBoard')?.style.setProperty('--req-multi-br',br);
+  }
+
+  function wireColor(id){
+    const picker=q(id),text=q(id+'_text');
+    if(!picker) return;
+    if(text){
+      picker.addEventListener('input',()=>{text.value=picker.value.toUpperCase();applyAllRequiredStates();try{cssOutput.value=buildCss();save()}catch(e){}});
+      text.addEventListener('input',()=>{const v=normHex(text.value);if(!v)return;picker.value=v.toLowerCase();text.value=v;applyAllRequiredStates();try{cssOutput.value=buildCss();save()}catch(e){}});
+    }else{
+      picker.addEventListener('input',()=>{applyAllRequiredStates();try{cssOutput.value=buildCss();save()}catch(e){}});
+    }
+  }
+
+  allKeys.forEach(key=>{
+    ['req_'+key+'_bg','req_'+key+'_fg','req_'+key+'_border'].forEach(wireColor);
+    ['req_'+key+'_size','req_'+key+'_borderWidth'].forEach(id=>q(id)?.addEventListener('input',()=>{applyAllRequiredStates();try{cssOutput.value=buildCss();save()}catch(e){}}));
+  });
+  specialIds.forEach(wireColor);
+
+  const oldBuildCss=buildCss;
+  buildCss=function(){
+    const css=oldBuildCss();
+
+    const rules=states.map(st=>{
+      const bg=cv('req_'+st.key+'_bg',st.bg);
+      const fg=cv('req_'+st.key+'_fg',st.fg);
+      const border=cv('req_'+st.key+'_border','#8F8F8F');
+      const width=nv('req_'+st.key+'_borderWidth',1);
+      const size=nv('req_'+st.key+'_size',24);
+      return `.blurb ul.required-tags .${st.cls}{background-color:${bg}!important;color:${fg}!important;border-color:${border}!important;border-width:${width}px!important;font-size:${size}px!important;}`;
+    }).join('\n');
+
+    const hetL=cv('req_hetLeft','#B00078'),hetR=cv('req_hetRight','#0759B8');
+    const tl=cv('req_multiTL','#88C900'),tr=cv('req_multiTR','#AA0088'),bl=cv('req_multiBL','#BD0B0B'),br=cv('req_multiBR','#0759B8');
+
+    return css+`
+
+/* ALL AO3 REQUIRED-TAG GRID STATES — INDIVIDUALLY EDITABLE */
+${rules}
+
+/* F/M keeps two individually editable halves. */
+.blurb ul.required-tags .category-het{
+  background:linear-gradient(90deg,${hetL} 0 49%,${hetR} 51% 100%)!important;
+}
+.blurb ul.required-tags .category-het::after{
+  content:"⚤"!important;
+}
+
+/* Multi keeps four individually editable quadrants. */
+.blurb ul.required-tags .category-multi{
+  background:
+    linear-gradient(90deg,${tl} 0 50%,${tr} 50% 100%) top/100% 50% no-repeat,
+    linear-gradient(90deg,${bl} 0 50%,${br} 50% 100%) bottom/100% 50% no-repeat!important;
+}
+
+/* Relationship symbols closer to AO3's paired-symbol icons. */
+.blurb ul.required-tags .category-slash::after{content:"⚣"!important;}
+.blurb ul.required-tags .category-femslash::after{content:"⚢"!important;}
+.blurb ul.required-tags .category-het::after{content:"⚤"!important;}
+
+/* External-work warning globe. */
+.blurb ul.required-tags .warning-external-work{
+  background-image:
+    linear-gradient(currentColor,currentColor),
+    linear-gradient(currentColor,currentColor),
+    radial-gradient(circle at center,transparent 0 37%,currentColor 39% 46%,transparent 48% 100%)!important;
+  background-size:2px 70%,70% 2px,70% 70%!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+.blurb ul.required-tags .warning-external-work::after{content:""!important;}
+
+/* Blank/key-square states. */
+.blurb ul.required-tags .rating-key-2::after,
+.blurb ul.required-tags .category-key-3::after,
+.blurb ul.required-tags .warning-key-4::after,
+.blurb ul.required-tags .complete-none::after{content:""!important;}
+
+/* AO3 legend key squares supplied by AO3 itself. */
+img[src$="/key-square-2.png"]{
+  background:${cv('req_ratingKey2_bg','#EDEDEA')}!important;
+  border:${nv('req_ratingKey2_borderWidth',1)}px solid ${cv('req_ratingKey2_border','#8F8F8F')}!important;
+}
+img[src$="/key-square-3.png"]{
+  background:${cv('req_categoryKey3_bg','#EDEDEA')}!important;
+  border:${nv('req_categoryKey3_borderWidth',1)}px solid ${cv('req_categoryKey3_border','#8F8F8F')}!important;
+}
+img[src$="/key-square-4.png"]{
+  background:${cv('req_warningKey4_bg','#EDEDEA')}!important;
+  border:${nv('req_warningKey4_borderWidth',1)}px solid ${cv('req_warningKey4_border','#8F8F8F')}!important;
+}
+`;
+  };
+
+  /* Update the AO3-default restore button with every new state too. */
+  q('requiredAo3DefaultsBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    const defaults={
+      ratingKey2:['#EDEDEA','#FFFFFF'],categoryKey3:['#EDEDEA','#FFFFFF'],
+      warningExternal:['#0759B8','#FFFFFF'],warningKey4:['#EDEDEA','#FFFFFF'],
+      completeNone:['#EDEDEA','#FFFFFF']
+    };
+    Object.entries(defaults).forEach(([key,p])=>{
+      if(q('req_'+key+'_bg'))q('req_'+key+'_bg').value=p[0].toLowerCase();
+      if(q('req_'+key+'_fg'))q('req_'+key+'_fg').value=p[1].toLowerCase();
+      if(q('req_'+key+'_bg_text'))q('req_'+key+'_bg_text').value=p[0];
+      if(q('req_'+key+'_fg_text'))q('req_'+key+'_fg_text').value=p[1];
+      if(q('req_'+key+'_border'))q('req_'+key+'_border').value='#8f8f8f';
+      if(q('req_'+key+'_border_text'))q('req_'+key+'_border_text').value='#8F8F8F';
+      if(q('req_'+key+'_borderWidth'))q('req_'+key+'_borderWidth').value='1';
+      if(q('req_'+key+'_size'))q('req_'+key+'_size').value='24';
+    });
+    const specialDefaults={req_hetLeft:'#B00078',req_hetRight:'#0759B8',req_multiTL:'#88C900',req_multiTR:'#AA0088',req_multiBL:'#BD0B0B',req_multiBR:'#0759B8'};
+    Object.entries(specialDefaults).forEach(([id,v])=>{if(q(id))q(id).value=v.toLowerCase();if(q(id+'_text'))q(id+'_text').value=v;});
+    applyAllRequiredStates();
+    try{cssOutput.value=buildCss();save()}catch(e){}
+  },20));
+
+  /* Reset these settings with the main Reset button. */
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    states.forEach(st=>{
+      if(q('req_'+st.key+'_border'))q('req_'+st.key+'_border').value='#8f8f8f';
+      if(q('req_'+st.key+'_border_text'))q('req_'+st.key+'_border_text').value='#8F8F8F';
+      if(q('req_'+st.key+'_borderWidth'))q('req_'+st.key+'_borderWidth').value='1';
+      if(q('req_'+st.key+'_size'))q('req_'+st.key+'_size').value='24';
+    });
+    applyAllRequiredStates();
+    try{cssOutput.value=buildCss();save()}catch(e){}
+  },30));
+
+  applyAllRequiredStates();
+  try{cssOutput.value=buildCss();save()}catch(e){}
+})();
+</script>
