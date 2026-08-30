@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ao3-skin-studio-update
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: windows-latest
@@ -120,6 +124,13 @@ jobs:
 
           "AO3_PUBLISH=$publish" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Sync latest main before release files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git pull --rebase origin main
+          if ($LASTEXITCODE -ne 0) { throw "Could not sync main before generating the AO3 Skin Studio update channel." }
+
       - name: Build verified update payload
         shell: pwsh
         run: |
@@ -201,8 +212,9 @@ jobs:
             Write-Host 'AO3 Skin Studio update channel already matches this build.'
           } else {
             git commit -m "Release AO3 Skin Studio $env:AO3_VERSION"
-            git pull --rebase origin main
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit AO3 Skin Studio release files." }
             git push origin HEAD:main
+            if ($LASTEXITCODE -ne 0) { throw "Could not push AO3 Skin Studio release files." }
           }
 
       - uses: actions/upload-artifact@v4
