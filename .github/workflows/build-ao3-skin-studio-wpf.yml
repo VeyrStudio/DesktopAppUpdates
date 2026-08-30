@@ -174,6 +174,145 @@ jobs:
           $studioText = $studioText.Replace('</body>', $allRequiredStatesPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.13: saved Desktop Shortcut setting.
+          $appSettingsPath = Join-Path $srcRoot 'AO3SkinStudio/Models/AppSettings.cs'
+          $appSettingsText = Get-Content $appSettingsPath -Raw
+          $settingsAnchor = '    public bool AutoUpdate { get; set; } = true;'
+          $settingsReplacement = @(
+            '    public bool AutoUpdate { get; set; } = true;'
+            '    public bool DesktopShortcut { get; set; } = false;'
+          ) -join "`r`n"
+          if (-not $appSettingsText.Contains($settingsAnchor)) { throw 'AppSettings desktop-shortcut anchor was not found.' }
+          $appSettingsText = $appSettingsText.Replace($settingsAnchor, $settingsReplacement)
+          [IO.File]::WriteAllText($appSettingsPath, $appSettingsText, [Text.UTF8Encoding]::new($false))
+
+          $shortcutXamlPath = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml'
+          $shortcutXamlText = Get-Content $shortcutXamlPath -Raw
+          $shortcutXamlAnchor = '          <Button x:Name="UpdateButton" Content="Update" Click="Update_Click" />'
+          $shortcutXamlInsert = @(
+            '          <Button x:Name="UpdateButton" Content="Update" Click="Update_Click" />'
+            '          <CheckBox x:Name="DesktopShortcutCheckBox"'
+            '                    Content="Desktop Shortcut"'
+            '                    ToolTip="Add or remove an AO3 Skin Studio shortcut on the Windows desktop."'
+            '                    Foreground="{StaticResource TextMuted}"'
+            '                    VerticalAlignment="Center"'
+            '                    Margin="8,0,0,0"'
+            '                    Checked="DesktopShortcut_Changed"'
+            '                    Unchecked="DesktopShortcut_Changed" />'
+          ) -join "`r`n"
+          if (-not $shortcutXamlText.Contains($shortcutXamlAnchor)) { throw 'MainWindow Desktop Shortcut checkbox anchor was not found.' }
+          $shortcutXamlText = $shortcutXamlText.Replace($shortcutXamlAnchor, $shortcutXamlInsert)
+          [IO.File]::WriteAllText($shortcutXamlPath, $shortcutXamlText, [Text.UTF8Encoding]::new($false))
+
+          $shortcutCodePath = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml.cs'
+          $shortcutCodeText = Get-Content $shortcutCodePath -Raw
+          $shortcutCodeNewline = if ($shortcutCodeText.Contains("`r`n")) { "`r`n" } else { "`n" }
+
+          $shortcutLoadAnchor = '        AutoUpdateCheckBox.IsChecked = _settings.AutoUpdate;' + $shortcutCodeNewline + '        _loadingSettings = false;'
+          $shortcutLoadReplacement = @(
+            '        AutoUpdateCheckBox.IsChecked = _settings.AutoUpdate;'
+            '        DesktopShortcutCheckBox.IsChecked = _settings.DesktopShortcut;'
+            '        _loadingSettings = false;'
+            ''
+            '        try'
+            '        {'
+            '            SetDesktopShortcut(_settings.DesktopShortcut);'
+            '        }'
+            '        catch'
+            '        {'
+            '            _settings.DesktopShortcut = false;'
+            '            _loadingSettings = true;'
+            '            DesktopShortcutCheckBox.IsChecked = false;'
+            '            _loadingSettings = false;'
+            '            SettingsService.Save(_settings);'
+            '        }'
+          ) -join $shortcutCodeNewline
+          if (-not $shortcutCodeText.Contains($shortcutLoadAnchor)) { throw 'MainWindow desktop-shortcut load anchor was not found.' }
+          $shortcutCodeText = $shortcutCodeText.Replace($shortcutLoadAnchor, $shortcutLoadReplacement)
+
+          $autoUpdateMethodAnchor = @(
+            '    private void AutoUpdate_Changed(object sender, RoutedEventArgs e)'
+            '    {'
+            '        if (_loadingSettings)'
+            '            return;'
+            ''
+            '        _settings.AutoUpdate = AutoUpdateCheckBox.IsChecked == true;'
+            '        SettingsService.Save(_settings);'
+            '    }'
+          ) -join $shortcutCodeNewline
+
+          $shortcutMethods = @(
+            '    private void AutoUpdate_Changed(object sender, RoutedEventArgs e)'
+            '    {'
+            '        if (_loadingSettings)'
+            '            return;'
+            ''
+            '        _settings.AutoUpdate = AutoUpdateCheckBox.IsChecked == true;'
+            '        SettingsService.Save(_settings);'
+            '    }'
+            ''
+            '    private void DesktopShortcut_Changed(object sender, RoutedEventArgs e)'
+            '    {'
+            '        if (_loadingSettings)'
+            '            return;'
+            ''
+            '        var enabled = DesktopShortcutCheckBox.IsChecked == true;'
+            ''
+            '        try'
+            '        {'
+            '            SetDesktopShortcut(enabled);'
+            '            _settings.DesktopShortcut = enabled;'
+            '            SettingsService.Save(_settings);'
+            '            StatusText.Text = enabled ? "Desktop shortcut added" : "Desktop shortcut removed";'
+            '        }'
+            '        catch (Exception ex)'
+            '        {'
+            '            _loadingSettings = true;'
+            '            DesktopShortcutCheckBox.IsChecked = _settings.DesktopShortcut;'
+            '            _loadingSettings = false;'
+            '            MessageBox.Show(this, ex.Message, "Desktop Shortcut", MessageBoxButton.OK, MessageBoxImage.Warning);'
+            '        }'
+            '    }'
+            ''
+            '    private static string GetDesktopShortcutPath()'
+            '    {'
+            '        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);'
+            '        return Path.Combine(desktop, "AO3 Skin Studio.lnk");'
+            '    }'
+            ''
+            '    private static void SetDesktopShortcut(bool enabled)'
+            '    {'
+            '        var shortcutPath = GetDesktopShortcutPath();'
+            ''
+            '        if (!enabled)'
+            '        {'
+            '            if (File.Exists(shortcutPath))'
+            '                File.Delete(shortcutPath);'
+            '            return;'
+            '        }'
+            ''
+            '        var exePath = Environment.ProcessPath;'
+            '        if (string.IsNullOrWhiteSpace(exePath))'
+            '            throw new InvalidOperationException("AO3 Skin Studio could not determine its executable path.");'
+            ''
+            '        var shellType = Type.GetTypeFromProgID("WScript.Shell");'
+            '        if (shellType is null)'
+            '            throw new InvalidOperationException("Windows shortcut support is not available on this computer.");'
+            ''
+            '        dynamic shell = Activator.CreateInstance(shellType)!;'
+            '        dynamic shortcut = shell.CreateShortcut(shortcutPath);'
+            '        shortcut.TargetPath = exePath;'
+            '        shortcut.WorkingDirectory = AppContext.BaseDirectory;'
+            '        shortcut.Description = "AO3 Skin Studio";'
+            '        shortcut.IconLocation = exePath + ",0";'
+            '        shortcut.Save();'
+            '    }'
+          ) -join $shortcutCodeNewline
+
+          if (-not $shortcutCodeText.Contains($autoUpdateMethodAnchor)) { throw 'MainWindow AutoUpdate method anchor was not found for Desktop Shortcut patch.' }
+          $shortcutCodeText = $shortcutCodeText.Replace($autoUpdateMethodAnchor, $shortcutMethods)
+          [IO.File]::WriteAllText($shortcutCodePath, $shortcutCodeText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.6: keep the native Windows title-bar buttons fully inside the visible work area.
           $mainWindowXaml = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml'
           $mainWindowXamlText = Get-Content $mainWindowXaml -Raw
@@ -218,16 +357,16 @@ jobs:
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.12</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.12.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.12.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.13</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.13.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.13.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.12" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.13" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -301,7 +440,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Expands the AO3 Required-Tag Grid editor to cover every state supplied by the AO3 key: all five ratings plus Second Square; F/F, F/M, Gen, M/M, Multi, Other, No Category plus Third Square; Chose Not To Warn, Warnings Apply, No Warnings, External Work globe plus Fourth Square; Complete, WIP, and blank completion. Every state now has its own box color, icon/font color, icon size, border color, and border width. F/M gets separately editable female/male halves and Multi gets four independently editable quadrants. Adds a live All AO3 Grid States reference board and exports the customizations to AO3 CSS. Keeps Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
+            notes = 'Adds a saved Desktop Shortcut setting to the main app toolbar. Turn it on to create an AO3 Skin Studio shortcut on the Windows desktop; turn it off to remove the app-created shortcut. The preference persists between launches and the shortcut points to the current app executable so it continues working through in-place updates. Keeps the complete AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
