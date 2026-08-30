@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.10",
-  "payloadSha256": "90636987b9033f5ad822fb4290b77168bc76c1893daa39dd009fcfb40abf68c0",
-  "executableSha256": "a5a1016ac01c34fc6d5f1cd9597756178bb7672e6bd4f66484d6e62757684d39",
+  "version": "0.1.11",
+  "payloadSha256": "5ff03c3edf74d40efd23e55c6c5e63b8e7b211393ec4b963f608ace7b4ff1413",
+  "executableSha256": "a07e6f6cfc70b68dadb17556e73f19dc263c27e31e6fac8a59291ee6c2084dbc",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.10-part-001.txt",
-      "sha256": "3b0a86c1e26d4031ad26e3c3287ee699c1e2b470eec53796ecf5a764d9f74dc2"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.11-part-001.txt",
+      "sha256": "c6d7cc6f70bf596989123499506450f4af59b034c83ad794b2000c8ec2b3daa5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.10-part-002.txt",
-      "sha256": "a2ca0fe99abdfcb62b833551e28e839921517927bca8756e5b9011f076a2c282"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.11-part-002.txt",
+      "sha256": "e7284fa942f93cd15c63433c6b204b8ab70030e01c92ac2791f0b96740706184"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.10-part-003.txt",
-      "sha256": "22b0f265ab76cdffaea18a3cc22d03972b8889b4a135ae04ecc7e74b8e4eed4e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.11-part-003.txt",
+      "sha256": "f0488fc6037fee6da4e2bf61ac4998fdb9c4e768b586bbab56d6e6b859c2dd99"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.10-part-004.txt",
-      "sha256": "aea2ba8f8aab3141f086ccc959a20346215c49034c4361c0e4066fa233166d17"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.11-part-004.txt",
+      "sha256": "f06f4dcd081244d3b22482978ed6b2aaf8f7e933e73f505704998a43e37841bf"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.10-part-005.txt",
-      "sha256": "e59162774e7e66ce013e833f43e51a288b95c58e474ded13fa4dc5d33ff040ec"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.11-part-005.txt",
+      "sha256": "c8e67f29092446e75b1a88dd52ec53d44d522550c5b50fc288b03c075039348e"
     }
   ],
-  "notes": "Upgrades Gradients into a full Gradient Studio: Linear, Radial, and Conic types; 16 direction presets plus exact 0-359 degree control; radial circle/ellipse shapes, four reach modes, 3x3 focal presets and exact X/Y center controls; conic rotation and center controls; repeating gradients; per-stop opacity; decimal stop positions; stop duplication; up to 12 colors; rotate/flip tools; live copyable CSS; and per-target reset. Removes the now-redundant separate Navigation gradient target so the unified Background remains continuous. Keeps GIF support, AO3-style required-tag icons, Split Screen, and all prior tools."
+  "notes": "Adds a full Color Studio for easier custom colors: HEX, RGB, and HSL editing; hue/saturation/lightness sliders; derived shade and tint swatches; 48 standard colors including AO3 reds, grayscale, rainbow colors, browns, golds and metallic-like neutrals; recent colors; favorites; copy HEX; and one-click Apply to the currently selected skin color. Adds a palette shortcut beside existing color pickers so any setting can jump straight into Color Studio. Keeps Gradient Studio, GIF support, AO3-style required-tag icons, Split Screen, and all prior tools."
 }
