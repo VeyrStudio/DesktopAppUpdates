@@ -80,10 +80,12 @@ jobs:
         shell: pwsh
         run: |
           $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
-          Write-Host '--- Story list XAML ---'
-          Select-String -Path (Join-Path $root 'MainWindow.xaml') -Pattern 'ItemsControl|StoriesPanel|StoryCard|Thumbnail|TitleCard|SelectedStory|WrapPanel|ScrollViewer Grid.Row="2"|STORIES' -Context 6,16 | ForEach-Object { $_.ToString() | Write-Host }
-          Write-Host '--- Story card code ---'
-          Select-String -Path (Join-Path $root 'MainWindow.xaml.cs') -Pattern 'RenderStories|LoadStories|StoryCard|Story_Click|SelectStory|PreviousStory_Click|NextStory_Click|_stories|_selectedStory' -Context 5,14 | ForEach-Object { $_.ToString() | Write-Host }
+          Write-Host '--- Story list XAML exact 117-188 ---'
+          $x = Get-Content (Join-Path $root 'MainWindow.xaml')
+          for ($i = 116; $i -lt [Math]::Min(188, $x.Count); $i++) { Write-Host ("XAML:{0}: {1}" -f ($i + 1), $x[$i]) }
+          Write-Host '--- MainWindow code exact 153-320 ---'
+          $c = Get-Content (Join-Path $root 'MainWindow.xaml.cs')
+          for ($i = 152; $i -lt [Math]::Min(320, $c.Count); $i++) { Write-Host ("CODE:{0}: {1}" -f ($i + 1), $c[$i]) }
           throw 'Inspection-only run: stop before publish.'
 
       - name: Restore
