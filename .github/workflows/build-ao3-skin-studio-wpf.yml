@@ -324,10 +324,11 @@ jobs:
           $iconShortcutCodePath = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml.cs'
           $iconShortcutCodeText = Get-Content $iconShortcutCodePath -Raw
           $iconShortcutAnchor = '        shortcut.IconLocation = exePath + ",0";'
+          $iconShortcutNewline = if ($iconShortcutCodeText.Contains("`r`n")) { "`r`n" } else { "`n" }
           $iconShortcutReplacement = @(
             '        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "AO3-Skin-Studio-Icon.ico");'
             '        shortcut.IconLocation = File.Exists(iconPath) ? iconPath : exePath + ",0";'
-          ) -join "`r`n"
+          ) -join $iconShortcutNewline
           if (-not $iconShortcutCodeText.Contains($iconShortcutAnchor)) { throw 'Desktop shortcut icon anchor was not found.' }
           $iconShortcutCodeText = $iconShortcutCodeText.Replace($iconShortcutAnchor, $iconShortcutReplacement)
           [IO.File]::WriteAllText($iconShortcutCodePath, $iconShortcutCodeText, [Text.UTF8Encoding]::new($false))
