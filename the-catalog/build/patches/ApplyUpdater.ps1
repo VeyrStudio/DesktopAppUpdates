@@ -9,7 +9,8 @@ $featureBase64 =
     (Get-Content 'the-catalog/build/v108-feature-part-02.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-03.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-04.b64' -Raw) +
-    (Get-Content 'the-catalog/build/v108-feature-part-05.b64' -Raw)
+    (Get-Content 'the-catalog/build/v108-feature-part-05a.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-05b.b64' -Raw)
 $featureZip = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N') + '.zip')
 $featureStage = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N'))
 [IO.File]::WriteAllBytes($featureZip, [Convert]::FromBase64String($featureBase64))
