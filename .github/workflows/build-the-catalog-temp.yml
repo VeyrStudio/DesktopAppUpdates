@@ -32,12 +32,18 @@ jobs:
       - name: Reconstruct source archive
         shell: pwsh
         run: |
-          $p0a = Get-Content 'the-catalog/build/source-part-00a.b64' -Raw
-          $p0b = Get-Content 'the-catalog/build/source-part-00b.b64' -Raw
-          $p0c = Get-Content 'the-catalog/build/source-part-00c.b64' -Raw
-          $p1 = Get-Content 'the-catalog/build/source-part-01.b64' -Raw
-          $p2 = Get-Content 'the-catalog/build/source-part-02.b64' -Raw
-          $bytes = [Convert]::FromBase64String($p0a + $p0b + $p0c + $p1 + $p2)
+          $parts = @(
+            'the-catalog/build/v105-source-part-00.b64',
+            'the-catalog/build/v105-source-part-01.b64',
+            'the-catalog/build/v105-source-part-02.b64',
+            'the-catalog/build/v105-source-part-03.b64',
+            'the-catalog/build/v105-source-part-04.b64',
+            'the-catalog/build/v105-source-part-05.b64',
+            'the-catalog/build/v105-source-part-06.b64',
+            'the-catalog/build/v105-source-part-07.b64'
+          )
+          $sourceBase64 = ($parts | ForEach-Object { Get-Content $_ -Raw }) -join ''
+          $bytes = [Convert]::FromBase64String($sourceBase64)
           [IO.File]::WriteAllBytes('TheCatalog-source.zip', $bytes)
           Expand-Archive -Path 'TheCatalog-source.zip' -DestinationPath 'catalog-source' -Force
 
@@ -119,7 +125,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $version = '1.0.4'
+          $version = '1.0.5'
           $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
           $exeBytes = [IO.File]::ReadAllBytes($exe)
           $base64 = [Convert]::ToBase64String($exeBytes)
@@ -161,7 +167,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadSha
             payloadParts = $parts
-            notes = "Antique archive redesign: adds character names with optional Original fields, a clear Pairing dropdown, a non-clipping Mood Board, story cards with a right-side dossier, and Make Desktop Shortcut."
+            notes = "Adds optional Title Cards for story thumbnails, with Title Card → first Mood Board image → antique placeholder fallback. Title Cards are stored with the story and included in backups/restores."
           }
           [IO.File]::WriteAllText(
             (Join-Path $catalogStage 'manifest.json'),
@@ -178,7 +184,7 @@ jobs:
             payloadPartCount = $parts.Count
           }
           [IO.File]::WriteAllText(
-            (Join-Path $catalogStage '1.0.4-validation.json'),
+            (Join-Path $catalogStage '1.0.5-validation.json'),
             ($validation | ConvertTo-Json -Depth 5),
             $utf8
           )
@@ -197,7 +203,7 @@ jobs:
           git add the-catalog
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "Release The Catalog WPF 1.0.4"
+            git commit -m "Release The Catalog WPF 1.0.5"
 
             $pushed = $false
             for ($attempt = 1; $attempt -le 5; $attempt++) {
