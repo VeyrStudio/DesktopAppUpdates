@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.5",
-  "payloadSha256": "190436d9f9a692e83390043ba2454fa3e67dca9611dfb83674adc8a3dc5ed3b0",
-  "executableSha256": "bdf6fc67ab30e44b0813543e2ab63dd28ecf51892eb92ecd968d2aed8b0c41c3",
+  "version": "0.1.6",
+  "payloadSha256": "5bed0186811a6cd0199247fa368172d4e432c6e0f012cc62c897cb35676bdb99",
+  "executableSha256": "d4dec623ba28e1b983d0b3ad1fb66dd7d783ed7d705f699d7da63057da7a7f82",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.5-part-001.txt",
-      "sha256": "f49d73edcc247f8fac117bf3594cb6c0ed6257d5007f096e48eaa6d01dd4dca9"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.6-part-001.txt",
+      "sha256": "dcb68c54846df6deda6ff0c97340b94af82082cdf02acf61a6b46d97b564bc4a"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.5-part-002.txt",
-      "sha256": "21adcd4e53b7525d854d70625dcb01471ee410d88f5e7b81609992fdc21e20f6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.6-part-002.txt",
+      "sha256": "53bea904b8ff2e241e3dbdf7b54bcd207bce06af29a9f2ad36944642307fe378"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.5-part-003.txt",
-      "sha256": "f2e47896c54beff6e6b8ac7ded216972a63fa364ae714b4dcc17ed895b72bcc8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.6-part-003.txt",
+      "sha256": "f634c657577cc95315d963381e4e2c68e87c450d8319f673b320291c30a97ed8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.5-part-004.txt",
-      "sha256": "815543068f3d518e57572877f9e148c132e8f972dbee702eb0d7e7eb4245bee7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.6-part-004.txt",
+      "sha256": "56fb155264ecdbd279d191203363dcd4420d5007b63a6a9cb49af77e209f8c84"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.5-part-005.txt",
-      "sha256": "2fb03b0633e0c95fe47bc44425998fb69a98ebf29a9e5f1e65ea02be42665333"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.6-part-005.txt",
+      "sha256": "8d743a81597cb562fd9cebb4dcda9aa9b9c6e56af93f6c97cab5a84dad86ebd4"
     }
   ],
-  "notes": "Adds two scrollable AO3 preview page types: Results / Browse and Inside a Fic. Both work with Desktop, Tablet, and Mobile preview sizes and reflect the current skin styling. Keeps all prior background, font, gradient, metallic, translucency, image, and responsive tools."
+  "notes": "Adds Split Screen preview with Results / Browse and Inside a Fic side-by-side with independent scrolling. Also fixes the desktop window sizing so the native minimize, maximize, and close buttons stay visible instead of being clipped off-screen. Keeps all prior tools."
 }
