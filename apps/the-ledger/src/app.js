@@ -11,7 +11,8 @@ import {
   currentOrNextClass,
   searchLedger,
   removeLecture,
-  applySpeakerMarks
+  applySpeakerMarks,
+  setSegmentSpeaker
 } from "../core/ledger-core.mjs";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -325,7 +326,7 @@ function renderClassDetail() {
         <div class="class-detail"><span>⌾</span><span>${escapeHtml(item.room || "Location not set")}</span></div>
         <div class="class-detail"><span>♙</span><span>${escapeHtml(item.professor || "Professor not set")}</span></div>
       </div></section>
-      <section class="card"><div class="card-header"><h2>Speaker Labels</h2></div><div class="card-body"><p class="row-subtitle">During an active lecture, use Identify Voice in the Notebook to mark the Professor, Me, a Student, or a Guest Speaker.</p></div></section>
+      <section class="card"><div class="card-header"><h2>Speaker Labels</h2></div><div class="card-body"><p class="row-subtitle">Use Identify Voice in the Notebook to mark the Professor, Me, a Student, or a Guest Speaker. Finished transcript labels can be changed at any time.</p></div></section>
       <section class="card"><div class="card-header"><h2>Files</h2></div><div class="card-body"><p class="row-subtitle">Attach handouts, slides, readings, and reference documents from the Notebook import menu.</p></div></section>
     </div>
   </div>`;
@@ -350,7 +351,7 @@ function renderNotebook() {
     <section class="card notes-panel">
       <div class="card-header"><h2>Your Notes</h2><span class="status-pill">Autosaved</span></div>
       <textarea id="lecture-notes" placeholder="Type your own notes here…">${escapeHtml(lecture.notes || "")}</textarea>
-      <div class="marker-toolbar ${recording ? "has-voice-control" : ""}"><button data-marker="important">◆ Important</button><button data-marker="assignment">▣ Assignment</button><button data-marker="test">◇ Test Material</button>${recording ? `<button id="identify-voice">♙ ${currentSpeaker ? `Voice: ${escapeHtml(currentSpeaker)}` : "Identify Voice"}</button>` : ""}</div>
+      <div class="marker-toolbar has-voice-control"><button data-marker="important">◆ Important</button><button data-marker="assignment">▣ Assignment</button><button data-marker="test">◇ Test Material</button><button id="identify-voice">♙ ${recording ? (currentSpeaker ? `Voice: ${escapeHtml(currentSpeaker)}` : "Identify Voice") : "Edit Voices"}</button></div>
     </section>
   </div>
   <div class="notebook-controls">
@@ -362,7 +363,14 @@ function renderNotebook() {
     schedulePersist();
   });
   document.querySelectorAll("[data-marker]").forEach((button) => button.addEventListener("click", () => addMarker(lecture, button.dataset.marker)));
-  document.querySelector("#identify-voice")?.addEventListener("click", () => showIdentifyVoiceModal(lecture, elapsedSeconds));
+  document.querySelector("#identify-voice")?.addEventListener("click", () => {
+    if (recording) return showIdentifyVoiceModal(lecture, elapsedSeconds);
+    viewRoot.classList.add("speaker-edit-mode");
+    document.querySelector("[data-speaker-segment]")?.focus();
+  });
+  document.querySelectorAll("[data-speaker-segment]").forEach((button) => button.addEventListener("click", () => {
+    showEditSpeakerModal(lecture, segments, Number(button.dataset.speakerSegment));
+  }));
   document.querySelector("#notebook-back").addEventListener("click", () => { selectedLectureId = null; renderNotebook(); });
   document.querySelector("#export-lecture").addEventListener("click", () => exportLecture(lecture));
   document.querySelector("#delete-lecture")?.addEventListener("click", () => confirmDeleteLecture(lecture));
@@ -583,6 +591,20 @@ function showIdentifyVoiceModal(lecture, atSeconds) {
     closeModal();
     renderNotebook();
     toast(`${speaker} identified at ${formatDuration(atSeconds)}.`);
+  }));
+}
+
+function showEditSpeakerModal(lecture, segments, segmentIndex) {
+  const segment = segments[segmentIndex];
+  if (!segment) return;
+  showModal(`<div class="modal-header"><div><span class="eyebrow">EDIT VOICE</span><h2>Change speaker</h2></div><button class="icon-button" data-close-modal type="button">×</button></div>
+    <div class="modal-body"><p>${escapeHtml(formatDuration(segment.start || 0))} • Currently ${escapeHtml(segment.speaker || "Unknown Speaker")}</p><div class="speaker-choice-grid">${SPEAKER_ROLES.map((role) => `<button class="speaker-choice" data-speaker-role="${escapeHtml(role)}" type="button">${escapeHtml(role)}</button>`).join("")}</div></div>
+    <div class="modal-footer"><button class="secondary-button" data-close-modal type="button">Cancel</button></div>`);
+  document.querySelectorAll("[data-speaker-role]").forEach((button) => button.addEventListener("click", async () => {
+    lecture.transcriptSegments = setSegmentSpeaker(segments, segmentIndex, button.dataset.speakerRole);
+    await persist();
+    closeModal();
+    renderNotebook();
   }));
 }
 
@@ -905,8 +927,8 @@ function transcriptToSegments(text) {
   return text.split(/\n{2,}/).filter(Boolean).map((value, index) => ({ start: index * 30, speaker: "Professor", text: value }));
 }
 
-function transcriptSegment(segment) {
-  return `<div class="transcript-line"><button class="timestamp text-button" type="button">${escapeHtml(formatDuration(segment.start || 0))}</button><div><span class="speaker">${escapeHtml(segment.speaker || "Unknown Speaker")}</span>${escapeHtml(segment.text)}</div></div>`;
+function transcriptSegment(segment, segmentIndex) {
+  return `<div class="transcript-line"><button class="timestamp text-button" type="button">${escapeHtml(formatDuration(segment.start || 0))}</button><div><button class="speaker transcript-speaker-button" data-speaker-segment="${segmentIndex}" type="button" title="Change speaker">${escapeHtml(segment.speaker || "Unknown Speaker")}</button>${escapeHtml(segment.text)}</div></div>`;
 }
 
 function formatDuration(seconds = 0) {

@@ -139,6 +139,10 @@ export function applySpeakerMarks(segments, speakerMarks) {
   });
 }
 
+export function setSegmentSpeaker(segments, segmentIndex, speaker) {
+  return (segments || []).map((segment, index) => index === segmentIndex ? { ...segment, speaker } : { ...segment });
+}
+
 export function blankState() {
   return {
     schemaVersion: 1,

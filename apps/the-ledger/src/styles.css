@@ -297,6 +297,8 @@ button { color: inherit; }
 .transcript-line { display: grid; grid-template-columns: 70px minmax(0,1fr); gap: 13px; margin-bottom: 15px; }
 .timestamp { color: var(--gold); font-family: ui-monospace, monospace; font-size: .78em; cursor: pointer; padding-top: .3em; }
 .speaker { display: block; color: #c2a46b; font-size: .72em; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 3px; }
+.transcript-speaker-button { width: fit-content; border: 0; border-radius: 5px; background: transparent; padding: 2px 4px; margin-left: -4px; cursor: pointer; text-align: left; }
+.transcript-speaker-button:hover, .transcript-speaker-button:focus-visible, .speaker-edit-mode .transcript-speaker-button { color: #ffe0a3; background: rgba(181,138,72,.12); outline: 1px solid rgba(181,138,72,.4); }
 .notes-panel { display: grid; grid-template-rows: auto minmax(220px,1fr) auto; }
 .notes-panel textarea {
   width: 100%; min-height: 260px; resize: none; border: 0; outline: 0; padding: 20px;

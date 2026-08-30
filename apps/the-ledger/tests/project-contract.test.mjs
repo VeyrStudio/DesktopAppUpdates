@@ -82,3 +82,11 @@ test("active lectures can identify the approved speaker roles from the Notebook"
   assert.match(renderer, /\["Professor", "Me", "Student", "Guest Speaker"\]/);
   assert.match(renderer, /applySpeakerMarks\(result\.transcriptSegments, lecture\.speakerMarks\)/);
 });
+
+test("speaker labels remain editable after a lecture ends", async () => {
+  const renderer = await readFile(new URL("../src/app.js", import.meta.url), "utf8");
+  assert.match(renderer, /Edit Voices/);
+  assert.match(renderer, /data-speaker-segment/);
+  assert.match(renderer, /Change speaker/);
+  assert.match(renderer, /setSegmentSpeaker\(segments, segmentIndex/);
+});

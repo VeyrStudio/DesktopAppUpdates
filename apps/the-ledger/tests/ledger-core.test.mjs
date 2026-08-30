@@ -11,6 +11,7 @@ import {
   mergeState,
   removeLecture,
   searchLedger,
+  setSegmentSpeaker,
   toLocalDateKey
 } from "../core/ledger-core.mjs";
 
@@ -77,4 +78,11 @@ test("speaker marks label transcript segments until the next identified voice", 
   ];
   const marks = [{ seconds: 10, speaker: "Professor" }, { seconds: 24, speaker: "Me" }];
   assert.deepEqual(applySpeakerMarks(segments, marks).map((segment) => segment.speaker || null), [null, "Professor", "Me", "Me"]);
+});
+
+test("an individual transcript speaker can be corrected without changing other sections", () => {
+  const segments = [{ speaker: "Professor", text: "One" }, { speaker: "Student", text: "Two" }];
+  const next = setSegmentSpeaker(segments, 1, "Me");
+  assert.deepEqual(next.map((segment) => segment.speaker), ["Professor", "Me"]);
+  assert.deepEqual(segments.map((segment) => segment.speaker), ["Professor", "Student"]);
 });
