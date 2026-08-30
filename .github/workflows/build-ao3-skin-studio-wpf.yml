@@ -129,13 +129,22 @@ jobs:
           $studioText = $studioText.Replace('</body>', $requiredTagsPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
-          # 0.1.8: animated GIF support + correct compact 2x2 required-tags block.
+          # 0.1.8: animated GIF support + compact required-tags block.
           $gifGridPatchPath = 'apps/ao3-skin-studio/patches/0.1.8/gif-and-correct-required-grid.html'
           if (-not (Test-Path $gifGridPatchPath)) { throw 'AO3 Skin Studio 0.1.8 GIF/grid patch was not found.' }
           $gifGridPatch = Get-Content $gifGridPatchPath -Raw
           $studioText = Get-Content $studioHtml -Raw
           if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.8.' }
           $studioText = $studioText.Replace('</body>', $gifGridPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
+          # 0.1.9: include the navigation band in the unified background and match AO3 required-tag icon language.
+          $exactIconsPatchPath = 'apps/ao3-skin-studio/patches/0.1.9/exact-ao3-icons-and-unified-nav.html'
+          if (-not (Test-Path $exactIconsPatchPath)) { throw 'AO3 Skin Studio 0.1.9 exact-icons patch was not found.' }
+          $exactIconsPatch = Get-Content $exactIconsPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.9.' }
+          $studioText = $studioText.Replace('</body>', $exactIconsPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
           # 0.1.6: keep the native Windows title-bar buttons fully inside the visible work area.
@@ -182,16 +191,16 @@ jobs:
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.8</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.8.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.8.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.9</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.9.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.9.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.8" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.9" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -265,7 +274,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds explicit animated GIF support for backgrounds and bottom-border images, preserving animation in preview and supporting direct hosted .gif URLs in exported AO3 CSS. Corrects the Results required-tags display to the compact 2x2 block at the left of each work while keeping all per-state box colors, font, font size, and font colors. Keeps all prior tools.'
+            notes = 'Finishes the unified Background by removing the separate red navigation-band background so the same background runs behind header, navigation, page, and footer. Rebuilds Results required tags to match AO3 icon ordering and visual language: rating top-left, category top-right, warning bottom-left, completion bottom-right, including blank tiles, !?, !, M/M and F/F symbols, Multi quadrants, and the WIP prohibition icon. GIF support and all prior tools remain.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

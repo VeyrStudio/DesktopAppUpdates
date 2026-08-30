@@ -1,0 +1,535 @@
+<style id="ao3-exact-icons-unified-nav-styles">
+/* 0.1.9 — the navigation strip is part of the same continuous background. */
+#mock .ao3-header,
+#mock .ao3-nav,
+#mock .ao3-footer{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+}
+#mock .ao3-nav{
+  box-shadow:none !important;
+}
+
+/* AO3-like compact required-tag icon block. */
+#mock .preview-result-card{
+  position:relative;
+  padding-left:88px !important;
+  min-height:92px;
+}
+#mock .preview-result-card .preview-required-tags,
+#mock .preview-result-card .required-tags{
+  position:absolute !important;
+  top:14px !important;
+  left:14px !important;
+  display:grid !important;
+  grid-template-columns:repeat(2,31px) !important;
+  grid-template-rows:repeat(2,31px) !important;
+  gap:3px !important;
+  width:65px !important;
+  height:65px !important;
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+  float:none !important;
+}
+#mock .preview-result-card .preview-required-tags li,
+#mock .preview-result-card .required-tags li{
+  display:block !important;
+  width:31px !important;
+  height:31px !important;
+  margin:0 !important;
+  padding:0 !important;
+  list-style:none !important;
+}
+#mock .preview-result-card .preview-required-tags li > span,
+#mock .preview-result-card .required-tags li > span{
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:31px !important;
+  height:31px !important;
+  min-height:31px !important;
+  box-sizing:border-box !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border:1px solid rgba(155,155,155,.38) !important;
+  border-radius:0 !important;
+  background-image:none;
+  background-repeat:no-repeat;
+  color:#fff;
+  font-family:var(--req-font,Arial,sans-serif) !important;
+  font-size:26px !important;
+  font-weight:400 !important;
+  line-height:1 !important;
+  text-align:center !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+#mock .preview-result-card .preview-required-tags .text,
+#mock .preview-result-card .required-tags .text{
+  display:none !important;
+}
+
+/* Rating: upper-left. */
+#mock .rating-general-audience{background:var(--req-rating-general-bg,#88C900)!important;color:var(--req-rating-general-fg,#fff)!important}
+#mock .rating-teen{background:var(--req-rating-teen-bg,#F2D20A)!important;color:var(--req-rating-teen-fg,#fff)!important}
+#mock .rating-mature{background:var(--req-rating-mature-bg,#EF8017)!important;color:var(--req-rating-mature-fg,#fff)!important}
+#mock .rating-explicit{background:var(--req-rating-explicit-bg,#BC0B0B)!important;color:var(--req-rating-explicit-fg,#fff)!important}
+#mock .rating-notrated{background:var(--req-rating-notrated-bg,#EFEFEA)!important;color:var(--req-rating-notrated-fg,#fff)!important}
+#mock .rating-general-audience::after{content:"G"}
+#mock .rating-teen::after{content:"T"}
+#mock .rating-mature::after{content:"M"}
+#mock .rating-explicit::after{content:"E"}
+#mock .rating-notrated::after{content:""}
+
+/* Category: upper-right. */
+#mock .category-slash{
+  background:var(--req-category-slash-bg,#0759B8)!important;
+  color:var(--req-category-slash-fg,#fff)!important;
+}
+#mock .category-slash::after{content:"♂";font-size:29px;line-height:1}
+
+#mock .category-femslash{
+  background:var(--req-category-femslash-bg,#B00078)!important;
+  color:var(--req-category-femslash-fg,#fff)!important;
+}
+#mock .category-femslash::after{content:"♀";font-size:28px;line-height:1}
+
+#mock .category-het{
+  background:linear-gradient(90deg,#B00078 0 49%,#0759B8 51% 100%) !important;
+  color:var(--req-category-het-fg,#fff)!important;
+}
+#mock .category-het::after{content:"♀♂";font-size:17px;letter-spacing:-3px}
+
+#mock .category-gen{
+  background:var(--req-category-gen-bg,#88C900)!important;
+  color:var(--req-category-gen-fg,#fff)!important;
+}
+#mock .category-gen::after{content:"G";font-size:25px}
+
+#mock .category-multi{
+  background:
+    linear-gradient(90deg,transparent 0 50%,transparent 50%),
+    linear-gradient(90deg,#88C900 0 50%,#AA0088 50% 100%) top/100% 50% no-repeat,
+    linear-gradient(90deg,#BD0B0B 0 50%,#0759B8 50% 100%) bottom/100% 50% no-repeat !important;
+  color:transparent !important;
+}
+#mock .category-multi::after{content:""}
+
+#mock .category-other{
+  background:var(--req-category-other-bg,#777)!important;
+  color:var(--req-category-other-fg,#fff)!important;
+}
+#mock .category-other::after{content:"*";font-size:28px}
+
+#mock .category-none{
+  background:var(--req-category-none-bg,#EFEFEA)!important;
+  color:var(--req-category-none-fg,#fff)!important;
+}
+#mock .category-none::after{content:""}
+
+/* Warning: lower-left. */
+#mock .warning-no{
+  background:var(--req-warning-no-bg,#EFEFEA)!important;
+  color:var(--req-warning-no-fg,#fff)!important;
+}
+#mock .warning-no::after{content:""}
+
+#mock .warning-choosenotto{
+  background:var(--req-warning-choose-bg,#F18717)!important;
+  color:var(--req-warning-choose-fg,#fff)!important;
+}
+#mock .warning-choosenotto::after{
+  content:"!?";
+  font-size:21px;
+  letter-spacing:-3px;
+  transform:translateX(-1px);
+}
+
+#mock .warning-yes{
+  background:var(--req-warning-yes-bg,#BD0B0B)!important;
+  color:var(--req-warning-yes-fg,#fff)!important;
+}
+#mock .warning-yes::after{content:"!";font-size:27px}
+
+/* Completion: lower-right. */
+#mock .complete-no{
+  background:var(--req-complete-no-bg,#BD0B0B)!important;
+  color:var(--req-complete-no-fg,#fff)!important;
+}
+#mock .complete-no::before{
+  content:"";
+  position:absolute;
+  width:20px;
+  height:20px;
+  border:3px solid currentColor;
+  border-radius:50%;
+  box-sizing:border-box;
+}
+#mock .complete-no::after{
+  content:"";
+  position:absolute;
+  width:24px;
+  height:3px;
+  border-radius:3px;
+  background:currentColor;
+  transform:rotate(45deg);
+}
+#mock .complete-yes{
+  background:var(--req-complete-yes-bg,#88C900)!important;
+  color:var(--req-complete-yes-fg,#fff)!important;
+}
+#mock .complete-yes::after{content:"✓";font-size:25px;font-weight:700}
+#mock .external-work{
+  background:var(--req-external-bg,#0759B8)!important;
+  color:var(--req-external-fg,#fff)!important;
+}
+#mock .external-work::after{content:"↗";font-size:23px}
+
+/* Old 0.1.7/0.1.8 responsive rules must never unfold the 2×2 AO3 block. */
+.browser.responsive-preview-tablet #mock .preview-result-card .preview-required-tags,
+.browser.responsive-preview-tablet #mock .preview-result-card .required-tags,
+.browser.responsive-preview-mobile #mock .preview-result-card .preview-required-tags,
+.browser.responsive-preview-mobile #mock .preview-result-card .required-tags{
+  grid-template-columns:repeat(2,31px) !important;
+  grid-template-rows:repeat(2,31px) !important;
+  width:65px !important;
+  height:65px !important;
+}
+</style>
+
+<script id="ao3-exact-icons-unified-nav-script">
+(function(){
+  const q=id=>document.getElementById(id);
+
+  /* ----- Finish the unified Background: include the red nav band too. ----- */
+  const backgroundSection=Array.from(document.querySelectorAll('details.section')).find(s =>
+    (s.querySelector('summary')?.textContent || '').trim()==='Background'
+  );
+
+  if(backgroundSection){
+    const mainLabel=Array.from(backgroundSection.querySelectorAll('.control label')).find(l =>
+      (l.textContent || '').includes('Background —')
+    );
+    if(mainLabel) mainLabel.textContent='Background — entire AO3 page';
+
+    const note=backgroundSection.querySelector('.unified-background-note');
+    if(note){
+      note.textContent='This is one continuous site background. It runs behind the page, AO3 header, navigation strip, and footer.';
+    }
+  }
+
+  const navControl=q('navColor')?.closest('.control');
+  if(navControl) navControl.style.display='none';
+
+  const navSection=Array.from(document.querySelectorAll('details.section')).find(s =>
+    (s.querySelector('summary')?.textContent || '').trim()==='Navigation & Accent'
+  );
+  if(navSection){
+    navSection.querySelector('summary').textContent='Navigation Text & Accent';
+  }
+
+  function syncNavIntoBackground(saveNow){
+    const bg=normHex(q('bgColor')?.value) || '#0B0A0B';
+    if(q('navColor')) q('navColor').value=bg.toLowerCase();
+    if(q('navText')) q('navText').value=bg;
+    if(q('navHex')) q('navHex').textContent=bg;
+
+    const previewNav=document.querySelector('#mock .ao3-nav');
+    if(previewNav){
+      previewNav.style.setProperty('background','transparent','important');
+      previewNav.style.setProperty('background-color','transparent','important');
+      previewNav.style.setProperty('background-image','none','important');
+    }
+
+    if(saveNow){
+      try{ save(); }catch(e){}
+    }
+  }
+
+  q('bgColor')?.addEventListener('input',()=>setTimeout(()=>syncNavIntoBackground(true),0));
+  q('bgText')?.addEventListener('input',()=>setTimeout(()=>syncNavIntoBackground(true),0));
+  document.querySelectorAll('.preset').forEach(btn=>{
+    btn.addEventListener('click',()=>setTimeout(()=>syncNavIntoBackground(true),0));
+  });
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>syncNavIntoBackground(true),0));
+  syncNavIntoBackground(false);
+
+  /* ----- Migrate the untouched old dark defaults to AO3-like icon colors. ----- */
+  const oldToAo3={
+    req_ratingGeneral_bg:['#31533D','#88C900'],
+    req_ratingTeen_bg:['#65572B','#F2D20A'],
+    req_ratingMature_bg:['#6A3A32','#EF8017'],
+    req_ratingExplicit_bg:['#7A1F2C','#BD0B0B'],
+    req_ratingNotrated_bg:['#414146','#EFEFEA'],
+    req_warningNo_bg:['#31533D','#EFEFEA'],
+    req_warningChoose_bg:['#66502C','#F18717'],
+    req_warningYes_bg:['#7A1F2C','#BD0B0B'],
+    req_categorySlash_bg:['#493B68','#0759B8'],
+    req_categoryFemslash_bg:['#70445F','#B00078'],
+    req_categoryGen_bg:['#3D5962','#88C900'],
+    req_categoryOther_bg:['#4B4B4F','#777777'],
+    req_categoryNone_bg:['#37373B','#EFEFEA'],
+    req_completeYes_bg:['#31533D','#88C900'],
+    req_completeNo_bg:['#71542A','#BD0B0B'],
+    req_external_bg:['#344F63','#0759B8']
+  };
+
+  let migrated=false;
+  Object.entries(oldToAo3).forEach(([id,pair])=>{
+    const el=q(id);
+    if(!el) return;
+    const current=(normHex(el.value) || '').toUpperCase();
+    if(current===pair[0]){
+      el.value=pair[1].toLowerCase();
+      const text=q(id+'_text');
+      if(text) text.value=pair[1];
+      migrated=true;
+    }
+  });
+
+  /* Default symbol color is white like AO3's icon set, but still editable. */
+  [
+    'ratingGeneral','ratingTeen','ratingMature','ratingExplicit','ratingNotrated',
+    'warningNo','warningChoose','warningYes',
+    'categorySlash','categoryFemslash','categoryHet','categoryGen','categoryMulti',
+    'categoryOther','categoryNone','completeYes','completeNo','external'
+  ].forEach(key=>{
+    const el=q('req_'+key+'_fg');
+    const text=q('req_'+key+'_fg_text');
+    if(!el) return;
+    const current=(normHex(el.value) || '').toUpperCase();
+    const oldLight=['#F4EFEA','#FFF1C6','#FFE4DD','#FFE4E8','#F2F2F2','#FFF0C2',
+      '#EEE7FF','#FFE7F4','#FFE9DB','#E6F8FF','#F2E7FF','#F1F1F1','#E7E7E7',
+      '#FFF0C8','#E4F4FF'];
+    if(oldLight.includes(current)){
+      el.value='#ffffff';
+      if(text) text.value='#FFFFFF';
+      migrated=true;
+    }
+  });
+
+  if(migrated){
+    try{
+      if(typeof applyRequiredPreview==='function') applyRequiredPreview();
+      save();
+    }catch(e){}
+  }
+
+  /* Add a quick restore button so the exact AO3-like icon palette is always one click away. */
+  const reqSection=q('requiredTagsSection');
+  if(reqSection && !q('requiredAo3DefaultsBtn')){
+    const help=reqSection.querySelector('.help');
+    if(help){
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.id='requiredAo3DefaultsBtn';
+      btn.textContent='Restore AO3-style icon defaults';
+      btn.style.marginTop='9px';
+      help.insertAdjacentElement('afterend',btn);
+
+      btn.addEventListener('click',()=>{
+        const defaults={
+          ratingGeneral:['#88C900','#FFFFFF'],
+          ratingTeen:['#F2D20A','#FFFFFF'],
+          ratingMature:['#EF8017','#FFFFFF'],
+          ratingExplicit:['#BD0B0B','#FFFFFF'],
+          ratingNotrated:['#EFEFEA','#FFFFFF'],
+          warningNo:['#EFEFEA','#FFFFFF'],
+          warningChoose:['#F18717','#FFFFFF'],
+          warningYes:['#BD0B0B','#FFFFFF'],
+          categorySlash:['#0759B8','#FFFFFF'],
+          categoryFemslash:['#B00078','#FFFFFF'],
+          categoryHet:['#7B4B7F','#FFFFFF'],
+          categoryGen:['#88C900','#FFFFFF'],
+          categoryMulti:['#777777','#FFFFFF'],
+          categoryOther:['#777777','#FFFFFF'],
+          categoryNone:['#EFEFEA','#FFFFFF'],
+          completeYes:['#88C900','#FFFFFF'],
+          completeNo:['#BD0B0B','#FFFFFF'],
+          external:['#0759B8','#FFFFFF']
+        };
+        Object.entries(defaults).forEach(([key,pair])=>{
+          const bg=q('req_'+key+'_bg');
+          const fg=q('req_'+key+'_fg');
+          const bgText=q('req_'+key+'_bg_text');
+          const fgText=q('req_'+key+'_fg_text');
+          if(bg) bg.value=pair[0].toLowerCase();
+          if(fg) fg.value=pair[1].toLowerCase();
+          if(bgText) bgText.value=pair[0];
+          if(fgText) fgText.value=pair[1];
+        });
+        try{
+          applyRequiredPreview();
+          cssOutput.value=buildCss();
+          save();
+          showToast('AO3-style required-tag icons restored');
+        }catch(e){}
+      });
+    }
+  }
+
+  /* The generated AO3 skin also gets the unified nav and AO3-style symbol system. */
+  const oldBuildCss=buildCss;
+  buildCss=function(){
+    const css=oldBuildCss();
+    const font=(q('requiredTagFont')?.value || q('fontFamily')?.value || 'Arial, sans-serif').replace(/\n/g,' ');
+    const size=q('requiredTagSize')?.value || '11';
+
+    return css + `
+
+/* CONTINUOUS BACKGROUND — HEADER + NAVIGATION + PAGE + FOOTER */
+#header,
+#header .primary,
+#footer {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+#header .primary {
+  box-shadow: none !important;
+}
+
+/* AO3-STYLE REQUIRED TAG ICONS */
+.blurb {
+  position: relative;
+  padding-left: 5.7em !important;
+  min-height: 5.5em;
+}
+
+.blurb ul.required-tags {
+  position: absolute !important;
+  top: 1em !important;
+  left: 1em !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, 2.2em) !important;
+  grid-template-rows: repeat(2, 2.2em) !important;
+  gap: .22em !important;
+  width: 4.62em !important;
+  height: 4.62em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  float: none !important;
+}
+
+.blurb ul.required-tags li {
+  display: block !important;
+  width: 2.2em !important;
+  height: 2.2em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.blurb ul.required-tags li > span,
+.blurb ul.required-tags li > a,
+.blurb ul.required-tags li > strong {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.2em !important;
+  height: 2.2em !important;
+  min-height: 2.2em !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(155,155,155,.38) !important;
+  border-radius: 0 !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  color: #fff;
+  font-family: ${font} !important;
+  font-size: ${size}px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+
+.blurb ul.required-tags .text {
+  display: none !important;
+}
+
+/* Rating — upper left */
+.blurb .rating-general-audience::after { content: "G"; font-size: 2.1em; }
+.blurb .rating-teen::after { content: "T"; font-size: 2.1em; }
+.blurb .rating-mature::after { content: "M"; font-size: 2.1em; }
+.blurb .rating-explicit::after { content: "E"; font-size: 2.1em; }
+.blurb .rating-notrated::after { content: ""; }
+
+/* Category — upper right */
+.blurb .category-slash::after { content: "♂"; font-size: 2.35em; }
+.blurb .category-femslash::after { content: "♀"; font-size: 2.3em; }
+.blurb .category-het::after { content: "♀♂"; font-size: 1.4em; letter-spacing: -.18em; }
+.blurb .category-gen::after { content: "G"; font-size: 2.05em; }
+.blurb .category-multi {
+  background:
+    linear-gradient(90deg,#88C900 0 50%,#AA0088 50% 100%) top/100% 50% no-repeat,
+    linear-gradient(90deg,#BD0B0B 0 50%,#0759B8 50% 100%) bottom/100% 50% no-repeat !important;
+  color: transparent !important;
+}
+.blurb .category-multi::after { content: ""; }
+.blurb .category-other::after { content: "*"; font-size: 2.2em; }
+.blurb .category-none::after { content: ""; }
+
+/* Warning — lower left */
+.blurb .warning-no::after { content: ""; }
+.blurb .warning-choosenotto::after {
+  content: "!?";
+  font-size: 1.7em;
+  letter-spacing: -.16em;
+}
+.blurb .warning-yes::after { content: "!"; font-size: 2.2em; }
+
+/* Completion — lower right */
+.blurb .complete-no::before {
+  content: "";
+  position: absolute;
+  width: 1.5em;
+  height: 1.5em;
+  border: .22em solid currentColor;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.blurb .complete-no::after {
+  content: "";
+  position: absolute;
+  width: 1.8em;
+  height: .22em;
+  border-radius: .2em;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+.blurb .complete-yes::after { content: "✓"; font-size: 2em; font-weight: 700; }
+.blurb .external-work::after { content: "↗"; font-size: 1.9em; }
+
+/* Never unfold the four AO3 icons on smaller screens. */
+@media only screen and (max-width: 64em) {
+  .blurb ul.required-tags {
+    grid-template-columns: repeat(2, 2.2em) !important;
+    grid-template-rows: repeat(2, 2.2em) !important;
+    width: 4.62em !important;
+    height: 4.62em !important;
+  }
+}
+@media only screen and (max-width: 42em) {
+  .blurb {
+    padding-left: 5.4em !important;
+  }
+}
+`;
+  };
+
+  document.addEventListener('input',()=>setTimeout(()=>syncNavIntoBackground(false),0),true);
+  document.addEventListener('change',()=>setTimeout(()=>syncNavIntoBackground(false),0),true);
+
+  try{
+    cssOutput.value=buildCss();
+    save();
+  }catch(e){}
+})();
+</script>
