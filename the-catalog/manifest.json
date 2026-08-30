@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.10",
-  "payloadSha256": "390124d4275a47e8e820afaaebe46f5f6c5aeb78fdfee5c2813f278f03e1941f",
+  "version": "1.0.11",
+  "payloadSha256": "165ed2464e904e013d40041f1f5fca5edc0e56b29840e652c79748e2de928914",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-001.txt",
-      "sha256": "ec72078a24fe11fc6c36a6c0a69a7223a55a1294af34a4887926927b6caaf2f7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-001.txt",
+      "sha256": "43d43532189598e9a3430d0b3ebb8a2249a4ab89a452fa15a2662489aaa40fe6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-002.txt",
-      "sha256": "dcd164a178b6d3949d959bcffd4f6e7e1b5a46d9e48d34aa022d2017f466366c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-002.txt",
+      "sha256": "db3d4dd74d3a7222c207486eaab955685845b8a0e20c8b6513d7eaacb740fce5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-003.txt",
-      "sha256": "eb6fc7537167c28af3a887979e7678a2875cb41d37ca2091e6c9e42276b6c0c3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-003.txt",
+      "sha256": "172d9a7f82d09bd2857ffe750f6974ca58c85434d1b28799fd619c95d991974b"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-004.txt",
-      "sha256": "b8cfd198c74e0054a3455c47ad48627eb39221136146f9ec2510de28f6aa2fc5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-004.txt",
+      "sha256": "189a989414622b1d0265f2580f5827598b33203bb14db0793025e844eea841f5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-005.txt",
-      "sha256": "9deb87c179e438d8828a0ffd7f979e3e76e77770202ff2d10f9376a24aacf886"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.11-part-005.txt",
+      "sha256": "02d2015dcfa73be98e40db5ca49c2eb58d5b305673359ddfcabdcf63a014bcbf"
     }
   ],
-  "notes": "Renames the secondary character-name field from Original name to Other name so it can hold former names, true names, court names, aliases, or other alternate names without breaking existing entries."
+  "notes": "Adds a collapsible Story Dossier/right column. HIDE DOSSIER collapses it completely so the story grid reclaims the space; SHOW DOSSIER restores it."
 }
