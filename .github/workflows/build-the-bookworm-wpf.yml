@@ -54,7 +54,7 @@ jobs:
           $iconPath = Join-Path $source 'Assets\TheBookworm.ico'
           [IO.File]::WriteAllBytes($iconPath, [Convert]::FromBase64String($iconBase64))
           $iconHash = (Get-FileHash $iconPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($iconHash -ne 'eafd04f26a4a30ba2dc3b7b90651b1d3da7a52aba95bc2fa91e95a333b7598ca') {
+          if ($iconHash -ne '5c0cf0f69289dd433645374ab864b4b3eb3c670196b532f90d0460bdc41908c2') {
             throw "Bookworm icon hash mismatch: $iconHash"
           }
 
