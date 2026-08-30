@@ -95,11 +95,31 @@ jobs:
           Get-Item 'publish/TheCatalog/TheCatalog.exe' | Format-List Name,Length,LastWriteTime
           Get-FileHash 'publish/TheCatalog/TheCatalog.exe' -Algorithm SHA256 | Format-List
 
+      - name: Launch smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
+          $log = Join-Path $env:LOCALAPPDATA 'TheCatalog\crash.log'
+          if (Test-Path $log) { Remove-Item $log -Force }
+          $process = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 10
+          $process.Refresh()
+          if ($process.HasExited) {
+            if (Test-Path $log) {
+              Write-Host '--- The Catalog crash log ---'
+              Get-Content $log -Raw | Write-Host
+            }
+            throw "TheCatalog.exe exited during the startup smoke test with code $($process.ExitCode)."
+          }
+          Stop-Process -Id $process.Id -Force
+          Write-Host 'TheCatalog.exe remained running through the startup smoke test.'
+
       - name: Publish live updater release to main
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $version = '1.0.1'
+          $version = '1.0.2'
           $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
           $exeBytes = [IO.File]::ReadAllBytes($exe)
           $base64 = [Convert]::ToBase64String($exeBytes)
@@ -141,7 +161,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadSha
             payloadParts = $parts
-            notes = "Adds The Catalog's worn burgundy rose icon to the Windows executable and app windows while keeping local story data, backups, automatic updates, and the manual Update button unchanged."
+            notes = "Startup repair: keeps the worn burgundy rose as the Windows executable icon, removes WPF window-icon loading, and adds crash logging instead of silent startup exits."
           }
           [IO.File]::WriteAllText(
             (Join-Path $catalogStage 'manifest.json'),
@@ -158,7 +178,7 @@ jobs:
             payloadPartCount = $parts.Count
           }
           [IO.File]::WriteAllText(
-            (Join-Path $catalogStage '1.0.1-validation.json'),
+            (Join-Path $catalogStage '1.0.2-validation.json'),
             ($validation | ConvertTo-Json -Depth 5),
             $utf8
           )
@@ -177,7 +197,7 @@ jobs:
           git add the-catalog
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "Release The Catalog WPF 1.0.1"
+            git commit -m "Release The Catalog WPF 1.0.2"
             git push origin HEAD:main
           }
           Pop-Location
