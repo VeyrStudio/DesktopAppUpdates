@@ -1,0 +1,170 @@
+<style id="ao3-split-preview-styles">
+.preview-split-shell{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+  align-items:stretch;
+  min-height:560px;
+}
+.preview-split-pane{
+  min-width:0;
+  height:560px;
+  overflow:auto;
+  border:1px solid rgba(120,100,122,.45);
+  border-radius:10px;
+  background:rgba(0,0,0,.08);
+  scrollbar-gutter:stable;
+}
+.preview-split-label{
+  position:sticky;
+  top:0;
+  z-index:20;
+  padding:8px 10px;
+  border-bottom:1px solid rgba(120,100,122,.4);
+  background:rgba(16,14,18,.94);
+  color:#d8cbd6;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  backdrop-filter:blur(8px);
+}
+.preview-split-content{
+  padding:12px;
+}
+.preview-split-content .preview-fic-shell{
+  width:100%;
+  max-width:none;
+}
+.browser.responsive-preview-tablet .preview-split-shell{
+  gap:8px;
+}
+.browser.responsive-preview-tablet .preview-split-pane{
+  height:520px;
+}
+.browser.responsive-preview-mobile .preview-split-shell{
+  grid-template-columns:1fr;
+}
+.browser.responsive-preview-mobile .preview-split-pane{
+  height:430px;
+}
+</style>
+
+<script id="ao3-split-preview-script">
+(function(){
+  const toolbar = document.querySelector('.preview-page-toolbar');
+  const main = document.querySelector('.ao3-main');
+  const browser = document.querySelector('.browser');
+  if(!toolbar || !main || !browser) return;
+
+  const resultsBtn = toolbar.querySelector('[data-preview-page="results"]');
+  const ficBtn = toolbar.querySelector('[data-preview-page="fic"]');
+  if(!resultsBtn || !ficBtn) return;
+
+  const splitBtn = document.createElement('button');
+  splitBtn.className = 'preview-page-btn';
+  splitBtn.dataset.previewPage = 'split';
+  splitBtn.textContent = 'Split Screen';
+
+  const note = toolbar.querySelector('.preview-page-note');
+  if(note) toolbar.insertBefore(splitBtn, note);
+  else toolbar.appendChild(splitBtn);
+
+  let splitActive = false;
+  let cachedResults = '';
+  let cachedFic = '';
+
+  function captureBoth(){
+    resultsBtn.click();
+    cachedResults = main.innerHTML;
+
+    ficBtn.click();
+    cachedFic = main.innerHTML;
+  }
+
+  function setSplitButtonState(){
+    document.querySelectorAll('.preview-page-btn').forEach(btn => {
+      btn.classList.toggle('active', btn === splitBtn && splitActive);
+    });
+    if(splitActive){
+      resultsBtn.classList.remove('active');
+      ficBtn.classList.remove('active');
+    }
+  }
+
+  function renderSplit(){
+    captureBoth();
+
+    main.innerHTML = `
+      <div class="preview-split-shell">
+        <section class="preview-split-pane" data-split-pane="results">
+          <div class="preview-split-label">Results / Browse</div>
+          <div class="preview-split-content">${cachedResults}</div>
+        </section>
+
+        <section class="preview-split-pane" data-split-pane="fic">
+          <div class="preview-split-label">Inside a Fic</div>
+          <div class="preview-split-content">${cachedFic}</div>
+        </section>
+      </div>
+    `;
+
+    splitActive = true;
+    setSplitButtonState();
+    browser.scrollTop = 0;
+    localStorage.setItem('ao3SkinStudioSplitPreview','1');
+
+    const pageNote = toolbar.querySelector('.preview-page-note');
+    if(pageNote) pageNote.textContent = 'Each side scrolls independently';
+
+    try{
+      if(typeof applyGradientPreview === 'function') applyGradientPreview();
+    }catch(e){}
+    try{
+      if(typeof update === 'function') update();
+    }catch(e){}
+  }
+
+  splitBtn.addEventListener('click', renderSplit);
+
+  [resultsBtn, ficBtn].forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(!splitActive) return;
+      splitActive = false;
+      localStorage.setItem('ao3SkinStudioSplitPreview','0');
+      const pageNote = toolbar.querySelector('.preview-page-note');
+      if(pageNote) pageNote.textContent = 'Scroll inside the preview';
+    });
+  });
+
+  document.addEventListener('input', e => {
+    if(!splitActive) return;
+    if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
+    setTimeout(() => {
+      try{
+        if(typeof applyGradientPreview === 'function') applyGradientPreview();
+      }catch(err){}
+      try{
+        if(typeof update === 'function') update();
+      }catch(err){}
+    },0);
+  },true);
+
+  document.addEventListener('change', e => {
+    if(!splitActive) return;
+    if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
+    setTimeout(() => {
+      try{
+        if(typeof applyGradientPreview === 'function') applyGradientPreview();
+      }catch(err){}
+      try{
+        if(typeof update === 'function') update();
+      }catch(err){}
+    },0);
+  },true);
+
+  if(localStorage.getItem('ao3SkinStudioSplitPreview') === '1'){
+    renderSplit();
+  }
+})();
+</script>

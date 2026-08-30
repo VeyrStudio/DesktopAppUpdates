@@ -111,17 +111,73 @@ jobs:
           $studioText = $studioText.Replace('</body>', $previewPagesPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.6: add side-by-side Results/Fic split preview.
+          $splitPreviewPatchPath = 'apps/ao3-skin-studio/patches/0.1.6/split-preview-injection.html'
+          if (-not (Test-Path $splitPreviewPatchPath)) { throw 'AO3 Skin Studio 0.1.6 split preview patch was not found.' }
+          $splitPreviewPatch = Get-Content $splitPreviewPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.6.' }
+          $studioText = $studioText.Replace('</body>', $splitPreviewPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
+          # 0.1.6: keep the native Windows title-bar buttons fully inside the visible work area.
+          $mainWindowXaml = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml'
+          $mainWindowXamlText = Get-Content $mainWindowXaml -Raw
+          if (-not $mainWindowXamlText.Contains('WindowStartupLocation="CenterScreen"')) { throw 'MainWindow startup-location anchor was not found.' }
+          $mainWindowXamlText = $mainWindowXamlText.Replace('WindowStartupLocation="CenterScreen"', 'WindowStartupLocation="Manual"')
+          $mainWindowXamlText = $mainWindowXamlText.Replace('Height="940"', 'Height="900"')
+          [IO.File]::WriteAllText($mainWindowXaml, $mainWindowXamlText, [Text.UTF8Encoding]::new($false))
+
+          $mainWindowCode = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml.cs'
+          $mainWindowCodeText = Get-Content $mainWindowCode -Raw
+          $constructorAnchor = @'
+        InitializeComponent();
+        Loaded += MainWindow_Loaded;
+'@
+          $constructorReplacement = @'
+        InitializeComponent();
+        FitWindowToVisibleWorkArea();
+        Loaded += MainWindow_Loaded;
+'@
+          if (-not $mainWindowCodeText.Contains($constructorAnchor.TrimEnd())) { throw 'MainWindow constructor anchor was not found.' }
+          $mainWindowCodeText = $mainWindowCodeText.Replace($constructorAnchor.TrimEnd(), $constructorReplacement.TrimEnd())
+
+          $loadedAnchor = '    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)'
+          $fitMethod = @'
+    private void FitWindowToVisibleWorkArea()
+    {
+        var workArea = SystemParameters.WorkArea;
+
+        var targetWidth = Math.Min(1500d, Math.Max(320d, workArea.Width - 24d));
+        var targetHeight = Math.Min(900d, Math.Max(320d, workArea.Height - 24d));
+
+        MinWidth = Math.Min(MinWidth, targetWidth);
+        MinHeight = Math.Min(MinHeight, targetHeight);
+        MaxWidth = workArea.Width;
+        MaxHeight = workArea.Height;
+
+        Width = targetWidth;
+        Height = targetHeight;
+        Left = workArea.Left + Math.Max(0d, (workArea.Width - Width) / 2d);
+        Top = workArea.Top + Math.Max(0d, (workArea.Height - Height) / 2d);
+    }
+
+'@
+          if (-not $mainWindowCodeText.Contains($loadedAnchor)) { throw 'MainWindow loaded-method anchor was not found.' }
+          $mainWindowCodeText = $mainWindowCodeText.Replace($loadedAnchor, $fitMethod + $loadedAnchor)
+          [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
+
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.5</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.5.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.5.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.6</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.6.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.6.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.5" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.6" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -195,7 +251,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds two scrollable AO3 preview page types: Results / Browse and Inside a Fic. Both work with Desktop, Tablet, and Mobile preview sizes and reflect the current skin styling. Keeps all prior background, font, gradient, metallic, translucency, image, and responsive tools.'
+            notes = 'Adds Split Screen preview with Results / Browse and Inside a Fic side-by-side with independent scrolling. Also fixes the desktop window sizing so the native minimize, maximize, and close buttons stay visible instead of being clipped off-screen. Keeps all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
