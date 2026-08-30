@@ -1,0 +1,630 @@
+<style id="ao3-gradient-studio-pro-styles">
+.gradient-advanced-card{
+  margin-top:10px;
+  padding:11px;
+  border:1px solid #342d36;
+  border-radius:10px;
+  background:#0e0d10;
+}
+.gradient-advanced-card[hidden]{display:none!important}
+.gradient-advanced-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:9px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:#b9aab7;
+}
+.gradient-two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.gradient-three-col{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+}
+.gradient-mini-control label{
+  display:block;
+  margin-bottom:5px;
+  color:#8e808c;
+  font-size:8px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.gradient-mini-control select,
+.gradient-mini-control input[type="number"]{
+  width:100%;
+}
+.gradient-range-number{
+  display:grid;
+  grid-template-columns:1fr 72px;
+  gap:7px;
+  align-items:center;
+}
+.gradient-range-number input[type="range"]{min-width:0;width:100%}
+.gradient-range-number input[type="number"]{width:72px;min-width:0}
+.gradient-position-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+  margin:8px 0 10px;
+}
+.gradient-position-grid button{
+  min-height:31px;
+  padding:5px;
+  border:1px solid #3a323d;
+  border-radius:7px;
+  background:#161318;
+  color:#9f909e;
+  font-size:13px;
+  cursor:pointer;
+}
+.gradient-position-grid button:hover{background:#211b24;color:#fff}
+.gradient-position-grid button.active{
+  border-color:#9d00ff;
+  background:#4d086b;
+  color:#fff;
+}
+.gradient-transform-row{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:9px;
+}
+.gradient-transform-row button,
+.gradient-output-actions button{
+  flex:1 1 auto;
+  border:1px solid #403543;
+  border-radius:7px;
+  background:#171419;
+  color:#d9ccd7;
+  padding:7px 8px;
+  font-size:8px;
+  font-weight:800;
+  cursor:pointer;
+}
+.gradient-transform-row button:hover,
+.gradient-output-actions button:hover{background:#241d27;color:#fff}
+.gradient-repeat-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #29232b;
+}
+.gradient-repeat-cycle{margin-top:9px}
+.gradient-live-css{
+  width:100%;
+  min-height:66px;
+  resize:vertical;
+  margin-top:7px;
+  font-family:Consolas,"Courier New",monospace;
+  font-size:8px;
+  line-height:1.4;
+  color:#e6dce5;
+  background:#09080a;
+  border:1px solid #302934;
+  border-radius:7px;
+  padding:8px;
+  box-sizing:border-box;
+}
+.gradient-output-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:7px;
+}
+.gradient-stop{
+  grid-template-columns:34px minmax(80px,1fr) minmax(120px,1.5fr) 28px !important;
+}
+.gradient-stop-extra{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:8px;
+  align-items:end;
+  padding-top:7px;
+  border-top:1px solid #282229;
+}
+.gradient-stop-extra .gradient-mini-control{min-width:0}
+.gradient-stop-extra .gradient-range-number{
+  grid-template-columns:1fr 60px;
+}
+.gradient-stop-extra button{
+  height:31px;
+  border:1px solid #403543;
+  border-radius:7px;
+  background:#171419;
+  color:#d9ccd7;
+  font-size:8px;
+  font-weight:800;
+  cursor:pointer;
+}
+.gradient-section-intro{
+  margin:0 0 9px;
+  padding:9px 10px;
+  border:1px solid #352d38;
+  border-radius:8px;
+  background:#111014;
+  color:#a99aa7;
+  font-size:9px;
+  line-height:1.45;
+}
+@media(max-width:560px){
+  .gradient-two-col,.gradient-three-col{grid-template-columns:1fr}
+  .gradient-stop-extra{grid-template-columns:1fr}
+  .gradient-output-actions{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-gradient-studio-pro-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const gradSection=Array.from(document.querySelectorAll('details.section')).find(s =>
+    (s.querySelector('summary')?.textContent || '').trim()==='Gradients'
+  );
+  if(!gradSection || !q('gradientType') || !q('gradientAngle')) return;
+
+  gradSection.querySelector('summary').textContent='Gradient Studio';
+  const sectionBody=gradSection.querySelector('.section-body');
+  if(sectionBody && !sectionBody.querySelector('.gradient-section-intro')){
+    sectionBody.insertAdjacentHTML('afterbegin',
+      '<div class="gradient-section-intro"><strong>Advanced gradient builder.</strong> Use linear, radial, or conic gradients; exact angles; off-center focal points; circle/ellipse radial shapes; repeating patterns; per-color opacity; and precise stop positions.</div>');
+  }
+
+  const targetSelect=q('gradientTarget');
+  const navOption=targetSelect?.querySelector('option[value="nav"]');
+  if(navOption) navOption.remove();
+  if(typeof currentGradientTarget!=='undefined' && currentGradientTarget==='nav'){
+    currentGradientTarget='page';
+  }
+
+  const typeSelect=q('gradientType');
+  typeSelect.innerHTML=`
+    <option value="linear">Linear — directional</option>
+    <option value="radial">Radial — glow / burst</option>
+    <option value="conic">Conic — wheel / sweep</option>
+  `;
+
+  const angleSelect=q('gradientAngle');
+  angleSelect.innerHTML=`
+    <option value="0deg">↑ Bottom → Top (0°)</option>
+    <option value="22.5deg">↗ Up-right, slight (22.5°)</option>
+    <option value="45deg">↗ Bottom-left → Top-right (45°)</option>
+    <option value="67.5deg">↗ Right, slight up (67.5°)</option>
+    <option value="90deg">→ Left → Right (90°)</option>
+    <option value="112.5deg">↘ Right, slight down (112.5°)</option>
+    <option value="135deg">↘ Top-left → Bottom-right (135°)</option>
+    <option value="157.5deg">↘ Down-right, slight (157.5°)</option>
+    <option value="180deg">↓ Top → Bottom (180°)</option>
+    <option value="202.5deg">↙ Down-left, slight (202.5°)</option>
+    <option value="225deg">↙ Top-right → Bottom-left (225°)</option>
+    <option value="247.5deg">↙ Left, slight down (247.5°)</option>
+    <option value="270deg">← Right → Left (270°)</option>
+    <option value="292.5deg">↖ Left, slight up (292.5°)</option>
+    <option value="315deg">↖ Bottom-right → Top-left (315°)</option>
+    <option value="337.5deg">↖ Up-left, slight (337.5°)</option>
+  `;
+  const angleLabel=q('gradientAngleWrap')?.querySelector('.control-head label');
+  if(angleLabel) angleLabel.textContent='Direction preset';
+
+  q('gradientAngleWrap').insertAdjacentHTML('beforeend',`
+    <div class="gradient-mini-control" style="margin-top:9px">
+      <label>Exact angle</label>
+      <div class="gradient-range-number">
+        <input type="range" id="gradientExactAngle" min="0" max="359" step="1" value="135">
+        <input type="number" id="gradientExactAngleNum" min="0" max="359" step="1" value="135">
+      </div>
+    </div>
+    <div class="gradient-transform-row">
+      <button type="button" id="gradientRotateMinus15">−15°</button>
+      <button type="button" id="gradientRotatePlus15">+15°</button>
+      <button type="button" id="gradientRotate90">+90°</button>
+      <button type="button" id="gradientFlipDirection">Flip 180°</button>
+    </div>
+  `);
+
+  q('gradientAngleWrap').insertAdjacentHTML('afterend',`
+    <div class="gradient-advanced-card" id="gradientRadialControls" hidden>
+      <div class="gradient-advanced-title"><span>Radial geometry</span><span id="gradientRadialCenterLabel">CENTER 50 / 50</span></div>
+      <div class="gradient-two-col">
+        <div class="gradient-mini-control">
+          <label>Shape</label>
+          <select id="gradientRadialShape">
+            <option value="circle">Circle</option>
+            <option value="ellipse">Ellipse</option>
+          </select>
+        </div>
+        <div class="gradient-mini-control">
+          <label>Size / reach</label>
+          <select id="gradientRadialSize">
+            <option value="closest-side">Closest side</option>
+            <option value="closest-corner">Closest corner</option>
+            <option value="farthest-side">Farthest side</option>
+            <option value="farthest-corner">Farthest corner</option>
+          </select>
+        </div>
+      </div>
+      <div class="gradient-mini-control" style="margin-top:9px"><label>Focal point preset</label></div>
+      <div class="gradient-position-grid" id="gradientRadialPositionGrid">
+        <button type="button" data-x="0" data-y="0">↖</button><button type="button" data-x="50" data-y="0">↑</button><button type="button" data-x="100" data-y="0">↗</button>
+        <button type="button" data-x="0" data-y="50">←</button><button type="button" data-x="50" data-y="50">●</button><button type="button" data-x="100" data-y="50">→</button>
+        <button type="button" data-x="0" data-y="100">↙</button><button type="button" data-x="50" data-y="100">↓</button><button type="button" data-x="100" data-y="100">↘</button>
+      </div>
+      <div class="gradient-two-col">
+        <div class="gradient-mini-control">
+          <label>Center X</label>
+          <div class="gradient-range-number"><input type="range" id="gradientCenterX" min="0" max="100" value="50"><input type="number" id="gradientCenterXNum" min="0" max="100" value="50"></div>
+        </div>
+        <div class="gradient-mini-control">
+          <label>Center Y</label>
+          <div class="gradient-range-number"><input type="range" id="gradientCenterY" min="0" max="100" value="50"><input type="number" id="gradientCenterYNum" min="0" max="100" value="50"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gradient-advanced-card" id="gradientConicControls" hidden>
+      <div class="gradient-advanced-title"><span>Conic geometry</span><span id="gradientConicCenterLabel">CENTER 50 / 50</span></div>
+      <div class="gradient-mini-control">
+        <label>Starting rotation</label>
+        <div class="gradient-range-number"><input type="range" id="gradientConicStart" min="0" max="359" value="0"><input type="number" id="gradientConicStartNum" min="0" max="359" value="0"></div>
+      </div>
+      <div class="gradient-mini-control" style="margin-top:9px"><label>Center preset</label></div>
+      <div class="gradient-position-grid" id="gradientConicPositionGrid">
+        <button type="button" data-x="0" data-y="0">↖</button><button type="button" data-x="50" data-y="0">↑</button><button type="button" data-x="100" data-y="0">↗</button>
+        <button type="button" data-x="0" data-y="50">←</button><button type="button" data-x="50" data-y="50">●</button><button type="button" data-x="100" data-y="50">→</button>
+        <button type="button" data-x="0" data-y="100">↙</button><button type="button" data-x="50" data-y="100">↓</button><button type="button" data-x="100" data-y="100">↘</button>
+      </div>
+      <div class="gradient-two-col">
+        <div class="gradient-mini-control">
+          <label>Center X</label>
+          <div class="gradient-range-number"><input type="range" id="gradientConicX" min="0" max="100" value="50"><input type="number" id="gradientConicXNum" min="0" max="100" value="50"></div>
+        </div>
+        <div class="gradient-mini-control">
+          <label>Center Y</label>
+          <div class="gradient-range-number"><input type="range" id="gradientConicY" min="0" max="100" value="50"><input type="number" id="gradientConicYNum" min="0" max="100" value="50"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gradient-advanced-card" id="gradientRepeatControls">
+      <div class="gradient-repeat-row" style="margin:0;padding:0;border:0">
+        <div>
+          <div style="font-size:9px;font-weight:800;color:#d5c8d3">Repeat / tile gradient</div>
+          <div class="help" style="margin-top:3px">Creates repeating linear, radial, or conic bands.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="gradientRepeating"><span class="slider"></span></label>
+      </div>
+      <div class="gradient-repeat-cycle" id="gradientRepeatCycleWrap" hidden>
+        <div class="gradient-mini-control">
+          <label>Repeat cycle (% of full gradient)</label>
+          <div class="gradient-range-number"><input type="range" id="gradientRepeatSize" min="5" max="100" value="35"><input type="number" id="gradientRepeatSizeNum" min="5" max="100" value="35"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gradient-advanced-card" id="gradientOutputControls">
+      <div class="gradient-advanced-title"><span>Exact CSS output</span><span>LIVE</span></div>
+      <textarea class="gradient-live-css" id="gradientLiveCss" readonly></textarea>
+      <div class="gradient-output-actions">
+        <button type="button" id="gradientCopyCurrent">Copy current gradient</button>
+        <button type="button" id="gradientResetCurrent">Reset this gradient</button>
+      </div>
+    </div>
+  `);
+
+  function ensureAdvanced(cfg){
+    if(!cfg) return;
+    if(!['linear','radial','conic'].includes(cfg.type)) cfg.type='linear';
+    if(typeof cfg.radialShape!=='string') cfg.radialShape='ellipse';
+    if(typeof cfg.radialSize!=='string') cfg.radialSize='farthest-corner';
+    if(!Number.isFinite(Number(cfg.centerX))) cfg.centerX=50;
+    if(!Number.isFinite(Number(cfg.centerY))) cfg.centerY=50;
+    if(!Number.isFinite(Number(cfg.conicStart))) cfg.conicStart=0;
+    if(!Number.isFinite(Number(cfg.conicX))) cfg.conicX=50;
+    if(!Number.isFinite(Number(cfg.conicY))) cfg.conicY=50;
+    if(typeof cfg.repeating!=='boolean') cfg.repeating=false;
+    if(!Number.isFinite(Number(cfg.repeatSize))) cfg.repeatSize=35;
+    cfg.repeatSize=Math.max(5,Math.min(100,Number(cfg.repeatSize)));
+    cfg.stops=(cfg.stops || []).map(s=>({
+      ...s,
+      opacity:Number.isFinite(Number(s.opacity)) ? Math.max(0,Math.min(100,Number(s.opacity))) : 100
+    }));
+  }
+
+  function angleNumber(value){
+    const n=parseFloat(String(value||'0').replace('deg',''));
+    return Number.isFinite(n) ? ((n%360)+360)%360 : 0;
+  }
+  function formatNumber(n){
+    const x=Math.round(Number(n)*10)/10;
+    return Number.isInteger(x) ? String(x) : x.toFixed(1);
+  }
+  function stopColorCss(stop){
+    const opacity=Number.isFinite(Number(stop.opacity))?Math.max(0,Math.min(100,Number(stop.opacity))):100;
+    if(opacity>=100) return stop.color;
+    const [r,g,b]=hexToRgb(stop.color);
+    return `rgba(${r}, ${g}, ${b}, ${(opacity/100).toFixed(3).replace(/0+$/,'').replace(/\.$/,'')})`;
+  }
+
+  gradientCssFor=function(target){
+    const cfg=gradients[target];
+    if(!cfg || !cfg.enabled) return '';
+    ensureAdvanced(cfg);
+
+    if(cfg.custom && /^(?:(?:repeating-)?(?:linear|radial|conic))-gradient\(/i.test(cfg.custom.trim())){
+      return cfg.custom.trim();
+    }
+
+    const ordered=[...cfg.stops].sort((a,b)=>a.pos-b.pos);
+    const scale=cfg.repeating ? cfg.repeatSize/100 : 1;
+    const stops=ordered.map(s=>`${stopColorCss(s)} ${formatNumber(Number(s.pos)*scale)}%`).join(', ');
+    const prefix=cfg.repeating?'repeating-':'';
+
+    if(cfg.type==='radial'){
+      return `${prefix}radial-gradient(${cfg.radialShape} ${cfg.radialSize} at ${formatNumber(cfg.centerX)}% ${formatNumber(cfg.centerY)}%, ${stops})`;
+    }
+    if(cfg.type==='conic'){
+      return `${prefix}conic-gradient(from ${formatNumber(cfg.conicStart)}deg at ${formatNumber(cfg.conicX)}% ${formatNumber(cfg.conicY)}%, ${stops})`;
+    }
+    return `${prefix}linear-gradient(${formatNumber(angleNumber(cfg.angle))}deg, ${stops})`;
+  };
+
+  cleanGradientCss=function(value){
+    let v=String(value||'').trim();
+    v=v.replace(/^background(?:-image)?\s*:\s*/i,'').trim();
+    v=v.replace(/;\s*$/,'').trim();
+    const start=v.search(/(?:(?:repeating-)?(?:linear|radial|conic))-gradient\(/i);
+    if(start>0) v=v.slice(start);
+    if(!/^(?:(?:repeating-)?(?:linear|radial|conic))-gradient\(/i.test(v)) return '';
+    let depth=0;
+    for(const ch of v){
+      if(ch==='(') depth++;
+      if(ch===')') depth--;
+      if(depth<0) return '';
+    }
+    return depth===0?v:'';
+  };
+
+  const oldRender=renderGradientEditor;
+  renderGradientEditor=function(){
+    const cfg=gradients[currentGradientTarget];
+    ensureAdvanced(cfg);
+    oldRender();
+
+    typeSelect.value=cfg.type;
+    q('gradientAngleWrap').style.display=cfg.type==='linear'?'block':'none';
+    q('gradientRadialControls').hidden=cfg.type!=='radial';
+    q('gradientConicControls').hidden=cfg.type!=='conic';
+
+    const ang=angleNumber(cfg.angle);
+    q('gradientExactAngle').value=Math.round(ang);
+    q('gradientExactAngleNum').value=formatNumber(ang);
+    const preset=[...angleSelect.options].find(o=>Math.abs(angleNumber(o.value)-ang)<0.01);
+    if(preset) angleSelect.value=preset.value;
+
+    q('gradientRadialShape').value=cfg.radialShape;
+    q('gradientRadialSize').value=cfg.radialSize;
+    q('gradientCenterX').value=cfg.centerX;
+    q('gradientCenterXNum').value=formatNumber(cfg.centerX);
+    q('gradientCenterY').value=cfg.centerY;
+    q('gradientCenterYNum').value=formatNumber(cfg.centerY);
+    q('gradientRadialCenterLabel').textContent=`CENTER ${formatNumber(cfg.centerX)} / ${formatNumber(cfg.centerY)}`;
+
+    q('gradientConicStart').value=cfg.conicStart;
+    q('gradientConicStartNum').value=formatNumber(cfg.conicStart);
+    q('gradientConicX').value=cfg.conicX;
+    q('gradientConicXNum').value=formatNumber(cfg.conicX);
+    q('gradientConicY').value=cfg.conicY;
+    q('gradientConicYNum').value=formatNumber(cfg.conicY);
+    q('gradientConicCenterLabel').textContent=`CENTER ${formatNumber(cfg.conicX)} / ${formatNumber(cfg.conicY)}`;
+
+    q('gradientRepeating').checked=cfg.repeating;
+    q('gradientRepeatCycleWrap').hidden=!cfg.repeating;
+    q('gradientRepeatSize').value=cfg.repeatSize;
+    q('gradientRepeatSizeNum').value=formatNumber(cfg.repeatSize);
+
+    document.querySelectorAll('#gradientRadialPositionGrid button').forEach(b=>{
+      b.classList.toggle('active',Number(b.dataset.x)===Number(cfg.centerX)&&Number(b.dataset.y)===Number(cfg.centerY));
+    });
+    document.querySelectorAll('#gradientConicPositionGrid button').forEach(b=>{
+      b.classList.toggle('active',Number(b.dataset.x)===Number(cfg.conicX)&&Number(b.dataset.y)===Number(cfg.conicY));
+    });
+
+    q('gradientStops').querySelectorAll('.gradient-stop').forEach(row=>{
+      const index=Number(row.dataset.index);
+      const stop=cfg.stops[index];
+      ensureAdvanced(cfg);
+      const posWrap=row.querySelector('.stop-pos');
+      if(posWrap && !posWrap.querySelector('[data-field="posnum"]')){
+        const posNum=document.createElement('input');
+        posNum.type='number';
+        posNum.min='0'; posNum.max='100'; posNum.step='0.1';
+        posNum.value=formatNumber(stop.pos);
+        posNum.dataset.field='posnum';
+        posNum.style.width='62px';
+        posNum.addEventListener('input',()=>{
+          let value=Math.max(0,Math.min(100,Number(posNum.value)));
+          if(!Number.isFinite(value)) return;
+          markGradientManual(cfg);
+          stop.pos=value;
+          const slider=row.querySelector('[data-field="pos"]');
+          const label=row.querySelector('.stop-number');
+          if(slider) slider.value=value;
+          if(label) label.textContent=formatNumber(value)+'%';
+          updateGradientOnly();
+          refreshLiveOutput();
+        });
+        posWrap.appendChild(posNum);
+      }
+
+      if(!row.querySelector('.gradient-stop-extra')){
+        const extra=document.createElement('div');
+        extra.className='gradient-stop-extra';
+        extra.innerHTML=`
+          <div class="gradient-mini-control">
+            <label>Opacity</label>
+            <div class="gradient-range-number"><input type="range" min="0" max="100" step="1" data-field="opacity" value="${stop.opacity}"><input type="number" min="0" max="100" step="1" data-field="opacitynum" value="${stop.opacity}"></div>
+          </div>
+          <div class="gradient-mini-control">
+            <label>Exact position</label>
+            <div style="height:31px;display:flex;align-items:center;color:#a798a5;font-size:9px">Use decimals in the position box above.</div>
+          </div>
+          <button type="button" data-action="duplicate">Duplicate</button>
+        `;
+        row.appendChild(extra);
+        const op=extra.querySelector('[data-field="opacity"]');
+        const opNum=extra.querySelector('[data-field="opacitynum"]');
+        const setOpacity=value=>{
+          value=Math.max(0,Math.min(100,Number(value)));
+          if(!Number.isFinite(value)) return;
+          markGradientManual(cfg);
+          stop.opacity=value;
+          op.value=value; opNum.value=value;
+          updateGradientOnly();
+          refreshLiveOutput();
+        };
+        op.addEventListener('input',()=>setOpacity(op.value));
+        opNum.addEventListener('input',()=>setOpacity(opNum.value));
+        extra.querySelector('[data-action="duplicate"]').addEventListener('click',()=>{
+          if(cfg.stops.length>=12){ showToast('Maximum 12 gradient colors'); return; }
+          markGradientManual(cfg);
+          cfg.stops.splice(index+1,0,{...stop,pos:Math.min(100,Number(stop.pos)+2)});
+          renderGradientEditor(); update();
+        });
+      }
+    });
+
+    refreshLiveOutput();
+  };
+
+  function currentCfg(){
+    const cfg=gradients[currentGradientTarget];
+    ensureAdvanced(cfg);
+    return cfg;
+  }
+  function manualChange(fn,rerender=false){
+    const cfg=currentCfg();
+    markGradientManual(cfg);
+    fn(cfg);
+    if(rerender) renderGradientEditor(); else {
+      updateGradientOnly();
+      refreshAdvancedControls();
+    }
+    update();
+  }
+  function refreshLiveOutput(){
+    const out=q('gradientLiveCss');
+    if(!out) return;
+    const cfg=currentCfg();
+    const was=cfg.enabled;
+    if(!was) cfg.enabled=true;
+    out.value=gradientCssFor(currentGradientTarget);
+    cfg.enabled=was;
+  }
+  function refreshAdvancedControls(){
+    const cfg=currentCfg();
+    q('gradientExactAngle').value=Math.round(angleNumber(cfg.angle));
+    q('gradientExactAngleNum').value=formatNumber(angleNumber(cfg.angle));
+    q('gradientRadialCenterLabel').textContent=`CENTER ${formatNumber(cfg.centerX)} / ${formatNumber(cfg.centerY)}`;
+    q('gradientConicCenterLabel').textContent=`CENTER ${formatNumber(cfg.conicX)} / ${formatNumber(cfg.conicY)}`;
+    q('gradientRepeatCycleWrap').hidden=!cfg.repeating;
+    refreshLiveOutput();
+  }
+
+  function bindRangePair(rangeId,numId,getter,setter){
+    const range=q(rangeId), num=q(numId);
+    const apply=value=>{
+      value=Number(value);
+      if(!Number.isFinite(value)) return;
+      setter(value);
+      range.value=getter(); num.value=formatNumber(getter());
+    };
+    range.addEventListener('input',()=>apply(range.value));
+    num.addEventListener('input',()=>apply(num.value));
+  }
+
+  bindRangePair('gradientExactAngle','gradientExactAngleNum',()=>angleNumber(currentCfg().angle),value=>{
+    value=((value%360)+360)%360;
+    manualChange(cfg=>cfg.angle=formatNumber(value)+'deg');
+  });
+  q('gradientRotateMinus15').addEventListener('click',()=>manualChange(cfg=>cfg.angle=formatNumber((angleNumber(cfg.angle)+345)%360)+'deg'));
+  q('gradientRotatePlus15').addEventListener('click',()=>manualChange(cfg=>cfg.angle=formatNumber((angleNumber(cfg.angle)+15)%360)+'deg'));
+  q('gradientRotate90').addEventListener('click',()=>manualChange(cfg=>cfg.angle=formatNumber((angleNumber(cfg.angle)+90)%360)+'deg'));
+  q('gradientFlipDirection').addEventListener('click',()=>manualChange(cfg=>cfg.angle=formatNumber((angleNumber(cfg.angle)+180)%360)+'deg'));
+
+  q('gradientRadialShape').addEventListener('change',()=>manualChange(cfg=>cfg.radialShape=q('gradientRadialShape').value));
+  q('gradientRadialSize').addEventListener('change',()=>manualChange(cfg=>cfg.radialSize=q('gradientRadialSize').value));
+  bindRangePair('gradientCenterX','gradientCenterXNum',()=>currentCfg().centerX,value=>manualChange(cfg=>cfg.centerX=Math.max(0,Math.min(100,value))));
+  bindRangePair('gradientCenterY','gradientCenterYNum',()=>currentCfg().centerY,value=>manualChange(cfg=>cfg.centerY=Math.max(0,Math.min(100,value))));
+  document.querySelectorAll('#gradientRadialPositionGrid button').forEach(btn=>btn.addEventListener('click',()=>{
+    manualChange(cfg=>{cfg.centerX=Number(btn.dataset.x);cfg.centerY=Number(btn.dataset.y);},true);
+  }));
+
+  bindRangePair('gradientConicStart','gradientConicStartNum',()=>currentCfg().conicStart,value=>manualChange(cfg=>cfg.conicStart=((value%360)+360)%360));
+  bindRangePair('gradientConicX','gradientConicXNum',()=>currentCfg().conicX,value=>manualChange(cfg=>cfg.conicX=Math.max(0,Math.min(100,value))));
+  bindRangePair('gradientConicY','gradientConicYNum',()=>currentCfg().conicY,value=>manualChange(cfg=>cfg.conicY=Math.max(0,Math.min(100,value))));
+  document.querySelectorAll('#gradientConicPositionGrid button').forEach(btn=>btn.addEventListener('click',()=>{
+    manualChange(cfg=>{cfg.conicX=Number(btn.dataset.x);cfg.conicY=Number(btn.dataset.y);},true);
+  }));
+
+  q('gradientRepeating').addEventListener('change',()=>manualChange(cfg=>{
+    cfg.repeating=q('gradientRepeating').checked;
+    if(cfg.repeating && (!cfg.repeatSize || cfg.repeatSize>=100)) cfg.repeatSize=35;
+  },true));
+  bindRangePair('gradientRepeatSize','gradientRepeatSizeNum',()=>currentCfg().repeatSize,value=>manualChange(cfg=>cfg.repeatSize=Math.max(5,Math.min(100,value))));
+
+  q('gradientCopyCurrent').addEventListener('click',async()=>{
+    refreshLiveOutput();
+    try{await navigator.clipboard.writeText(q('gradientLiveCss').value);showToast('Gradient CSS copied');}
+    catch(e){q('gradientLiveCss').select();document.execCommand('copy');showToast('Gradient CSS copied');}
+  });
+
+  q('gradientResetCurrent').addEventListener('click',()=>{
+    const defaults=makeDefaultGradients();
+    const fresh=defaults[currentGradientTarget] || defaults.page;
+    gradients[currentGradientTarget]=JSON.parse(JSON.stringify(fresh));
+    ensureAdvanced(gradients[currentGradientTarget]);
+    renderGradientEditor(); update(); save();
+    showToast('Gradient reset');
+  });
+
+  const oldAdd=q('gradientAddStop');
+  if(oldAdd){
+    const freshAdd=oldAdd.cloneNode(true);
+    oldAdd.replaceWith(freshAdd);
+    freshAdd.addEventListener('click',()=>{
+      const cfg=currentCfg();
+      if(cfg.stops.length>=12){showToast('Maximum 12 gradient colors');return;}
+      markGradientManual(cfg);
+      const ordered=[...cfg.stops].sort((a,b)=>a.pos-b.pos);
+      const last=ordered[ordered.length-1];
+      const newPos=last?Math.min(100,Math.round((Number(last.pos)+100)/2)):50;
+      cfg.stops.push({color:'#FFFFFF',pos:newPos,opacity:100});
+      renderGradientEditor();update();
+    });
+  }
+
+  ['gradientType','gradientAngle','gradientEnabled','gradientEven','gradientReverse','gradientApplyPaste','gradientUseBuilder'].forEach(id=>{
+    q(id)?.addEventListener('change',()=>setTimeout(()=>{renderGradientEditor();refreshLiveOutput();},0));
+    q(id)?.addEventListener('click',()=>setTimeout(()=>{refreshLiveOutput();},0));
+  });
+  document.addEventListener('input',e=>{
+    if(e.target?.closest?.('#gradientStops')) setTimeout(refreshLiveOutput,0);
+  },true);
+
+  Object.values(gradients).forEach(ensureAdvanced);
+  if(currentGradientTarget==='header'||currentGradientTarget==='nav') currentGradientTarget='page';
+  renderGradientEditor();
+  update();
+})();
+</script>
