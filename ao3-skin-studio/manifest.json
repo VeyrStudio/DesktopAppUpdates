@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.12",
-  "payloadSha256": "4d7c669cbe528acd768a1b851dd1ac9544e2cc9bfe95b5e5c9d1a058afd239ad",
-  "executableSha256": "778e1f6f0b12fcdd1d087536cbe62b9b0bf1768ac6a368f88b73281f4e5a1270",
+  "version": "0.1.13",
+  "payloadSha256": "17a8add413296f604df6c229c62a78c0be4f77f1fd37c4ab03ea7843f756b641",
+  "executableSha256": "9d0e0f9b3e6510d0bd1ab17654baeab172cc26d463b5548de097c01d7b7c61e7",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.12-part-001.txt",
-      "sha256": "678f9ec5d5fa86c628fb71c33c2836c4e5595a545f83403c04ff7faa1b1ff75d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.13-part-001.txt",
+      "sha256": "1b4f974a515c281055d3748482dd80643764ed74bbb5a2da5a4bc1ab72b16e81"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.12-part-002.txt",
-      "sha256": "1992641b049cc8b0a28201485d767597df449de52b579a3a2fc1111b5b185381"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.13-part-002.txt",
+      "sha256": "6a793b9df2940603e6c807f1a9b15ba9a14e4bbe62cd25117491fcae66dff3fd"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.12-part-003.txt",
-      "sha256": "9e90630d446df2817561e4664cc3dc37d654e2c30a60461cbded7872316d9e6a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.13-part-003.txt",
+      "sha256": "45328ff41cd9493a9f18a20c34f45a579e2809684d32423b90984506f0633dd3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.12-part-004.txt",
-      "sha256": "44feb967e6d235347f711b3fc6048bda1df40093be0e2a567f08c158b748e3e3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.13-part-004.txt",
+      "sha256": "fdf869deaee9b5d08f89dc240e7dbfd4d10b2fd2be235a8ea7ec99727f09b27e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.12-part-005.txt",
-      "sha256": "b0f9b0b1501da041cf3a44460626458b902cc7e824d5b8f8ee821d422d041f74"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.13-part-005.txt",
+      "sha256": "ce8baccc4b091dd6b7add5ffb9ed9ba7570585abbf66cae56d2f84343175221b"
     }
   ],
-  "notes": "Expands the AO3 Required-Tag Grid editor to cover every state supplied by the AO3 key: all five ratings plus Second Square; F/F, F/M, Gen, M/M, Multi, Other, No Category plus Third Square; Chose Not To Warn, Warnings Apply, No Warnings, External Work globe plus Fourth Square; Complete, WIP, and blank completion. Every state now has its own box color, icon/font color, icon size, border color, and border width. F/M gets separately editable female/male halves and Multi gets four independently editable quadrants. Adds a live All AO3 Grid States reference board and exports the customizations to AO3 CSS. Keeps Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
+  "notes": "Adds a saved Desktop Shortcut setting to the main app toolbar. Turn it on to create an AO3 Skin Studio shortcut on the Windows desktop; turn it off to remove the app-created shortcut. The preference persists between launches and the shortcut points to the current app executable so it continues working through in-place updates. Keeps the complete AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
 }
