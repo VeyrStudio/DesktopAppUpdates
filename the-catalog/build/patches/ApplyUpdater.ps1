@@ -2,6 +2,40 @@ $ErrorActionPreference = 'Stop'
 $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
 $patchRoot = 'the-catalog/build/patches'
 
+# Overlay the 1.0.8 story workflow: wider cards, popup editor, and .catalogentry importing.
+$featureBase64 =
+    (Get-Content 'the-catalog/build/v108-feature-part-00.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-01.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-02.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-03.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-04.b64' -Raw) +
+    (Get-Content 'the-catalog/build/v108-feature-part-05.b64' -Raw)
+$featureZip = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N') + '.zip')
+$featureStage = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N'))
+[IO.File]::WriteAllBytes($featureZip, [Convert]::FromBase64String($featureBase64))
+Expand-Archive -Path $featureZip -DestinationPath $featureStage -Force
+
+Copy-Item (Join-Path $featureStage 'MainWindow.xaml') (Join-Path $root 'MainWindow.xaml') -Force
+Copy-Item (Join-Path $featureStage 'MainWindow.xaml.cs') (Join-Path $root 'MainWindow.xaml.cs') -Force
+Copy-Item (Join-Path $featureStage 'Views/EditStoryWindow.xaml') (Join-Path $root 'Views/EditStoryWindow.xaml') -Force
+Copy-Item (Join-Path $featureStage 'Views/EditStoryWindow.xaml.cs') (Join-Path $root 'Views/EditStoryWindow.xaml.cs') -Force
+Copy-Item (Join-Path $featureStage 'Services/CatalogEntryService.cs') (Join-Path $root 'Services/CatalogEntryService.cs') -Force
+
+# These files are overlaid after the generic compile-fix step, so make sure System.IO is present.
+@(
+    (Join-Path $root 'MainWindow.xaml.cs'),
+    (Join-Path $root 'Views/EditStoryWindow.xaml.cs'),
+    (Join-Path $root 'Services/CatalogEntryService.cs')
+) | ForEach-Object {
+    $source = Get-Content $_ -Raw
+    if ($source -notmatch '(?m)^using System\.IO;') {
+        $prefix = 'using System.IO;' + [Environment]::NewLine
+        Set-Content -Path $_ -Value ($prefix + $source) -Encoding utf8
+    }
+}
+Remove-Item $featureZip -Force -ErrorAction SilentlyContinue
+Remove-Item $featureStage -Recurse -Force -ErrorAction SilentlyContinue
+
 Copy-Item (Join-Path $patchRoot 'UpdateService.cs') (Join-Path $root 'Services/UpdateService.cs') -Force
 Copy-Item (Join-Path $patchRoot 'App.xaml.cs') (Join-Path $root 'App.xaml.cs') -Force
 
@@ -17,9 +51,9 @@ New-Item -ItemType Directory -Path $assets -Force | Out-Null
 
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.7</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.7.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.7.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.8</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.8.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.8.0</FileVersion>')
 $text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
 Set-Content -Path $project -Value $text -Encoding utf8
 
@@ -111,7 +145,7 @@ $text = $text.Replace(
 )
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
 
-# 1.0.7 readability pass:
+# 1.0.8 readability pass:
 # - give the dossier more width on large windows without breaking snapped layouts
 # - enlarge both Title Card display areas
 # - enlarge the Summary editor and snap its vertical scrolling to whole lines
