@@ -5,12 +5,43 @@ $patchRoot = 'the-catalog/build/patches'
 Copy-Item (Join-Path $patchRoot 'UpdateService.cs') (Join-Path $root 'Services/UpdateService.cs') -Force
 Copy-Item (Join-Path $patchRoot 'App.xaml.cs') (Join-Path $root 'App.xaml.cs') -Force
 
+# Reconstruct the approved worn-rose Windows icon.
+$iconBase64 =
+    (Get-Content 'the-catalog/build/icon/icon-part-00.b64' -Raw) +
+    (Get-Content 'the-catalog/build/icon/icon-part-01.b64' -Raw) +
+    (Get-Content 'the-catalog/build/icon/icon-part-02.b64' -Raw) +
+    (Get-Content 'the-catalog/build/icon/icon-part-03.b64' -Raw)
+$assets = Join-Path $root 'Assets'
+New-Item -ItemType Directory -Path $assets -Force | Out-Null
+[IO.File]::WriteAllBytes((Join-Path $assets 'TheCatalog.ico'), [Convert]::FromBase64String($iconBase64))
+
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.0</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.0.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.0.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.1</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.1.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.1.0</FileVersion>')
+$text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
+if ($text -notmatch '<Resource Include="Assets\\TheCatalog\.ico"') {
+    $text = $text.Replace(
+        '</Project>',
+        "  <ItemGroup>`r`n    <Resource Include=`"Assets\TheCatalog.ico`" />`r`n  </ItemGroup>`r`n</Project>"
+    )
+}
 Set-Content -Path $project -Value $text -Encoding utf8
+
+# Use the same icon for every app window as well as the executable/taskbar shell icon.
+$windowFiles = @(
+    (Join-Path $root 'MainWindow.xaml'),
+    (Join-Path $root 'Views/SettingsWindow.xaml'),
+    (Join-Path $root 'Views/RecentlyDeletedWindow.xaml')
+)
+foreach ($windowFile in $windowFiles) {
+    $windowText = Get-Content $windowFile -Raw
+    if ($windowText -notmatch 'Icon="') {
+        $windowText = $windowText.Replace('Title="', 'Icon="pack://application:,,,/Assets/TheCatalog.ico" Title="')
+        Set-Content -Path $windowFile -Value $windowText -Encoding utf8
+    }
+}
 
 $appXaml = Join-Path $root 'App.xaml'
 $text = Get-Content $appXaml -Raw
