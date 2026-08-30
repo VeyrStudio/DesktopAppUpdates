@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.9",
-  "payloadSha256": "922abc824653a902cd94e91cc289b778b9c4190973cd8317d29bef57cfc67c99",
+  "version": "1.0.10",
+  "payloadSha256": "390124d4275a47e8e820afaaebe46f5f6c5aeb78fdfee5c2813f278f03e1941f",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-001.txt",
-      "sha256": "0ae417185eba82b336d628532d8b5f71cfe79b46d966ba46444bccbdb94c0045"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-001.txt",
+      "sha256": "ec72078a24fe11fc6c36a6c0a69a7223a55a1294af34a4887926927b6caaf2f7"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-002.txt",
-      "sha256": "c809d97adfd958c3426349e07ee871acbf8356dbb9dde8b858aa6c81336076f5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-002.txt",
+      "sha256": "dcd164a178b6d3949d959bcffd4f6e7e1b5a46d9e48d34aa022d2017f466366c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-003.txt",
-      "sha256": "1fdcbab6abe310868f535d27d4cb5874a235fd7ee40bd6d4be841369e748f54f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-003.txt",
+      "sha256": "eb6fc7537167c28af3a887979e7678a2875cb41d37ca2091e6c9e42276b6c0c3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-004.txt",
-      "sha256": "048054acbd6aeb86074f6f3b7ad6dee7567c7f85f8cb2f0b8894d93dabf4ceaa"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-004.txt",
+      "sha256": "b8cfd198c74e0054a3455c47ad48627eb39221136146f9ec2510de28f6aa2fc5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-005.txt",
-      "sha256": "877276db5c0a4e392b39616da1a9687fceea13897824ca64b43365670f3acb19"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.10-part-005.txt",
+      "sha256": "9deb87c179e438d8828a0ffd7f979e3e76e77770202ff2d10f9376a24aacf886"
     }
   ],
-  "notes": "Adds a visible DELETE button beside EDIT in the Story Dossier. Deletion asks for confirmation and moves the story to Recently Deleted so it can still be restored."
+  "notes": "Renames the secondary character-name field from Original name to Other name so it can hold former names, true names, court names, aliases, or other alternate names without breaking existing entries."
 }
