@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.5",
-  "payloadSha256": "ee3773ae958c8d669b489b6886f8e5fb2f55b1190e1163faaa23039c02011f45",
+  "version": "1.0.6",
+  "payloadSha256": "806020464eaf636704fac32e12afb951eef87b8cdcac8c0c8fd8dbc9fe43c601",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.5-part-001.txt",
-      "sha256": "3f201d17b6cbb328c46947942a7bfa8b4fb2fc8f481d0b7cbde71001dc9eae17"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-001.txt",
+      "sha256": "03cca86c9159c046055fca27da719d4f65b5eed54c55cf2aae38867f87add769"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.5-part-002.txt",
-      "sha256": "4e11aaa2ae1ea4503810cfc730c667aaab929dbd6641356f8a869b7d1188d152"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-002.txt",
+      "sha256": "2ca95468e74ee81a0a3add76e0c252ffc6127c9a8ffe4e89cc12fbd64e72bfdc"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.5-part-003.txt",
-      "sha256": "9c80cb7478ee05f896321648e3b6ca4ab6bae1b4003c86a2f98a0c9ca14e9d3f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-003.txt",
+      "sha256": "84a142bfc1e529025cc03b7597dc277e386051ed5be07fa0fbf5f16c09b7ef19"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.5-part-004.txt",
-      "sha256": "17436691e2410c8d4261f13c9e585bf0b0bfb7d54eb68aac9f6166a6ec04a014"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-004.txt",
+      "sha256": "43b5ed478cdba361385409a0e2cec0979caf890b481c64ebec6c7c24b13c7fe1"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.5-part-005.txt",
-      "sha256": "81c9496e695692e0f715d6227428dd71911bca74996f95855d11e5032360ec6b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.6-part-005.txt",
+      "sha256": "cd623334ad329ae5879586dc923602315853bbb231918dda7cef9ace73db1852"
     }
   ],
-  "notes": "Adds optional Title Cards for story thumbnails, with Title Card → first Mood Board image → antique placeholder fallback. Title Cards are stored with the story and included in backups/restores."
+  "notes": "Adds native Windows snapping and split-screen behavior to the antique custom title bar: drag-to-edge/top, Win+Arrow, maximize/restore, and Windows 11 Snap Layouts while keeping the custom window design."
 }
