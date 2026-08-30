@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "apps/ao3-skin-studio/source.zip"
+      - "apps/ao3-skin-studio/source-chunks/**"
       - ".github/workflows/build-ao3-skin-studio-wpf.yml"
 
 permissions:
@@ -28,8 +28,19 @@ jobs:
           if (Test-Path $srcRoot) { Remove-Item $srcRoot -Recurse -Force }
           New-Item -ItemType Directory -Path $srcRoot -Force | Out-Null
 
-          tar -xf 'apps/ao3-skin-studio/source.zip' -C $srcRoot
-          if ($LASTEXITCODE -ne 0) { throw "tar failed to extract AO3 Skin Studio source (exit $LASTEXITCODE)." }
+          $parts = Get-ChildItem 'apps/ao3-skin-studio/source-chunks' -Filter 'chunk-*.txt' | Sort-Object Name
+          if ($parts.Count -ne 20) { throw "Expected 20 AO3 source chunks, found $($parts.Count)." }
+
+          $base64 = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ''
+          $zip = Join-Path $env:RUNNER_TEMP 'AO3SkinStudio-source.zip'
+          [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($base64))
+
+          $zipHash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($zipHash -ne '7e1a281367522b09ad2fffebf199895738c4f449f28c392ccccbdfedf7970adc') {
+            throw "AO3 Skin Studio source archive hash mismatch: $zipHash"
+          }
+
+          Expand-Archive -Path $zip -DestinationPath $srcRoot -Force
           $project = Join-Path $srcRoot 'AO3SkinStudio/AO3SkinStudio.csproj'
           if (-not (Test-Path $project)) { throw 'AO3 Skin Studio project was not found after extraction.' }
 
