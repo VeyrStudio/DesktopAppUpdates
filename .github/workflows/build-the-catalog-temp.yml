@@ -119,7 +119,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $version = '1.0.2'
+          $version = '1.0.3'
           $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
           $exeBytes = [IO.File]::ReadAllBytes($exe)
           $base64 = [Convert]::ToBase64String($exeBytes)
@@ -178,7 +178,7 @@ jobs:
             payloadPartCount = $parts.Count
           }
           [IO.File]::WriteAllText(
-            (Join-Path $catalogStage '1.0.2-validation.json'),
+            (Join-Path $catalogStage '1.0.3-validation.json'),
             ($validation | ConvertTo-Json -Depth 5),
             $utf8
           )
@@ -197,8 +197,30 @@ jobs:
           git add the-catalog
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "Release The Catalog WPF 1.0.2"
-            git push origin HEAD:main
+            git commit -m "Release The Catalog WPF 1.0.3"
+
+            $pushed = $false
+            for ($attempt = 1; $attempt -le 5; $attempt++) {
+              git fetch origin main
+              if ($LASTEXITCODE -ne 0) { throw 'Could not refresh main before publishing.' }
+
+              git rebase origin/main
+              if ($LASTEXITCODE -ne 0) {
+                git rebase --abort
+                throw 'The Catalog release conflicted with a newer main-branch change.'
+              }
+
+              git push origin HEAD:main
+              if ($LASTEXITCODE -eq 0) {
+                $pushed = $true
+                break
+              }
+
+              Write-Host "Publish race detected; retrying ($attempt/5)..."
+              Start-Sleep -Seconds 3
+            }
+
+            if (-not $pushed) { throw 'Could not publish The Catalog release after 5 attempts.' }
           }
           Pop-Location
 
