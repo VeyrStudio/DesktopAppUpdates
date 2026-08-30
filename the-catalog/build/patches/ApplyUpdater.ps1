@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = 'catalog-source/TheCatalog-WPF-v0.3-runtime-src'
 $patchRoot = 'the-catalog/build/patches'
 
-# Overlay the 1.0.11 story workflow: wider cards, popup editor, and .catalogentry importing.
+# Overlay the 1.0.12 story workflow: wider cards, popup editor, and .catalogentry importing.
 $featureHead =
     (Get-Content 'the-catalog/build/v108-feature-part-00.b64' -Raw) +
     (Get-Content 'the-catalog/build/v108-feature-part-01.b64' -Raw) +
@@ -41,7 +41,7 @@ if ($null -eq $featureBytes) {
         } catch {}
     }
 }
-if ($null -eq $featureBytes) { throw 'The 1.0.11 feature bundle did not match its verified SHA-256.' }
+if ($null -eq $featureBytes) { throw 'The 1.0.12 feature bundle did not match its verified SHA-256.' }
 
 $featureZip = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N') + '.zip')
 $featureStage = Join-Path $env:TEMP ('TheCatalog-v108-' + [Guid]::NewGuid().ToString('N'))
@@ -84,9 +84,9 @@ New-Item -ItemType Directory -Path $assets -Force | Out-Null
 
 $project = Join-Path $root 'TheCatalog.csproj'
 $text = Get-Content $project -Raw
-$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.11</Version>')
-$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.11.0</AssemblyVersion>')
-$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.11.0</FileVersion>')
+$text = $text.Replace('<Version>0.3.0</Version>', '<Version>1.0.12</Version>')
+$text = $text.Replace('<AssemblyVersion>0.3.0.0</AssemblyVersion>', '<AssemblyVersion>1.0.12.0</AssemblyVersion>')
+$text = $text.Replace('<FileVersion>0.3.0.0</FileVersion>', '<FileVersion>1.0.12.0</FileVersion>')
 $text = $text.Replace('<UseWPF>true</UseWPF>', "<UseWPF>true</UseWPF>`r`n    <ApplicationIcon>Assets\TheCatalog.ico</ApplicationIcon>")
 Set-Content -Path $project -Value $text -Encoding utf8
 
@@ -178,7 +178,7 @@ $text = $text.Replace(
 )
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
 
-# 1.0.11 readability pass:
+# 1.0.12 readability pass:
 # - give the dossier more width on large windows without breaking snapped layouts
 # - enlarge both Title Card display areas
 # - enlarge the Summary editor and snap its vertical scrolling to whole lines
@@ -273,7 +273,7 @@ if ($code -notmatch '_summaryScrollViewer') {
 }
 Set-Content -Path $mainCode -Value $code -Encoding utf8
 
-# 1.0.11: make story deletion obvious instead of hiding it only in the ellipsis menu.
+# 1.0.12: make story deletion obvious instead of hiding it only in the ellipsis menu.
 $mainXaml = Join-Path $root 'MainWindow.xaml'
 $text = Get-Content $mainXaml -Raw
 $editButton = '<Button Content="EDIT" Style="{StaticResource PaperButtonStyle}" Padding="10,5" Margin="6,0,4,0" Click="EditStory_Click" ToolTip="Edit this story in its own window"/>'
@@ -283,7 +283,7 @@ if ($text -notmatch 'Content="DELETE"[^>]+Click="DeleteStory_Click"') {
 }
 Set-Content -Path $mainXaml -Value $text -Encoding utf8
 
-# 1.0.11: broaden the secondary-name field from 'Original' to 'Other'.
+# 1.0.12: broaden the secondary-name field from 'Original' to 'Other'.
 # Keep the underlying model/database property names unchanged for backward compatibility.
 @(
     (Join-Path $root 'MainWindow.xaml'),
@@ -301,7 +301,7 @@ Set-Content -Path $mainXaml -Value $text -Encoding utf8
     Set-Content -Path $_ -Value $xaml -Encoding utf8
 }
 
-# 1.0.11: make the right Story Dossier column collapsible.
+# 1.0.12: make the right Story Dossier column collapsible.
 $mainXaml = Join-Path $root 'MainWindow.xaml'
 $text = Get-Content $mainXaml -Raw
 $text = $text.Replace(
@@ -357,5 +357,139 @@ if ($code -notmatch '_dossierCollapsed') {
     $lastBrace = $code.LastIndexOf('}')
     if ($lastBrace -lt 0) { throw 'Could not find MainWindow class closing brace for dossier toggle.' }
     $code = $code.Insert($lastBrace, $method + [Environment]::NewLine)
+}
+Set-Content -Path $mainCode -Value $code -Encoding utf8
+
+# 1.0.12: single centered story carousel with full-height title artwork.
+$mainXaml = Join-Path $root 'MainWindow.xaml'
+$text = Get-Content $mainXaml -Raw
+
+$carouselStart = $text.IndexOf('                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">')
+if ($carouselStart -lt 0) { throw 'Could not find story-list start for carousel conversion.' }
+$carouselEndMarker = '                    </ScrollViewer>'
+$carouselEnd = $text.IndexOf($carouselEndMarker, $carouselStart)
+if ($carouselEnd -lt 0) { throw 'Could not find story-list end for carousel conversion.' }
+$carouselEnd += $carouselEndMarker.Length
+
+$carousel = @'
+                    <Grid Grid.Row="2" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="76"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="76"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" Content="‹" Click="PreviousStory_Click" Style="{StaticResource FlatInkButtonStyle}"
+                                FontSize="52" Foreground="{StaticResource GoldBrush}" Padding="8"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Previous story"/>
+
+                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                      HorizontalContentAlignment="Center">
+                            <ItemsControl x:Name="StoriesList" HorizontalAlignment="Center">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Click="StoryCard_Click" Tag="{Binding Id}" Width="430" Height="730" Margin="8,0,8,18" Padding="0"
+                                                Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Stretch" Cursor="Hand">
+                                            <Border x:Name="StoryCard" Background="{StaticResource CardPaperTextureBrush}"
+                                                    BorderBrush="#5B452C" BorderThickness="1" Effect="{StaticResource SmallPaperShadow}">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="560"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <Grid Grid.Row="0" ClipToBounds="True" Background="#080707">
+                                                        <Image Source="{Binding CardPreviewPath}" Stretch="Uniform" Margin="8"/>
+                                                        <TextBlock Text="❦" FontSize="48" Foreground="#6FA9844E"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding CardPreviewPath}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding CardPreviewPath}" Value="">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <Border BorderBrush="#66513A" BorderThickness="0,0,0,1"/>
+                                                    </Grid>
+
+                                                    <Grid Grid.Row="1" Margin="18,12,18,13">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        <TextBlock Text="{Binding Title}" FontSize="20" Foreground="#D6B47B"
+                                                                   FontWeight="Bold" TextWrapping="Wrap" MaxHeight="52"/>
+                                                        <TextBlock Grid.Row="1" Text="{Binding PairingDisplay}" FontSize="13"
+                                                                   Foreground="{StaticResource InkBrush}" Margin="0,5,0,6" TextTrimming="CharacterEllipsis"/>
+                                                        <Border Grid.Row="2" HorizontalAlignment="Left" BorderBrush="#6D423A"
+                                                                BorderThickness="1" Background="#2A1115" Padding="7,2" Margin="0,0,0,7">
+                                                            <TextBlock Text="{Binding PairingCategory}" FontSize="11" Foreground="#C7A98B"/>
+                                                        </Border>
+                                                        <TextBlock Grid.Row="3" Text="{Binding SummaryPreview}" Foreground="{StaticResource InkSoftBrush}"
+                                                                   FontSize="12.5" TextWrapping="Wrap" LineHeight="18" MaxHeight="48"/>
+                                                        <TextBlock Grid.Row="4" Text="{Binding UpdatedDisplay}" Foreground="#746652"
+                                                                   FontSize="10.5" Margin="0,7,0,0"/>
+                                                    </Grid>
+                                                </Grid>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="#B18A52"/>
+                                                                <Setter Property="BorderThickness" Value="2"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <Button Grid.Column="2" Content="›" Click="NextStory_Click" Style="{StaticResource FlatInkButtonStyle}"
+                                FontSize="52" Foreground="{StaticResource GoldBrush}" Padding="8"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Next story"/>
+                    </Grid>
+'@
+$text = $text.Substring(0, $carouselStart) + $carousel + $text.Substring($carouselEnd)
+
+# Remove the old duplicate navigation arrows from the dossier header.
+$text = $text.Replace('                                <Button Content="‹" Style="{StaticResource FlatInkButtonStyle}" FontSize="22" Padding="7,1" Click="PreviousStory_Click" ToolTip="Previous story"/>' + [Environment]::NewLine, '')
+$text = $text.Replace('                                <Button Content="›" Style="{StaticResource FlatInkButtonStyle}" FontSize="22" Padding="7,1" Click="NextStory_Click" ToolTip="Next story"/>' + [Environment]::NewLine, '')
+Set-Content -Path $mainXaml -Value $text -Encoding utf8
+
+$mainCode = Join-Path $root 'MainWindow.xaml.cs'
+$code = Get-Content $mainCode -Raw
+$oldRefresh = '    private void RefreshStoryList() => StoriesList.ItemsSource = GetVisibleStories();'
+$newRefresh = @'
+    private void RefreshStoryList()
+    {
+        var visible = GetVisibleStories();
+        Story? display = null;
+
+        if (_selectedStory is not null)
+            display = visible.FirstOrDefault(s => s.Id == _selectedStory.Id);
+
+        display ??= visible.FirstOrDefault();
+        StoriesList.ItemsSource = display is null ? Array.Empty<Story>() : new[] { display };
+    }
+'@
+if ($code.Contains($oldRefresh)) {
+    $code = $code.Replace($oldRefresh, $newRefresh.TrimEnd())
+} else {
+    throw 'Could not find RefreshStoryList for carousel conversion.'
 }
 Set-Content -Path $mainCode -Value $code -Encoding utf8
