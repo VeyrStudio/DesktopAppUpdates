@@ -6,6 +6,7 @@ on:
     paths:
       - "apps/the-bookworm/source-parts/**"
       - "apps/the-bookworm/icon-base64.txt"
+      - "apps/the-bookworm/overrides-v012/**"
       - ".github/workflows/build-the-bookworm-wpf.yml"
 
 permissions:
@@ -49,6 +50,75 @@ jobs:
           $project = Join-Path $source 'TheBookworm.csproj'
           if (-not (Test-Path $project)) { throw 'The Bookworm project was not found after extraction.' }
 
+          # Apply the 0.1.2 antique-library UI redesign.
+          Copy-Item 'apps/the-bookworm/overrides-v012/App.xaml' (Join-Path $source 'App.xaml') -Force
+          Copy-Item 'apps/the-bookworm/overrides-v012/MainWindow.xaml' (Join-Path $source 'MainWindow.xaml') -Force
+          Copy-Item 'apps/the-bookworm/overrides-v012/BookWorkspaceWindow.xaml' (Join-Path $source 'BookWorkspaceWindow.xaml') -Force
+
+          $mainCodePath = Join-Path $source 'MainWindow.xaml.cs'
+          $mainCode = Get-Content $mainCodePath -Raw
+          $nl = [Environment]::NewLine
+
+          if ($mainCode -notmatch 'using System.Windows.Media;') {
+            $mainCode = $mainCode.Replace('using System.Windows.Controls;', 'using System.Windows.Controls;' + $nl + 'using System.Windows.Media;')
+          }
+
+          if ($mainCode -notmatch 'PreviousButton.IsEnabled') {
+            $oldNext = '        NextTitle.Text = _filtered.Count <= 1 ? "" : _filtered[Wrap(_currentIndex + 1)].Title;'
+            $newNext = $oldNext + $nl +
+                '        PreviousButton.IsEnabled = _filtered.Count > 1;' + $nl +
+                '        NextButton.IsEnabled = _filtered.Count > 1;' + $nl +
+                '        UpdateViewButtonState();'
+            $mainCode = $mainCode.Replace($oldNext, $newNext)
+          }
+
+          if ($mainCode -notmatch 'private void UpdateViewButtonState') {
+            $viewMethod = @'
+
+    private void UpdateViewButtonState()
+    {
+        if (CarouselViewButton is null || GridViewButton is null || VerticalViewButton is null) return;
+
+        var normalBackground = (Brush)FindResource("Green800Brush");
+        var normalForeground = (Brush)FindResource("IvoryBrush");
+        var selectedBackground = (Brush)FindResource("GoldGradient");
+        var selectedForeground = (Brush)FindResource("Green950Brush");
+
+        foreach (var button in new[] { CarouselViewButton, GridViewButton, VerticalViewButton })
+        {
+            button.Background = normalBackground;
+            button.Foreground = normalForeground;
+            button.FontWeight = FontWeights.Normal;
+        }
+
+        var selected = _settings.ShelfView switch
+        {
+            "Grid" => GridViewButton,
+            "Vertical" => VerticalViewButton,
+            _ => CarouselViewButton
+        };
+
+        selected.Background = selectedBackground;
+        selected.Foreground = selectedForeground;
+        selected.FontWeight = FontWeights.SemiBold;
+    }
+
+'@
+            $mainCode = $mainCode.Replace('    private void Settings_Click', $viewMethod + '    private void Settings_Click')
+          }
+
+          Set-Content -Path $mainCodePath -Value $mainCode -Encoding utf8
+
+          foreach ($dialogName in @('SettingsWindow.xaml', 'AddBookDialog.xaml')) {
+            $dialogPath = Join-Path $source $dialogName
+            $dialogText = Get-Content $dialogPath -Raw
+            if ($dialogText -notmatch 'Background="{StaticResource AntiqueGreenGradient}"') {
+              $dialogText = $dialogText.Replace('Icon="/Assets/TheBookworm.ico">', 'Icon="/Assets/TheBookworm.ico" Background="{StaticResource AntiqueGreenGradient}">')
+            }
+            $dialogText = $dialogText.Replace('Background="#E60B2119"', 'Background="{StaticResource PanelGradient}"')
+            Set-Content -Path $dialogPath -Value $dialogText -Encoding utf8
+          }
+
           # Install the official Bookworm icon supplied for the app.
           $iconBase64 = (Get-Content 'apps/the-bookworm/icon-base64.txt' -Raw).Trim()
           $iconPath = Join-Path $source 'Assets\TheBookworm.ico'
@@ -58,11 +128,11 @@ jobs:
             throw "Bookworm icon hash mismatch: $iconHash"
           }
 
-          # This icon build is version 0.1.1.
+          # This polished UI build is version 0.1.2.
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.1</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.1.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.1.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.2</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.2.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.2.0</FileVersion>')
           $projectText = $projectText.Replace('<ApplicationIcon></ApplicationIcon>', '<ApplicationIcon>Assets\TheBookworm.ico</ApplicationIcon>')
           $projectText = $projectText.Replace('<Resource Include="Assets\bookworm-placeholder.jpg" />', '<Resource Include="Assets\bookworm-placeholder.jpg" />' + "`r`n    " + '<Resource Include="Assets\TheBookworm.ico" />')
           Set-Content -Path $project -Value $projectText -Encoding utf8
