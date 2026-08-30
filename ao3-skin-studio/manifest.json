@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "appId": "ao3-skin-studio-wpf",
+  "appName": "AO3 Skin Studio",
+  "version": "0.1.0",
+  "payloadSha256": "ba9360b90347aaa403caca272fd0fa39490f9da9d4db1bb56533ca0df1cee53a",
+  "executableSha256": "dd2a6799462f92da1bad8dea02a86c714f034a6c269d07e29fb2bf597d911fdf",
+  "payloadParts": [
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-001.txt",
+      "sha256": "a9440b7284bccff72bc72680d80a6817ca7bd42b16b5182113e43d0601441285"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-002.txt",
+      "sha256": "bb732fd4c66bb507b3d7441247f0b3a46d3fe22302f6fc18e6a7fffeffc33ff3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-003.txt",
+      "sha256": "472197eebf4f139feb02b4a919905619c3253f7e4434d36a34f1a1f155cc2841"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-004.txt",
+      "sha256": "95eac4a15aa4c698e6584fb01c3bb240390537519b537ab1a1f9ba9a808f8cff"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.0-part-005.txt",
+      "sha256": "25f1c30c29005f9b9a75f927956539907636978a26d1d6d2420809ba4cc9d3fa"
+    }
+  ],
+  "notes": "AO3 Skin Studio desktop update."
+}
