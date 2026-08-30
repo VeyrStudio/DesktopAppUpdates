@@ -70,12 +70,12 @@ jobs:
           # 0.1.2: add elegant system-font stacks without relying on remote font files.
           $studioText = Get-Content $studioHtml -Raw
           $fontAnchor = '              <option value="Georgia, serif">Georgia</option>'
-          $fontInsert = @'
-              <option value="Georgia, serif">Georgia</option>
-              <option value='"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif'>Elegant Serif — Palatino</option>
-              <option value='Garamond, "EB Garamond", Georgia, serif'>Elegant Serif — Garamond</option>
-              <option value='Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, Georgia, serif'>Elegant Serif — Baskerville</option>
-'@
+          $fontInsert = @(
+            '              <option value="Georgia, serif">Georgia</option>'
+            '              <option value="&quot;Palatino Linotype&quot;, &quot;Book Antiqua&quot;, Palatino, Georgia, serif">Elegant Serif — Palatino</option>'
+            '              <option value="Garamond, &quot;EB Garamond&quot;, Georgia, serif">Elegant Serif — Garamond</option>'
+            '              <option value="Baskerville, &quot;Baskerville Old Face&quot;, &quot;Hoefler Text&quot;, Garamond, Georgia, serif">Elegant Serif — Baskerville</option>'
+          ) -join "`r`n"
           if (-not $studioText.Contains($fontAnchor)) { throw 'Font insertion anchor was not found.' }
           $studioText = $studioText.Replace($fontAnchor, $fontInsert.TrimEnd())
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
