@@ -1,0 +1,137 @@
+<style id="ao3-background-grouping-styles">
+.background-group-label{
+  margin:14px 0 8px;
+  padding-top:12px;
+  border-top:1px solid #2d2730;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#9e8f9b;
+}
+</style>
+<script id="ao3-background-grouping-script">
+(function(){
+  const sections = Array.from(document.querySelectorAll('details.section'));
+  const pageSection = sections.find(x => (x.querySelector('summary')?.textContent || '').trim() === 'Page & Background');
+  const headerSection = sections.find(x => (x.querySelector('summary')?.textContent || '').trim() === 'Header & Navigation');
+
+  if(!pageSection || !headerSection) return;
+
+  pageSection.querySelector('summary').textContent = 'Page, Header & Footer Background';
+  headerSection.querySelector('summary').textContent = 'Navigation & Accent';
+
+  const pageBody = pageSection.querySelector('.section-body');
+  const headerBody = headerSection.querySelector('.section-body');
+  const pageBackgroundControl = Array.from(pageBody.querySelectorAll('.control')).find(c =>
+    (c.querySelector('label')?.textContent || '').trim() === 'Page background'
+  );
+  const headerControl = Array.from(headerBody.querySelectorAll('.control')).find(c =>
+    (c.querySelector('label')?.textContent || '').trim() === 'Header'
+  );
+
+  if(pageBackgroundControl && headerControl){
+    const label = headerControl.querySelector('label');
+    if(label) label.textContent = 'Header background';
+
+    const headerGroup = document.createElement('div');
+    headerGroup.className = 'background-group-label';
+    headerGroup.textContent = 'Header';
+
+    pageBackgroundControl.insertAdjacentElement('afterend', headerGroup);
+    headerGroup.insertAdjacentElement('afterend', headerControl);
+
+    const footerGroup = document.createElement('div');
+    footerGroup.className = 'background-group-label';
+    footerGroup.textContent = 'Footer';
+
+    const footerControl = document.createElement('div');
+    footerControl.className = 'control';
+    footerControl.innerHTML = `
+      <div class="control-head">
+        <label>Footer background</label>
+        <span class="mini" id="footerBgHex">#35090B</span>
+      </div>
+      <div class="color-row">
+        <input type="color" id="footerBgColor" value="#35090b">
+        <input type="text" id="footerBgText" value="#35090B">
+      </div>
+      <div class="help">This controls the footer bar at the very bottom of AO3 independently from the navigation bar.</div>
+    `;
+
+    headerControl.insertAdjacentElement('afterend', footerGroup);
+    footerGroup.insertAdjacentElement('afterend', footerControl);
+  }
+
+  if(!idsToSave.includes('footerBgColor')) idsToSave.push('footerBgColor');
+
+  const footerPicker = $('footerBgColor');
+  const footerText = $('footerBgText');
+  const footerHex = $('footerBgHex');
+
+  try{
+    const saved = JSON.parse(localStorage.getItem('ao3SkinStudio') || '{}');
+    if(saved.footerBgColor && normHex(saved.footerBgColor)){
+      footerPicker.value = normHex(saved.footerBgColor).toLowerCase();
+    } else {
+      footerPicker.value = $('navColor').value;
+    }
+  }catch(e){
+    footerPicker.value = $('navColor').value;
+  }
+
+  function refreshFooterColor(saveNow=true){
+    const value = normHex(footerPicker.value) || '#35090B';
+    footerPicker.value = value.toLowerCase();
+    footerText.value = value;
+    footerHex.textContent = value;
+    mock.style.setProperty('--p-footer', value);
+
+    const previewFooter = document.querySelector('.ao3-footer');
+    if(previewFooter) previewFooter.style.background = value;
+
+    cssOutput.value = buildCss();
+    if(saveNow) save();
+  }
+
+  footerPicker.addEventListener('input', () => refreshFooterColor(true));
+
+  footerText.addEventListener('input', () => {
+    const value = normHex(footerText.value);
+    if(!value) return;
+    footerPicker.value = value.toLowerCase();
+    refreshFooterColor(true);
+  });
+
+  const previousBuildCss = buildCss;
+  buildCss = function(){
+    let css = previousBuildCss();
+    const footer = (normHex(footerPicker.value) || '#35090B').toUpperCase();
+
+    css = css.replace(
+      /(\/\* FOOTER \*\/\s*#footer\s*\{\s*background:\s*)[^;]+;/m,
+      '$1' + footer + ';'
+    );
+
+    return css;
+  };
+
+  document.querySelectorAll('.preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setTimeout(() => {
+        footerPicker.value = $('navColor').value;
+        refreshFooterColor(true);
+      }, 0);
+    });
+  });
+
+  $('resetBtn').addEventListener('click', () => {
+    setTimeout(() => {
+      footerPicker.value = '#35090b';
+      refreshFooterColor(true);
+    }, 0);
+  });
+
+  refreshFooterColor(false);
+})();
+</script>
