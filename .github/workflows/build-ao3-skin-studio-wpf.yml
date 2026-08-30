@@ -313,6 +313,25 @@ jobs:
           $shortcutCodeText = $shortcutCodeText.Replace($autoUpdateMethodAnchor, $shortcutMethods)
           [IO.File]::WriteAllText($shortcutCodePath, $shortcutCodeText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.14: install and embed the AO3 Skin Studio app icon.
+          $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
+          if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
+          $iconDir = Join-Path $srcRoot 'AO3SkinStudio/Assets'
+          New-Item -ItemType Directory -Path $iconDir -Force | Out-Null
+          Copy-Item $iconSource (Join-Path $iconDir 'AO3-Skin-Studio-Icon.ico') -Force
+
+          # Make desktop shortcuts use the shipped icon file when available.
+          $iconShortcutCodePath = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml.cs'
+          $iconShortcutCodeText = Get-Content $iconShortcutCodePath -Raw
+          $iconShortcutAnchor = '        shortcut.IconLocation = exePath + ",0";'
+          $iconShortcutReplacement = @(
+            '        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "AO3-Skin-Studio-Icon.ico");'
+            '        shortcut.IconLocation = File.Exists(iconPath) ? iconPath : exePath + ",0";'
+          ) -join "`r`n"
+          if (-not $iconShortcutCodeText.Contains($iconShortcutAnchor)) { throw 'Desktop shortcut icon anchor was not found.' }
+          $iconShortcutCodeText = $iconShortcutCodeText.Replace($iconShortcutAnchor, $iconShortcutReplacement)
+          [IO.File]::WriteAllText($iconShortcutCodePath, $iconShortcutCodeText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.6: keep the native Windows title-bar buttons fully inside the visible work area.
           $mainWindowXaml = Join-Path $srcRoot 'AO3SkinStudio/MainWindow.xaml'
           $mainWindowXamlText = Get-Content $mainWindowXaml -Raw
@@ -357,16 +376,34 @@ jobs:
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.13</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.13.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.13.0</FileVersion>')
+
+          # 0.1.14: embed the icon in AO3SkinStudio.exe and include the .ico in published updates.
+          $useWpfAnchor = '<UseWPF>true</UseWPF>'
+          if (-not $projectText.Contains($useWpfAnchor)) { throw 'AO3 project UseWPF anchor was not found for app icon.' }
+          $projectText = $projectText.Replace($useWpfAnchor, $useWpfAnchor + "`r`n    <ApplicationIcon>Assets\AO3-Skin-Studio-Icon.ico</ApplicationIcon>")
+          $projectEndAnchor = '</Project>'
+          $iconItemGroup = @(
+            '  <ItemGroup>'
+            '    <Content Include="Assets\AO3-Skin-Studio-Icon.ico">'
+            '      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>'
+            '      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>'
+            '    </Content>'
+            '  </ItemGroup>'
+            ''
+          ) -join "`r`n"
+          if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
+          $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
+
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.14</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.14.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.14.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.13" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.14" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -440,7 +477,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds a saved Desktop Shortcut setting to the main app toolbar. Turn it on to create an AO3 Skin Studio shortcut on the Windows desktop; turn it off to remove the app-created shortcut. The preference persists between launches and the shortcut points to the current app executable so it continues working through in-place updates. Keeps the complete AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
+            notes = 'Ships the new AO3 Skin Studio icon through the automatic updater. The icon is now embedded into AO3SkinStudio.exe, included as an Assets icon file in the published app, and used by the Desktop Shortcut setting. Existing users receive the icon automatically by updating to 0.1.14. Keeps the complete AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
