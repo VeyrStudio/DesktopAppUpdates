@@ -1,0 +1,478 @@
+<style id="ao3-color-studio-styles">
+.color-studio-launch{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:0 0 10px;
+}
+.color-studio-launch button{
+  width:100%;
+  padding:9px 10px;
+  border:1px solid #4b3d50;
+  border-radius:8px;
+  background:#1a151d;
+  color:#efe5ed;
+  font-size:9px;
+  font-weight:900;
+  cursor:pointer;
+}
+.color-studio-launch button:hover{background:#261d2a}
+.color-studio-section .section-body{padding-top:10px}
+.color-studio-preview{
+  height:78px;
+  border:1px solid #433846;
+  border-radius:10px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+  margin-bottom:10px;
+}
+.color-studio-active{
+  padding:8px 9px;
+  border:1px solid #332b36;
+  border-radius:8px;
+  background:#100e12;
+  color:#a99ca7;
+  font-size:8px;
+  line-height:1.4;
+  margin-bottom:10px;
+}
+.color-studio-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.color-studio-field label{
+  display:block;
+  margin-bottom:4px;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#8f818d;
+}
+.color-studio-field input[type="text"],
+.color-studio-field input[type="number"]{
+  width:100%;
+  box-sizing:border-box;
+}
+.color-studio-sliders{
+  margin-top:10px;
+  display:grid;
+  gap:8px;
+}
+.color-studio-slider{
+  display:grid;
+  grid-template-columns:56px 1fr 56px;
+  gap:7px;
+  align-items:center;
+}
+.color-studio-slider label{
+  font-size:8px;
+  font-weight:800;
+  color:#9e909c;
+}
+.color-studio-slider input[type="range"]{width:100%;min-width:0}
+.color-studio-slider input[type="number"]{width:56px;min-width:0}
+.color-studio-swatch-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:12px 0 7px;
+  padding-top:10px;
+  border-top:1px solid #2e2830;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#a596a3;
+}
+.color-studio-swatches{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:5px;
+}
+.color-studio-swatch{
+  aspect-ratio:1/1;
+  min-width:0;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:6px;
+  padding:0;
+  cursor:pointer;
+  position:relative;
+}
+.color-studio-swatch:hover{
+  transform:scale(1.08);
+  z-index:2;
+  box-shadow:0 0 0 2px #9d00ff;
+}
+.color-studio-swatch.selected{box-shadow:0 0 0 2px #9d00ff}
+.color-studio-actions{
+  display:grid;
+  grid-template-columns:1.3fr 1fr 1fr;
+  gap:7px;
+  margin-top:10px;
+}
+.color-studio-actions button{
+  border:1px solid #463949;
+  border-radius:7px;
+  background:#171419;
+  color:#ddd0da;
+  padding:8px 7px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.color-studio-actions button:hover{background:#261e29;color:#fff}
+.color-studio-actions .primary{
+  background:#5f087e;
+  border-color:#8f18b7;
+  color:#fff;
+}
+.color-studio-empty{
+  grid-column:1/-1;
+  padding:8px;
+  color:#776c76;
+  font-size:8px;
+  text-align:center;
+  border:1px dashed #302a32;
+  border-radius:7px;
+}
+.color-palette-jump{
+  margin-left:5px;
+  width:28px;
+  min-width:28px;
+  height:28px;
+  padding:0;
+  border:1px solid #403545;
+  border-radius:7px;
+  background:#171419;
+  color:#e7dce5;
+  font-size:13px;
+  cursor:pointer;
+  vertical-align:middle;
+}
+.color-palette-jump:hover{background:#2a2030;color:#fff}
+.color-row.color-studio-enhanced{
+  grid-template-columns:auto 1fr auto !important;
+}
+.color-studio-tip{
+  margin-top:8px;
+  padding:8px 9px;
+  border:1px solid #352d38;
+  border-radius:8px;
+  background:#111014;
+  color:#9f929d;
+  font-size:8px;
+  line-height:1.45;
+}
+@media(max-width:560px){
+  .color-studio-grid{grid-template-columns:1fr}
+  .color-studio-swatches{grid-template-columns:repeat(6,1fr)}
+  .color-studio-actions{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-color-studio-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const sections=Array.from(document.querySelectorAll('details.section'));
+  const firstSection=sections[0];
+  if(!firstSection) return;
+
+  const palette=[
+    ['Black','#000000'],['Near Black','#111111'],['Charcoal','#333333'],['Gray','#666666'],
+    ['Silver','#B8B8B8'],['Light Gray','#D9D9D9'],['Ivory','#F4F0E6'],['White','#FFFFFF'],
+    ['Dark Red','#5B0D12'],['Crimson','#B32226'],['Red','#E53935'],['Coral','#FF6F61'],
+    ['Burnt Orange','#C65D21'],['Orange','#F28C28'],['Amber','#FFB000'],['Gold','#D4AF37'],
+    ['Yellow','#F4D03F'],['Lime','#A4C639'],['Green','#2E8B57'],['Emerald','#0F8B5F'],
+    ['Forest','#1F5F3A'],['Teal','#0F7C7B'],['Cyan','#22A7C7'],['Sky','#4EA3E3'],
+    ['Blue','#2867C7'],['Royal Blue','#334BC6'],['Navy','#172A55'],['Indigo','#4B3F8F'],
+    ['Purple','#7B3FA0'],['Violet','#9A4DCC'],['Magenta','#C83E9A'],['Hot Pink','#E6539F'],
+    ['Rose','#B85C74'],['Dusty Rose','#A86F78'],['Brown','#6A4636'],['Chocolate','#4B2E2A'],
+    ['Tan','#B38B6D'],['Cream','#EAD8B0'],['Antique Gold','#BB7A3D'],['Brass','#B08D57'],
+    ['Copper','#B87333'],['Rose Gold','#B76E79'],['Pewter','#8C9296'],['Gunmetal','#4B555D'],
+    ['AO3 Red','#990000'],['AO3 Dark Red','#700000'],['AO3 Gray','#DDDDDD'],['AO3 White','#FFFFFF']
+  ];
+
+  const studio=document.createElement('details');
+  studio.className='section color-studio-section';
+  studio.id='colorStudioSection';
+  studio.innerHTML=`
+    <summary>Color Studio</summary>
+    <div class="section-body">
+      <div class="gradient-section-intro"><strong>Make, save, and reuse colors.</strong> Click any color picker elsewhere in the app, then use this studio to edit it precisely or choose from standard colors.</div>
+      <div class="color-studio-preview" id="colorStudioPreview"></div>
+      <div class="color-studio-active" id="colorStudioActive">No target selected yet. Click any color control in the builder.</div>
+
+      <div class="color-studio-grid">
+        <div class="color-studio-field">
+          <label>HEX</label>
+          <input type="text" id="colorStudioHex" value="#5B0D12">
+        </div>
+        <div class="color-studio-field">
+          <label>RGB</label>
+          <input type="text" id="colorStudioRgb" value="91, 13, 18">
+        </div>
+        <div class="color-studio-field">
+          <label>HSL</label>
+          <input type="text" id="colorStudioHsl" value="356, 75%, 20%">
+        </div>
+        <div class="color-studio-field">
+          <label>Native picker</label>
+          <input type="color" id="colorStudioPicker" value="#5b0d12" style="width:100%;height:34px">
+        </div>
+      </div>
+
+      <div class="color-studio-sliders">
+        <div class="color-studio-slider"><label>Hue</label><input type="range" id="colorStudioHue" min="0" max="359" value="356"><input type="number" id="colorStudioHueNum" min="0" max="359" value="356"></div>
+        <div class="color-studio-slider"><label>Saturation</label><input type="range" id="colorStudioSat" min="0" max="100" value="75"><input type="number" id="colorStudioSatNum" min="0" max="100" value="75"></div>
+        <div class="color-studio-slider"><label>Lightness</label><input type="range" id="colorStudioLight" min="0" max="100" value="20"><input type="number" id="colorStudioLightNum" min="0" max="100" value="20"></div>
+      </div>
+
+      <div class="color-studio-swatch-title"><span>Shades &amp; tints</span><span>derived from current color</span></div>
+      <div class="color-studio-swatches" id="colorStudioShades"></div>
+
+      <div class="color-studio-swatch-title"><span>Standard colors</span><span>click to use</span></div>
+      <div class="color-studio-swatches" id="colorStudioStandard"></div>
+
+      <div class="color-studio-swatch-title"><span>Recent colors</span><button type="button" id="colorStudioClearRecent" style="font:inherit;border:0;background:none;color:#a68aac;cursor:pointer">clear</button></div>
+      <div class="color-studio-swatches" id="colorStudioRecent"></div>
+
+      <div class="color-studio-swatch-title"><span>Favorites</span><span>saved locally</span></div>
+      <div class="color-studio-swatches" id="colorStudioFavorites"></div>
+
+      <div class="color-studio-actions">
+        <button type="button" class="primary" id="colorStudioApply">Apply to selected control</button>
+        <button type="button" id="colorStudioFavorite">★ Add favorite</button>
+        <button type="button" id="colorStudioCopy">Copy HEX</button>
+      </div>
+
+      <div class="color-studio-tip">Tip: the small 🎨 button beside color controls jumps here and selects that exact setting. Recent colors and favorites stay available after closing the app.</div>
+    </div>
+  `;
+
+  firstSection.insertAdjacentElement('beforebegin',studio);
+
+  let activePicker=null;
+  let activeText=null;
+  let currentHex='#5B0D12';
+  let recent=[];
+  let favorites=[];
+
+  try{ recent=JSON.parse(localStorage.getItem('ao3ColorStudioRecent')||'[]'); }catch(e){}
+  try{ favorites=JSON.parse(localStorage.getItem('ao3ColorStudioFavorites')||'[]'); }catch(e){}
+  if(!Array.isArray(recent)) recent=[];
+  if(!Array.isArray(favorites)) favorites=[];
+
+  function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
+  function rgbToHex(r,g,b){
+    return '#'+[r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('').toUpperCase();
+  }
+  function hexToRgbLocal(hex){
+    const h=(normHex(hex)||'#000000').slice(1);
+    return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+  }
+  function rgbToHsl(r,g,b){
+    r/=255;g/=255;b/=255;
+    const max=Math.max(r,g,b),min=Math.min(r,g,b);
+    let h=0,s=0,l=(max+min)/2;
+    if(max!==min){
+      const d=max-min;
+      s=l>.5?d/(2-max-min):d/(max+min);
+      switch(max){
+        case r:h=(g-b)/d+(g<b?6:0);break;
+        case g:h=(b-r)/d+2;break;
+        case b:h=(r-g)/d+4;break;
+      }
+      h/=6;
+    }
+    return [Math.round(h*359),Math.round(s*100),Math.round(l*100)];
+  }
+  function hslToRgb(h,s,l){
+    h=((Number(h)%360)+360)%360/360;s=clamp(Number(s),0,100)/100;l=clamp(Number(l),0,100)/100;
+    if(s===0){const v=Math.round(l*255);return [v,v,v];}
+    const hue2rgb=(p,q,t)=>{
+      if(t<0)t+=1;if(t>1)t-=1;
+      if(t<1/6)return p+(q-p)*6*t;
+      if(t<1/2)return q;
+      if(t<2/3)return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    const qv=l<.5?l*(1+s):l+s-l*s,p=2*l-qv;
+    return [Math.round(hue2rgb(p,qv,h+1/3)*255),Math.round(hue2rgb(p,qv,h)*255),Math.round(hue2rgb(p,qv,h-1/3)*255)];
+  }
+  function hslToHex(h,s,l){
+    const [r,g,b]=hslToRgb(h,s,l);
+    return rgbToHex(r,g,b);
+  }
+
+  function setCurrent(hex,addRecent=false){
+    const normalized=normHex(hex);
+    if(!normalized) return;
+    currentHex=normalized.toUpperCase();
+    const [r,g,b]=hexToRgbLocal(currentHex);
+    const [h,s,l]=rgbToHsl(r,g,b);
+
+    q('colorStudioHex').value=currentHex;
+    q('colorStudioRgb').value=`${r}, ${g}, ${b}`;
+    q('colorStudioHsl').value=`${h}, ${s}%, ${l}%`;
+    q('colorStudioPicker').value=currentHex.toLowerCase();
+    q('colorStudioHue').value=h;q('colorStudioHueNum').value=h;
+    q('colorStudioSat').value=s;q('colorStudioSatNum').value=s;
+    q('colorStudioLight').value=l;q('colorStudioLightNum').value=l;
+    q('colorStudioPreview').style.background=currentHex;
+
+    if(addRecent){
+      recent=[currentHex,...recent.filter(x=>x!==currentHex)].slice(0,24);
+      localStorage.setItem('ao3ColorStudioRecent',JSON.stringify(recent));
+      renderRecent();
+    }
+    renderShades();
+  }
+
+  function swatch(hex,title,onClick){
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='color-studio-swatch';
+    b.style.background=hex;
+    b.title=title+' '+hex;
+    b.setAttribute('aria-label',title+' '+hex);
+    b.addEventListener('click',()=>onClick(hex));
+    return b;
+  }
+
+  function renderStandard(){
+    const box=q('colorStudioStandard');box.innerHTML='';
+    palette.forEach(([name,hex])=>box.appendChild(swatch(hex,name,h=>setCurrent(h,true))));
+  }
+  function renderRecent(){
+    const box=q('colorStudioRecent');box.innerHTML='';
+    if(!recent.length){box.innerHTML='<div class="color-studio-empty">Colors you use will appear here.</div>';return;}
+    recent.forEach(hex=>box.appendChild(swatch(hex,'Recent',h=>setCurrent(h,false))));
+  }
+  function renderFavorites(){
+    const box=q('colorStudioFavorites');box.innerHTML='';
+    if(!favorites.length){box.innerHTML='<div class="color-studio-empty">Favorite colors will appear here.</div>';return;}
+    favorites.forEach(hex=>box.appendChild(swatch(hex,'Favorite',h=>setCurrent(h,false))));
+  }
+  function renderShades(){
+    const box=q('colorStudioShades');box.innerHTML='';
+    const [r,g,b]=hexToRgbLocal(currentHex);
+    const [h,s,l]=rgbToHsl(r,g,b);
+    [5,12,20,30,40,50,60,70,80,88,94,98].forEach(light=>{
+      const hex=hslToHex(h,s,light);
+      box.appendChild(swatch(hex,'Shade/tint',h2=>setCurrent(h2,true)));
+    });
+  }
+
+  function targetName(picker){
+    const control=picker?.closest('.control') || picker?.closest('.required-color-cell') || picker?.closest('.gradient-stop');
+    const label=control?.querySelector('label')?.textContent?.trim();
+    if(label) return label;
+    return picker?.id || 'Selected color';
+  }
+
+  function selectTarget(picker){
+    if(!picker) return;
+    activePicker=picker;
+    const row=picker.closest('.color-row') || picker.closest('.required-color-inputs');
+    activeText=row?.querySelector('input[type="text"]') || null;
+    setCurrent(picker.value,false);
+    q('colorStudioActive').innerHTML='<strong>Editing:</strong> '+targetName(picker)+' <span style="opacity:.7">('+picker.id+')</span>';
+  }
+
+  function applyToTarget(){
+    if(!activePicker){
+      showToast('Choose a color control first');
+      return;
+    }
+    activePicker.value=currentHex.toLowerCase();
+    if(activeText) activeText.value=currentHex;
+    activePicker.dispatchEvent(new Event('input',{bubbles:true}));
+    activePicker.dispatchEvent(new Event('change',{bubbles:true}));
+    setCurrent(currentHex,true);
+    showToast('Color applied to '+targetName(activePicker));
+  }
+
+  function jumpToStudio(picker){
+    selectTarget(picker);
+    studio.open=true;
+    studio.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function enhancePicker(picker){
+    if(picker.dataset.colorStudioReady==='1') return;
+    picker.dataset.colorStudioReady='1';
+    picker.addEventListener('input',()=>selectTarget(picker));
+    picker.addEventListener('focus',()=>selectTarget(picker));
+    picker.addEventListener('click',()=>selectTarget(picker));
+
+    const row=picker.closest('.color-row') || picker.closest('.required-color-inputs');
+    if(row && !row.querySelector('.color-palette-jump')){
+      row.classList.add('color-studio-enhanced');
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='color-palette-jump';
+      btn.textContent='🎨';
+      btn.title='Open Color Studio for this setting';
+      btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();jumpToStudio(picker);});
+      row.appendChild(btn);
+    }
+  }
+
+  function enhanceAll(){
+    document.querySelectorAll('input[type="color"]').forEach(p=>{
+      if(p.id==='colorStudioPicker') return;
+      enhancePicker(p);
+    });
+  }
+
+  const observer=new MutationObserver(()=>enhanceAll());
+  observer.observe(document.body,{childList:true,subtree:true});
+  enhanceAll();
+
+  q('colorStudioPicker').addEventListener('input',()=>setCurrent(q('colorStudioPicker').value,false));
+  q('colorStudioHex').addEventListener('input',()=>{const v=normHex(q('colorStudioHex').value);if(v)setCurrent(v,false);});
+  q('colorStudioRgb').addEventListener('change',()=>{
+    const nums=q('colorStudioRgb').value.match(/-?\d+(?:\.\d+)?/g);
+    if(!nums||nums.length<3)return;
+    setCurrent(rgbToHex(nums[0],nums[1],nums[2]),false);
+  });
+  q('colorStudioHsl').addEventListener('change',()=>{
+    const nums=q('colorStudioHsl').value.match(/-?\d+(?:\.\d+)?/g);
+    if(!nums||nums.length<3)return;
+    setCurrent(hslToHex(nums[0],nums[1],nums[2]),false);
+  });
+
+  function bindSlider(rangeId,numId,index){
+    const range=q(rangeId),num=q(numId);
+    const update=value=>{
+      const [r,g,b]=hexToRgbLocal(currentHex);
+      const hsl=rgbToHsl(r,g,b);
+      hsl[index]=Number(value);
+      setCurrent(hslToHex(hsl[0],hsl[1],hsl[2]),false);
+    };
+    range.addEventListener('input',()=>update(range.value));
+    num.addEventListener('input',()=>update(num.value));
+  }
+  bindSlider('colorStudioHue','colorStudioHueNum',0);
+  bindSlider('colorStudioSat','colorStudioSatNum',1);
+  bindSlider('colorStudioLight','colorStudioLightNum',2);
+
+  q('colorStudioApply').addEventListener('click',applyToTarget);
+  q('colorStudioFavorite').addEventListener('click',()=>{
+    favorites=[currentHex,...favorites.filter(x=>x!==currentHex)].slice(0,40);
+    localStorage.setItem('ao3ColorStudioFavorites',JSON.stringify(favorites));
+    renderFavorites();
+    showToast('Color added to favorites');
+  });
+  q('colorStudioCopy').addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(currentHex);showToast('HEX copied');}
+    catch(e){q('colorStudioHex').select();document.execCommand('copy');showToast('HEX copied');}
+  });
+  q('colorStudioClearRecent').addEventListener('click',()=>{
+    recent=[];localStorage.setItem('ao3ColorStudioRecent','[]');renderRecent();
+  });
+
+  renderStandard();renderRecent();renderFavorites();setCurrent(currentHex,false);
+})();
+</script>
