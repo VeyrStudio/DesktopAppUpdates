@@ -99,7 +99,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $version = '1.0.0'
+          $version = '1.0.1'
           $exe = (Resolve-Path 'publish/TheCatalog/TheCatalog.exe').Path
           $exeBytes = [IO.File]::ReadAllBytes($exe)
           $base64 = [Convert]::ToBase64String($exeBytes)
@@ -141,7 +141,7 @@ jobs:
             version = $version
             payloadSha256 = $payloadSha
             payloadParts = $parts
-            notes = 'First native WPF release of The Catalog with local story storage, mood boards, backups, automatic updates, and the manual Update button.'
+            notes = 'Adds The Catalog's worn burgundy rose icon to the Windows executable and app windows while keeping local story data, backups, automatic updates, and the manual Update button unchanged.'
           }
           [IO.File]::WriteAllText(
             (Join-Path $catalogStage 'manifest.json'),
@@ -158,7 +158,7 @@ jobs:
             payloadPartCount = $parts.Count
           }
           [IO.File]::WriteAllText(
-            (Join-Path $catalogStage '1.0.0-validation.json'),
+            (Join-Path $catalogStage '1.0.1-validation.json'),
             ($validation | ConvertTo-Json -Depth 5),
             $utf8
           )
@@ -177,7 +177,7 @@ jobs:
           git add the-catalog
           $changes = git status --porcelain
           if ($changes) {
-            git commit -m "Release The Catalog WPF 1.0.0"
+            git commit -m "Release The Catalog WPF 1.0.1"
             git push origin HEAD:main
           }
           Pop-Location
