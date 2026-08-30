@@ -2,29 +2,29 @@
   "schemaVersion": 1,
   "appId": "the-catalog-wpf",
   "appName": "The Catalog",
-  "version": "1.0.8",
-  "payloadSha256": "fd7e6f9648b71c67e700b6aa925f8ac1f182eeafef6ff13bec3bf70c57c1da43",
+  "version": "1.0.9",
+  "payloadSha256": "922abc824653a902cd94e91cc289b778b9c4190973cd8317d29bef57cfc67c99",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-001.txt",
-      "sha256": "280588f6ada55fed5b8dbfc6c40b2988bcaf4f8bbcf5748aeec59e9607589aa8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-001.txt",
+      "sha256": "0ae417185eba82b336d628532d8b5f71cfe79b46d966ba46444bccbdb94c0045"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-002.txt",
-      "sha256": "adf034ac90a2719cd7400747206470a193325796ec609126d530d564ef7a42e1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-002.txt",
+      "sha256": "c809d97adfd958c3426349e07ee871acbf8356dbb9dde8b858aa6c81336076f5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-003.txt",
-      "sha256": "fb9f87c7fd91f17f16791d33efe8894e784ae04945ab93f663c68864d100d781"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-003.txt",
+      "sha256": "1fdcbab6abe310868f535d27d4cb5874a235fd7ee40bd6d4be841369e748f54f"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-004.txt",
-      "sha256": "c5a324467acf4699ed43b185be7ee029ae45a462a06dee1b66ed6a6e3a11da2e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-004.txt",
+      "sha256": "048054acbd6aeb86074f6f3b7ad6dee7567c7f85f8cb2f0b8894d93dabf4ceaa"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.8-part-005.txt",
-      "sha256": "74854eef7520d58d242defc5042e483ea1ad48cc2dff142952462e14d153f9f6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-catalog/payload-1.0.9-part-005.txt",
+      "sha256": "877276db5c0a4e392b39616da1a9687fceea13897824ca64b43365670f3acb19"
     }
   ],
-  "notes": "Story workflow update: wider story cards and title-card previews, a dedicated autosaving Edit Story window, and .catalogentry importing by button or drag-and-drop for complete story entries with title card and mood-board images."
+  "notes": "Adds a visible DELETE button beside EDIT in the Story Dossier. Deletion asks for confirmation and moves the story to Recently Deleted so it can still be restored."
 }
