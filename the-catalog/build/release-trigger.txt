@@ -1,1 +1,1 @@
-The Catalog 1.0.7 readability layout release
+The Catalog 1.0.8 popup editor and catalogentry release
