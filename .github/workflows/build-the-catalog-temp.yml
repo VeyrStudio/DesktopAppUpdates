@@ -32,10 +32,12 @@ jobs:
       - name: Reconstruct source archive
         shell: pwsh
         run: |
-          $p0 = Get-Content 'the-catalog/build/source-part-00.b64' -Raw
+          $p0a = Get-Content 'the-catalog/build/source-part-00a.b64' -Raw
+          $p0b = Get-Content 'the-catalog/build/source-part-00b.b64' -Raw
+          $p0c = Get-Content 'the-catalog/build/source-part-00c.b64' -Raw
           $p1 = Get-Content 'the-catalog/build/source-part-01.b64' -Raw
           $p2 = Get-Content 'the-catalog/build/source-part-02.b64' -Raw
-          $bytes = [Convert]::FromBase64String($p0 + $p1 + $p2)
+          $bytes = [Convert]::FromBase64String($p0a + $p0b + $p0c + $p1 + $p2)
           [IO.File]::WriteAllBytes('TheCatalog-source.zip', $bytes)
           Expand-Archive -Path 'TheCatalog-source.zip' -DestinationPath 'catalog-source' -Force
 
