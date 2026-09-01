@@ -168,9 +168,9 @@ jobs:
               '        }',
               '    }',
               ''
-            )',
-            '$shortcutMethod = ($shortcutLines -join $nl) + $nl',
-            '$mainCode = $mainCode.Replace(''    private void Settings_Click'', $shortcutMethod + ''    private void Settings_Click'')'
+            )
+            $shortcutMethod = ($shortcutLines -join $nl) + $nl
+            $mainCode = $mainCode.Replace('    private void Settings_Click', $shortcutMethod + '    private void Settings_Click')
           }
 
           Set-Content -Path $mainCodePath -Value $mainCode -Encoding utf8
