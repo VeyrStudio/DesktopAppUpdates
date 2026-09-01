@@ -108,6 +108,71 @@ jobs:
             $mainCode = $mainCode.Replace('    private void Settings_Click', $viewMethod + '    private void Settings_Click')
           }
 
+
+          if ($mainCode -notmatch 'RepairExistingDesktopShortcut') {
+            $mainCode = $mainCode.Replace('        InitializeComponent();', '        InitializeComponent();' + $nl + '        RepairExistingDesktopShortcut();', 1)
+
+            $shortcutLines = @(
+              '',
+              '    private void RepairExistingDesktopShortcut()',
+              '    {',
+              '        try',
+              '        {',
+              '            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);',
+              '            var candidates = new[]',
+              '            {',
+              '                Path.Combine(desktop, "The Bookworm.lnk"),',
+              '                Path.Combine(desktop, "TheBookworm.lnk"),',
+              '                Path.Combine(desktop, "TheBookworm - Shortcut.lnk")',
+              '            };',
+              '',
+              '            var hasExistingShortcut = false;',
+              '            foreach (var candidate in candidates)',
+              '            {',
+              '                if (File.Exists(candidate)) { hasExistingShortcut = true; break; }',
+              '            }',
+              '            if (!hasExistingShortcut) return;',
+              '',
+              '            var iconDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TheBookworm");',
+              '            Directory.CreateDirectory(iconDirectory);',
+              '            var iconPath = Path.Combine(iconDirectory, "TheBookworm.ico");',
+              '',
+              '            var resource = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/TheBookworm.ico"));',
+              '            if (resource?.Stream is not null)',
+              '            {',
+              '                using var output = File.Create(iconPath);',
+              '                resource.Stream.CopyTo(output);',
+              '            }',
+              '',
+              '            var exePath = Environment.ProcessPath;',
+              '            if (string.IsNullOrWhiteSpace(exePath) || !File.Exists(exePath) || !File.Exists(iconPath)) return;',
+              '',
+              '            var shellType = Type.GetTypeFromProgID("WScript.Shell");',
+              '            if (shellType is null) return;',
+              '',
+              '            foreach (var shortcutPath in candidates)',
+              '            {',
+              '                if (!File.Exists(shortcutPath)) continue;',
+              '                dynamic shell = Activator.CreateInstance(shellType)!;',
+              '                dynamic shortcut = shell.CreateShortcut(shortcutPath);',
+              '                shortcut.TargetPath = exePath;',
+              '                shortcut.WorkingDirectory = AppContext.BaseDirectory;',
+              '                shortcut.IconLocation = iconPath + ",0";',
+              '                shortcut.Description = "The Bookworm";',
+              '                shortcut.Save();',
+              '            }',
+              '        }',
+              '        catch',
+              '        {',
+              '            // A shortcut repair should never stop Bookworm from opening.',
+              '        }',
+              '    }',
+              ''
+            )',
+            '$shortcutMethod = ($shortcutLines -join $nl) + $nl',
+            '$mainCode = $mainCode.Replace(''    private void Settings_Click'', $shortcutMethod + ''    private void Settings_Click'')'
+          }
+
           Set-Content -Path $mainCodePath -Value $mainCode -Encoding utf8
 
           foreach ($dialogName in @('SettingsWindow.xaml', 'AddBookDialog.xaml')) {
@@ -129,11 +194,11 @@ jobs:
             throw "Bookworm icon hash mismatch: $iconHash"
           }
 
-          # This polished UI build is version 0.1.2.
+          # This shortcut-icon repair build is version 0.1.3.
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.2</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.2.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.2.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.3</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.3.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.3.0</FileVersion>')
           $projectText = $projectText.Replace('<ApplicationIcon></ApplicationIcon>', '<ApplicationIcon>Assets\TheBookworm.ico</ApplicationIcon>')
           $projectText = $projectText.Replace('<Resource Include="Assets\bookworm-placeholder.jpg" />', '<Resource Include="Assets\bookworm-placeholder.jpg" />' + "`r`n    " + '<Resource Include="Assets\TheBookworm.ico" />')
           Set-Content -Path $project -Value $projectText -Encoding utf8
