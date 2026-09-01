@@ -90,3 +90,26 @@ test("speaker labels remain editable after a lecture ends", async () => {
   assert.match(renderer, /Change speaker/);
   assert.match(renderer, /setSegmentSpeaker\(segments, segmentIndex/);
 });
+
+test("finished lectures can be re-transcribed without replacing a usable transcript on failure", async () => {
+  const renderer = await readFile(new URL("../src/app.js", import.meta.url), "utf8");
+  assert.match(renderer, /Re-transcribe/);
+  assert.match(renderer, /processSavedLecture\(lecture, \{ force: true \}\)/);
+  assert.match(renderer, /const hadTranscript/);
+  assert.match(renderer, /current transcript will only be replaced if the new pass succeeds/);
+});
+
+test("classroom capture preserves distant voices instead of treating them as call noise", async () => {
+  const renderer = await readFile(new URL("../src/app.js", import.meta.url), "utf8");
+  assert.match(renderer, /echoCancellation: false/);
+  assert.match(renderer, /noiseSuppression: false/);
+  assert.match(renderer, /autoGainControl: true/);
+});
+
+test("transcription suppresses non-speech tokens and rejects unreliable output", async () => {
+  const processor = await readFile(new URL("../electron/processor.cjs", import.meta.url), "utf8");
+  assert.match(processor, /"-sns"/);
+  assert.match(processor, /SIDE CONVERSATION/);
+  assert.match(processor, /parsed\.quality\.reliable/);
+  assert.match(processor, /unreliable: true/);
+});

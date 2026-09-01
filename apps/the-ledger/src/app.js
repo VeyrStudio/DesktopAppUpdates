@@ -356,7 +356,7 @@ function renderNotebook() {
   </div>
   <div class="notebook-controls">
     <div class="toolbar"><button id="notebook-back" class="secondary-button">All Lectures</button><button id="export-lecture" class="secondary-button">Export</button>${recording ? "" : `<button id="delete-lecture" class="danger-button">Delete Lecture</button>`}</div>
-    ${recording ? `<div class="toolbar"><span id="lecture-timer" class="timer">00:00:00</span><button id="pause-recording" class="secondary-button">Pause</button><button id="finish-recording" class="danger-button">Finish</button></div>` : `<div class="toolbar"><button id="listen-audio" class="secondary-button" ${lecture.audioPath ? "" : "disabled"}>Play Audio</button></div>`}
+    ${recording ? `<div class="toolbar"><span id="lecture-timer" class="timer">00:00:00</span><button id="pause-recording" class="secondary-button">Pause</button><button id="finish-recording" class="danger-button">Finish</button></div>` : `<div class="toolbar"><button id="listen-audio" class="secondary-button" ${lecture.audioPath ? "" : "disabled"}>Play Audio</button>${lecture.audioPath ? `<button id="retranscribe-lecture" class="secondary-button" ${lecture.status === "processing" ? "disabled" : ""}>${lecture.status === "processing" ? "Processing…" : "Re-transcribe"}</button>` : ""}</div>`}
   </div>`;
   document.querySelector("#lecture-notes").addEventListener("input", (event) => {
     lecture.notes = event.target.value;
@@ -374,6 +374,7 @@ function renderNotebook() {
   document.querySelector("#notebook-back").addEventListener("click", () => { selectedLectureId = null; renderNotebook(); });
   document.querySelector("#export-lecture").addEventListener("click", () => exportLecture(lecture));
   document.querySelector("#delete-lecture")?.addEventListener("click", () => confirmDeleteLecture(lecture));
+  document.querySelector("#retranscribe-lecture")?.addEventListener("click", () => confirmRetranscribeLecture(lecture));
   document.querySelector("#pause-recording")?.addEventListener("click", pauseOrResumeRecording);
   document.querySelector("#finish-recording")?.addEventListener("click", () => finishLecture(false));
   document.querySelector("#listen-audio")?.addEventListener("click", () => toast("Audio playback controls will open from the packaged recording file."));
@@ -418,9 +419,9 @@ async function startLecture(classId) {
   await persist();
   renderNotebook();
   try {
-    const constraints = state.settings.microphoneId && state.settings.microphoneId !== "default"
-      ? { audio: { deviceId: { exact: state.settings.microphoneId }, echoCancellation: true, noiseSuppression: true } }
-      : { audio: { echoCancellation: true, noiseSuppression: true } };
+    const lectureAudio = { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1 };
+    if (state.settings.microphoneId && state.settings.microphoneId !== "default") lectureAudio.deviceId = { exact: state.settings.microphoneId };
+    const constraints = { audio: lectureAudio };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"].find((type) => MediaRecorder.isTypeSupported(type)) || "";
     const mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
@@ -547,15 +548,17 @@ async function importRecording(classId) {
   for (const lecture of state.lectures.filter((item) => paths.some((sourcePath) => item.importName === sourcePath.split(/[\\/]/).pop()))) processSavedLecture(lecture);
 }
 
-async function processSavedLecture(lecture) {
-  if (!lecture?.audioPath || lecture.status === "processing" || lecture.status === "ready") return;
+async function processSavedLecture(lecture, { force = false } = {}) {
+  if (!lecture?.audioPath || lecture.status === "processing" || (!force && lecture.status === "ready")) return;
+  const hadTranscript = Boolean(lecture.cleanedTranscript || lecture.originalTranscript || lecture.transcriptSegments?.length);
   lecture.status = "processing";
   await persist();
   if (selectedLectureId === lecture.id) renderNotebook();
   const result = await api.processLecture(lecture.id, lecture.audioPath);
   if (!result.ok) {
-    lecture.status = result.unavailable ? "saved" : "processing-error";
-    if (!result.unavailable) addNotification("Lecture processing failed", result.message || lecture.title, "error");
+    lecture.status = result.unavailable ? "saved" : (hadTranscript ? "transcript-warning" : "processing-error");
+    lecture.processingMessage = result.message || "The transcript could not be completed.";
+    if (!result.unavailable) addNotification(result.unreliable ? "Transcript needs attention" : "Lecture processing failed", result.message || lecture.title, "error");
     await persist();
     if (selectedLectureId === lecture.id) renderNotebook();
     return;
@@ -570,6 +573,18 @@ async function processSavedLecture(lecture) {
   document.querySelector("#sidebar-status").textContent = "Ready";
   await persist();
   if (selectedLectureId === lecture.id) renderNotebook();
+}
+
+function confirmRetranscribeLecture(lecture) {
+  if (!lecture.audioPath || lecture.status === "processing") return;
+  showModal(`<div class="modal-header"><div><span class="eyebrow">RE-TRANSCRIBE</span><h2>Process this lecture again?</h2></div><button class="icon-button" data-close-modal type="button">×</button></div>
+    <div class="modal-body"><p>The Ledger will process the saved lecture again using the improved classroom settings. Your notes and markers will stay untouched, and the current transcript will only be replaced if the new pass succeeds.</p></div>
+    <div class="modal-footer"><button class="secondary-button" data-close-modal type="button">Cancel</button><button id="confirm-retranscribe" class="primary-button" type="button">Re-transcribe</button></div>`);
+  document.querySelector("#confirm-retranscribe").addEventListener("click", async () => {
+    closeModal();
+    toast("Re-transcribing lecture…");
+    await processSavedLecture(lecture, { force: true });
+  });
 }
 
 function addMarker(lecture, type) {
@@ -938,7 +953,7 @@ function formatDuration(seconds = 0) {
 }
 
 function statusText(status) {
-  return ({ active: "Active", starting: "Starting", saved: "Saved", queued: "Queued", processing: "Processing", ready: "Ready", recovered: "Recovered", "audio-error": "Audio issue", "processing-error": "Processing issue", importing: "Importing" })[status] || "Saved";
+  return ({ active: "Active", starting: "Starting", saved: "Saved", queued: "Queued", processing: "Processing", ready: "Ready", recovered: "Recovered", "audio-error": "Audio issue", "processing-error": "Processing issue", "transcript-warning": "Transcript needs attention", importing: "Importing" })[status] || "Saved";
 }
 
 function schedulePersist() {

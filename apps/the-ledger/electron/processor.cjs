@@ -1,11 +1,13 @@
-const { app } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const path = require("node:path");
 const os = require("node:os");
 
+const NON_SPEECH_CAPTION_PATTERN = /\[(?:MUSIC(?: PLAYING)?|SIDE CONVERSATION|BLANK[_ ]AUDIO|BACKGROUND NOISE|CROSSTALK|NOISE|LAUGHTER|APPLAUSE|SILENCE|INAUDIBLE)\]/gi;
+
 function resourcesRoot() {
+  const { app } = require("electron");
   return app.isPackaged
     ? path.join(process.resourcesPath, "resources")
     : path.join(__dirname, "..", "resources");
@@ -53,16 +55,45 @@ function timestampSeconds(value) {
   return parts.reduce((total, part) => total * 60 + part, 0);
 }
 
+function cleanWhisperText(value) {
+  return String(value || "")
+    .replace(NON_SPEECH_CAPTION_PATTERN, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function assessTranscriptQuality(rawTexts, cleanedSegments) {
+  const captionCount = rawTexts.reduce((total, value) => total + (String(value).match(NON_SPEECH_CAPTION_PATTERN) || []).length, 0);
+  const spokenText = cleanedSegments.map((segment) => segment.text).join(" ").trim();
+  const wordCount = spokenText.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g)?.length || 0;
+  const normalizedSegments = rawTexts
+    .map((value) => cleanWhisperText(value).toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim())
+    .filter((value) => value.length >= 4);
+  const repetitions = new Map();
+  for (const value of normalizedSegments) repetitions.set(value, (repetitions.get(value) || 0) + 1);
+  const largestRepetition = Math.max(0, ...repetitions.values());
+  const captionLoop = captionCount >= 8 && captionCount > Math.max(4, Math.ceil(wordCount / 3));
+  const textLoop = largestRepetition >= 8 && largestRepetition >= Math.ceil(Math.max(1, normalizedSegments.length) * 0.35);
+  return {
+    reliable: wordCount > 0 && !captionLoop && !textLoop,
+    captionCount,
+    wordCount,
+    largestRepetition
+  };
+}
+
 function parseWhisperJson(json) {
   const rawSegments = json.transcription || json.segments || json.result?.segments || [];
+  const rawTexts = rawSegments.map((segment) => String(segment.text || ""));
   const segments = rawSegments.map((segment) => ({
-    start: timestampSeconds(segment.timestamps?.from ?? segment.start ?? segment.offsets?.from),
-    end: timestampSeconds(segment.timestamps?.to ?? segment.end ?? segment.offsets?.to),
-    speaker: "Unidentified Speaker",
-    text: String(segment.text || "").trim()
-  })).filter((segment) => segment.text);
+      start: timestampSeconds(segment.timestamps?.from ?? segment.start ?? segment.offsets?.from),
+      end: timestampSeconds(segment.timestamps?.to ?? segment.end ?? segment.offsets?.to),
+      speaker: "Unidentified Speaker",
+      text: cleanWhisperText(segment.text)
+    }))
+    .filter((segment) => segment.text);
   const text = segments.map((segment) => segment.text).join(" ").replace(/\s+/g, " ").trim();
-  return { segments, text };
+  return { segments, text, quality: assessTranscriptQuality(rawTexts, segments) };
 }
 
 function extractReview(text) {
@@ -97,13 +128,20 @@ async function processLecture(audioPath, onProgress = () => {}) {
   try {
     onProgress({ stage: "audio", message: "Preparing lecture audio" });
     if (engines.ffmpeg && engines.ffmpeg !== "ffmpeg") {
-      await run(engines.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-i", audioPath, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath]);
+      await run(engines.ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-i", audioPath, "-vn", "-af", "highpass=f=70,loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath]);
     } else {
-      await run(engines.ffmpeg || "ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", audioPath, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath]);
+      await run(engines.ffmpeg || "ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", audioPath, "-vn", "-af", "highpass=f=70,loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath]);
     }
     onProgress({ stage: "transcription", message: "Creating local transcript" });
-    await run(engines.whisper, ["-m", engines.model, "-f", wavPath, "-l", "en", "-oj", "-of", outputPrefix, "-nt"]);
+    await run(engines.whisper, ["-m", engines.model, "-f", wavPath, "-l", "en", "-oj", "-of", outputPrefix, "-sns"]);
     const parsed = parseWhisperJson(JSON.parse(await fsp.readFile(`${outputPrefix}.json`, "utf8")));
+    if (!parsed.quality.reliable) {
+      return {
+        ok: false,
+        unreliable: true,
+        message: "The Ledger could not create a reliable transcript from this lecture. The saved lecture was kept so you can try Re-transcribe."
+      };
+    }
     return {
       ok: true,
       originalTranscript: parsed.text,
@@ -116,4 +154,4 @@ async function processLecture(audioPath, onProgress = () => {}) {
   }
 }
 
-module.exports = { processLecture, enginePaths, parseWhisperJson, extractReview };
+module.exports = { processLecture, enginePaths, parseWhisperJson, extractReview, cleanWhisperText, assessTranscriptQuality };
