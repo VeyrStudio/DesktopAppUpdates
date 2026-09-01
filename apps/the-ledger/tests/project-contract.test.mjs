@@ -113,3 +113,15 @@ test("transcription suppresses non-speech tokens and rejects unreliable output",
   assert.match(processor, /parsed\.quality\.reliable/);
   assert.match(processor, /unreliable: true/);
 });
+
+test("already-saved caption loops are cleaned on startup and persisted", async () => {
+  const [renderer, core] = await Promise.all([
+    readFile(new URL("../src/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../core/ledger-core.mjs", import.meta.url), "utf8")
+  ]);
+  assert.match(renderer, /cleanSavedTranscriptCaptions\(loadedState\)/);
+  assert.match(renderer, /cleanedSavedState\.changed/);
+  assert.match(core, /SIDE CONVERSATION/);
+  assert.match(core, /transcriptSegments/);
+  assert.match(core, /summary/);
+});

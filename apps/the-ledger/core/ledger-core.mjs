@@ -9,6 +9,43 @@ const timeFormatter = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit"
 });
 
+const NON_SPEECH_CAPTION_PATTERN = /\[(?:MUSIC(?: PLAYING)?|SIDE CONVERSATION|BLANK[_ ]AUDIO|BACKGROUND NOISE|CROSSTALK|NOISE|LAUGHTER|APPLAUSE|SILENCE|INAUDIBLE)\]/gi;
+
+export function cleanTranscriptCaptions(value) {
+  return String(value || "")
+    .replace(NON_SPEECH_CAPTION_PATTERN, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function cleanSavedTranscriptCaptions(inputState) {
+  const lectures = (inputState?.lectures || []).map((lecture) => ({
+    ...lecture,
+    originalTranscript: cleanTranscriptCaptions(lecture.originalTranscript),
+    cleanedTranscript: cleanTranscriptCaptions(lecture.cleanedTranscript),
+    transcriptSegments: Array.isArray(lecture.transcriptSegments)
+      ? lecture.transcriptSegments
+        .map((segment) => ({ ...segment, text: cleanTranscriptCaptions(segment.text) }))
+        .filter((segment) => segment.text)
+      : lecture.transcriptSegments,
+    review: lecture.review ? {
+      ...lecture.review,
+      summary: cleanTranscriptCaptions(lecture.review.summary),
+      keyConcepts: (lecture.review.keyConcepts || []).map(cleanTranscriptCaptions).filter(Boolean),
+      testMaterial: (lecture.review.testMaterial || []).map(cleanTranscriptCaptions).filter(Boolean),
+      unclearTopics: (lecture.review.unclearTopics || []).map(cleanTranscriptCaptions).filter(Boolean),
+      assignments: (lecture.review.assignments || [])
+        .map((item) => ({ ...item, text: cleanTranscriptCaptions(item.text) }))
+        .filter((item) => item.text),
+      definitions: (lecture.review.definitions || [])
+        .map((item) => ({ ...item, term: cleanTranscriptCaptions(item.term), definition: cleanTranscriptCaptions(item.definition) }))
+        .filter((item) => item.term || item.definition)
+    } : lecture.review
+  }));
+  const changed = JSON.stringify(lectures) !== JSON.stringify(inputState?.lectures || []);
+  return { state: { ...(inputState || {}), lectures }, changed };
+}
+
 export function toLocalDateKey(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
   const y = date.getFullYear();

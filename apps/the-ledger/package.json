@@ -1,6 +1,6 @@
 {
   "name": "the-ledger",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A discreet, local-first lecture capture and transcription app.",
   "main": "electron/main.cjs",
   "author": "VeyrStudio",

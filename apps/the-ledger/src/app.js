@@ -12,7 +12,8 @@ import {
   searchLedger,
   removeLecture,
   applySpeakerMarks,
-  setSegmentSpeaker
+  setSegmentSpeaker,
+  cleanSavedTranscriptCaptions
 } from "../core/ledger-core.mjs";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -121,7 +122,10 @@ function browserFallback() {
 const api = window.ledgerAPI || browserFallback();
 
 async function initialize() {
-  state = mergeState(await api.loadState());
+  const loadedState = mergeState(await api.loadState());
+  const cleanedSavedState = cleanSavedTranscriptCaptions(loadedState);
+  state = cleanedSavedState.state;
+  if (cleanedSavedState.changed) await api.saveState(state);
   appInfo = await api.getAppInfo();
   appRoot.dataset.size = state.settings.textSize;
   document.body.classList.toggle("reduce-motion", state.settings.reduceMotion);

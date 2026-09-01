@@ -12,6 +12,8 @@ import {
   removeLecture,
   searchLedger,
   setSegmentSpeaker,
+  cleanTranscriptCaptions,
+  cleanSavedTranscriptCaptions,
   toLocalDateKey
 } from "../core/ledger-core.mjs";
 
@@ -85,4 +87,30 @@ test("an individual transcript speaker can be corrected without changing other s
   const next = setSegmentSpeaker(segments, 1, "Me");
   assert.deepEqual(next.map((segment) => segment.speaker), ["Professor", "Me"]);
   assert.deepEqual(segments.map((segment) => segment.speaker), ["Professor", "Student"]);
+});
+
+test("old non-speech captions are removed without changing real lecture words", () => {
+  assert.equal(
+    cleanTranscriptCaptions("[MUSIC PLAYING] The professor begins. [SIDE CONVERSATION] The lecture continues. [BLANK_AUDIO]"),
+    "The professor begins. The lecture continues."
+  );
+});
+
+test("saved transcripts, visible segments, and summaries are cleaned together", () => {
+  const input = {
+    lectures: [{
+      id: "lecture-1",
+      notes: "Keep [SIDE CONVERSATION] exactly as typed in personal notes.",
+      originalTranscript: "[SIDE CONVERSATION] Real sentence.",
+      cleanedTranscript: "Real sentence. [SIDE CONVERSATION]",
+      transcriptSegments: [{ start: 0, text: "[SIDE CONVERSATION]" }, { start: 5, text: "Real sentence." }],
+      review: { summary: "[SIDE CONVERSATION] Real summary.", assignments: [], definitions: [], keyConcepts: [], testMaterial: [], unclearTopics: [] }
+    }]
+  };
+  const result = cleanSavedTranscriptCaptions(input);
+  assert.equal(result.changed, true);
+  assert.equal(result.state.lectures[0].cleanedTranscript, "Real sentence.");
+  assert.deepEqual(result.state.lectures[0].transcriptSegments.map((segment) => segment.text), ["Real sentence."]);
+  assert.equal(result.state.lectures[0].review.summary, "Real summary.");
+  assert.equal(result.state.lectures[0].notes, input.lectures[0].notes);
 });
