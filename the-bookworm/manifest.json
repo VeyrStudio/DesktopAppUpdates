@@ -2,57 +2,57 @@
   "schemaVersion": 1,
   "appId": "the-bookworm-wpf",
   "appName": "The Bookworm",
-  "version": "0.1.4",
-  "payloadSha256": "35017cb41b5b5e3bb7595006e0b880fc832e53866c16c5c8c96e5f52d9257574",
-  "executableSha256": "acdb82b210086e416491717c3ab7f6cf56cf97e2849dc8e4cec5754b6c3f0526",
+  "version": "0.1.5",
+  "payloadSha256": "cf6764321a583fa5c2289cbe5c2603584feec33aae4947319698112b3c9f70f0",
+  "executableSha256": "6ced569e9e5396d631c82abf4b0b065092cd6de584c85c8718c09e0ce23af0b0",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-001.txt",
-      "sha256": "3730eddc76714b0e7d2ea4b73cc5476d14039a75a731c70da2ad3240db85b95a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-001.txt",
+      "sha256": "57eeac20852ff9b0a50d1212bd5b1ed4f91ab2ff4cf721c9ab64a0ef7db21be0"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-002.txt",
-      "sha256": "d823d43df3ec3880ea8dd77593fc7ec771e9e2acf345a900d0acbd95cdb2e9ff"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-002.txt",
+      "sha256": "94b908649f1d1dbe4b26ee2978163d9f5b70d7ff74e61413e0384200df935ae5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-003.txt",
-      "sha256": "bbc0ec45f49119ced1062f615a3fec5dc6682bdb2df86bcf35b71fb3949e21c5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-003.txt",
+      "sha256": "ddf77621a015f44ea5831a0592c68185df383ae6155df288733bbf915925cadc"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-004.txt",
-      "sha256": "0c1e0f7ef464c17f4fa45b10cdcbfd37e7deb22b208468679c07ca3d3a575345"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-004.txt",
+      "sha256": "a9cc5943ec36ef88ebff0cf2246e786d4bb65a493af94bf745e4716d8e983444"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-005.txt",
-      "sha256": "f9d7f2f4439c9dce05cd9d7eef44c30777085cba41acf20a6cba454e783bdf6e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-005.txt",
+      "sha256": "ea04e5073d6c64d362a812be3338873c2edeb049522974680814f6c2606f8276"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-006.txt",
-      "sha256": "f49f009278e51cc29604af251359a3286ea28eb7c4b1faf054ca98da19296f1d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-006.txt",
+      "sha256": "2e4bf57f0bce8f664ffca2be21c2f324604c556105c85ffe9168db1eb2e5582f"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-007.txt",
-      "sha256": "8bc2af7009ff64113eda71f561b4c32537030c69b594a1b109a2a97a0a07d4ea"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-007.txt",
+      "sha256": "0d5f98dc8eb65d7c8ee81b9441913269d3b1c36cf71be2ebb6a0a192abf2f11a"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-008.txt",
-      "sha256": "1487534bcec165f9cf47e0d806c7581c09f04ae1cde2a66e1140a24cac6d4262"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-008.txt",
+      "sha256": "bbb1d63304ee184a50e873de065839e183f8c9d7210a06f9d9d919602b440223"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-009.txt",
-      "sha256": "e539d212729d8dc4eb95717f58c2afda22b3294ed1a95febe3b1e7439d4a0579"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-009.txt",
+      "sha256": "7f1f1ea427dad88432a581b1564b58e5caca8657e1ffaef2b638017dd64e0db5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-010.txt",
-      "sha256": "c2694f4dce65f78360d7aff966b9b8e8a938146f76b4b2ef6d0e093808f7e220"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-010.txt",
+      "sha256": "9d5728cacd411c1d324111d472b648362bdb53b9d07d2ddbb2eab1045ef09061"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-011.txt",
-      "sha256": "4b156eebd3d9f2f972f2b56ef4266e2b61e3c164191125caf7c34e592d00da51"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-011.txt",
+      "sha256": "9a8f173756cc90868a5540a88be75258c3873893a52b6e731aa47d3fdfb3a320"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.4-part-012.txt",
-      "sha256": "38618dd030c80a5b189da9ed6b6e3243c46c9c81c1ecda05f9a2a84ebe9a9f13"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-bookworm/payload-0.1.5-part-012.txt",
+      "sha256": "9c532eb37c3fcafc3ffbcb0bb9b92b782b991f099e0e12d41891a188f4301f38"
     }
   ],
   "notes": "The Bookworm update."
