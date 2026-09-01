@@ -195,15 +195,15 @@ jobs:
           $iconPath = Join-Path $source 'Assets\TheBookworm.ico'
           [IO.File]::WriteAllBytes($iconPath, [Convert]::FromBase64String($iconBase64))
           $iconHash = (Get-FileHash $iconPath -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($iconHash -ne '5c0cf0f69289dd433645374ab864b4b3eb3c670196b532f90d0460bdc41908c2') {
+          if ($iconHash -ne '2074f74df6775393a6d3971d321d5dbaeb0a202294582b6ff36a16b1ce203983') {
             throw "Bookworm icon hash mismatch: $iconHash"
           }
 
-          # This make-shortcut-button build is version 0.1.4.
+          # This corrected official-icon build is version 0.1.5.
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.4</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.4.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.4.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.5</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.5.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.5.0</FileVersion>')
           $projectText = $projectText.Replace('<ApplicationIcon></ApplicationIcon>', '<ApplicationIcon>Assets\TheBookworm.ico</ApplicationIcon>')
           $projectText = $projectText.Replace('<Resource Include="Assets\bookworm-placeholder.jpg" />', '<Resource Include="Assets\bookworm-placeholder.jpg" />' + "`r`n    " + '<Resource Include="Assets\TheBookworm.ico" />')
           Set-Content -Path $project -Value $projectText -Encoding utf8
