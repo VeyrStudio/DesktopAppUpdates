@@ -1,9 +1,9 @@
 {
   "app": "The Ledger",
   "channel": "ledger",
-  "version": "0.2.2",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledger-v0.2.2/TheLedgerSetup-0.2.2.exe",
-  "sha256": "525399776dbd52b272118c749259cd2c0c90b3e3ffcef23ccf87b58e851fe7a9",
-  "publishedAt": "2026-09-01T01:03:00.902Z",
+  "version": "0.2.3",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledger-v0.2.3/TheLedgerSetup-0.2.3.exe",
+  "sha256": "09d3afb4b1633489913ec587de99d7d92b5ffdb3510afef6e7b25efbaf0188b5",
+  "publishedAt": "2026-09-01T06:24:50.645Z",
   "notes": "See the release notes for this version."
 }
