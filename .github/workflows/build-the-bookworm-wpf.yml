@@ -7,6 +7,7 @@ on:
       - "apps/the-bookworm/source-parts/**"
       - "apps/the-bookworm/icon-base64.txt"
       - "apps/the-bookworm/overrides-v012/**"
+      - "apps/the-bookworm/overrides-v014/**"
       - ".github/workflows/build-the-bookworm-wpf.yml"
 
 permissions:
@@ -185,6 +186,10 @@ jobs:
             Set-Content -Path $dialogPath -Value $dialogText -Encoding utf8
           }
 
+          # Apply the 0.1.4 Settings update with an explicit Make Shortcut button.
+          Copy-Item 'apps/the-bookworm/overrides-v014/SettingsWindow.xaml' (Join-Path $source 'SettingsWindow.xaml') -Force
+          Copy-Item 'apps/the-bookworm/overrides-v014/SettingsWindow.xaml.cs' (Join-Path $source 'SettingsWindow.xaml.cs') -Force
+
           # Install the official Bookworm icon supplied for the app.
           $iconBase64 = (Get-Content 'apps/the-bookworm/icon-base64.txt' -Raw).Trim()
           $iconPath = Join-Path $source 'Assets\TheBookworm.ico'
@@ -194,11 +199,11 @@ jobs:
             throw "Bookworm icon hash mismatch: $iconHash"
           }
 
-          # This shortcut-icon repair build is version 0.1.3.
+          # This make-shortcut-button build is version 0.1.4.
           $projectText = Get-Content $project -Raw
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.3</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.3.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.3.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.4</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.4.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.4.0</FileVersion>')
           $projectText = $projectText.Replace('<ApplicationIcon></ApplicationIcon>', '<ApplicationIcon>Assets\TheBookworm.ico</ApplicationIcon>')
           $projectText = $projectText.Replace('<Resource Include="Assets\bookworm-placeholder.jpg" />', '<Resource Include="Assets\bookworm-placeholder.jpg" />' + "`r`n    " + '<Resource Include="Assets\TheBookworm.ico" />')
           Set-Content -Path $project -Value $projectText -Encoding utf8
