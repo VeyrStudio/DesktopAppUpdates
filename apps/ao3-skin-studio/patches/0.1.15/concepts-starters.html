@@ -232,16 +232,187 @@
   if(!insertBefore || q('conceptsStartersSection')) return;
 
   const BUILTIN_CONCEPTS = [
-    /* Updater-delivered concepts are inserted here in future releases.
-       Schema:
-       {
-         id, name, description, version, palette,
-         controls: { elementId: value, ... },
-         gradients: {...},
-         images: [{url,placement,position,fit,opacity}],
-         bottomBorder: {url,height,opacity,fit,repeat}
-       }
-    */
+    {
+      schemaVersion:1,
+      type:'ao3-skin-studio-concept',
+      id:'starter-falling-angle',
+      source:'builtin',
+      name:'Falling Angle',
+      description:'Dark celestial romance: near-black archive surfaces, antique-gold borders and headings, warm ivory text, restrained bronze glow, and elegant serif typography inspired by a fallen-angel / heavenly power aesthetic.',
+      version:1,
+      palette:['#070707','#11100E','#2A2117','#6D5432','#B28B52','#E7D6B6','#F4E7CB'],
+      controls:{
+        bgColor:'#070707',
+        bgFixed:true,
+        accentColor:'#B28B52',
+        textColor:'#E7D6B6',
+        mutedColor:'#A9987D',
+        linkColor:'#D0AC70',
+        hoverColor:'#F4E1B2',
+        fontFamily:'Georgia, serif',
+        fontSize:'15',
+        logoTextSize:'27',
+        userTextSize:'13',
+        navTextSize:'14',
+        headingTextSize:'24',
+        workTitleTextSize:'18',
+        metaTextSize:'13',
+        tagTextSize:'12',
+        statsTextSize:'12',
+        formHeadingTextSize:'19',
+        labelTextSize:'13',
+        inputTextSize:'14',
+        buttonTextSize:'12',
+        footerTextSize:'12',
+        panelColor:'#11100E',
+        panelOpacity:'88',
+        borderColor:'#6D5432',
+        radius:'3',
+        transparentInputs:false,
+        inputColor:'#0E0E0E',
+        inputOpacity:'94',
+        requiredTagFont:'Georgia, serif',
+        requiredTagSize:'11',
+
+        req_ratingGeneral_bg:'#4D4326',
+        req_ratingGeneral_fg:'#F4E7CB',
+        req_ratingTeen_bg:'#745A2C',
+        req_ratingTeen_fg:'#FFF1C8',
+        req_ratingMature_bg:'#6A432A',
+        req_ratingMature_fg:'#FFE1BF',
+        req_ratingExplicit_bg:'#5A2622',
+        req_ratingExplicit_fg:'#FFE0D2',
+        req_ratingNotrated_bg:'#25231F',
+        req_ratingNotrated_fg:'#D8C9AD',
+
+        req_warningNo_bg:'#2B2A25',
+        req_warningNo_fg:'#D9C9AA',
+        req_warningChoose_bg:'#785A2D',
+        req_warningChoose_fg:'#FFF0C8',
+        req_warningYes_bg:'#5B2823',
+        req_warningYes_fg:'#FFE2D4',
+
+        req_categorySlash_bg:'#2E4050',
+        req_categorySlash_fg:'#F4E7CB',
+        req_categoryFemslash_bg:'#553241',
+        req_categoryFemslash_fg:'#F4E7CB',
+        req_categoryHet_bg:'#4C3C34',
+        req_categoryHet_fg:'#F4E7CB',
+        req_categoryGen_bg:'#3D4638',
+        req_categoryGen_fg:'#F4E7CB',
+        req_categoryMulti_bg:'#4C4237',
+        req_categoryMulti_fg:'#F4E7CB',
+        req_categoryOther_bg:'#37332C',
+        req_categoryOther_fg:'#F4E7CB',
+        req_categoryNone_bg:'#22211E',
+        req_categoryNone_fg:'#CAB99C',
+
+        req_completeYes_bg:'#39492F',
+        req_completeYes_fg:'#F4E7CB',
+        req_completeNo_bg:'#6A4B28',
+        req_completeNo_fg:'#FFF0C8',
+
+        req_ratingKey2_bg:'#24231F',
+        req_ratingKey2_fg:'#D5C5A8',
+        req_categoryKey3_bg:'#24231F',
+        req_categoryKey3_fg:'#D5C5A8',
+        req_warningExternal_bg:'#314352',
+        req_warningExternal_fg:'#F4E7CB',
+        req_warningKey4_bg:'#24231F',
+        req_warningKey4_fg:'#D5C5A8',
+        req_completeNone_bg:'#24231F',
+        req_completeNone_fg:'#D5C5A8',
+
+        req_hetLeft:'#5C354A',
+        req_hetRight:'#30485D',
+        req_multiTL:'#586044',
+        req_multiTR:'#5E3D55',
+        req_multiBL:'#5A3229',
+        req_multiBR:'#30485D'
+      },
+      gradients:{
+        page:{
+          enabled:true,type:'radial',angle:'135deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:78,centerY:4,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#6D5432',pos:0,opacity:48},
+            {color:'#2A2117',pos:18,opacity:72},
+            {color:'#11100E',pos:44,opacity:94},
+            {color:'#070707',pos:100,opacity:100}
+          ]
+        },
+        header:{
+          enabled:false,type:'linear',angle:'135deg',custom:'',
+          stops:[{color:'#11100E',pos:0,opacity:100},{color:'#6D5432',pos:100,opacity:100}]
+        },
+        nav:{
+          enabled:false,type:'linear',angle:'90deg',custom:'',
+          stops:[{color:'#070707',pos:0,opacity:100},{color:'#11100E',pos:100,opacity:100}]
+        },
+        panels:{
+          enabled:true,type:'linear',angle:'135deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:50,centerY:50,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#171614',pos:0,opacity:96},
+            {color:'#0B0B0A',pos:100,opacity:94}
+          ]
+        },
+        inputs:{
+          enabled:true,type:'linear',angle:'90deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:50,centerY:50,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#0C0C0B',pos:0,opacity:100},
+            {color:'#17140F',pos:100,opacity:100}
+          ]
+        },
+        ui:{
+          enabled:true,type:'linear',angle:'135deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:50,centerY:50,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#17140F',pos:0,opacity:100},
+            {color:'#4D3A22',pos:100,opacity:100}
+          ]
+        },
+        textHeadings:{
+          enabled:true,type:'linear',angle:'90deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:50,centerY:50,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#F4E7CB',pos:0,opacity:100},
+            {color:'#B28B52',pos:55,opacity:100},
+            {color:'#7A5C35',pos:100,opacity:100}
+          ]
+        },
+        textWorkTitles:{
+          enabled:true,type:'linear',angle:'90deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:50,centerY:50,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#E8D2A5',pos:0,opacity:100},
+            {color:'#B78E52',pos:100,opacity:100}
+          ]
+        },
+        textLinks:{
+          enabled:true,type:'linear',angle:'90deg',custom:'',
+          radialShape:'ellipse',radialSize:'farthest-corner',centerX:50,centerY:50,
+          conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+          stops:[
+            {color:'#DCC18B',pos:0,opacity:100},
+            {color:'#A97E45',pos:100,opacity:100}
+          ]
+        },
+        textAll:{
+          enabled:false,type:'linear',angle:'90deg',custom:'',
+          stops:[{color:'#E7D6B6',pos:0,opacity:100},{color:'#B28B52',pos:100,opacity:100}]
+        }
+      },
+      images:[],
+      note:'The starter intentionally leaves the header image empty so you can add your own local image or animated GIF and then paste its hosted direct URL for final AO3 CSS.'
+    }
   ];
 
   let userConcepts=[];
