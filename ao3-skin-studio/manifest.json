@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.14",
-  "payloadSha256": "e1838aa658bb6a585c0600124e78536edef66cd2129637450d1fa038f113b704",
-  "executableSha256": "975c4163fe3e451dfa518f608210f9255fcfd9ff2b8eceb45ebc6c73c637eedf",
+  "version": "0.1.15",
+  "payloadSha256": "f631e6d603f10b3a77ff1fc88c66e7e537c4bc832d3110eb6f909d79d3b467ea",
+  "executableSha256": "0cb4e73e09b8c81f6af9a0eddf4d4f757bfa6d5ee79c5559d70477aa14b73543",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.14-part-001.txt",
-      "sha256": "acbca3f21f4c49951bf0e6b5cb5ed19850b8832d795738ede7189cab5e9ac816"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-001.txt",
+      "sha256": "7e9a3717a9204bbf8bd01f57a9f55960f40493446a0530e50ad3213bdf8fdcaa"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.14-part-002.txt",
-      "sha256": "7dd7dd743f25b48cbf83126ec3299239020a664378fafcf68572e15a1ab4dc01"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-002.txt",
+      "sha256": "819f5a9ecfad61cc11695c0e1d71901c9f87ad85aaabe20e517fb82ac2861f6c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.14-part-003.txt",
-      "sha256": "347c26ca5aedbadafc0c2a3401d0a8a88933d7e555c3f9b483daf80d74dcefe7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-003.txt",
+      "sha256": "59023e364aa789486954b8f8f5f1ce4e03627f37c5c267865de16bc29ab6e3cb"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.14-part-004.txt",
-      "sha256": "fc78ade9658d95983c5a2d3181f3e6c1732aa9b729003d84ca5c3a16728a1145"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-004.txt",
+      "sha256": "20047753c77a1e7bea5d38adf49f9d7dedb7b5ae694332661e5f406d1d98e9af"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.14-part-005.txt",
-      "sha256": "f3888be344025268f9f1f4b8d70fc1de3198c21e897111209196234e9769721d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-005.txt",
+      "sha256": "2fe680dbe441e38fb6b68dd5f8c3e403a77ec7d9b9953d5dd17fdfebba88077e"
     }
   ],
-  "notes": "Ships the new AO3 Skin Studio icon through the automatic updater. The icon is now embedded into AO3SkinStudio.exe, included as an Assets icon file in the published app, and used by the Desktop Shortcut setting. Existing users receive the icon automatically by updating to 0.1.14. Keeps the complete AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
+  "notes": "Adds the barebones Concepts / Starters system. Concepts are editable starter skins that populate the normal editor controls instead of locking users into presets. Includes separate Starter Library and My Concepts tabs, search, Save Current as Concept, local persistence, concept cards with palette previews, Load & Edit, Apply Selected, delete for personal concepts, import/export .ao3concept JSON files, hosted image/GIF URL preservation, gradient snapshots, and an updater-ready built-in concept schema so future concepts can be delivered directly into the Starter Library. No specific built-in concept is included yet. Keeps the app icon, Desktop Shortcut setting, full AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
 }
