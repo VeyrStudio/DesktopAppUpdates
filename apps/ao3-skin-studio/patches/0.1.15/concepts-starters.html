@@ -1,0 +1,641 @@
+<style id="ao3-concepts-starters-styles">
+.concepts-section .section-body{padding-top:10px}
+.concepts-intro{
+  padding:10px;
+  margin-bottom:10px;
+  border:1px solid #372f3a;
+  border-radius:9px;
+  background:#111014;
+  color:#aa9daa;
+  font-size:9px;
+  line-height:1.5;
+}
+.concepts-intro strong{color:#eee3ec}
+.concepts-toolbar{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:7px;
+  align-items:center;
+  margin-bottom:9px;
+}
+.concepts-toolbar input{
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
+}
+.concepts-toolbar button,
+.concept-action-row button,
+.concept-card button,
+.concept-modal-actions button{
+  border:1px solid #473a4b;
+  border-radius:7px;
+  background:#171419;
+  color:#ddd1dc;
+  padding:8px 9px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.concepts-toolbar button:hover,
+.concept-action-row button:hover,
+.concept-card button:hover,
+.concept-modal-actions button:hover{background:#251d28;color:#fff}
+.concepts-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-bottom:9px;
+}
+.concepts-tabs button{
+  border:1px solid #3c323f;
+  border-radius:7px;
+  background:#141116;
+  color:#958994;
+  padding:7px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.concepts-tabs button.active{
+  border-color:#8e1aad;
+  background:#4a0b5f;
+  color:#fff;
+}
+.concepts-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.concept-card{
+  min-width:0;
+  padding:10px;
+  border:1px solid #312a34;
+  border-radius:10px;
+  background:#0f0d11;
+}
+.concept-card.selected{
+  border-color:#9e20c0;
+  box-shadow:0 0 0 1px rgba(158,32,192,.28);
+}
+.concept-card-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+.concept-card-title{
+  min-width:0;
+  font-size:10px;
+  font-weight:900;
+  color:#eee3ec;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.concept-card-badge{
+  flex:0 0 auto;
+  padding:2px 5px;
+  border:1px solid #514258;
+  border-radius:999px;
+  color:#9f91a1;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.concept-card-description{
+  min-height:30px;
+  margin:6px 0 8px;
+  color:#978b96;
+  font-size:8px;
+  line-height:1.45;
+}
+.concept-swatches{
+  display:flex;
+  gap:4px;
+  margin-bottom:8px;
+}
+.concept-swatch{
+  width:22px;
+  height:22px;
+  border-radius:5px;
+  border:1px solid rgba(255,255,255,.15);
+}
+.concept-card-meta{
+  margin-bottom:8px;
+  color:#786d77;
+  font-size:7px;
+}
+.concept-card-actions{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px;
+}
+.concept-card-actions button:first-child{
+  background:#5b0d72;
+  border-color:#8c1baa;
+  color:#fff;
+}
+.concept-empty{
+  grid-column:1/-1;
+  padding:18px 12px;
+  border:1px dashed #39303b;
+  border-radius:10px;
+  color:#817681;
+  font-size:9px;
+  line-height:1.55;
+  text-align:center;
+}
+.concept-action-row{
+  display:grid;
+  grid-template-columns:1.2fr 1fr 1fr;
+  gap:7px;
+  margin-top:10px;
+}
+.concept-action-row .primary{
+  background:#5b0d72;
+  border-color:#8c1baa;
+  color:#fff;
+}
+.concept-hidden-file{display:none}
+.concept-status{
+  margin-top:9px;
+  padding:8px 9px;
+  border:1px solid #302932;
+  border-radius:8px;
+  background:#0d0c0f;
+  color:#8e828d;
+  font-size:8px;
+  line-height:1.4;
+}
+.concept-modal-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.72);
+}
+.concept-modal-backdrop[hidden]{display:none!important}
+.concept-modal{
+  width:min(480px,100%);
+  padding:15px;
+  border:1px solid #4a3a4e;
+  border-radius:12px;
+  background:#121014;
+  box-shadow:0 22px 70px rgba(0,0,0,.55);
+}
+.concept-modal h3{
+  margin:0 0 10px;
+  color:#eee4ec;
+  font-size:13px;
+}
+.concept-modal label{
+  display:block;
+  margin:9px 0 4px;
+  color:#9f929e;
+  font-size:8px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.concept-modal input,.concept-modal textarea{
+  width:100%;
+  box-sizing:border-box;
+}
+.concept-modal textarea{min-height:80px;resize:vertical}
+.concept-modal-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:11px;
+}
+.concept-modal-actions .primary{
+  background:#5b0d72;
+  border-color:#8c1baa;
+  color:#fff;
+}
+@media(max-width:560px){
+  .concepts-grid{grid-template-columns:1fr}
+  .concept-action-row{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-concepts-starters-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const sections=Array.from(document.querySelectorAll('details.section'));
+  const backgroundSection=sections.find(s=>(s.querySelector('summary')?.textContent||'').trim()==='Background');
+  const insertBefore=backgroundSection || sections[0];
+  if(!insertBefore || q('conceptsStartersSection')) return;
+
+  const BUILTIN_CONCEPTS = [
+    /* Updater-delivered concepts are inserted here in future releases.
+       Schema:
+       {
+         id, name, description, version, palette,
+         controls: { elementId: value, ... },
+         gradients: {...},
+         images: [{url,placement,position,fit,opacity}],
+         bottomBorder: {url,height,opacity,fit,repeat}
+       }
+    */
+  ];
+
+  let userConcepts=[];
+  let selectedId=null;
+  let selectedSource='builtin';
+  let activeTab='builtin';
+
+  try{
+    userConcepts=JSON.parse(localStorage.getItem('ao3SkinStudioUserConcepts')||'[]');
+  }catch(e){userConcepts=[]}
+  if(!Array.isArray(userConcepts)) userConcepts=[];
+
+  const section=document.createElement('details');
+  section.className='section concepts-section';
+  section.id='conceptsStartersSection';
+  section.open=true;
+  section.innerHTML=`
+    <summary>Concepts / Starters</summary>
+    <div class="section-body">
+      <div class="concepts-intro"><strong>Start with an idea, then edit everything.</strong> Concepts are editable starter skins — choosing one fills the normal AO3 Skin Studio controls instead of locking you into a preset. Future concepts can arrive through app updates, and you can save your own here too.</div>
+
+      <div class="concepts-toolbar">
+        <input type="text" id="conceptSearch" placeholder="Search concepts by name or description…">
+        <button type="button" id="conceptNewBtn">Save Current</button>
+      </div>
+
+      <div class="concepts-tabs">
+        <button type="button" id="conceptBuiltinTab" class="active">Starter Library</button>
+        <button type="button" id="conceptUserTab">My Concepts</button>
+      </div>
+
+      <div class="concepts-grid" id="conceptGrid"></div>
+
+      <div class="concept-action-row">
+        <button type="button" class="primary" id="conceptApplySelected">Apply Selected</button>
+        <button type="button" id="conceptImportBtn">Import Concept</button>
+        <button type="button" id="conceptExportSelected">Export Selected</button>
+      </div>
+      <input class="concept-hidden-file" type="file" id="conceptImportFile" accept=".ao3concept,.json,application/json">
+
+      <div class="concept-status" id="conceptStatus">No concept selected. Applying a concept changes the editor controls, but you can keep editing normally afterward.</div>
+    </div>
+  `;
+  insertBefore.insertAdjacentElement('beforebegin',section);
+
+  const modal=document.createElement('div');
+  modal.className='concept-modal-backdrop';
+  modal.id='conceptSaveModal';
+  modal.hidden=true;
+  modal.innerHTML=`
+    <div class="concept-modal" role="dialog" aria-modal="true" aria-labelledby="conceptSaveTitle">
+      <h3 id="conceptSaveTitle">Save Current as Concept</h3>
+      <label for="conceptNameInput">Concept name</label>
+      <input type="text" id="conceptNameInput" maxlength="80" placeholder="e.g. Midnight Archive">
+      <label for="conceptDescriptionInput">General idea / description</label>
+      <textarea id="conceptDescriptionInput" maxlength="500" placeholder="Mood, fandom inspiration, visual direction, or anything you want to remember…"></textarea>
+      <div class="concept-modal-actions">
+        <button type="button" class="primary" id="conceptSaveConfirm">Save Concept</button>
+        <button type="button" id="conceptSaveCancel">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  function deepClone(value){
+    try{return JSON.parse(JSON.stringify(value))}catch(e){return null}
+  }
+
+  function getControlSnapshot(){
+    const controls={};
+    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el=>{
+      if(el.closest('#conceptsStartersSection') || el.closest('#conceptSaveModal')) return;
+      if(el.type==='file' || el.type==='button' || el.type==='submit') return;
+      if(el.type==='checkbox' || el.type==='radio') controls[el.id]=!!el.checked;
+      else controls[el.id]=el.value;
+    });
+    return controls;
+  }
+
+  function getPalette(){
+    const colors=[];
+    document.querySelectorAll('input[type="color"]').forEach(el=>{
+      if(el.closest('#conceptsStartersSection') || el.closest('#conceptSaveModal')) return;
+      const v=(normHex(el.value)||'').toUpperCase();
+      if(v && !colors.includes(v)) colors.push(v);
+    });
+    return colors.slice(0,8);
+  }
+
+  function getImageSnapshot(){
+    const out=[];
+    try{
+      if(Array.isArray(localImages)){
+        localImages.forEach(img=>{
+          if(!img.url) return;
+          out.push({
+            name:img.name||'Hosted image',
+            url:img.url,
+            placement:'background',
+            position:img.position||'center center',
+            fit:img.fit||'cover',
+            opacity:Number.isFinite(Number(img.opacity))?Number(img.opacity):100
+          });
+        });
+      }
+    }catch(e){}
+    return out;
+  }
+
+  function captureConcept(name,description){
+    return {
+      schemaVersion:1,
+      type:'ao3-skin-studio-concept',
+      id:'user-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
+      name:name.trim(),
+      description:description.trim(),
+      source:'user',
+      createdAt:new Date().toISOString(),
+      version:1,
+      palette:getPalette(),
+      controls:getControlSnapshot(),
+      gradients:(typeof gradients!=='undefined')?deepClone(gradients):null,
+      images:getImageSnapshot(),
+      note:'Local uploaded image bytes are intentionally not stored in concepts. Hosted image/GIF URLs are preserved.'
+    };
+  }
+
+  function persistUsers(){
+    localStorage.setItem('ao3SkinStudioUserConcepts',JSON.stringify(userConcepts));
+  }
+
+  function conceptSourceList(){
+    return activeTab==='builtin'?BUILTIN_CONCEPTS:userConcepts;
+  }
+
+  function findSelected(){
+    const list=selectedSource==='builtin'?BUILTIN_CONCEPTS:userConcepts;
+    return list.find(c=>c.id===selectedId)||null;
+  }
+
+  function conceptPalette(c){
+    if(Array.isArray(c.palette) && c.palette.length) return c.palette.slice(0,6);
+    const colors=[];
+    if(c.controls){
+      Object.values(c.controls).forEach(v=>{
+        if(typeof v!=='string') return;
+        const hex=normHex(v);
+        if(hex && !colors.includes(hex.toUpperCase())) colors.push(hex.toUpperCase());
+      });
+    }
+    return colors.slice(0,6);
+  }
+
+  function esc(s){
+    return String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function renderConcepts(){
+    const grid=q('conceptGrid');
+    const search=(q('conceptSearch').value||'').trim().toLowerCase();
+    let list=conceptSourceList().filter(c=>{
+      if(!search) return true;
+      return (String(c.name||'')+' '+String(c.description||'')).toLowerCase().includes(search);
+    });
+
+    grid.innerHTML='';
+    if(!list.length){
+      grid.innerHTML=activeTab==='builtin'
+        ? '<div class="concept-empty"><strong>The Starter Library is ready.</strong><br>No built-in skin concepts have been added yet. The next concept we make can be delivered here through the updater and will appear as a selectable card.</div>'
+        : '<div class="concept-empty"><strong>No saved concepts yet.</strong><br>Set up any skin however you like, then choose <em>Save Current</em> to turn it into an editable starter.</div>';
+      return;
+    }
+
+    list.forEach(c=>{
+      const card=document.createElement('div');
+      const isSelected=selectedId===c.id && selectedSource===activeTab;
+      card.className='concept-card'+(isSelected?' selected':'');
+      const palette=conceptPalette(c);
+      const controlCount=c.controls?Object.keys(c.controls).length:0;
+      card.innerHTML=`
+        <div class="concept-card-head">
+          <div class="concept-card-title" title="${esc(c.name)}">${esc(c.name||'Untitled Concept')}</div>
+          <span class="concept-card-badge">${activeTab==='builtin'?'Starter':'Mine'}</span>
+        </div>
+        <div class="concept-card-description">${esc(c.description||'No description yet.')}</div>
+        <div class="concept-swatches">${palette.length?palette.map(hex=>'<span class="concept-swatch" title="'+esc(hex)+'" style="background:'+esc(hex)+'"></span>').join(''):'<span style="font-size:7px;color:#6f656e">No palette saved</span>'}</div>
+        <div class="concept-card-meta">${controlCount} editor settings${c.gradients?' · gradients included':''}${c.images?.length?' · '+c.images.length+' hosted image'+(c.images.length===1?'':'s'):''}</div>
+        <div class="concept-card-actions">
+          <button type="button" data-action="apply">Load &amp; Edit</button>
+          ${activeTab==='user'?'<button type="button" data-action="delete">Delete</button>':'<button type="button" data-action="select">Select</button>'}
+        </div>
+      `;
+
+      card.addEventListener('click',e=>{
+        if(e.target.closest('button')) return;
+        selectedId=c.id;selectedSource=activeTab;renderConcepts();updateStatus();
+      });
+      card.querySelector('[data-action="apply"]')?.addEventListener('click',()=>{
+        selectedId=c.id;selectedSource=activeTab;applyConcept(c);
+      });
+      card.querySelector('[data-action="select"]')?.addEventListener('click',()=>{
+        selectedId=c.id;selectedSource=activeTab;renderConcepts();updateStatus();
+      });
+      card.querySelector('[data-action="delete"]')?.addEventListener('click',()=>{
+        if(!confirm('Delete the saved concept "'+(c.name||'Untitled')+'"?')) return;
+        userConcepts=userConcepts.filter(x=>x.id!==c.id);
+        if(selectedId===c.id){selectedId=null;selectedSource='user'}
+        persistUsers();renderConcepts();updateStatus();
+        showToast('Concept deleted');
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function updateStatus(message){
+    if(message){q('conceptStatus').textContent=message;return}
+    const c=findSelected();
+    q('conceptStatus').textContent=c
+      ? 'Selected: '+c.name+'. Choose Apply Selected or Load & Edit to fill the normal editor controls.'
+      : 'No concept selected. Applying a concept changes the editor controls, but you can keep editing normally afterward.';
+  }
+
+  function dispatchControl(el){
+    try{el.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}
+    try{el.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+  }
+
+  function applyControlSnapshot(controls){
+    if(!controls) return;
+    Object.entries(controls).forEach(([id,value])=>{
+      const el=q(id);
+      if(!el || el.closest('#conceptsStartersSection') || el.closest('#conceptSaveModal')) return;
+      if(el.type==='file' || el.type==='button' || el.type==='submit') return;
+      try{
+        if(el.type==='checkbox' || el.type==='radio') el.checked=!!value;
+        else el.value=value;
+        dispatchControl(el);
+      }catch(e){}
+    });
+  }
+
+  function applyImageSnapshot(images){
+    if(!Array.isArray(images) || !images.length) return;
+    try{
+      const preservedLocal=Array.isArray(localImages)?localImages.filter(img=>img.data && !img.url):[];
+      const hosted=images.filter(img=>img.url).map(img=>({
+        id:imageSeq++,
+        name:img.name||'Concept image',
+        data:'',
+        url:img.url,
+        placement:'background',
+        position:img.position||'center center',
+        fit:img.fit||'cover',
+        opacity:Number.isFinite(Number(img.opacity))?Number(img.opacity):100
+      }));
+      localImages=[...preservedLocal,...hosted];
+      if(typeof renderImageList==='function') renderImageList();
+      if(typeof renderPreviewImages==='function') renderPreviewImages(q('bgFixed')?.checked===true);
+    }catch(e){}
+  }
+
+  function applyConcept(c){
+    if(!c) return;
+    try{
+      applyControlSnapshot(c.controls);
+
+      if(c.gradients && typeof gradients!=='undefined'){
+        const incoming=deepClone(c.gradients);
+        if(incoming) gradients=incoming;
+        try{
+          if(typeof currentGradientTarget!=='undefined' && (!gradients[currentGradientTarget])) currentGradientTarget='page';
+          if(typeof renderGradientEditor==='function') renderGradientEditor();
+        }catch(e){}
+      }
+
+      applyImageSnapshot(c.images);
+
+      try{ if(typeof applyRequiredPreview==='function') applyRequiredPreview(); }catch(e){}
+      try{ if(typeof applyAllRequiredStates==='function') applyAllRequiredStates(); }catch(e){}
+      try{ if(typeof syncUnifiedBackground==='function') syncUnifiedBackground(false); }catch(e){}
+      try{ if(typeof syncNavIntoBackground==='function') syncNavIntoBackground(false); }catch(e){}
+      try{ if(typeof update==='function') update(); }catch(e){}
+      try{ if(typeof save==='function') save(); }catch(e){}
+
+      selectedId=c.id;selectedSource=c.source==='user'?'user':'builtin';
+      renderConcepts();
+      updateStatus('Loaded "'+c.name+'". Everything is now in the normal editor and can be changed freely.');
+      showToast('Concept loaded — keep editing normally');
+    }catch(err){
+      console.error(err);
+      alert('This concept could not be applied completely. Your current skin was left editable.');
+    }
+  }
+
+  function downloadConcept(c){
+    if(!c) return;
+    const payload=JSON.stringify(c,null,2);
+    const blob=new Blob([payload],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const safe=(c.name||'AO3-Skin-Concept').replace(/[^a-z0-9 _-]+/gi,'').trim().replace(/\s+/g,'-')||'AO3-Skin-Concept';
+    a.href=url;a.download=safe+'.ao3concept';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showToast('Concept exported');
+  }
+
+  function validateImportedConcept(c){
+    return c && typeof c==='object' &&
+      (c.type==='ao3-skin-studio-concept' || c.schemaVersion===1) &&
+      typeof c.name==='string' &&
+      c.controls && typeof c.controls==='object';
+  }
+
+  q('conceptBuiltinTab').addEventListener('click',()=>{
+    activeTab='builtin';
+    q('conceptBuiltinTab').classList.add('active');
+    q('conceptUserTab').classList.remove('active');
+    renderConcepts();
+  });
+  q('conceptUserTab').addEventListener('click',()=>{
+    activeTab='user';
+    q('conceptUserTab').classList.add('active');
+    q('conceptBuiltinTab').classList.remove('active');
+    renderConcepts();
+  });
+  q('conceptSearch').addEventListener('input',renderConcepts);
+
+  q('conceptNewBtn').addEventListener('click',()=>{
+    q('conceptNameInput').value='';
+    q('conceptDescriptionInput').value='';
+    modal.hidden=false;
+    setTimeout(()=>q('conceptNameInput').focus(),0);
+  });
+  q('conceptSaveCancel').addEventListener('click',()=>modal.hidden=true);
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+  q('conceptSaveConfirm').addEventListener('click',()=>{
+    const name=q('conceptNameInput').value.trim();
+    if(!name){q('conceptNameInput').focus();return}
+    const c=captureConcept(name,q('conceptDescriptionInput').value);
+    userConcepts.unshift(c);
+    persistUsers();
+    modal.hidden=true;
+    activeTab='user';selectedId=c.id;selectedSource='user';
+    q('conceptUserTab').classList.add('active');
+    q('conceptBuiltinTab').classList.remove('active');
+    renderConcepts();updateStatus('Saved "'+c.name+'" from your current editor settings.');
+    showToast('Concept saved');
+  });
+
+  q('conceptApplySelected').addEventListener('click',()=>{
+    const c=findSelected();
+    if(!c){showToast('Select a concept first');return}
+    applyConcept(c);
+  });
+  q('conceptExportSelected').addEventListener('click',()=>{
+    const c=findSelected();
+    if(!c){showToast('Select a concept first');return}
+    downloadConcept(c);
+  });
+  q('conceptImportBtn').addEventListener('click',()=>q('conceptImportFile').click());
+  q('conceptImportFile').addEventListener('change',async()=>{
+    const file=q('conceptImportFile').files?.[0];
+    q('conceptImportFile').value='';
+    if(!file) return;
+    try{
+      const c=JSON.parse(await file.text());
+      if(!validateImportedConcept(c)) throw new Error('Invalid concept file');
+      c.id='user-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+      c.source='user';
+      c.importedAt=new Date().toISOString();
+      userConcepts.unshift(c);
+      persistUsers();
+      activeTab='user';selectedId=c.id;selectedSource='user';
+      q('conceptUserTab').classList.add('active');
+      q('conceptBuiltinTab').classList.remove('active');
+      renderConcepts();updateStatus('Imported "'+c.name+'". It is ready to load and edit.');
+      showToast('Concept imported');
+    }catch(e){
+      alert('That file is not a valid AO3 Skin Studio concept.');
+    }
+  });
+
+  window.AO3SkinStudioConcepts={
+    schemaVersion:1,
+    getBuiltIns:()=>deepClone(BUILTIN_CONCEPTS),
+    getUserConcepts:()=>deepClone(userConcepts),
+    applyById:id=>{
+      const c=[...BUILTIN_CONCEPTS,...userConcepts].find(x=>x.id===id);
+      if(c) applyConcept(c);
+    },
+    capture:(name,description)=>captureConcept(name,description)
+  };
+
+  renderConcepts();
+})();
+</script>

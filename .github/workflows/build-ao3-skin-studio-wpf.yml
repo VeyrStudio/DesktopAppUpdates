@@ -313,6 +313,15 @@ jobs:
           $shortcutCodeText = $shortcutCodeText.Replace($autoUpdateMethodAnchor, $shortcutMethods)
           [IO.File]::WriteAllText($shortcutCodePath, $shortcutCodeText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.15: barebones Concepts / Starters library.
+          $conceptsPatchPath = 'apps/ao3-skin-studio/patches/0.1.15/concepts-starters.html'
+          if (-not (Test-Path $conceptsPatchPath)) { throw 'AO3 Skin Studio 0.1.15 Concepts / Starters patch was not found.' }
+          $conceptsPatch = Get-Content $conceptsPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.15.' }
+          $studioText = $studioText.Replace('</body>', $conceptsPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -395,16 +404,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.14</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.14.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.14.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.15</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.15.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.15.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.14" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.15" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -478,7 +487,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Ships the new AO3 Skin Studio icon through the automatic updater. The icon is now embedded into AO3SkinStudio.exe, included as an Assets icon file in the published app, and used by the Desktop Shortcut setting. Existing users receive the icon automatically by updating to 0.1.14. Keeps the complete AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
+            notes = 'Adds the barebones Concepts / Starters system. Concepts are editable starter skins that populate the normal editor controls instead of locking users into presets. Includes separate Starter Library and My Concepts tabs, search, Save Current as Concept, local persistence, concept cards with palette previews, Load & Edit, Apply Selected, delete for personal concepts, import/export .ao3concept JSON files, hosted image/GIF URL preservation, gradient snapshots, and an updater-ready built-in concept schema so future concepts can be delivered directly into the Starter Library. No specific built-in concept is included yet. Keeps the app icon, Desktop Shortcut setting, full AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
