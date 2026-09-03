@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.16",
-  "payloadSha256": "27475f44661cea10b134fb84680d7b3d998d67c023235579a7211ac2bc05753b",
-  "executableSha256": "52044d8353b7b2559e5582189569f997d2b3de22c81f079d0d3b36ce2ef22cbd",
+  "version": "0.1.17",
+  "payloadSha256": "12e5ced567f0ad417d8f4de6329a82ceff0f789ee985c22ef80f45f7246d41e4",
+  "executableSha256": "b9281f2cc6b1accbb2887e6463819da8d0dbfa7f2b2abb730889bd8c2d55ae8c",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-001.txt",
-      "sha256": "306414c4cd00904ad249f02df90516f9337a75bfbf3efe5b2a34f50153a4c333"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.17-part-001.txt",
+      "sha256": "731a8b277822dc5dc5a5ebeb6a4cbe82e8c44cbebab5989f7c03a0eeb38bfd34"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-002.txt",
-      "sha256": "47e0efb9ba87899c84f1524681760e540eca068dc2020d19e1cb10b40222ddc6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.17-part-002.txt",
+      "sha256": "7c0464f164e865ab7ca02447019fa432d3a6c5710d68514d0a60f628a65a6006"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-003.txt",
-      "sha256": "2ae92cf99b8f54408f5a950b5333b8038e121fcb6a40f41efd482651f0eeb75e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.17-part-003.txt",
+      "sha256": "4e68a436da693f14ea75b04c3e5e6aa49f13cc0817fa824545843354d42970a5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-004.txt",
-      "sha256": "44329c350ce1f0d8661fbcd2873d58cedd79687b8e8c06f420cba4e5f7911f8c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.17-part-004.txt",
+      "sha256": "3653250352496b701044e3a7b6f6bd3a0e523295c2323e4d967649d73967f358"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-005.txt",
-      "sha256": "3f5d1b79c214d56c9ee55a6604b160cc2073ccdc5b03f01dc937b8a80e45db7a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.17-part-005.txt",
+      "sha256": "fc7152cc046222058c391d891b6f98b4e5b1520e0ffee8ad662c6fe6b4237780"
     }
   ],
-  "notes": "Adds the first updater-delivered Starter Library concept: Falling Angle. It translates the supplied dark celestial romance reference into an editable AO3 starter with near-black surfaces, antique-gold borders and accents, warm ivory text, elegant Georgia serif typography, a soft off-center radial gold glow, subtle black panel/input gradients, gold heading/link gradients, and themed required-tag grid colors. The concept intentionally leaves the image slot open so the user can add any local image or animated GIF and later paste the hosted direct URL for final AO3 CSS. Load Falling Angle from Concepts / Starters and continue editing every normal control. Keeps user concept save/import/export, the app icon, Desktop Shortcut setting, full grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
+  "notes": "Adds Header Layout controls. Enable Resizable Header to reveal a height slider/number field and a draggable handle on the bottom edge of the preview header; dragging changes the header heading height in normal document flow so everything below is pushed down instead of overlapped. Adds a Hide Archive of Our Own Branding checkbox that hides the AO3 heading/logo branding while preserving the customizable header area. Both settings are saved, exported to AO3 CSS, included in Concepts / Starters snapshots, and work with Falling Angle and other starters. Keeps all prior tools."
 }
