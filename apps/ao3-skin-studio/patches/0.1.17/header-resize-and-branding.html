@@ -1,0 +1,281 @@
+<style id="ao3-header-resize-branding-styles">
+.header-layout-controls{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #342d36;
+  border-radius:9px;
+  background:#0f0e11;
+}
+.header-layout-controls-title{
+  margin-bottom:8px;
+  color:#d9cdd7;
+  font-size:9px;
+  font-weight:900;
+}
+.header-layout-check{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:7px 0;
+  color:#b2a5af;
+  font-size:9px;
+}
+.header-height-controls{
+  display:grid;
+  grid-template-columns:1fr 78px;
+  gap:8px;
+  align-items:center;
+  margin-top:8px;
+}
+.header-height-controls[hidden]{display:none!important}
+.header-height-controls input[type="number"]{
+  width:100%;
+  box-sizing:border-box;
+}
+.header-resize-help{
+  margin-top:7px;
+  color:#7f747e;
+  font-size:8px;
+  line-height:1.45;
+}
+#mock .ao3-header{
+  position:relative;
+}
+#mock .ao3-header.header-resize-enabled{
+  overflow:visible!important;
+}
+#mock .ao3-header .header-resize-handle{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-5px;
+  z-index:80;
+  height:10px;
+  cursor:ns-resize;
+  opacity:0;
+  transition:opacity .15s ease;
+}
+#mock .ao3-header.header-resize-enabled:hover .header-resize-handle,
+#mock .ao3-header .header-resize-handle.dragging{
+  opacity:1;
+}
+#mock .ao3-header .header-resize-handle::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:3px;
+  width:74px;
+  height:3px;
+  border-radius:999px;
+  transform:translateX(-50%);
+  background:rgba(178,139,82,.8);
+  box-shadow:0 0 0 1px rgba(0,0,0,.35);
+}
+#mock.hide-ao3-branding .ao3-header .heading,
+#mock.hide-ao3-branding .ao3-header .logo,
+#mock.hide-ao3-branding .ao3-header .ao3-logo,
+#mock.hide-ao3-branding .ao3-header .site-title{
+  visibility:hidden!important;
+}
+</style>
+
+<script id="ao3-header-resize-branding-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const sections=Array.from(document.querySelectorAll('details.section'));
+  const backgroundSection=sections.find(s=>(s.querySelector('summary')?.textContent||'').trim()==='Background');
+  if(!backgroundSection || q('headerResizable')) return;
+
+  const body=backgroundSection.querySelector('.section-body');
+  if(!body) return;
+
+  const box=document.createElement('div');
+  box.className='header-layout-controls';
+  box.innerHTML=`
+    <div class="header-layout-controls-title">Header layout</div>
+
+    <label class="header-layout-check">
+      <input type="checkbox" id="headerResizable">
+      <span>Enable resizable header</span>
+    </label>
+
+    <div class="header-height-controls" id="headerHeightControls" hidden>
+      <input type="range" id="headerHeight" min="80" max="700" step="1" value="240">
+      <input type="number" id="headerHeightNumber" min="80" max="700" step="1" value="240" aria-label="Header height in pixels">
+    </div>
+
+    <label class="header-layout-check">
+      <input type="checkbox" id="hideAo3Branding">
+      <span>Hide “Archive of Our Own” branding at the top</span>
+    </label>
+
+    <div class="header-resize-help">When resizable header is on, drag the small handle at the bottom edge of the preview header up or down. The page below stays in normal document flow, so it gets pushed down instead of being covered.</div>
+  `;
+  body.appendChild(box);
+
+  ['headerResizable','headerHeight','hideAo3Branding'].forEach(id=>{
+    if(typeof idsToSave!=='undefined' && !idsToSave.includes(id)) idsToSave.push(id);
+  });
+
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem('ao3SkinStudio')||'{}')}catch(e){}
+  q('headerResizable').checked=!!saved.headerResizable;
+  q('headerHeight').value=String(saved.headerHeight||240);
+  q('headerHeightNumber').value=q('headerHeight').value;
+  q('hideAo3Branding').checked=!!saved.hideAo3Branding;
+
+  function clampHeight(v){
+    const n=Math.round(Number(v)||240);
+    return Math.max(80,Math.min(700,n));
+  }
+
+  function getPreviewHeader(){
+    return document.querySelector('#mock .ao3-header');
+  }
+
+  function getPreviewHeading(){
+    return document.querySelector('#mock .ao3-header .heading');
+  }
+
+  function ensureHandle(){
+    const header=getPreviewHeader();
+    if(!header) return null;
+    let handle=header.querySelector('.header-resize-handle');
+    if(!handle){
+      handle=document.createElement('div');
+      handle.className='header-resize-handle';
+      handle.title='Drag to resize header';
+      header.appendChild(handle);
+      wireHandle(handle);
+    }
+    return handle;
+  }
+
+  function applyHeaderLayout(){
+    const enabled=q('headerResizable').checked;
+    const height=clampHeight(q('headerHeight').value);
+    q('headerHeight').value=height;
+    q('headerHeightNumber').value=height;
+    q('headerHeightControls').hidden=!enabled;
+
+    const mock=q('mock');
+    if(mock) mock.classList.toggle('hide-ao3-branding',q('hideAo3Branding').checked);
+
+    const header=getPreviewHeader();
+    const heading=getPreviewHeading();
+    const handle=ensureHandle();
+
+    if(header){
+      header.classList.toggle('header-resize-enabled',enabled);
+      if(handle) handle.style.display=enabled?'block':'none';
+    }
+
+    if(enabled){
+      if(heading){
+        heading.style.height=height+'px';
+        heading.style.minHeight=height+'px';
+        heading.style.boxSizing='border-box';
+      }else if(header){
+        header.style.minHeight=height+'px';
+        header.style.height=height+'px';
+        header.style.boxSizing='border-box';
+      }
+    }else{
+      if(heading){
+        heading.style.height='';
+        heading.style.minHeight='';
+        heading.style.boxSizing='';
+      }
+      if(header){
+        header.style.height='';
+        header.style.minHeight='';
+        header.style.boxSizing='';
+      }
+    }
+
+    try{cssOutput.value=buildCss();save()}catch(e){}
+  }
+
+  let dragging=false;
+  let startY=0;
+  let startHeight=240;
+
+  function wireHandle(handle){
+    handle.addEventListener('pointerdown',e=>{
+      if(!q('headerResizable').checked) return;
+      dragging=true;
+      startY=e.clientY;
+      const heading=getPreviewHeading();
+      const header=getPreviewHeader();
+      startHeight=clampHeight(heading?.getBoundingClientRect().height || header?.getBoundingClientRect().height || q('headerHeight').value);
+      handle.classList.add('dragging');
+      try{handle.setPointerCapture(e.pointerId)}catch(err){}
+      e.preventDefault();
+    });
+
+    handle.addEventListener('pointermove',e=>{
+      if(!dragging) return;
+      const next=clampHeight(startHeight+(e.clientY-startY));
+      q('headerHeight').value=next;
+      q('headerHeightNumber').value=next;
+      applyHeaderLayout();
+      e.preventDefault();
+    });
+
+    const finish=e=>{
+      if(!dragging) return;
+      dragging=false;
+      handle.classList.remove('dragging');
+      try{handle.releasePointerCapture(e.pointerId)}catch(err){}
+      try{save()}catch(err){}
+    };
+    handle.addEventListener('pointerup',finish);
+    handle.addEventListener('pointercancel',finish);
+  }
+
+  q('headerResizable').addEventListener('change',applyHeaderLayout);
+  q('hideAo3Branding').addEventListener('change',applyHeaderLayout);
+  q('headerHeight').addEventListener('input',applyHeaderLayout);
+  q('headerHeightNumber').addEventListener('input',()=>{
+    q('headerHeight').value=clampHeight(q('headerHeightNumber').value);
+    applyHeaderLayout();
+  });
+
+  const oldBuildCss=buildCss;
+  buildCss=function(){
+    const css=oldBuildCss();
+    const enabled=q('headerResizable')?.checked===true;
+    const height=clampHeight(q('headerHeight')?.value||240);
+    const hide=q('hideAo3Branding')?.checked===true;
+    let extra='\n\n/* HEADER LAYOUT */\n';
+
+    if(enabled){
+      extra+=`#header .heading {\n  height: ${height}px !important;\n  min-height: ${height}px !important;\n  box-sizing: border-box !important;\n}\n`;
+    }
+
+    if(hide){
+      extra+=`\n/* Hide the Archive of Our Own wordmark / branding while keeping the header area itself. */\n#header .heading a,\n#header .logo,\n#header .heading sup {\n  visibility: hidden !important;\n}\n`;
+    }
+    return css+extra;
+  };
+
+  /* Re-apply after preview-mode changes or any rerender that touches the header. */
+  const observer=new MutationObserver(()=>setTimeout(()=>{
+    ensureHandle();
+    applyHeaderLayout();
+  },0));
+  const mock=q('mock');
+  if(mock) observer.observe(mock,{childList:true,subtree:true});
+
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    q('headerResizable').checked=false;
+    q('headerHeight').value='240';
+    q('headerHeightNumber').value='240';
+    q('hideAo3Branding').checked=false;
+    applyHeaderLayout();
+  },30));
+
+  ensureHandle();
+  applyHeaderLayout();
+})();
+</script>
