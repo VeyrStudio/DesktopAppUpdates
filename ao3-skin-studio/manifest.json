@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.15",
-  "payloadSha256": "f631e6d603f10b3a77ff1fc88c66e7e537c4bc832d3110eb6f909d79d3b467ea",
-  "executableSha256": "0cb4e73e09b8c81f6af9a0eddf4d4f757bfa6d5ee79c5559d70477aa14b73543",
+  "version": "0.1.16",
+  "payloadSha256": "27475f44661cea10b134fb84680d7b3d998d67c023235579a7211ac2bc05753b",
+  "executableSha256": "52044d8353b7b2559e5582189569f997d2b3de22c81f079d0d3b36ce2ef22cbd",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-001.txt",
-      "sha256": "7e9a3717a9204bbf8bd01f57a9f55960f40493446a0530e50ad3213bdf8fdcaa"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-001.txt",
+      "sha256": "306414c4cd00904ad249f02df90516f9337a75bfbf3efe5b2a34f50153a4c333"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-002.txt",
-      "sha256": "819f5a9ecfad61cc11695c0e1d71901c9f87ad85aaabe20e517fb82ac2861f6c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-002.txt",
+      "sha256": "47e0efb9ba87899c84f1524681760e540eca068dc2020d19e1cb10b40222ddc6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-003.txt",
-      "sha256": "59023e364aa789486954b8f8f5f1ce4e03627f37c5c267865de16bc29ab6e3cb"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-003.txt",
+      "sha256": "2ae92cf99b8f54408f5a950b5333b8038e121fcb6a40f41efd482651f0eeb75e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-004.txt",
-      "sha256": "20047753c77a1e7bea5d38adf49f9d7dedb7b5ae694332661e5f406d1d98e9af"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-004.txt",
+      "sha256": "44329c350ce1f0d8661fbcd2873d58cedd79687b8e8c06f420cba4e5f7911f8c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.15-part-005.txt",
-      "sha256": "2fe680dbe441e38fb6b68dd5f8c3e403a77ec7d9b9953d5dd17fdfebba88077e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.16-part-005.txt",
+      "sha256": "3f5d1b79c214d56c9ee55a6604b160cc2073ccdc5b03f01dc937b8a80e45db7a"
     }
   ],
-  "notes": "Adds the barebones Concepts / Starters system. Concepts are editable starter skins that populate the normal editor controls instead of locking users into presets. Includes separate Starter Library and My Concepts tabs, search, Save Current as Concept, local persistence, concept cards with palette previews, Load & Edit, Apply Selected, delete for personal concepts, import/export .ao3concept JSON files, hosted image/GIF URL preservation, gradient snapshots, and an updater-ready built-in concept schema so future concepts can be delivered directly into the Starter Library. No specific built-in concept is included yet. Keeps the app icon, Desktop Shortcut setting, full AO3 Required-Tag Grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
+  "notes": "Adds the first updater-delivered Starter Library concept: Falling Angle. It translates the supplied dark celestial romance reference into an editable AO3 starter with near-black surfaces, antique-gold borders and accents, warm ivory text, elegant Georgia serif typography, a soft off-center radial gold glow, subtle black panel/input gradients, gold heading/link gradients, and themed required-tag grid colors. The concept intentionally leaves the image slot open so the user can add any local image or animated GIF and later paste the hosted direct URL for final AO3 CSS. Load Falling Angle from Concepts / Starters and continue editing every normal control. Keeps user concept save/import/export, the app icon, Desktop Shortcut setting, full grid editor, Color Studio, Gradient Studio, GIF support, Split Screen, and all prior tools."
 }
