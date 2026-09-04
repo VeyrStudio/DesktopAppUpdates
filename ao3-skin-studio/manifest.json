@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.30",
-  "payloadSha256": "4fb53b0c8f2261cf3820ae18998fb395c46fc8ffdc9f0c40f6ac25289732f048",
-  "executableSha256": "26ae7f2da2a308b4dfca67aa64d5ac49990e36ba927a54e1c4fd9196396c9ff7",
+  "version": "0.1.31",
+  "payloadSha256": "a9fe169f00496faf4c6be4d2a04cc13933787a6a4d358c3a627635290bc43f65",
+  "executableSha256": "9955c285c3ede01232b16c9717f631718018b1e2f43cf901bb067d41fc8b71d6",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.30-part-001.txt",
-      "sha256": "b5751b85109ca2c4530f4aad2a9082f6f039155273e3f9e16342ba3bbb2b003e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.31-part-001.txt",
+      "sha256": "06303f629355630cfbd51ce3001178eb9b58c7be6408e25cc684a3e470612087"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.30-part-002.txt",
-      "sha256": "64efd3effb72223f7406ae29f9f9b790ac6d58008fedfbda4a822f6cb2c87c41"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.31-part-002.txt",
+      "sha256": "408d847d4bca2757a108b82d0bdce36dbf52d5bb03aed38259ebc6bd5a8eb802"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.30-part-003.txt",
-      "sha256": "fc27b7941e920ff6999ed36efdf1bdef05fb5debf784e2588be24f726e0eebaf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.31-part-003.txt",
+      "sha256": "dd80e144492a7e898b16d2f0265015775c28ce7ec6f59ceb32436c028e1b1e7e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.30-part-004.txt",
-      "sha256": "9a7f451a302b85528d6bf1a9314fb31e8f2e41daec363fa23a44d7fe2d53959e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.31-part-004.txt",
+      "sha256": "551ff23717ea7d13bd6f7bad405d67793601fc40443f46379ba6fe72e0b9d2ca"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.30-part-005.txt",
-      "sha256": "f4b6b99ad315d96ba2c66b28d8525ccdad4c0f56e1341a9d14320f6eba6c9f1a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.31-part-005.txt",
+      "sha256": "23cce46b43a57781e1e1e13ff6c1a466f2d52ce5c183671cf7e843454eeb7c44"
     }
   ],
-  "notes": "Root fix after inspecting the generated app: the preview now has a real page-background DOM region placed after the AO3 header, containing the background layer, main content, footer, and bottom border. The background can no longer exist behind the header at all. Also makes the Text Boxes / Inputs opacity slider authoritative: moving it automatically enables transparency, updates solid or gradient box backgrounds, and appends a final export override without fading text."
+  "notes": "Adds preview click-to-edit: clicking titles, authors, tags, summaries/main text, notes, stats, interface controls, form fields, panels, headers, or required-tag icons opens the matching numbered editor panel and selects the relevant Text subgroup or required-tag row. Also makes Use Header automatically turn Fixed Background off and disable/grey that control until the header is turned off, preventing the fixed-background/header conflict."
 }
