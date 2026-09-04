@@ -1,0 +1,517 @@
+<style id="ao3-editor-section-tabs-styles">
+#editorSectionShell{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:12px;
+  width:100%;
+  align-items:start;
+}
+#editorSectionNav{
+  position:sticky;
+  top:84px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:2px 0 10px;
+  z-index:8;
+}
+.editor-section-tab{
+  position:relative;
+  width:100%;
+  min-height:48px;
+  padding:10px 12px;
+  overflow:hidden;
+  border:1px solid #4b3d50;
+  border-radius:7px;
+  background:
+    linear-gradient(145deg,rgba(105,65,116,.13),rgba(24,18,27,.04) 45%),
+    linear-gradient(180deg,#19141c,#100d12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    inset 0 -1px 0 rgba(0,0,0,.5),
+    0 5px 13px rgba(0,0,0,.24);
+  color:#b9aab7;
+  font:900 8px/1.25 Georgia,serif;
+  letter-spacing:.055em;
+  text-align:left;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:border-color .14s ease,transform .14s ease,background .14s ease,color .14s ease,box-shadow .14s ease;
+}
+.editor-section-tab::before,
+.editor-section-tab::after{
+  content:"";
+  position:absolute;
+  width:15px;
+  height:15px;
+  pointer-events:none;
+}
+.editor-section-tab::before{
+  top:4px;left:4px;
+  border-top:1px solid rgba(185,145,91,.42);
+  border-left:1px solid rgba(185,145,91,.42);
+}
+.editor-section-tab::after{
+  right:4px;bottom:4px;
+  border-right:1px solid rgba(185,145,91,.27);
+  border-bottom:1px solid rgba(185,145,91,.27);
+}
+.editor-section-tab:hover{
+  transform:translateX(2px);
+  border-color:#775d7f;
+  color:#eadfe8;
+  background:
+    linear-gradient(145deg,rgba(126,79,139,.19),rgba(31,22,34,.04) 48%),
+    linear-gradient(180deg,#211824,#130f15);
+}
+.editor-section-tab.active{
+  border-color:#a07b47;
+  color:#f2e5ce;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(176,131,68,.16),transparent 48%),
+    linear-gradient(180deg,#261c27,#151017);
+  box-shadow:
+    inset 3px 0 0 #a4814f,
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 7px 18px rgba(0,0,0,.3),
+    0 0 15px rgba(159,118,65,.09);
+}
+#editorSectionContent{
+  min-width:0;
+  border:1px solid #302833;
+  border-radius:10px;
+  background:#0f0c11;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+.editor-section-panel{display:none;padding:10px}
+.editor-section-panel.active{display:block}
+.editor-section-panel > details.section{
+  margin:0 0 8px!important;
+}
+.editor-section-panel > details.section > summary{
+  display:none!important;
+}
+.editor-section-panel > details.section{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.editor-section-empty{
+  padding:22px;
+  border:1px dashed #3b313e;
+  border-radius:8px;
+  color:#857986;
+  font-size:8px;
+  line-height:1.55;
+  text-align:center;
+}
+.text-style-workspace{
+  padding:4px;
+}
+.text-style-heading{
+  padding:6px 4px 12px;
+}
+.text-style-heading h3{
+  margin:0 0 4px;
+  color:#eee3eb;
+  font-size:12px;
+}
+.text-style-heading p{
+  margin:0;
+  color:#8f838e;
+  font-size:8px;
+  line-height:1.5;
+}
+.text-style-subtabs{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  padding:0 0 10px;
+  border-bottom:1px solid #2b242e;
+}
+.text-style-subtab{
+  min-height:31px;
+  padding:7px 10px;
+  border:1px solid #3a303e;
+  border-radius:6px;
+  background:linear-gradient(180deg,#171219,#0f0c11);
+  color:#958994;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.text-style-subtab:hover{border-color:#68536f;color:#e0d4de}
+.text-style-subtab.active{
+  border-color:#9c7546;
+  background:linear-gradient(180deg,#241a24,#151016);
+  color:#f0dfc2;
+  box-shadow:inset 0 -2px 0 #a47d4c;
+}
+.text-style-group{display:none;padding:12px 3px 4px}
+.text-style-group.active{display:block}
+.text-style-group-title{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+.text-style-group-title strong{color:#eadfe7;font-size:11px}
+.text-style-group-title span{color:#786e78;font-size:7px;text-align:right}
+.text-style-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+.text-style-field{
+  padding:9px;
+  border:1px solid #2f2732;
+  border-radius:7px;
+  background:#121014;
+}
+.text-style-field > label{
+  display:block;
+  margin:0 0 6px;
+  color:#8e828d;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.text-style-field input[type="number"],
+.text-style-field input[type="text"],
+.text-style-field select{
+  width:100%;
+  min-height:31px;
+  box-sizing:border-box;
+  border:1px solid #3b313e;
+  border-radius:5px;
+  background:#0b090d;
+  color:#d8cdd6;
+  padding:5px 7px;
+  font-size:8px;
+}
+.text-style-field input[type="color"]{
+  width:100%;
+  height:34px;
+  border:1px solid #3b313e;
+  border-radius:5px;
+  background:#0b090d;
+  padding:3px;
+}
+.text-style-checks{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+.text-style-check{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:32px;
+  padding:0 8px;
+  border:1px solid #332a36;
+  border-radius:5px;
+  background:#0c0a0e;
+  color:#aaa0a8;
+  font-size:8px;
+}
+.text-glow-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 62px;
+  gap:6px;
+}
+.text-style-note{
+  margin-top:10px;
+  padding:8px 9px;
+  border-left:2px solid #705638;
+  background:#100d0f;
+  color:#796f77;
+  font-size:7px;
+  line-height:1.45;
+}
+@media(max-width:760px){
+  #editorSectionShell{grid-template-columns:1fr}
+  #editorSectionNav{
+    position:static;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .editor-section-tab{min-height:40px}
+  .text-style-grid{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-editor-section-tabs-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('editorSectionShell')) return;
+
+  const allSections=Array.from(document.querySelectorAll('details.section'));
+  if(!allSections.length) return;
+
+  /* Restrict this navigation to the main editor column: use the parent that owns
+     the largest number of top-level editor sections. */
+  const parents=new Map();
+  allSections.forEach(s=>parents.set(s.parentElement,(parents.get(s.parentElement)||0)+1));
+  const editorRoot=Array.from(parents.entries()).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  if(!editorRoot) return;
+
+  const topSections=allSections.filter(s=>s.parentElement===editorRoot);
+  if(!topSections.length) return;
+
+  const shell=document.createElement('div');
+  shell.id='editorSectionShell';
+  const nav=document.createElement('div');
+  nav.id='editorSectionNav';
+  const content=document.createElement('div');
+  content.id='editorSectionContent';
+  shell.append(nav,content);
+  editorRoot.insertBefore(shell,topSections[0]);
+
+  const categories=[
+    {id:'background',label:'Background / Header',match:/background|header/i},
+    {id:'text',label:'Text',match:/text|typograph|font/i},
+    {id:'images',label:'Images / GIFs',match:/image|gif|border image/i},
+    {id:'panels',label:'Panels / Boxes',match:/panel|box|card/i},
+    {id:'inputs',label:'Text Boxes / Inputs',match:/input|form|text box/i},
+    {id:'required',label:'Required Tag Grid',match:/required|rating|warning|categor/i},
+    {id:'preview',label:'Preview',match:/preview/i},
+    {id:'export',label:'Export',match:/export|css|copy/i}
+  ];
+
+  const panels={};
+  categories.forEach((cat,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='editor-section-tab'+(i===0?' active':'');
+    b.dataset.panel=cat.id;
+    b.textContent=cat.label;
+    nav.appendChild(b);
+
+    const p=document.createElement('div');
+    p.className='editor-section-panel'+(i===0?' active':'');
+    p.id='editorSectionPanel_'+cat.id;
+    panels[cat.id]=p;
+    content.appendChild(p);
+  });
+
+  /* Preserve anything that doesn't map cleanly instead of deleting it. */
+  const other=document.createElement('div');
+  other.className='editor-section-panel';
+  other.id='editorSectionPanel_other';
+  panels.other=other;
+  content.appendChild(other);
+
+  function sectionName(section){
+    return (section.querySelector(':scope > summary')?.textContent||'').replace(/\s+/g,' ').trim();
+  }
+
+  topSections.forEach(section=>{
+    const name=sectionName(section);
+    const cat=categories.find(c=>c.id!=='text' && c.match.test(name))
+      || (categories.find(c=>c.id==='text' && c.match.test(name)));
+    (panels[cat?.id||'other']).appendChild(section);
+    section.open=true;
+  });
+
+  /* Existing text accordions are kept underneath the new system as advanced
+     compatibility controls, but hidden from the normal Text view. */
+  Array.from(panels.text.querySelectorAll('details.section')).forEach(s=>{
+    s.dataset.legacyTextSection='true';
+    s.style.display='none';
+  });
+
+  function makeField(label,html){
+    return '<div class="text-style-field"><label>'+label+'</label>'+html+'</div>';
+  }
+
+  const fonts=[
+    ['Georgia, serif','Georgia'],
+    ['"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif','Palatino'],
+    ['Garamond, "EB Garamond", Georgia, serif','Garamond'],
+    ['Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, Georgia, serif','Baskerville'],
+    ['Arial, sans-serif','Arial'],
+    ['Verdana, sans-serif','Verdana'],
+    ['Tahoma, sans-serif','Tahoma'],
+    ['"Trebuchet MS", sans-serif','Trebuchet MS'],
+    ['"Courier New", monospace','Courier New']
+  ];
+  const fontOptions=fonts.map(([v,n])=>'<option value="'+v.replace(/"/g,'&quot;')+'">'+n+'</option>').join('');
+
+  const groups=[
+    {id:'title',name:'Title',hint:'Work title + chapter title',selector:'.work .heading a, .work .title, h2.title, h3.title, .chapter .title',defSize:20,defColor:'#c9b2cc'},
+    {id:'author',name:'Author',hint:'Author / creator name',selector:'.byline, .byline a, a[rel="author"]',defSize:14,defColor:'#b9a4bc'},
+    {id:'tags',name:'Tags',hint:'Tags + warnings + category',selector:'.tags, .tags a.tag, .warnings, .category, .required-tags',defSize:12,defColor:'#b9a4bc'},
+    {id:'main',name:'Summary / Main Text',hint:'Summary + fic body use the same style',selector:'.summary .userstuff, #chapters .userstuff, .chapter .userstuff',defSize:15,defColor:'#d2c8d0'},
+    {id:'notes',name:'Notes',hint:'Beginning notes + end notes',selector:'.notes .userstuff, .preface .notes, .afterword .notes, .end.notes',defSize:14,defColor:'#bdb1ba'},
+    {id:'stats',name:'Stats',hint:'Chapters, words, kudos, bookmarks, hits, etc.',selector:'.stats, dl.stats, .stats dt, .stats dd',defSize:11,defColor:'#9f929d'},
+    {id:'interface',name:'Interface',hint:'Log In, Subscribe, Bookmark, Works, Dashboard, etc.',selector:'#header .primary a, #header .secondary a, .actions a, .actions button, .navigation a, .menu a, #footer a',defSize:12,defColor:'#c4b3c4'}
+  ];
+
+  const textWrap=document.createElement('div');
+  textWrap.className='text-style-workspace';
+  textWrap.innerHTML='<div class="text-style-heading"><h3>Text</h3><p>Style the words by what they actually are on AO3 instead of by CSS-ish labels.</p></div><div class="text-style-subtabs"></div><div class="text-style-groups"></div>';
+  panels.text.prepend(textWrap);
+
+  const subtabs=textWrap.querySelector('.text-style-subtabs');
+  const groupHost=textWrap.querySelector('.text-style-groups');
+
+  groups.forEach((g,i)=>{
+    const tab=document.createElement('button');
+    tab.type='button';
+    tab.className='text-style-subtab'+(i===0?' active':'');
+    tab.dataset.textGroup=g.id;
+    tab.textContent=g.name;
+    subtabs.appendChild(tab);
+
+    const box=document.createElement('div');
+    box.className='text-style-group'+(i===0?' active':'');
+    box.id='textStyleGroup_'+g.id;
+    box.innerHTML=
+      '<div class="text-style-group-title"><strong>'+g.name+'</strong><span>'+g.hint+'</span></div>'+
+      '<div class="text-style-grid">'+
+        makeField('Font','<select id="textStyle_'+g.id+'_font">'+fontOptions+'</select>')+
+        makeField('Size','<input id="textStyle_'+g.id+'_size" type="number" min="6" max="72" step="1" value="'+g.defSize+'">')+
+        makeField('Color','<input id="textStyle_'+g.id+'_color" type="color" value="'+g.defColor+'">')+
+        makeField('Letter Spacing','<input id="textStyle_'+idSafe(g.id)+'_spacing" type="number" min="-5" max="20" step="0.1" value="0">')+
+        makeField('Bold / Italic','<div class="text-style-checks"><label class="text-style-check"><input id="textStyle_'+g.id+'_bold" type="checkbox"> Bold</label><label class="text-style-check"><input id="textStyle_'+g.id+'_italic" type="checkbox"> Italic</label></div>')+
+        makeField('Text Shadow / Glow','<div class="text-glow-row"><select id="textStyle_'+g.id+'_glow"><option value="none">None</option><option value="shadow">Soft Shadow</option><option value="glow">Soft Glow</option><option value="strong">Strong Glow</option></select><input id="textStyle_'+g.id+'_glowColor" type="color" value="'+g.defColor+'"></div>')+
+      '</div>'+
+      '<div class="text-style-note">'+g.hint+'. These settings are included in each skin tab independently.</div>';
+    groupHost.appendChild(box);
+  });
+
+  function idSafe(s){return s.replace(/[^a-z0-9_-]/gi,'_')}
+
+  subtabs.addEventListener('click',e=>{
+    const btn=e.target.closest('.text-style-subtab');
+    if(!btn) return;
+    subtabs.querySelectorAll('.text-style-subtab').forEach(x=>x.classList.toggle('active',x===btn));
+    groupHost.querySelectorAll('.text-style-group').forEach(x=>x.classList.toggle('active',x.id==='textStyleGroup_'+btn.dataset.textGroup));
+  });
+
+  function rgba(hex,a){
+    const s=String(hex||'#000000').replace('#','');
+    const n=parseInt(s.length===3?s.split('').map(c=>c+c).join(''):s,16);
+    if(Number.isNaN(n)) return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+
+  function readTextCss(){
+    let css='';
+    groups.forEach(g=>{
+      const font=q('textStyle_'+g.id+'_font')?.value||'Georgia, serif';
+      const size=Number(q('textStyle_'+g.id+'_size')?.value||g.defSize);
+      const color=q('textStyle_'+g.id+'_color')?.value||g.defColor;
+      const spacing=Number(q('textStyle_'+g.id+'_spacing')?.value||0);
+      const bold=q('textStyle_'+g.id+'_bold')?.checked===true;
+      const italic=q('textStyle_'+g.id+'_italic')?.checked===true;
+      const glow=q('textStyle_'+g.id+'_glow')?.value||'none';
+      const glowColor=q('textStyle_'+g.id+'_glowColor')?.value||color;
+      let shadow='none';
+      if(glow==='shadow')shadow='0 1px 2px '+rgba(glowColor,.65);
+      if(glow==='glow')shadow='0 0 4px '+rgba(glowColor,.72);
+      if(glow==='strong')shadow='0 0 3px '+rgba(glowColor,.95)+',0 0 8px '+rgba(glowColor,.72);
+      css += '\n'+g.selector+' {\n'+
+        '  font-family: '+font+' !important;\n'+
+        '  font-size: '+Math.max(6,size)+'px !important;\n'+
+        '  color: '+color+' !important;\n'+
+        '  font-weight: '+(bold?'700':'400')+' !important;\n'+
+        '  font-style: '+(italic?'italic':'normal')+' !important;\n'+
+        '  letter-spacing: '+spacing+'px !important;\n'+
+        '  text-shadow: '+shadow+' !important;\n'+
+      '}\n';
+    });
+    return css;
+  }
+
+  function applyTextPreview(){
+    let style=q('ao3TextGroupPreviewStyle');
+    if(!style){
+      style=document.createElement('style');
+      style.id='ao3TextGroupPreviewStyle';
+      document.head.appendChild(style);
+    }
+    /* Prefix selectors into the mock preview so Studio chrome is never styled. */
+    let scoped='';
+    groups.forEach(g=>{
+      const font=q('textStyle_'+g.id+'_font')?.value||'Georgia, serif';
+      const size=Number(q('textStyle_'+g.id+'_size')?.value||g.defSize);
+      const color=q('textStyle_'+g.id+'_color')?.value||g.defColor;
+      const spacing=Number(q('textStyle_'+g.id+'_spacing')?.value||0);
+      const bold=q('textStyle_'+g.id+'_bold')?.checked===true;
+      const italic=q('textStyle_'+g.id+'_italic')?.checked===true;
+      const glow=q('textStyle_'+g.id+'_glow')?.value||'none';
+      const glowColor=q('textStyle_'+g.id+'_glowColor')?.value||color;
+      let shadow='none';
+      if(glow==='shadow')shadow='0 1px 2px '+rgba(glowColor,.65);
+      if(glow==='glow')shadow='0 0 4px '+rgba(glowColor,.72);
+      if(glow==='strong')shadow='0 0 3px '+rgba(glowColor,.95)+',0 0 8px '+rgba(glowColor,.72);
+      const scopedSelectors=g.selector.split(',').map(s=>'#mock '+s.trim()).join(',');
+      scoped += scopedSelectors+'{font-family:'+font+'!important;font-size:'+Math.max(6,size)+'px!important;color:'+color+'!important;font-weight:'+(bold?'700':'400')+'!important;font-style:'+(italic?'italic':'normal')+'!important;letter-spacing:'+spacing+'px!important;text-shadow:'+shadow+'!important}\n';
+    });
+    style.textContent=scoped;
+    try{if(typeof save==='function')save()}catch(e){}
+  }
+
+  textWrap.addEventListener('input',applyTextPreview,true);
+  textWrap.addEventListener('change',applyTextPreview,true);
+  applyTextPreview();
+
+  /* Add the new text styles to exported AO3 CSS. */
+  try{
+    if(typeof buildCss==='function' && !buildCss.__textGroupsWrapped){
+      const originalBuildCss=buildCss;
+      const wrapped=function(){
+        return originalBuildCss.apply(this,arguments)+'\n/* Text groups */\n'+readTextCss();
+      };
+      wrapped.__textGroupsWrapped=true;
+      buildCss=wrapped;
+    }
+  }catch(e){}
+
+  function showPanel(id){
+    nav.querySelectorAll('.editor-section-tab').forEach(b=>b.classList.toggle('active',b.dataset.panel===id));
+    content.querySelectorAll('.editor-section-panel').forEach(p=>p.classList.toggle('active',p.id==='editorSectionPanel_'+id));
+  }
+  nav.addEventListener('click',e=>{
+    const b=e.target.closest('.editor-section-tab');
+    if(!b)return;
+    showPanel(b.dataset.panel);
+  });
+
+  /* Put unmapped legacy controls where they remain reachable without cluttering the
+     main category list. If a category would otherwise be empty, move a sensible
+     unmatched section there before showing an empty message. */
+  const leftovers=Array.from(other.children);
+  const priority=['panels','inputs','preview','export','images'];
+  leftovers.forEach((s,i)=>{
+    const target=priority[i] && panels[priority[i]].children.length===0 ? panels[priority[i]] : other;
+    target.appendChild(s);
+  });
+
+  Object.entries(panels).forEach(([id,p])=>{
+    if(id==='other'||id==='text')return;
+    if(!p.children.length){
+      const empty=document.createElement('div');
+      empty.className='editor-section-empty';
+      empty.textContent='No separate '+(categories.find(c=>c.id===id)?.label||id)+' controls are currently needed here.';
+      p.appendChild(empty);
+    }
+  });
+
+  /* Background/Header is intentionally one category. Any standalone header section
+     gets folded into it. There is deliberately no Footer category. */
+  Array.from(content.querySelectorAll('details.section')).forEach(s=>{
+    if(/header/i.test(sectionName(s)) && s.parentElement!==panels.background){
+      panels.background.appendChild(s);
+    }
+  });
+
+  /* Make the Editor workspace own the new section navigator; non-Editor workspaces
+     from 0.1.21 continue to overlay it as before. */
+  window.AO3EditorSectionTabs={show:showPanel};
+})();
+</script>
