@@ -1,0 +1,144 @@
+<style id="ao3-quick-colors-panel-styles">
+.quick-colors-wrap{padding:8px 5px 10px}
+.quick-colors-head{margin-bottom:12px}
+.quick-colors-head h3{margin:0 0 4px;color:#eee3eb;font-size:12px}
+.quick-colors-head p{margin:0;color:#8e828d;font-size:8px;line-height:1.5}
+.quick-colors-status{
+  margin:10px 0 12px;padding:8px 10px;border:1px solid #342b37;border-radius:6px;
+  background:#100d12;color:#aa9da8;font-size:8px
+}
+.quick-colors-group{margin:0 0 14px}
+.quick-colors-group-title{
+  margin:0 0 7px;color:#d8cad5;font-size:8px;font-weight:900;
+  letter-spacing:.05em;text-transform:uppercase
+}
+.quick-colors-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:7px
+}
+.quick-color-card{
+  display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:8px;
+  min-height:48px;padding:6px 8px;border:1px solid #302733;border-radius:7px;
+  background:linear-gradient(180deg,#151117,#0d0a0f);cursor:pointer;
+  transition:border-color .12s ease,transform .12s ease,background .12s ease
+}
+.quick-color-card:hover{
+  border-color:#705b77;background:linear-gradient(180deg,#1c151e,#100c12);
+  transform:translateY(-1px)
+}
+.quick-color-swatch{
+  width:36px;height:36px;border-radius:5px;border:1px solid rgba(255,255,255,.16);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.24)
+}
+.quick-color-meta{min-width:0}
+.quick-color-name{
+  color:#bbaeb9;font-size:7px;font-weight:800;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis
+}
+.quick-color-code{
+  margin-top:3px;color:#f1e5ec;font:900 8px/1.2 "Courier New",monospace;letter-spacing:.02em
+}
+.quick-color-card.applied{
+  border-color:#a07b47;
+  box-shadow:0 0 12px rgba(160,123,71,.14)
+}
+</style>
+
+<script id="ao3-quick-colors-panel-script">
+(function(){
+  const nav=document.getElementById('editorSectionNav');
+  const content=document.getElementById('editorSectionContent');
+  if(!nav||!content||document.getElementById('editorSectionPanel_quickcolors')) return;
+
+  const paletteGroups=[
+    {name:'Original Falling Angle', colors:[
+      ['Archive Black','#070707'],['Black Umber','#11100E'],['Dark Bronze','#2A2117'],
+      ['Old Gold Brown','#6D5432'],['Antique Gold','#B28B52'],['Warm Ivory','#E7D6B6'],
+      ['Pale Gold Ivory','#F4E7CB']
+    ]},
+    {name:"Michael's Grace", colors:[
+      ['Grace Blue','#4EA6FF'],['Bright Core','#8FD4FF'],['Electric Edge','#2F73FF'],
+      ['Icy Highlight','#DDF4FF'],['Deep Grace Blue','#0E2E63']
+    ]},
+    {name:'Holy Gold / Light', colors:[
+      ['Pale Celestial Gold','#F4E7B2'],['Warm White Gold','#FFF7D6'],
+      ['Antique Divine Gold','#C9A85C'],['Cold Holy Highlight','#EAF4FF']
+    ]}
+  ];
+
+  let lastColorInput=null;
+  document.addEventListener('focusin',e=>{
+    if(e.target instanceof HTMLInputElement && e.target.type==='color') lastColorInput=e.target;
+  },true);
+  document.addEventListener('click',e=>{
+    if(e.target instanceof HTMLInputElement && e.target.type==='color') lastColorInput=e.target;
+  },true);
+
+  const tab=document.createElement('button');
+  tab.type='button';
+  tab.className='editor-section-tab';
+  tab.dataset.panel='quickcolors';
+  tab.dataset.fullSectionName='Quick Colors';
+  tab.title='Quick Colors';
+  tab.setAttribute('aria-label','Quick Colors');
+  nav.appendChild(tab);
+
+  const panel=document.createElement('div');
+  panel.className='editor-section-panel';
+  panel.id='editorSectionPanel_quickcolors';
+  content.appendChild(panel);
+
+  const wrap=document.createElement('div');
+  wrap.className='quick-colors-wrap';
+  wrap.innerHTML='<div class="quick-colors-head"><h3>Quick Colors</h3><p>Pick from the full Falling Angle palette without hunting for hex codes.</p></div><div class="quick-colors-status" id="quickColorsStatus">Click a color field anywhere in the editor, then click a swatch here to apply it. If no color field is selected, the hex code is copied instead.</div>';
+  panel.appendChild(wrap);
+
+  paletteGroups.forEach(group=>{
+    const section=document.createElement('div');
+    section.className='quick-colors-group';
+    section.innerHTML='<div class="quick-colors-group-title">'+group.name+'</div><div class="quick-colors-grid"></div>';
+    const grid=section.querySelector('.quick-colors-grid');
+    group.colors.forEach(([name,hex])=>{
+      const card=document.createElement('button');
+      card.type='button';
+      card.className='quick-color-card';
+      card.title=name+' — '+hex;
+      card.innerHTML='<span class="quick-color-swatch" style="background:'+hex+'"></span><span class="quick-color-meta"><span class="quick-color-name">'+name+'</span><span class="quick-color-code">'+hex+'</span></span>';
+      card.addEventListener('click',async()=>{
+        const status=document.getElementById('quickColorsStatus');
+        if(lastColorInput && document.contains(lastColorInput)){
+          lastColorInput.value=hex;
+          try{lastColorInput.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}
+          try{lastColorInput.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+          if(status) status.textContent=hex+' applied to '+(lastColorInput.id||'the selected color field')+'.';
+        }else{
+          try{
+            await navigator.clipboard.writeText(hex);
+            if(status) status.textContent=hex+' copied to the clipboard.';
+          }catch(e){
+            if(status) status.textContent='Color: '+hex;
+          }
+        }
+        card.classList.add('applied');
+        setTimeout(()=>card.classList.remove('applied'),450);
+      });
+      grid.appendChild(card);
+    });
+    wrap.appendChild(section);
+  });
+
+  function showPanel(id){
+    nav.querySelectorAll('.editor-section-tab').forEach(b=>b.classList.toggle('active',b.dataset.panel===id));
+    content.querySelectorAll('.editor-section-panel').forEach(p=>p.classList.toggle('active',p.id==='editorSectionPanel_'+id));
+  }
+  tab.addEventListener('click',()=>showPanel('quickcolors'));
+
+  /* Re-number every main protruding tab, including the new Quick Colors tab. */
+  Array.from(nav.querySelectorAll('.editor-section-tab')).forEach((b,index)=>{
+    const full=b.dataset.fullSectionName || b.title || b.textContent.trim() || ('Section '+(index+1));
+    b.dataset.fullSectionName=full;
+    b.title=full;
+    b.setAttribute('aria-label',full);
+    b.textContent=String(index+1);
+  });
+})();
+</script>
