@@ -472,11 +472,7 @@ jobs:
 
           $installerBase = "AO3-Skin-Studio-Setup-$env:AO3_VERSION"
           $iss = Join-Path $env:RUNNER_TEMP 'ao3-skin-studio-installer.iss'
-          $setupIcon = Join-Path $env:AO3_PUBLISH 'Assets\AO3-Skin-Studio-Icon.ico'
-          if (-not (Test-Path $setupIcon)) { throw 'AO3 Skin Studio installer icon was not found in publish output.' }
-
           $publishEscaped = $env:AO3_PUBLISH.Replace("\","\\")
-          $iconEscaped = $setupIcon.Replace("\","\\")
           $outputEscaped = $env:RUNNER_TEMP.Replace("\","\\")
 
           @"
@@ -490,7 +486,6 @@ jobs:
           DisableProgramGroupPage=yes
           OutputDir=$outputEscaped
           OutputBaseFilename=$installerBase
-          SetupIconFile=$iconEscaped
           UninstallDisplayIcon={app}\AO3SkinStudio.exe
           Compression=lzma2
           SolidCompression=yes
