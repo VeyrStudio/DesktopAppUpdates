@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.28",
-  "payloadSha256": "136ab7cb6a5d2dcd49ff8ac91aafaad74907a581020e7927c381c8ff570d4879",
-  "executableSha256": "19286273f1f76a5c699625507da547ec696074c59d3f0984bea9221c4792949b",
+  "version": "0.1.29",
+  "payloadSha256": "1dc192bf3a606ff820a045f006d67c055695908fcc110b0121ffdd9b730f04fa",
+  "executableSha256": "e85910fba38a13011355b33c3ee7656f85d7ea4c41bb9166b88f36d4a7d88617",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-001.txt",
-      "sha256": "3e9d8a5b0dddf6f2eca3ffa9210e38d3238b12d99b237d78cb71249ba2acbdd3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.29-part-001.txt",
+      "sha256": "05e26f716445b076519ec2225aa2fd8194c4052a1dee054a434346d797ef8297"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-002.txt",
-      "sha256": "2e14ea067f3943240e0dc792d9975d54484511120c3ee57dd93fd72ea2458b45"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.29-part-002.txt",
+      "sha256": "478161aa83bac29eceffbf312db2fedb8dce68358053af527fbe1c0525a85914"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-003.txt",
-      "sha256": "34fc5b168c4a4cb1b567385bd37779aecde280f77e118f2467ab9b9bf5e4362e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.29-part-003.txt",
+      "sha256": "ac4a164fcf0e24c2f50f73ef2cd39476b94d62c482a04901e6e2fc4ac3747c55"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-004.txt",
-      "sha256": "341e404edc2e5598d43642e4edb61530232fb3456e76fb6355c23ec9c02d4f0d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.29-part-004.txt",
+      "sha256": "56960e9b644a069fe2547791179dc8f943824583e54f862abdddecab7e2870ee"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-005.txt",
-      "sha256": "2cc69aae0c941e9ff2d3ea51d5c98b4e15d769b93d97fa8e5cce7987e8feb1fc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.29-part-005.txt",
+      "sha256": "f230cc4d8a53a29c499161793293c57655cc4c6c48fc443ea5c45b330d8e8c53"
     }
   ],
-  "notes": "Fixes background bleed-through when Use Header is enabled. The header is now an opaque independent surface, so the main page background image cannot continue through the header area. Adds a Header Background Color control; the header uses only that color and its own header image/GIF, while the main background remains below it. Exported AO3 CSS now overrides the older continuous-background rule for the header."
+  "notes": "Fixes the actual background boundary shown in the preview screenshots: when Use Header is enabled, the page background layer itself is physically offset to begin immediately below the complete AO3 header (heading plus navigation), instead of continuing behind it. Exported AO3 CSS moves page imagery to #main in header mode. Also repairs Text Boxes / Inputs opacity so its slider always changes the box background, including when an input gradient is enabled, without fading the text."
 }
