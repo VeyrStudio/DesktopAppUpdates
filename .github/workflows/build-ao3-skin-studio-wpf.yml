@@ -334,6 +334,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $headerLayoutPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.18: full-skin Randomizer tab inside Concepts / Starters.
+          $randomizerPatchPath = 'apps/ao3-skin-studio/patches/0.1.18/skin-randomizer.html'
+          if (-not (Test-Path $randomizerPatchPath)) { throw 'AO3 Skin Studio 0.1.18 skin-randomizer patch was not found.' }
+          $randomizerPatch = Get-Content $randomizerPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.18.' }
+          $studioText = $studioText.Replace('</body>', $randomizerPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -416,16 +425,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.17</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.17.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.17.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.18</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.18.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.18.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.17" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.18" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -499,7 +508,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds Header Layout controls. Enable Resizable Header to reveal a height slider/number field and a draggable handle on the bottom edge of the preview header; dragging changes the header heading height in normal document flow so everything below is pushed down instead of overlapped. Adds a Hide Archive of Our Own Branding checkbox that hides the AO3 heading/logo branding while preserving the customizable header area. Both settings are saved, exported to AO3 CSS, included in Concepts / Starters snapshots, and work with Falling Angle and other starters. Keeps all prior tools.'
+            notes = 'Adds a full Randomizer tab to Concepts / Starters. Randomize Entire Skin generates a coordinated new skin from scratch across palette, panels, inputs, borders, links, typography, gradients, required-tag colors, and optional header layout, with toggles for which systems to randomize. Generated skins remain fully editable and can be saved directly as My Concepts. Also adds the new built-in Starter Library concept Glorious Purpose: blackened emerald, antique gold, parchment text, metallic-like green/gold gradients, ornate dark panels, a tall resizable header, and themed AO3 required-tag colors. The image/GIF slot remains open for a user-supplied cinematic header. Keeps Falling Angle and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

@@ -1,0 +1,264 @@
+<style id="ao3-skin-randomizer-styles">
+.concepts-tabs.randomizer-ready{grid-template-columns:1fr 1fr 1fr}
+.randomizer-panel{display:none;margin-top:2px}
+.randomizer-panel.active{display:block}
+.randomizer-hero{
+  padding:13px;
+  border:1px solid #3a303d;
+  border-radius:10px;
+  background:#100e12;
+}
+.randomizer-title{font-size:12px;font-weight:900;color:#eee3ec;margin-bottom:4px}
+.randomizer-sub{font-size:8px;line-height:1.5;color:#998c98;margin-bottom:10px}
+.randomizer-options{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin-bottom:10px;
+}
+.randomizer-option{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 8px;border:1px solid #2f2932;border-radius:7px;background:#0c0b0e;
+  color:#ada0ab;font-size:8px;
+}
+.randomizer-actions{display:grid;grid-template-columns:1.35fr 1fr;gap:7px}
+.randomizer-actions button{
+  border:1px solid #4a3c4e;border-radius:8px;background:#171419;color:#ddd1dc;
+  padding:10px;font-size:9px;font-weight:900;cursor:pointer;
+}
+.randomizer-actions .primary{background:#5b0d72;border-color:#8c1baa;color:#fff}
+.randomizer-result{
+  margin-top:10px;padding:10px;border:1px solid #302932;border-radius:8px;background:#0d0c0f;
+}
+.randomizer-result-name{font-size:10px;font-weight:900;color:#e9dde7;margin-bottom:5px}
+.randomizer-result-desc{font-size:8px;color:#8e828d;line-height:1.45}
+.randomizer-swatches{display:flex;gap:5px;margin-top:8px}
+.randomizer-swatches span{width:25px;height:25px;border:1px solid rgba(255,255,255,.16);border-radius:5px}
+@media(max-width:560px){
+  .concepts-tabs.randomizer-ready{grid-template-columns:1fr}
+  .randomizer-options,.randomizer-actions{grid-template-columns:1fr}
+}
+</style>
+<script id="ao3-skin-randomizer-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const section=q('conceptsStartersSection');
+  if(!section || q('conceptRandomizerTab')) return;
+
+  const tabs=section.querySelector('.concepts-tabs');
+  tabs.classList.add('randomizer-ready');
+  const tab=document.createElement('button');
+  tab.type='button';
+  tab.id='conceptRandomizerTab';
+  tab.textContent='Randomizer';
+  tabs.appendChild(tab);
+
+  const grid=q('conceptGrid');
+  const toolbar=section.querySelector('.concepts-toolbar');
+  const actionRow=section.querySelector('.concept-action-row');
+  const status=q('conceptStatus');
+
+  const panel=document.createElement('div');
+  panel.className='randomizer-panel';
+  panel.id='skinRandomizerPanel';
+  panel.innerHTML=`
+    <div class="randomizer-hero">
+      <div class="randomizer-title">Randomize a whole new skin</div>
+      <div class="randomizer-sub">This generates a coordinated skin from scratch — palette, typography, panels, gradients, required-tag colors, border style, and optional header layout. It is intentionally cohesive rather than pure visual chaos.</div>
+      <div class="randomizer-options">
+        <label class="randomizer-option"><input type="checkbox" id="randomizeGradients" checked> Gradients</label>
+        <label class="randomizer-option"><input type="checkbox" id="randomizeRequiredTags" checked> Required-tag grid</label>
+        <label class="randomizer-option"><input type="checkbox" id="randomizeTypography" checked> Typography</label>
+        <label class="randomizer-option"><input type="checkbox" id="randomizeHeader" checked> Header layout</label>
+      </div>
+      <div class="randomizer-actions">
+        <button type="button" class="primary" id="randomizeWholeSkin">Randomize Entire Skin</button>
+        <button type="button" id="randomizerSaveConcept">Save Result as Concept</button>
+      </div>
+      <div class="randomizer-result" id="randomizerResult">
+        <div class="randomizer-result-name">Nothing generated yet.</div>
+        <div class="randomizer-result-desc">Hit Randomize Entire Skin and the normal editor will immediately become the new skin.</div>
+        <div class="randomizer-swatches"></div>
+      </div>
+    </div>
+  `;
+  grid.insertAdjacentElement('beforebegin',panel);
+
+  const themes=[
+    {name:'Midnight Velvet',mood:'dark romantic velvet with wine-red accents',bg:'#080709',panel:'#141014',accent:'#8A3D55',border:'#65404B',text:'#EADDE4',muted:'#A9939E',link:'#D6859D',hover:'#F1B7C7'},
+    {name:'Deep Forest',mood:'shadowed forest greens with antique brass',bg:'#060B08',panel:'#0D1711',accent:'#82935B',border:'#596B42',text:'#E1E8D7',muted:'#9EAA95',link:'#B8C88A',hover:'#E4F0BF'},
+    {name:'Royal Amethyst',mood:'black plum and jewel-purple with pale silver',bg:'#09070B',panel:'#17101B',accent:'#8B55B4',border:'#65427B',text:'#EEE5F1',muted:'#A895AE',link:'#C28EE1',hover:'#E5BCF5'},
+    {name:'Gilded Night',mood:'near-black with old gold and warm ivory',bg:'#070707',panel:'#12110F',accent:'#B28B52',border:'#705A35',text:'#E8DCC2',muted:'#A99B82',link:'#D8B878',hover:'#F4DEAA'},
+    {name:'Stormglass',mood:'blue-black glass with cold steel and cyan light',bg:'#05090D',panel:'#0D151C',accent:'#4B8EA8',border:'#355C6B',text:'#DFEBF1',muted:'#91A5AF',link:'#75C0DE',hover:'#B8E8F6'},
+    {name:'Crimson Cathedral',mood:'black stone, blood red, and tarnished pewter',bg:'#090707',panel:'#160D0E',accent:'#9E3036',border:'#6E3438',text:'#E9DDDA',muted:'#A88D8D',link:'#D26A70',hover:'#F1A1A5'},
+    {name:'Moonlit Ink',mood:'inky navy with moon-silver accents',bg:'#05070D',panel:'#0C1020',accent:'#7C89B6',border:'#4B5475',text:'#E6E8F0',muted:'#9CA2B7',link:'#AEBBE9',hover:'#DCE3FF'},
+    {name:'Emerald Court',mood:'black emerald with gold-green highlights',bg:'#050A06',panel:'#0A160D',accent:'#8CA64B',border:'#617335',text:'#E5ECD7',muted:'#A1AD91',link:'#B9D272',hover:'#E2F3AA'},
+    {name:'Ash & Copper',mood:'smoked charcoal, burnished copper, and parchment',bg:'#090909',panel:'#171513',accent:'#B87333',border:'#714927',text:'#E9E0D5',muted:'#AB9C8E',link:'#D49A66',hover:'#F0C6A3'},
+    {name:'Rosewood Archive',mood:'dark rosewood with muted rose and cream',bg:'#0A0708',panel:'#171012',accent:'#A85F72',border:'#704451',text:'#EADDE0',muted:'#A89097',link:'#D58A9B',hover:'#F0B8C4'},
+    {name:'Celestial Blue',mood:'deep indigo, starlight blue, and silver-white',bg:'#050610',panel:'#0B1021',accent:'#5578C5',border:'#3D4F82',text:'#E7EBF7',muted:'#99A4C2',link:'#82A4EE',hover:'#C0D3FF'},
+    {name:'Sepia Manuscript',mood:'aged ink, dark umber, and antique paper',bg:'#110D09',panel:'#1B1510',accent:'#AA7946',border:'#6C4B2F',text:'#E8D7BB',muted:'#AE9B80',link:'#D2A36F',hover:'#EFC796'}
+  ];
+  const fonts=[
+    'Georgia, serif',
+    '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif',
+    'Garamond, "EB Garamond", Georgia, serif',
+    'Baskerville, "Baskerville Old Face", "Hoefler Text", Garamond, Georgia, serif',
+    'Arial, sans-serif',
+    'Verdana, sans-serif'
+  ];
+  const nouns=['Archive','Sanctuary','Nocturne','Court','Manuscript','Cathedral','Garden','Observatory','Parlor','Reliquary','Dream','Vault'];
+  const adjectives=['Gilded','Hidden','Velvet','Moonlit','Ancient','Secret','Midnight','Hollow','Radiant','Forgotten','Wicked','Quiet'];
+
+  let lastGenerated=null;
+
+  function pick(a){return a[Math.floor(Math.random()*a.length)]}
+  function hexToRgbLocal(hex){
+    const s=hex.replace('#','');
+    return {r:parseInt(s.slice(0,2),16),g:parseInt(s.slice(2,4),16),b:parseInt(s.slice(4,6),16)};
+  }
+  function mix(a,b,t){
+    const A=hexToRgbLocal(a),B=hexToRgbLocal(b);
+    const c=n=>Math.max(0,Math.min(255,Math.round(n)));
+    return '#'+[c(A.r+(B.r-A.r)*t),c(A.g+(B.g-A.g)*t),c(A.b+(B.b-A.b)*t)].map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+  }
+  function setControl(id,value){
+    const el=q(id); if(!el) return;
+    if(el.type==='checkbox'||el.type==='radio') el.checked=!!value; else el.value=value;
+    try{el.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}
+    try{el.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+  }
+
+  function applyRequired(theme){
+    const pale=mix(theme.text,'#FFFFFF',.15);
+    const dark=mix(theme.bg,theme.accent,.18);
+    const medium=mix(theme.bg,theme.accent,.45);
+    const danger=mix('#8B1F25',theme.accent,.25);
+    const warn=mix('#B27825',theme.accent,.35);
+    const green=mix('#396B3A',theme.accent,.30);
+    const blue=mix('#235F80',theme.accent,.30);
+    const rose=mix('#7B345C',theme.accent,.30);
+
+    const map={
+      ratingGeneral:[green,pale],ratingTeen:[warn,pale],ratingMature:[mix(warn,danger,.35),pale],ratingExplicit:[danger,pale],ratingNotrated:[dark,theme.muted],
+      warningNo:[dark,theme.muted],warningChoose:[warn,pale],warningYes:[danger,pale],
+      categorySlash:[blue,pale],categoryFemslash:[rose,pale],categoryHet:[medium,pale],categoryGen:[green,pale],categoryMulti:[medium,pale],categoryOther:[dark,pale],categoryNone:[dark,theme.muted],
+      completeYes:[green,pale],completeNo:[warn,pale],
+      ratingKey2:[dark,theme.muted],categoryKey3:[dark,theme.muted],warningExternal:[blue,pale],warningKey4:[dark,theme.muted],completeNone:[dark,theme.muted]
+    };
+    Object.entries(map).forEach(([key,vals])=>{setControl('req_'+key+'_bg',vals[0]);setControl('req_'+key+'_fg',vals[1])});
+    setControl('req_hetLeft',rose);setControl('req_hetRight',blue);
+    setControl('req_multiTL',green);setControl('req_multiTR',rose);setControl('req_multiBL',danger);setControl('req_multiBR',blue);
+  }
+
+  function makeGradient(a,b,c){
+    return {
+      enabled:true,type:pick(['linear','linear','radial']),angle:String(Math.floor(Math.random()*360))+'deg',custom:'',
+      radialShape:pick(['ellipse','circle']),radialSize:'farthest-corner',
+      centerX:Math.floor(25+Math.random()*50),centerY:Math.floor(15+Math.random()*70),
+      conicStart:0,conicX:50,conicY:50,repeating:false,repeatSize:35,
+      stops:[{color:a,pos:0,opacity:100},{color:b,pos:55,opacity:96},{color:c,pos:100,opacity:100}]
+    };
+  }
+
+  function randomize(){
+    const t={...pick(themes)};
+    const generatedName=pick(adjectives)+' '+pick(nouns);
+    const font=pick(fonts);
+    const radius=pick(['0','2','3','5','8','12']);
+    const border=mix(t.border,t.accent,.35);
+    const panel2=mix(t.panel,t.accent,.12);
+
+    setControl('bgColor',t.bg);
+    setControl('accentColor',t.accent);
+    setControl('textColor',t.text);
+    setControl('mutedColor',t.muted);
+    setControl('linkColor',t.link);
+    setControl('hoverColor',t.hover);
+    setControl('panelColor',t.panel);
+    setControl('panelOpacity',String(Math.floor(84+Math.random()*14)));
+    setControl('borderColor',border);
+    setControl('radius',radius);
+    setControl('inputColor',mix(t.bg,t.panel,.55));
+    setControl('inputOpacity',String(Math.floor(90+Math.random()*10)));
+    setControl('transparentInputs',Math.random()<.18);
+    setControl('bgFixed',Math.random()<.55);
+
+    if(q('randomizeTypography').checked){
+      setControl('fontFamily',font);
+      setControl('requiredTagFont',font);
+      setControl('fontSize',String(pick([14,15,15,16,17])));
+      setControl('logoTextSize',String(pick([24,26,28,30,32])));
+      setControl('headingTextSize',String(pick([21,23,25,27])));
+      setControl('workTitleTextSize',String(pick([17,18,19,20])));
+      setControl('tagTextSize',String(pick([11,12,13])));
+      setControl('requiredTagSize',String(pick([10,11,12])));
+    }
+
+    if(q('randomizeHeader').checked){
+      const enabled=Math.random()<.72;
+      setControl('headerResizable',enabled);
+      setControl('headerHeight',String(pick([180,210,240,275,310,350])));
+      setControl('hideAo3Branding',Math.random()<.48);
+    }
+
+    if(q('randomizeRequiredTags').checked) applyRequired(t);
+
+    if(q('randomizeGradients').checked && typeof gradients!=='undefined'){
+      gradients.page=makeGradient(mix(t.bg,t.accent,.35),t.bg,mix(t.bg,'#000000',.5));
+      gradients.panels=makeGradient(panel2,t.panel,t.bg);
+      gradients.inputs=makeGradient(mix(t.bg,t.panel,.5),t.panel,t.bg);
+      gradients.ui=makeGradient(t.panel,mix(t.panel,t.accent,.50),t.accent);
+      gradients.textHeadings=makeGradient(t.text,t.link,t.accent);
+      gradients.textWorkTitles=makeGradient(t.text,t.link,t.accent);
+      gradients.textLinks=makeGradient(t.link,t.accent,mix(t.accent,t.text,.35));
+      if(typeof renderGradientEditor==='function') try{renderGradientEditor()}catch(e){}
+    }
+
+    try{if(typeof applyRequiredPreview==='function')applyRequiredPreview()}catch(e){}
+    try{if(typeof applyAllRequiredStates==='function')applyAllRequiredStates()}catch(e){}
+    try{if(typeof update==='function')update()}catch(e){}
+    try{if(typeof save==='function')save()}catch(e){}
+
+    lastGenerated={name:generatedName,description:t.mood,palette:[t.bg,t.panel,t.accent,border,t.link,t.text]};
+    const result=q('randomizerResult');
+    result.querySelector('.randomizer-result-name').textContent=generatedName;
+    result.querySelector('.randomizer-result-desc').textContent='Generated '+t.mood+'. Everything is already loaded into the normal editor — change anything you want, or randomize again.';
+    result.querySelector('.randomizer-swatches').innerHTML=lastGenerated.palette.map(c=>'<span style="background:'+c+'" title="'+c+'"></span>').join('');
+    try{showToast('New skin randomized: '+generatedName)}catch(e){}
+  }
+
+  function showRandomizer(){
+    panel.classList.add('active');
+    tab.classList.add('active');
+    q('conceptBuiltinTab')?.classList.remove('active');
+    q('conceptUserTab')?.classList.remove('active');
+    toolbar.style.display='none';
+    grid.style.display='none';
+    actionRow.style.display='none';
+    status.style.display='none';
+  }
+  function hideRandomizer(){
+    panel.classList.remove('active');
+    tab.classList.remove('active');
+    toolbar.style.display='';
+    grid.style.display='';
+    actionRow.style.display='';
+    status.style.display='';
+  }
+
+  tab.addEventListener('click',showRandomizer);
+  q('conceptBuiltinTab')?.addEventListener('click',hideRandomizer);
+  q('conceptUserTab')?.addEventListener('click',hideRandomizer);
+  q('randomizeWholeSkin').addEventListener('click',randomize);
+  q('randomizerSaveConcept').addEventListener('click',()=>{
+    if(!lastGenerated){try{showToast('Randomize a skin first')}catch(e){};return}
+    hideRandomizer();
+    q('conceptUserTab')?.click();
+    q('conceptNewBtn')?.click();
+    setTimeout(()=>{
+      if(q('conceptNameInput'))q('conceptNameInput').value=lastGenerated.name;
+      if(q('conceptDescriptionInput'))q('conceptDescriptionInput').value='Randomized starter — '+lastGenerated.description+'.';
+    },0);
+  });
+})();
+</script>
