@@ -1,0 +1,255 @@
+<style id="ao3-preview-inspector-header-fixed-styles">
+#mock .preview-inspector-picked{
+  outline:2px solid #c49a5a !important;
+  outline-offset:2px !important;
+  box-shadow:0 0 0 4px rgba(196,154,90,.16) !important;
+}
+#mock{cursor:default}
+#mock a,#mock button,#mock input,#mock textarea,#mock select,
+#mock .tag,#mock .stats,#mock .meta,#mock .mock-panel,#mock .ao3-header{
+  cursor:pointer;
+}
+.fixed-background-header-locked{
+  opacity:.48;
+}
+.fixed-background-header-note{
+  margin-top:6px;
+  color:#9a8d98;
+  font-size:7px;
+  line-height:1.4;
+}
+</style>
+
+<script id="ao3-preview-inspector-header-fixed-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const useHeader=q('useHeader');
+  const bgFixed=q('bgFixed');
+
+  /* HEADER + FIXED BACKGROUND SAFETY */
+  function syncFixedBackgroundLock(){
+    if(!useHeader || !bgFixed) return;
+    const on=useHeader.checked===true;
+    if(on && bgFixed.checked){
+      bgFixed.checked=false;
+      bgFixed.dispatchEvent(new Event('input',{bubbles:true}));
+      bgFixed.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    bgFixed.disabled=on;
+    bgFixed.setAttribute('aria-disabled',on?'true':'false');
+    bgFixed.title=on
+      ? 'Fixed Background is disabled while Use Header is on so the page background stays below the header.'
+      : '';
+
+    const control=bgFixed.closest('.control') || bgFixed.parentElement;
+    if(control){
+      control.classList.toggle('fixed-background-header-locked',on);
+      let note=control.querySelector('.fixed-background-header-note');
+      if(on && !note){
+        note=document.createElement('div');
+        note.className='fixed-background-header-note';
+        note.textContent='Disabled while Use Header is on so the background cannot slide behind the header.';
+        control.appendChild(note);
+      }else if(!on && note){
+        note.remove();
+      }
+    }
+    try{ if(typeof save==='function') save(); }catch(e){}
+  }
+
+  useHeader?.addEventListener('change',()=>setTimeout(syncFixedBackgroundLock,0));
+  document.addEventListener('change',e=>{
+    if(e.target===useHeader || e.target===bgFixed) setTimeout(syncFixedBackgroundLock,0);
+  },true);
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('.preset,.concept-card,.starter-card,[data-concept-id],[data-preset]')){
+      setTimeout(syncFixedBackgroundLock,80);
+    }
+  },true);
+  syncFixedBackgroundLock();
+
+  if(!mock) return;
+
+  /* PREVIEW CLICK-TO-EDIT INSPECTOR */
+  let highlighted=null;
+  let highlightTimer=0;
+
+  function flash(el){
+    if(highlighted) highlighted.classList.remove('preview-inspector-picked');
+    clearTimeout(highlightTimer);
+    highlighted=el;
+    if(!el) return;
+    el.classList.add('preview-inspector-picked');
+    highlightTimer=setTimeout(()=>{
+      el.classList.remove('preview-inspector-picked');
+      if(highlighted===el) highlighted=null;
+    },1200);
+  }
+
+  function showEditorPanel(id){
+    try{ window.AO3WorkspaceTabs?.show?.('editor'); }catch(e){}
+    try{ window.AO3EditorSectionTabs?.show?.(id); }catch(e){}
+    const panel=q('editorSectionPanel_'+id);
+    panel?.scrollIntoView?.({behavior:'smooth',block:'start'});
+  }
+
+  function chooseTextGroup(group){
+    showEditorPanel('text');
+    setTimeout(()=>{
+      const tab=document.querySelector('.text-style-subtab[data-text-group="'+group+'"]');
+      if(tab) tab.click();
+      const box=q('textStyleGroup_'+group);
+      box?.scrollIntoView?.({behavior:'smooth',block:'nearest'});
+    },0);
+  }
+
+  function chooseInputControls(){
+    showEditorPanel('inputs');
+    setTimeout(()=>{
+      const opacity=q('inputOpacity');
+      const pane=opacity?.closest('.text-box-number-pane');
+      if(pane){
+        const tab=document.querySelector('#textBoxNumberedTabs .text-box-number-tab[data-index="'+pane.dataset.index+'"]');
+        tab?.click();
+      }
+      (opacity || q('inputColor') || q('transparentInputs'))?.scrollIntoView?.({behavior:'smooth',block:'center'});
+    },0);
+  }
+
+  const reqClassToKey={
+    'rating-general-audience':'ratingGeneral',
+    'rating-teen':'ratingTeen',
+    'rating-mature':'ratingMature',
+    'rating-explicit':'ratingExplicit',
+    'rating-notrated':'ratingNotrated',
+    'warning-no':'warningNo',
+    'warning-choosenotto':'warningChoose',
+    'warning-yes':'warningYes',
+    'category-slash':'categorySlash',
+    'category-femslash':'categoryFemslash',
+    'category-het':'categoryHet',
+    'category-gen':'categoryGen',
+    'category-multi':'categoryMulti',
+    'category-other':'categoryOther',
+    'category-none':'categoryNone',
+    'complete-yes':'completeYes',
+    'complete-no':'completeNo',
+    'external-work':'external'
+  };
+
+  function requiredKeyFor(el){
+    for(const [cls,key] of Object.entries(reqClassToKey)){
+      if(el.closest?.('.'+cls)) return key;
+    }
+    return null;
+  }
+
+  function chooseRequired(key){
+    showEditorPanel('required');
+    setTimeout(()=>{
+      const input=q('req_'+key+'_bg');
+      const row=input?.closest('.required-style-row');
+      const group=row?.closest('.required-style-group');
+      if(group) group.open=true;
+      row?.scrollIntoView?.({behavior:'smooth',block:'center'});
+      if(row){
+        row.animate?.(
+          [{background:'rgba(196,154,90,.18)'},{background:'transparent'}],
+          {duration:900,easing:'ease-out'}
+        );
+      }
+    },0);
+  }
+
+  function inspect(target){
+    const el=target?.nodeType===1 ? target : target?.parentElement;
+    if(!el || !mock.contains(el)) return false;
+
+    const reqKey=requiredKeyFor(el);
+    if(reqKey){
+      chooseRequired(reqKey);
+      flash(el.closest('[class*="rating-"],[class*="warning-"],[class*="category-"],[class*="complete-"],.external-work') || el);
+      return true;
+    }
+
+    if(el.closest('.ao3-header')){
+      showEditorPanel('background');
+      flash(el.closest('.ao3-header'));
+      return true;
+    }
+
+    if(el.closest('.mock-form input,.mock-form textarea,.mock-form select')){
+      chooseInputControls();
+      flash(el.closest('input,textarea,select'));
+      return true;
+    }
+
+    if(el.closest('.tags,.tag,.warnings,.category')){
+      chooseTextGroup('tags');
+      flash(el.closest('.tag,.tags,.warnings,.category'));
+      return true;
+    }
+
+    if(el.closest('.stats,dl.stats,.stats dt,.stats dd')){
+      chooseTextGroup('stats');
+      flash(el.closest('.stats,dl.stats'));
+      return true;
+    }
+
+    if(el.closest('.byline,[rel="author"],.meta')){
+      chooseTextGroup('author');
+      flash(el.closest('.byline,[rel="author"],.meta'));
+      return true;
+    }
+
+    if(el.closest('h1,h2.title,h3.title,.work .heading,.work .title,.mock-panel h3,.chapter .title')){
+      chooseTextGroup('title');
+      flash(el.closest('h1,h2,h3,.heading,.title'));
+      return true;
+    }
+
+    if(el.closest('.notes,.preface .notes,.afterword .notes,.end.notes')){
+      chooseTextGroup('notes');
+      flash(el.closest('.notes'));
+      return true;
+    }
+
+    if(el.closest('.summary,.userstuff,.mock-panel p,#chapters .userstuff,.chapter .userstuff')){
+      chooseTextGroup('main');
+      flash(el.closest('.summary,.userstuff,p'));
+      return true;
+    }
+
+    if(el.closest('.ao3-nav,.ao3-user,.actions,.navigation,.menu,.mock-actions,.mock-btn,button')){
+      chooseTextGroup('interface');
+      flash(el.closest('a,button,.ao3-nav,.ao3-user,.actions,.navigation,.menu,.mock-actions'));
+      return true;
+    }
+
+    if(el.closest('.mock-panel,.blurb')){
+      showEditorPanel('panels');
+      flash(el.closest('.mock-panel,.blurb'));
+      return true;
+    }
+
+    if(el.closest('.ao3-main,.ao3-footer,#mockPageRegion')){
+      showEditorPanel('background');
+      flash(el.closest('.ao3-main,.ao3-footer,#mockPageRegion'));
+      return true;
+    }
+
+    return false;
+  }
+
+  mock.addEventListener('click',e=>{
+    if(e.button!==0) return;
+    if(inspect(e.target)){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  },true);
+
+  window.AO3PreviewInspector={inspect};
+})();
+</script>
