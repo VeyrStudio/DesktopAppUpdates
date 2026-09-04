@@ -424,6 +424,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $headerBoundaryPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.30: root fix — real below-header page region + authoritative input opacity.
+          $pageRegionPatchPath = 'apps/ao3-skin-studio/patches/0.1.30/page-region-and-input-opacity-root-fix.html'
+          if (-not (Test-Path $pageRegionPatchPath)) { throw 'AO3 Skin Studio 0.1.30 root fix patch was not found.' }
+          $pageRegionPatch = Get-Content $pageRegionPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.30.' }
+          $studioText = $studioText.Replace('</body>', $pageRegionPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -506,16 +515,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.29</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.29.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.29.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.30</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.30.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.30.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.29" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.30" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -655,7 +664,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Fixes the actual background boundary shown in the preview screenshots: when Use Header is enabled, the page background layer itself is physically offset to begin immediately below the complete AO3 header (heading plus navigation), instead of continuing behind it. Exported AO3 CSS moves page imagery to #main in header mode. Also repairs Text Boxes / Inputs opacity so its slider always changes the box background, including when an input gradient is enabled, without fading the text.'
+            notes = 'Root fix after inspecting the generated app: the preview now has a real page-background DOM region placed after the AO3 header, containing the background layer, main content, footer, and bottom border. The background can no longer exist behind the header at all. Also makes the Text Boxes / Inputs opacity slider authoritative: moving it automatically enables transparency, updates solid or gradient box backgrounds, and appends a final export override without fading text.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

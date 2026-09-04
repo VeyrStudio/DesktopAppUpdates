@@ -1,0 +1,239 @@
+<style id="ao3-page-region-input-opacity-root-fix-styles">
+/* The page background now belongs to a real DOM region that begins after the
+   header. This permanently defeats the old full-preview background layer. */
+#mockPageRegion{
+  position:relative;
+  isolation:isolate;
+  min-height:1px;
+  background-color:var(--p-bg);
+}
+#mockPageRegion > #mockBgLayer{
+  position:absolute!important;
+  inset:0!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:0!important;
+  width:auto!important;
+  height:auto!important;
+  z-index:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+#mockPageRegion > :not(#mockBgLayer){
+  position:relative;
+  z-index:1;
+}
+#mockPageRegion #mockBgLayer .preview-image-layer{
+  position:absolute!important;
+  inset:0!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:0!important;
+  width:auto!important;
+  height:auto!important;
+}
+
+/* The opacity fix uses this late style so old gradient code cannot overwrite it. */
+#ao3InputOpacityOverrideStyle{display:none}
+</style>
+
+<script id="ao3-page-region-input-opacity-root-fix-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const bgLayer=q('mockBgLayer');
+  const header=q('ao3HeaderPreview') || mock?.querySelector('.ao3-header');
+  if(!mock || !bgLayer || !header) return;
+
+  /* ---------- TRUE PAGE REGION ----------
+     Header stays outside. Everything that is visually the page lives inside the
+     region with the background layer. There is no longer any way for that layer
+     to occupy the header's box. */
+  let region=q('mockPageRegion');
+  if(!region){
+    region=document.createElement('div');
+    region.id='mockPageRegion';
+
+    const main=mock.querySelector(':scope > .ao3-main');
+    const footer=mock.querySelector(':scope > .ao3-footer');
+    const bottom=q('bottomBorderPreview');
+
+    header.insertAdjacentElement('afterend',region);
+    region.appendChild(bgLayer);
+    if(main) region.appendChild(main);
+    if(footer) region.appendChild(footer);
+    if(bottom) region.appendChild(bottom);
+  }
+
+  /* 0.1.29 tries to offset the old layer with inline top values. The page-region
+     model supersedes that completely. Keep the layer pinned to this region. */
+  function pinBackgroundToPageRegion(){
+    if(bgLayer.parentElement!==region) region.insertBefore(bgLayer,region.firstChild);
+    bgLayer.style.removeProperty('top');
+    bgLayer.style.removeProperty('height');
+    bgLayer.style.removeProperty('bottom');
+    bgLayer.style.removeProperty('left');
+    bgLayer.style.removeProperty('right');
+
+    bgLayer.querySelectorAll('.preview-image-layer').forEach(layer=>{
+      layer.style.removeProperty('top');
+      layer.style.removeProperty('height');
+      layer.style.removeProperty('bottom');
+      layer.style.removeProperty('left');
+      layer.style.removeProperty('right');
+    });
+  }
+
+  const regionObserver=new MutationObserver(()=>requestAnimationFrame(pinBackgroundToPageRegion));
+  regionObserver.observe(region,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
+  pinBackgroundToPageRegion();
+
+  /* ---------- INPUT/TEXT-BOX OPACITY ----------
+     The slider is authoritative. Moving it automatically enables transparent
+     inputs so the old boolean gate cannot make the slider appear broken. */
+  const slider=q('inputOpacity');
+  const transparency=q('transparentInputs');
+
+  function clamp01(n){return Math.max(0,Math.min(1,n))}
+  function rgba(hex,a){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    if(Number.isNaN(n))return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+
+  function gradientAtOpacity(){
+    const alpha=clamp01(Number(slider?.value||100)/100);
+    let cfg=null;
+    try{cfg=gradients && gradients.inputs ? gradients.inputs : null}catch(e){}
+
+    if(!cfg || !cfg.enabled){
+      return rgba(q('inputColor')?.value||'#141011',alpha);
+    }
+
+    const stops=(cfg.stops||[]).slice().sort((a,b)=>Number(a.pos)-Number(b.pos));
+    if(!stops.length)return rgba(q('inputColor')?.value||'#141011',alpha);
+
+    const stopText=stops.map(s=>{
+      const stopAlpha=clamp01((Number(s.opacity??100)/100)*alpha);
+      return rgba(s.color,stopAlpha)+' '+Number(s.pos||0)+'%';
+    }).join(', ');
+
+    if(cfg.type==='radial'){
+      return 'radial-gradient('+(cfg.radialShape||'ellipse')+' '+(cfg.radialSize||'farthest-corner')+
+        ' at '+Number(cfg.centerX??50)+'% '+Number(cfg.centerY??50)+'%, '+stopText+')';
+    }
+    if(cfg.type==='conic'){
+      return 'conic-gradient(from '+Number(cfg.conicStart||0)+'deg at '+
+        Number(cfg.conicX??50)+'% '+Number(cfg.conicY??50)+'%, '+stopText+')';
+    }
+    return 'linear-gradient('+(cfg.angle||'90deg')+', '+stopText+')';
+  }
+
+  let overrideStyle=q('ao3InputOpacityOverrideStyle');
+  if(!overrideStyle){
+    overrideStyle=document.createElement('style');
+    overrideStyle.id='ao3InputOpacityOverrideStyle';
+    document.head.appendChild(overrideStyle);
+  }
+
+  function applyInputOpacity(){
+    if(!slider)return;
+    const alpha=Math.round(clamp01(Number(slider.value||100)/100)*100);
+    const valueLabel=q('inputOpacityValue');
+    if(valueLabel)valueLabel.textContent=alpha+'%';
+
+    const background=gradientAtOpacity();
+    mock.style.setProperty('--p-input-alpha',String(alpha/100));
+    mock.style.setProperty('--p-input-background',background);
+
+    overrideStyle.textContent=
+      '#mock .mock-form input,#mock .mock-form textarea,#mock .mock-form select{'+
+      'background:'+background+' !important;'+
+      'color:var(--p-text) !important;'+
+      '}';
+  }
+
+  if(slider){
+    slider.addEventListener('input',()=>{
+      if(transparency && !transparency.checked){
+        transparency.checked=true;
+        transparency.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      applyInputOpacity();
+      try{if(typeof save==='function')save()}catch(e){}
+      try{if(typeof cssOutput!=='undefined' && typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+    },true);
+    slider.addEventListener('change',applyInputOpacity,true);
+  }
+
+  if(transparency){
+    transparency.addEventListener('change',()=>{
+      /* Turning transparency off means fully opaque. Turning it back on restores
+         whatever slider value the user chose. */
+      if(!transparency.checked && slider){
+        slider.value='100';
+      }
+      applyInputOpacity();
+    },true);
+  }
+
+  q('inputColor')?.addEventListener('input',applyInputOpacity,true);
+  q('inputText')?.addEventListener('input',applyInputOpacity,true);
+
+  /* Gradient editor can rebuild the input gradient after the slider. Reassert the
+     slider on every relevant editor change. */
+  document.addEventListener('input',e=>{
+    if(e.target && e.target.closest && e.target.closest('#gradientStudioWorkspace, #gradientStudioSection')){
+      requestAnimationFrame(applyInputOpacity);
+    }
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target && e.target.closest && e.target.closest('#gradientStudioWorkspace, #gradientStudioSection')){
+      requestAnimationFrame(applyInputOpacity);
+    }
+  },true);
+
+  /* Wrap update after every older patch. This is the final authority for preview
+     background placement and input opacity. */
+  try{
+    const previousUpdate=update;
+    update=function(){
+      const result=previousUpdate.apply(this,arguments);
+      pinBackgroundToPageRegion();
+      applyInputOpacity();
+      return result;
+    };
+  }catch(e){}
+
+  /* Final export override: opacity slider is authoritative even if older CSS
+     emitted an opaque input gradient. */
+  try{
+    const previousBuildCss=buildCss;
+    buildCss=function(){
+      const css=previousBuildCss.apply(this,arguments);
+      const background=gradientAtOpacity();
+      return css+
+        '\n\n/* TEXT BOX OPACITY — FINAL OVERRIDE */\n'+
+        'input[type="text"],input[type="search"],input[type="email"],input[type="password"],'+
+        'input[type="number"],input[type="url"],textarea,select {\n'+
+        '  background: '+background+' !important;\n'+
+        '}\n';
+    };
+  }catch(e){}
+
+  /* Rebuilds of preview pages may move/replace content, but the page-region and
+     background layer remain the same. */
+  const mockObserver=new MutationObserver(()=>requestAnimationFrame(()=>{
+    pinBackgroundToPageRegion();
+    applyInputOpacity();
+  }));
+  mockObserver.observe(mock,{childList:true,subtree:true});
+
+  applyInputOpacity();
+  pinBackgroundToPageRegion();
+})();
+</script>
