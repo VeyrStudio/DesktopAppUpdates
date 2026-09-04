@@ -1,0 +1,274 @@
+<style id="ao3-header-enable-image-styles">
+.header-enable-card{
+  margin:0 0 12px;
+  padding:11px;
+  border:1px solid #3a303d;
+  border-radius:8px;
+  background:linear-gradient(180deg,#151117,#0e0b10);
+}
+.header-enable-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#d8ccd5;
+  font-size:9px;
+  font-weight:900;
+}
+.header-enable-row input{transform:translateY(1px)}
+.header-enable-help{
+  margin-top:6px;
+  color:#817581;
+  font-size:7px;
+  line-height:1.5;
+}
+#headerImageControls{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #2d2530;
+}
+#headerImageControls[hidden]{display:none!important}
+.header-image-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.header-image-field{
+  padding:8px;
+  border:1px solid #302733;
+  border-radius:6px;
+  background:#100d12;
+}
+.header-image-field > label{
+  display:block;
+  margin:0 0 5px;
+  color:#8f828d;
+  font-size:7px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.header-image-field input[type="text"],
+.header-image-field select,
+.header-image-field input[type="range"]{
+  width:100%;
+  box-sizing:border-box;
+}
+.header-image-field input[type="file"]{
+  width:100%;
+  color:#9d919a;
+  font-size:7px;
+}
+.header-image-opacity-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 58px;
+  gap:7px;
+  align-items:center;
+}
+#headerImageOpacityNumber{width:100%;box-sizing:border-box}
+.header-image-preview-note{
+  margin-top:8px;
+  color:#786e77;
+  font-size:7px;
+  line-height:1.45;
+}
+@media(max-width:720px){
+  .header-image-grid{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-header-enable-image-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const panel=q('editorSectionPanel_background');
+  if(!panel || q('useHeader')) return;
+
+  const originalHeaderBox=panel.querySelector('.header-layout-controls');
+  const host=originalHeaderBox?.parentElement || panel;
+
+  const card=document.createElement('div');
+  card.className='header-enable-card';
+  card.innerHTML=
+    '<label class="header-enable-row"><input type="checkbox" id="useHeader"> <span>Use Header</span></label>'+
+    '<div class="header-enable-help">Off = background only. Turn this on to use a separate header area and header image / GIF.</div>'+
+    '<div id="headerImageControls" hidden>'+
+      '<div class="header-image-grid">'+
+        '<div class="header-image-field"><label>Header Image / GIF</label><input type="file" id="headerImageFile" accept="image/*,.gif"></div>'+
+        '<div class="header-image-field"><label>Hosted Header Image / GIF URL</label><input type="text" id="headerImageUrl" placeholder="https://.../header.gif"></div>'+
+        '<div class="header-image-field"><label>Position</label><select id="headerImagePosition"><option value="center center">Center</option><option value="center top">Top Center</option><option value="center bottom">Bottom Center</option><option value="left center">Left</option><option value="right center">Right</option></select></div>'+
+        '<div class="header-image-field"><label>Fit</label><select id="headerImageFit"><option value="cover">Cover</option><option value="contain">Contain</option><option value="auto">Original Size</option></select></div>'+
+        '<div class="header-image-field"><label>Repeat</label><select id="headerImageRepeat"><option value="no-repeat">No Repeat</option><option value="repeat">Repeat</option><option value="repeat-x">Repeat Horizontally</option><option value="repeat-y">Repeat Vertically</option></select></div>'+
+        '<div class="header-image-field"><label>Header Image Opacity</label><div class="header-image-opacity-row"><input type="range" id="headerImageOpacity" min="0" max="100" step="1" value="100"><input type="number" id="headerImageOpacityNumber" min="0" max="100" step="1" value="100"></div></div>'+
+      '</div>'+
+      '<div class="header-image-preview-note">Local uploads work in the preview. For AO3 export, use the hosted direct image/GIF URL field.</div>'+
+    '</div>';
+
+  if(originalHeaderBox) host.insertBefore(card,originalHeaderBox);
+  else host.prepend(card);
+
+  const ids=['useHeader','headerImageUrl','headerImagePosition','headerImageFit','headerImageRepeat','headerImageOpacity'];
+  ids.forEach(id=>{try{if(typeof idsToSave!=='undefined' && !idsToSave.includes(id)) idsToSave.push(id)}catch(e){}});
+
+  let localHeaderData='';
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem('ao3SkinStudio')||'{}')}catch(e){}
+  q('useHeader').checked=!!saved.useHeader;
+  q('headerImageUrl').value=saved.headerImageUrl||'';
+  q('headerImagePosition').value=saved.headerImagePosition||'center center';
+  q('headerImageFit').value=saved.headerImageFit||'cover';
+  q('headerImageRepeat').value=saved.headerImageRepeat||'no-repeat';
+  q('headerImageOpacity').value=String(saved.headerImageOpacity??100);
+  q('headerImageOpacityNumber').value=q('headerImageOpacity').value;
+
+  function clampOpacity(v){
+    return Math.max(0,Math.min(100,Math.round(Number(v)||0)));
+  }
+
+  function getHeader(){
+    return document.querySelector('#mock .ao3-header');
+  }
+
+  function getMainTab(){
+    return document.querySelector('#editorSectionNav .editor-section-tab[data-panel="background"]');
+  }
+
+  function updateTabName(enabled){
+    const tab=getMainTab();
+    if(!tab) return;
+    const full=enabled?'Background / Header':'Background';
+    tab.dataset.fullSectionName=full;
+    tab.title=full;
+    tab.setAttribute('aria-label',full);
+  }
+
+  function ensureOverlay(header){
+    if(!header) return null;
+    let overlay=header.querySelector(':scope > .header-image-opacity-overlay');
+    if(!overlay){
+      overlay=document.createElement('div');
+      overlay.className='header-image-opacity-overlay';
+      overlay.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:0;background:inherit;';
+      header.insertBefore(overlay,header.firstChild);
+    }
+    Array.from(header.children).forEach(child=>{
+      if(child!==overlay && !child.classList.contains('header-resize-handle')){
+        try{child.style.position=child.style.position||'relative';child.style.zIndex=child.style.zIndex||'1'}catch(e){}
+      }
+    });
+    return overlay;
+  }
+
+  function applyHeaderImage(){
+    const enabled=q('useHeader').checked;
+    q('headerImageControls').hidden=!enabled;
+    updateTabName(enabled);
+
+    if(originalHeaderBox){
+      originalHeaderBox.style.display=enabled?'block':'none';
+      if(q('headerResizable') && !enabled) q('headerResizable').checked=false;
+    }
+
+    const header=getHeader();
+    if(!header) return;
+
+    header.style.display=enabled?'':'none';
+    if(!enabled){
+      header.style.backgroundImage='';
+      const old=header.querySelector(':scope > .header-image-opacity-overlay');
+      if(old) old.remove();
+      try{if(typeof update==='function')update()}catch(e){}
+      try{if(typeof save==='function')save()}catch(e){}
+      return;
+    }
+
+    header.style.position='relative';
+    const src=localHeaderData || q('headerImageUrl').value.trim();
+    const opacity=clampOpacity(q('headerImageOpacity').value);
+    q('headerImageOpacity').value=String(opacity);
+    q('headerImageOpacityNumber').value=String(opacity);
+
+    const overlay=ensureOverlay(header);
+    if(overlay){
+      overlay.style.backgroundImage=src?'url("'+src.replace(/"/g,'%22')+'")':'none';
+      overlay.style.backgroundPosition=q('headerImagePosition').value;
+      overlay.style.backgroundSize=q('headerImageFit').value;
+      overlay.style.backgroundRepeat=q('headerImageRepeat').value;
+      overlay.style.opacity=String(opacity/100);
+    }
+
+    try{
+      if(typeof applyHeaderLayout==='function') applyHeaderLayout();
+      else if(typeof update==='function') update();
+    }catch(e){}
+    try{if(typeof save==='function')save()}catch(e){}
+  }
+
+  q('headerImageFile').addEventListener('change',()=>{
+    const file=q('headerImageFile').files?.[0];
+    if(!file){localHeaderData='';applyHeaderImage();return}
+    const reader=new FileReader();
+    reader.onload=()=>{localHeaderData=String(reader.result||'');applyHeaderImage()};
+    reader.readAsDataURL(file);
+  });
+
+  q('useHeader').addEventListener('change',applyHeaderImage);
+  q('headerImageUrl').addEventListener('input',()=>{if(!localHeaderData)applyHeaderImage()});
+  q('headerImagePosition').addEventListener('change',applyHeaderImage);
+  q('headerImageFit').addEventListener('change',applyHeaderImage);
+  q('headerImageRepeat').addEventListener('change',applyHeaderImage);
+  q('headerImageOpacity').addEventListener('input',applyHeaderImage);
+  q('headerImageOpacityNumber').addEventListener('input',()=>{
+    q('headerImageOpacity').value=String(clampOpacity(q('headerImageOpacityNumber').value));
+    applyHeaderImage();
+  });
+
+  /* Add true header enable/disable and header-image CSS to export. */
+  try{
+    const previousBuildCss=buildCss;
+    buildCss=function(){
+      let css=previousBuildCss();
+      const enabled=q('useHeader')?.checked===true;
+      let extra='\n\n/* HEADER ENABLE + IMAGE */\n';
+      if(!enabled){
+        extra+='#header { display: none !important; }\n';
+      }else{
+        const url=q('headerImageUrl')?.value.trim()||'';
+        if(url){
+          const pos=q('headerImagePosition')?.value||'center center';
+          const fit=q('headerImageFit')?.value||'cover';
+          const rep=q('headerImageRepeat')?.value||'no-repeat';
+          const op=clampOpacity(q('headerImageOpacity')?.value||100)/100;
+          extra+='#header {\n';
+          extra+='  background-image: linear-gradient(rgba(0,0,0,'+(1-op).toFixed(2)+'), rgba(0,0,0,'+(1-op).toFixed(2)+')), url("'+url.replace(/"/g,'\\"')+'") !important;\n';
+          extra+='  background-position: '+pos+' !important;\n';
+          extra+='  background-size: '+fit+' !important;\n';
+          extra+='  background-repeat: '+rep+' !important;\n';
+          extra+='}\n';
+        }
+      }
+      return css+extra;
+    };
+  }catch(e){}
+
+  /* Reset means background-only until the user asks for a header. */
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    q('useHeader').checked=false;
+    q('headerImageUrl').value='';
+    q('headerImagePosition').value='center center';
+    q('headerImageFit').value='cover';
+    q('headerImageRepeat').value='no-repeat';
+    q('headerImageOpacity').value='100';
+    q('headerImageOpacityNumber').value='100';
+    localHeaderData='';
+    q('headerImageFile').value='';
+    applyHeaderImage();
+  },40));
+
+  /* Reapply after preview rebuilds. */
+  const mock=q('mock');
+  if(mock){
+    const observer=new MutationObserver(()=>setTimeout(applyHeaderImage,0));
+    observer.observe(mock,{childList:true,subtree:true});
+  }
+
+  applyHeaderImage();
+})();
+</script>

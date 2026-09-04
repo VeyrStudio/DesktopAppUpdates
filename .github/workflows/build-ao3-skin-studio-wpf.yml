@@ -397,6 +397,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $quickColorsPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.27: real optional header + separate header image/GIF controls.
+          $headerEnableImagePatchPath = 'apps/ao3-skin-studio/patches/0.1.27/header-enable-and-image.html'
+          if (-not (Test-Path $headerEnableImagePatchPath)) { throw 'AO3 Skin Studio 0.1.27 header enable/image patch was not found.' }
+          $headerEnableImagePatch = Get-Content $headerEnableImagePatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.27.' }
+          $studioText = $studioText.Replace('</body>', $headerEnableImagePatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -479,16 +488,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.26</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.26.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.26.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.27</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.27.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.27.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.26" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.27" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -628,7 +637,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds a new numbered Quick Colors panel to the tall left-edge editor tabs. It displays the complete Falling Angle palette as clickable swatches with names and hex codes, grouped into Original Falling Angle, Michael Grace, and Holy Gold / Light. Click a color field first and a swatch applies directly to it; otherwise the swatch copies its hex code. Keeps all prior tools and palettes.'
+            notes = 'Adds a real Use Header checkbox to the Background panel. With it off, the section is simply Background and the AO3 header is hidden. Turning it on reveals header layout controls plus separate Header Image / GIF upload and hosted-URL fields, position, fit, repeat, opacity, and existing resize/branding controls. Local header images/GIFs preview in-app; hosted direct URLs export to AO3 CSS. Keeps Quick Colors, numbered tabs, and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
