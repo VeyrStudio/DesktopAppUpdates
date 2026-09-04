@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.23",
-  "payloadSha256": "7b67afabcd134e32ebf7efaf310e117701ecf6ace87fbdd79149219788570af8",
-  "executableSha256": "5e5c8bd6f5807c546aaf81934847dd7fb81c23750028109c03f1b70f434e38dc",
+  "version": "0.1.24",
+  "payloadSha256": "f6d193c230c445c6abaa85866a7c8a942a7b131cfa8b007f90105e4cda15ed2d",
+  "executableSha256": "2b803afac96e332226743daadeb5f2821c16c7e8042458ac6b489b1c05c9b546",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.23-part-001.txt",
-      "sha256": "726740dfa3c467b1564f4dd1f5b0338c6105ffe5a421a9d80d6c07ccc3301985"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.24-part-001.txt",
+      "sha256": "268086fabb71fdfdc69da09993151cf69258250f25f0e184c52e6b07f78ade5f"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.23-part-002.txt",
-      "sha256": "4bcc5bdd4fc154a259e5ac79eccd73996269f48f24a53cfb2c71cc91950884a1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.24-part-002.txt",
+      "sha256": "46a6050ce3d9f832f66532e25da490779dc2f00497c87aae1377e629ba1e16e8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.23-part-003.txt",
-      "sha256": "5c53c37f1228207135fbf453ad28a41dd8ead72a1e1897a9ef05fc8db889c9a4"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.24-part-003.txt",
+      "sha256": "d5f3edfb52607c5cfcf7c27a3d4a842bccef6fc767241a60a86e54a4d0fac885"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.23-part-004.txt",
-      "sha256": "5994717a99a73d024ae0644e57f104c45097bdfc7fc8d0c257fd223b2e1f5f6e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.24-part-004.txt",
+      "sha256": "6627b3739edb7f62ce305f09344ea303a13bddfdfeca5225df2c8fb3e699e141"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.23-part-005.txt",
-      "sha256": "2aa3a12dea6d99b16193a163e897f012d411802177becb31aa277e8737a21c8f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.24-part-005.txt",
+      "sha256": "bd3405d6954f9a46b0e1de15e68d2f02a253e43bfe1e382f91137104f18faea2"
     }
   ],
-  "notes": "Corrects the section-tab proportions: the Editor category selectors are now tall, skinny upright tabs attached to and slightly protruding from the left edge instead of wide sidebar rectangles. Text Boxes / Inputs now uses compact numbered tabs (1, 2, 3, 4, etc.); hovering a number shows the full text-box/input name, and the selected item name appears above its controls. Keeps the reorganized Text groups, browser-style workspaces, multi-skin tabs, and all prior tools."
+  "notes": "Corrects the numbered-tab interpretation: the main tall protruding Editor tabs themselves are now labeled only 1, 2, 3, 4, 5, etc. Hovering each number shows the full section name such as Background / Header, Text, Images / GIFs, Panels / Boxes, Text Boxes / Inputs, Required Tag Grid, Preview, or Export. Keeps the tall narrow proportions, internal numbered input selectors, reorganized Text controls, workspaces, and multi-skin tabs."
 }
