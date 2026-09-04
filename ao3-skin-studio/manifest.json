@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.25",
-  "payloadSha256": "91d367b3832e9b33bd80d8af0ef8f4a9fda77c10f3d15ae5b7f36271a57507ef",
-  "executableSha256": "d7cf1762e936f8d3ee7983020800ea9b6413535d6ac0c091df1f3dda17860874",
+  "version": "0.1.26",
+  "payloadSha256": "cfcd56c25ea39a5978427a8ca0cf4d16d908d603f1a9d351ace5243855ce181b",
+  "executableSha256": "6ab696d4bdc7b032e90ce5cc5e90affa124dcfd3ebd0ddaa313f9519855f990f",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.25-part-001.txt",
-      "sha256": "a989361b8c77d2445a0adc5af21717c9f6d833dd17918da453b8844d6951eb81"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.26-part-001.txt",
+      "sha256": "3ef35f6a50e5d72a8eeadeefb61af22716d691d9ffbfefa3c3a1b378539f28b1"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.25-part-002.txt",
-      "sha256": "8d39a4eaaf3329a618142788a2551e3851679a3fb1a8de72a842f718a852e516"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.26-part-002.txt",
+      "sha256": "9d36521e69cfb142fc9da3359018c980e073cfaebce445f65c09b382b28ec817"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.25-part-003.txt",
-      "sha256": "d686a940657e5ac57d9cccc5a1346c871ba51f1ac44346500908f5f947d0f285"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.26-part-003.txt",
+      "sha256": "f3781446172c0aa6bda555e0d3c26f5ed38481c5e9d9966fddc6e5d8625349b4"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.25-part-004.txt",
-      "sha256": "95109e0b0753f58d8d901a0991e71c7b3c7e51ba2f014a479e016527066d1513"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.26-part-004.txt",
+      "sha256": "a94e11678be6d3cb0f9aeab99dc7e06700b50e3ed65ae1c8dd52ec86e84efaf8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.25-part-005.txt",
-      "sha256": "9c5a50641dff2e3e200277f34f81c070544bb53fdd572ada4aa33f363e8ccc5d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.26-part-005.txt",
+      "sha256": "26cddf37fbe536d7696ee7be5459eb0590b98cdd27e7f99a4ff1f0c800419b8a"
     }
   ],
-  "notes": "Expands the built-in Falling Angle starter without removing any of its original colors. Adds Michael-grace blues #4EA6FF, #8FD4FF, #2F73FF, #DDF4FF, #0E2E63 plus pale holy-gold / highlight colors #F4E7B2, #FFF7D6, #C9A85C, and #EAF4FF to its palette. Keeps the numbered vertical editor tabs and all prior tools."
+  "notes": "Adds a new numbered Quick Colors panel to the tall left-edge editor tabs. It displays the complete Falling Angle palette as clickable swatches with names and hex codes, grouped into Original Falling Angle, Michael Grace, and Holy Gold / Light. Click a color field first and a swatch applies directly to it; otherwise the swatch copies its hex code. Keeps all prior tools and palettes."
 }
