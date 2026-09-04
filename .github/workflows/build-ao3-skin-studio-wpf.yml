@@ -480,43 +480,43 @@ jobs:
           $outputEscaped = $env:RUNNER_TEMP.Replace("\","\\")
 
           @"
-[Setup]
-AppId={{C78E6370-6D44-4B21-99A7-6DDF4D88E515}
-AppName=AO3 Skin Studio
-AppVersion=$env:AO3_VERSION
-AppPublisher=VeyrStudio
-DefaultDirName={localappdata}\Programs\AO3 Skin Studio
-DefaultGroupName=AO3 Skin Studio
-DisableProgramGroupPage=yes
-OutputDir=$outputEscaped
-OutputBaseFilename=$installerBase
-SetupIconFile=$iconEscaped
-UninstallDisplayIcon={app}\AO3SkinStudio.exe
-Compression=lzma2
-SolidCompression=yes
-WizardStyle=modern
-PrivilegesRequired=lowest
-ArchitecturesAllowed=x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
-CloseApplications=yes
-RestartApplications=no
-
-[Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
-
-[Tasks]
-Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
-
-[Files]
-Source: "$publishEscaped\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-
-[Icons]
-Name: "{group}\AO3 Skin Studio"; Filename: "{app}\AO3SkinStudio.exe"
-Name: "{autodesktop}\AO3 Skin Studio"; Filename: "{app}\AO3SkinStudio.exe"; Tasks: desktopicon
-
-[Run]
-Filename: "{app}\AO3SkinStudio.exe"; Description: "Launch AO3 Skin Studio"; Flags: nowait postinstall skipifsilent
-"@ | Set-Content $iss -Encoding utf8
+          [Setup]
+          AppId={{C78E6370-6D44-4B21-99A7-6DDF4D88E515}
+          AppName=AO3 Skin Studio
+          AppVersion=$env:AO3_VERSION
+          AppPublisher=VeyrStudio
+          DefaultDirName={localappdata}\Programs\AO3 Skin Studio
+          DefaultGroupName=AO3 Skin Studio
+          DisableProgramGroupPage=yes
+          OutputDir=$outputEscaped
+          OutputBaseFilename=$installerBase
+          SetupIconFile=$iconEscaped
+          UninstallDisplayIcon={app}\AO3SkinStudio.exe
+          Compression=lzma2
+          SolidCompression=yes
+          WizardStyle=modern
+          PrivilegesRequired=lowest
+          ArchitecturesAllowed=x64compatible
+          ArchitecturesInstallIn64BitMode=x64compatible
+          CloseApplications=yes
+          RestartApplications=no
+          
+          [Languages]
+          Name: "english"; MessagesFile: "compiler:Default.isl"
+          
+          [Tasks]
+          Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
+          
+          [Files]
+          Source: "$publishEscaped\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+          
+          [Icons]
+          Name: "{group}\AO3 Skin Studio"; Filename: "{app}\AO3SkinStudio.exe"
+          Name: "{autodesktop}\AO3 Skin Studio"; Filename: "{app}\AO3SkinStudio.exe"; Tasks: desktopicon
+          
+          [Run]
+          Filename: "{app}\AO3SkinStudio.exe"; Description: "Launch AO3 Skin Studio"; Flags: nowait postinstall skipifsilent
+          "@ | Set-Content $iss -Encoding utf8
 
           & $iscc $iss
           if ($LASTEXITCODE -ne 0) { throw 'AO3 Skin Studio installer compilation failed.' }
