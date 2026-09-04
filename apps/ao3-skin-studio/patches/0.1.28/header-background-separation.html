@@ -1,0 +1,175 @@
+<style id="ao3-header-background-separation-styles">
+.header-base-color-field{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:8px;
+  align-items:center;
+}
+.header-base-color-field input[type="color"]{
+  width:42px;
+  height:32px;
+  padding:0;
+  border:1px solid #423747;
+  border-radius:5px;
+  background:#0d0a0f;
+}
+.header-base-color-field input[type="text"]{
+  width:100%;
+  box-sizing:border-box;
+}
+</style>
+
+<script id="ao3-header-background-separation-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const useHeader=q('useHeader');
+  const controls=q('headerImageControls');
+  if(!useHeader || !controls || q('headerBaseColor')) return;
+
+  const grid=controls.querySelector('.header-image-grid');
+  if(!grid) return;
+
+  const field=document.createElement('div');
+  field.className='header-image-field';
+  field.innerHTML=
+    '<label>Header Background Color</label>'+
+    '<div class="header-base-color-field">'+
+      '<input type="color" id="headerBaseColor" value="#11100e">'+
+      '<input type="text" id="headerBaseColorText" value="#11100E" maxlength="7" aria-label="Header background color hex">'+
+    '</div>';
+  grid.insertBefore(field,grid.firstChild);
+
+  try{
+    if(typeof idsToSave!=='undefined' && !idsToSave.includes('headerBaseColor')) idsToSave.push('headerBaseColor');
+  }catch(e){}
+
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem('ao3SkinStudio')||'{}')}catch(e){}
+  const initial=(saved.headerBaseColor||'#11100E').toUpperCase();
+  q('headerBaseColor').value=initial.toLowercase ? initial.toLowercase() : initial.toLowerCase();
+  q('headerBaseColorText').value=initial;
+
+  function validHex(v){
+    const s=String(v||'').trim();
+    return /^#[0-9a-f]{6}$/i.test(s)?s.toUpperCase():null;
+  }
+
+  function getHeader(){
+    return document.querySelector('#mock .ao3-header');
+  }
+
+  function separateHeader(){
+    const header=getHeader();
+    if(!header) return;
+    if(!useHeader.checked){
+      header.style.backgroundColor='';
+      return;
+    }
+
+    /* This is the important bit: the header becomes an opaque, independent
+       surface so the page/background image underneath cannot show through. */
+    const base=validHex(q('headerBaseColorText').value)||'#11100E';
+    header.style.backgroundColor=base;
+    header.style.backgroundImage='none';
+    header.style.backgroundClip='border-box';
+
+    const overlay=header.querySelector(':scope > .header-image-opacity-overlay');
+    if(overlay){
+      overlay.style.backgroundColor='transparent';
+    }
+  }
+
+  function syncFromPicker(){
+    const hex=(q('headerBaseColor').value||'#11100e').toUpperCase();
+    q('headerBaseColorText').value=hex;
+    separateHeader();
+    try{if(typeof save==='function')save()}catch(e){}
+    try{if(typeof cssOutput!=='undefined' && typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+  }
+
+  function syncFromText(){
+    const hex=validHex(q('headerBaseColorText').value);
+    if(!hex)return;
+    q('headerBaseColor').value=hex.toLowerCase();
+    separateHeader();
+    try{if(typeof save==='function')save()}catch(e){}
+    try{if(typeof cssOutput!=='undefined' && typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+  }
+
+  q('headerBaseColor').addEventListener('input',syncFromPicker);
+  q('headerBaseColorText').addEventListener('input',syncFromText);
+  useHeader.addEventListener('change',()=>setTimeout(separateHeader,0));
+
+  /* Existing preview code can re-run after this patch and make the header
+     transparent again, so enforce separation after relevant UI changes and
+     preview DOM rebuilds. */
+  document.addEventListener('input',e=>{
+    if(e.target && (
+      e.target.id==='headerImageUrl' ||
+      e.target.id==='headerImageOpacity' ||
+      e.target.id==='headerImageOpacityNumber' ||
+      e.target.id==='headerImagePosition' ||
+      e.target.id==='headerImageFit' ||
+      e.target.id==='headerImageRepeat'
+    )) setTimeout(separateHeader,0);
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target && (
+      e.target.id==='headerImageFile' ||
+      e.target.id==='useHeader' ||
+      e.target.id==='headerImagePosition' ||
+      e.target.id==='headerImageFit' ||
+      e.target.id==='headerImageRepeat'
+    )) setTimeout(separateHeader,0);
+  },true);
+
+  const mock=q('mock');
+  if(mock){
+    const observer=new MutationObserver(()=>setTimeout(separateHeader,0));
+    observer.observe(mock,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
+  }
+
+  /* Export override comes last, after the old "continuous background" CSS.
+     It explicitly makes #header opaque and independently styled. */
+  try{
+    const previousBuildCss=buildCss;
+    buildCss=function(){
+      let css=previousBuildCss();
+      if(q('useHeader')?.checked!==true) return css;
+
+      const base=validHex(q('headerBaseColorText')?.value)||'#11100E';
+      const url=q('headerImageUrl')?.value.trim()||'';
+      const pos=q('headerImagePosition')?.value||'center center';
+      const fit=q('headerImageFit')?.value||'cover';
+      const rep=q('headerImageRepeat')?.value||'no-repeat';
+
+      let extra='\n\n/* TRUE HEADER / PAGE BACKGROUND SEPARATION */\n';
+      extra+='#header {\n';
+      extra+='  background-color: '+base+' !important;\n';
+      extra+='  background-clip: border-box !important;\n';
+      if(url){
+        extra+='  background-image: url("'+url.replace(/"/g,'\\"')+'") !important;\n';
+        extra+='  background-position: '+pos+' !important;\n';
+        extra+='  background-size: '+fit+' !important;\n';
+        extra+='  background-repeat: '+rep+' !important;\n';
+      }else{
+        extra+='  background-image: none !important;\n';
+      }
+      extra+='}\n';
+      extra+='#header .primary {\n';
+      extra+='  background-color: transparent !important;\n';
+      extra+='  background-image: none !important;\n';
+      extra+='}\n';
+      return css+extra;
+    };
+  }catch(e){}
+
+  q('resetBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    q('headerBaseColor').value='#11100e';
+    q('headerBaseColorText').value='#11100E';
+    separateHeader();
+  },60));
+
+  separateHeader();
+})();
+</script>
