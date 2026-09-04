@@ -1,0 +1,255 @@
+<style id="ao3-vertical-editor-tabs-styles">
+/* 0.1.23 — the section selectors are upright tabs: tall, narrow, and attached to
+   the left edge instead of wide sidebar buttons. */
+#editorSectionShell{
+  grid-template-columns:58px minmax(0,1fr)!important;
+  gap:0!important;
+  position:relative;
+}
+#editorSectionNav{
+  width:58px!important;
+  gap:7px!important;
+  align-items:flex-start!important;
+  padding:8px 0 12px!important;
+  overflow:visible!important;
+}
+.editor-section-tab{
+  width:44px!important;
+  min-width:44px!important;
+  max-width:44px!important;
+  height:112px!important;
+  min-height:112px!important;
+  max-height:112px!important;
+  padding:9px 6px!important;
+  margin-left:-8px!important;
+  border-radius:0 8px 8px 0!important;
+  text-align:center!important;
+  writing-mode:vertical-rl!important;
+  text-orientation:mixed!important;
+  transform:none!important;
+  line-height:1.05!important;
+  letter-spacing:.045em!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.editor-section-tab:hover{
+  width:48px!important;
+  min-width:48px!important;
+  max-width:48px!important;
+  margin-left:-8px!important;
+  transform:none!important;
+}
+.editor-section-tab.active{
+  width:50px!important;
+  min-width:50px!important;
+  max-width:50px!important;
+  margin-left:-8px!important;
+  box-shadow:
+    inset 3px 0 0 #a4814f,
+    inset 0 1px 0 rgba(255,255,255,.05),
+    4px 8px 18px rgba(0,0,0,.32),
+    0 0 14px rgba(159,118,65,.11)!important;
+}
+#editorSectionContent{
+  border-radius:0 10px 10px 0!important;
+}
+
+/* Numbered Text Boxes / Inputs selector. */
+#textBoxNumberedShell{
+  display:grid;
+  grid-template-columns:54px minmax(0,1fr);
+  gap:10px;
+}
+#textBoxNumberedTabs{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  align-items:flex-start;
+}
+.text-box-number-tab{
+  width:38px;
+  height:82px;
+  border:1px solid #4b3d50;
+  border-radius:0 7px 7px 0;
+  background:
+    linear-gradient(145deg,rgba(105,65,116,.14),rgba(24,18,27,.03) 48%),
+    linear-gradient(180deg,#19141c,#100d12);
+  color:#b8aab6;
+  font:900 11px/1 Georgia,serif;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 5px 12px rgba(0,0,0,.2);
+}
+.text-box-number-tab:hover{
+  border-color:#8d6e97;
+  color:#f1e5ed;
+  width:42px;
+}
+.text-box-number-tab.active{
+  border-color:#a07b47;
+  color:#f2e5ce;
+  background:
+    radial-gradient(circle at 25% 15%,rgba(176,131,68,.18),transparent 45%),
+    linear-gradient(180deg,#261c27,#151017);
+  box-shadow:inset 3px 0 0 #a4814f,0 6px 16px rgba(0,0,0,.28);
+}
+#textBoxNumberedContent{
+  min-width:0;
+}
+#textBoxSelectedName{
+  margin:0 0 10px;
+  padding:8px 10px;
+  border:1px solid #332a36;
+  border-radius:6px;
+  background:#100d12;
+  color:#d7cbd4;
+  font-size:9px;
+  font-weight:900;
+}
+.text-box-number-pane{display:none}
+.text-box-number-pane.active{display:block}
+.text-box-number-help{
+  margin:0 0 10px;
+  color:#796e77;
+  font-size:7px;
+  line-height:1.5;
+}
+@media(max-width:760px){
+  #editorSectionShell{
+    grid-template-columns:50px minmax(0,1fr)!important;
+  }
+  #editorSectionNav{
+    position:sticky!important;
+    top:84px!important;
+    display:flex!important;
+    grid-template-columns:none!important;
+  }
+  .editor-section-tab{
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:94px!important;
+    min-height:94px!important;
+    max-height:94px!important;
+    margin-left:-5px!important;
+  }
+  #textBoxNumberedShell{grid-template-columns:46px minmax(0,1fr)}
+  .text-box-number-tab{width:34px;height:72px}
+}
+</style>
+
+<script id="ao3-vertical-editor-tabs-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const nav=q('editorSectionNav');
+  const inputPanel=q('editorSectionPanel_inputs');
+  if(!nav || !inputPanel || q('textBoxNumberedShell')) return;
+
+  /* Full names remain available as hover tooltips even though the visible tabs
+     themselves stay compact. */
+  nav.querySelectorAll('.editor-section-tab').forEach(tab=>{
+    const full=(tab.textContent||'').replace(/\s+/g,' ').trim();
+    if(full) tab.title=full;
+  });
+
+  function visibleText(el){
+    const source=
+      el.querySelector(':scope > summary') ||
+      el.querySelector(':scope > h2,:scope > h3,:scope > h4') ||
+      el.querySelector('summary,h2,h3,h4,.title,.label') ||
+      el.querySelector('label');
+    const text=(source?.textContent||'').replace(/\s+/g,' ').trim();
+    return text;
+  }
+
+  function hasEditorControl(el){
+    return !!el.querySelector('input,select,textarea,button');
+  }
+
+  /* Prefer actual named subsections. When older markup has only one outer
+     accordion, look one level inside it for named groups. */
+  let candidates=Array.from(inputPanel.children).filter(el=>
+    el.id!=='textBoxNumberedShell' &&
+    !el.classList.contains('editor-section-empty') &&
+    hasEditorControl(el)
+  );
+
+  if(candidates.length<=1){
+    const outer=candidates[0];
+    if(outer){
+      const nested=Array.from(outer.querySelectorAll(':scope > div, :scope > section, :scope > details, :scope > fieldset'))
+        .filter(el=>hasEditorControl(el) && visibleText(el));
+      if(nested.length>1) candidates=nested;
+    }
+  }
+
+  if(!candidates.length) return;
+
+  const shell=document.createElement('div');
+  shell.id='textBoxNumberedShell';
+
+  const tabs=document.createElement('div');
+  tabs.id='textBoxNumberedTabs';
+
+  const content=document.createElement('div');
+  content.id='textBoxNumberedContent';
+
+  const help=document.createElement('div');
+  help.className='text-box-number-help';
+  help.textContent='Hover over a number to see the full text-box / input name.';
+
+  const selected=document.createElement('div');
+  selected.id='textBoxSelectedName';
+
+  content.append(help,selected);
+  shell.append(tabs,content);
+
+  inputPanel.insertBefore(shell,inputPanel.firstChild);
+
+  function fallbackName(el,index){
+    const labels=Array.from(el.querySelectorAll('label'))
+      .map(x=>(x.textContent||'').replace(/\s+/g,' ').trim())
+      .filter(Boolean);
+    return labels[0] || 'Text Box / Input '+(index+1);
+  }
+
+  candidates.forEach((item,index)=>{
+    const fullName=visibleText(item)||fallbackName(item,index);
+
+    const tab=document.createElement('button');
+    tab.type='button';
+    tab.className='text-box-number-tab'+(index===0?' active':'');
+    tab.textContent=String(index+1);
+    tab.title=fullName;
+    tab.setAttribute('aria-label',fullName);
+    tab.dataset.index=String(index);
+
+    const pane=document.createElement('div');
+    pane.className='text-box-number-pane'+(index===0?' active':'');
+    pane.dataset.index=String(index);
+    pane.appendChild(item);
+
+    tabs.appendChild(tab);
+    content.appendChild(pane);
+  });
+
+  function activate(index){
+    tabs.querySelectorAll('.text-box-number-tab').forEach(t=>
+      t.classList.toggle('active',t.dataset.index===String(index))
+    );
+    content.querySelectorAll('.text-box-number-pane').forEach(p=>
+      p.classList.toggle('active',p.dataset.index===String(index))
+    );
+    const active=tabs.querySelector('.text-box-number-tab.active');
+    selected.textContent=active?.title||('Text Box / Input '+(Number(index)+1));
+  }
+
+  tabs.addEventListener('click',e=>{
+    const b=e.target.closest('.text-box-number-tab');
+    if(!b)return;
+    activate(b.dataset.index);
+  });
+
+  activate(0);
+})();
+</script>
