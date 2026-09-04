@@ -1,0 +1,236 @@
+<style id="ao3-header-boundary-input-opacity-styles">
+/* In header mode, the page background is a separate region whose physical top
+   edge begins after the complete AO3 header (heading + navigation). */
+#mock.header-page-split-active .mock-bg-layer{
+  overflow:hidden!important;
+}
+</style>
+
+<script id="ao3-header-boundary-input-opacity-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const bgLayer=q('mockBgLayer');
+  const useHeader=q('useHeader');
+  const inputOpacity=q('inputOpacity');
+  if(!mock || !bgLayer) return;
+
+  function headerEl(){
+    return q('ao3HeaderPreview') || mock.querySelector('.ao3-header');
+  }
+
+  function applyBackgroundBoundary(){
+    const enabled=useHeader?.checked===true;
+    const header=headerEl();
+
+    mock.classList.toggle('header-page-split-active',enabled);
+
+    if(!enabled || !header){
+      bgLayer.style.top='0px';
+      return;
+    }
+
+    /* Offset the actual background layer, rather than merely covering it.
+       This makes the image itself begin below the complete header boundary. */
+    const h=Math.max(0,Math.ceil(header.getBoundingClientRect().height));
+    bgLayer.style.top=h+'px';
+    bgLayer.style.bottom='0';
+    bgLayer.style.height='auto';
+
+    /* Keep every background image layer clipped to this below-header region. */
+    bgLayer.querySelectorAll('.preview-image-layer').forEach(layer=>{
+      layer.style.top='0';
+      layer.style.bottom='0';
+      layer.style.height='auto';
+    });
+  }
+
+  /* renderPreviewImages rebuilds the layers, so re-apply the boundary after it. */
+  try{
+    const prevRenderPreviewImages=renderPreviewImages;
+    renderPreviewImages=function(){
+      const result=prevRenderPreviewImages.apply(this,arguments);
+      applyBackgroundBoundary();
+      return result;
+    };
+  }catch(e){}
+
+  /* update() changes header size/background and rebuilds preview layers. */
+  try{
+    const prevUpdate=update;
+    update=function(){
+      const result=prevUpdate.apply(this,arguments);
+      applyBackgroundBoundary();
+      applyInputOpacityPreview();
+      return result;
+    };
+  }catch(e){}
+
+  if(useHeader){
+    useHeader.addEventListener('change',()=>requestAnimationFrame(applyBackgroundBoundary));
+  }
+
+  const header=headerEl();
+  if(header && typeof ResizeObserver!=='undefined'){
+    const ro=new ResizeObserver(()=>applyBackgroundBoundary());
+    ro.observe(header);
+  }
+
+  const previewObserver=new MutationObserver(()=>requestAnimationFrame(applyBackgroundBoundary));
+  previewObserver.observe(mock,{childList:true,subtree:true});
+
+  /* ---------- Text box opacity ---------- */
+  function hexToRgba(hex,alpha){
+    const s=String(hex||'#000000').replace('#','');
+    const h=s.length===3?s.split('').map(c=>c+c).join(''):s.padEnd(6,'0').slice(0,6);
+    const n=parseInt(h,16);
+    if(Number.isNaN(n)) return 'rgba(0,0,0,'+alpha+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+alpha+')';
+  }
+
+  function inputAlpha(){
+    return Math.max(0,Math.min(1,Number(inputOpacity?.value||100)/100));
+  }
+
+  function inputGradientWithOpacity(){
+    const alpha=inputAlpha();
+    let cfg=null;
+    try{cfg=gradients?.inputs}catch(e){}
+    if(!cfg || !cfg.enabled){
+      const color=q('inputColor')?.value||'#141011';
+      return hexToRgba(color,alpha);
+    }
+
+    if(cfg.custom && /(?:linear|radial|conic)-gradient\(/i.test(cfg.custom)){
+      return cfg.custom.replace(/#[0-9a-f]{6}\b/gi,hex=>hexToRgba(hex,alpha));
+    }
+
+    const stops=[...(cfg.stops||[])].sort((a,b)=>Number(a.pos)-Number(b.pos));
+    const stopText=stops.map(s=>{
+      const ownOpacity=(Number.isFinite(Number(s.opacity))?Number(s.opacity):100)/100;
+      return hexToRgba(s.color,Math.max(0,Math.min(1,alpha*ownOpacity)))+' '+Number(s.pos||0)+'%';
+    }).join(', ');
+
+    if(!stopText){
+      const color=q('inputColor')?.value||'#141011';
+      return hexToRgba(color,alpha);
+    }
+
+    if(cfg.type==='radial'){
+      const shape=cfg.radialShape||'ellipse';
+      const size=cfg.radialSize||'farthest-corner';
+      const x=Number(cfg.centerX??50);
+      const y=Number(cfg.centerY??50);
+      return 'radial-gradient('+shape+' '+size+' at '+x+'% '+y+'%, '+stopText+')';
+    }
+    if(cfg.type==='conic'){
+      const start=Number(cfg.conicStart||0);
+      const x=Number(cfg.conicX??50);
+      const y=Number(cfg.conicY??50);
+      return 'conic-gradient(from '+start+'deg at '+x+'% '+y+'%, '+stopText+')';
+    }
+    return 'linear-gradient('+(cfg.angle||'90deg')+', '+stopText+')';
+  }
+
+  function applyInputOpacityPreview(){
+    if(!mock || !inputOpacity) return;
+    const alpha=inputAlpha();
+    const label=q('inputOpacityValue');
+    if(label) label.textContent=Math.round(alpha*100)+'%';
+
+    /* Slider is now authoritative even when the old transparency checkbox was
+       previously off. This changes only backgrounds, never the typed text. */
+    mock.style.setProperty('--p-input-alpha',String(alpha));
+    mock.style.setProperty('--p-input-background',inputGradientWithOpacity());
+  }
+
+  if(inputOpacity){
+    inputOpacity.addEventListener('input',()=>{
+      applyInputOpacityPreview();
+      try{if(typeof save==='function')save()}catch(e){}
+      try{if(typeof cssOutput!=='undefined' && typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+    });
+    inputOpacity.addEventListener('change',applyInputOpacityPreview);
+  }
+  q('inputColor')?.addEventListener('input',applyInputOpacityPreview);
+  q('inputText')?.addEventListener('input',applyInputOpacityPreview);
+  q('transparentInputs')?.addEventListener('change',applyInputOpacityPreview);
+
+  /* Export fixes:
+     1) In header mode, remove page imagery from body/#outer/#inner and attach
+        it to #main so the image starts below the AO3 header in real AO3 too.
+     2) Make the text-box opacity slider apply to solid colors AND gradients. */
+  try{
+    const prevBuildCss=buildCss;
+    buildCss=function(){
+      let css=prevBuildCss.apply(this,arguments);
+      let extra='';
+
+      if(useHeader?.checked===true){
+        let pageGradient='';
+        try{pageGradient=gradientCssFor('page')||''}catch(e){}
+
+        let imgs=[];
+        try{
+          imgs=(localImages||[]).filter(x=>x.url && (x.placement==='background'||x.placement==='both'));
+        }catch(e){}
+
+        const layers=[
+          ...imgs.map(x=>'url("'+String(x.url).replace(/["\\]/g,'')+'")'),
+          ...(pageGradient?[pageGradient]:[])
+        ];
+        const sizes=[
+          ...imgs.map(x=>x.fit||'cover'),
+          ...(pageGradient?['cover']:[])
+        ];
+        const positions=[
+          ...imgs.map(x=>x.position||'center center'),
+          ...(pageGradient?['center center']:[])
+        ];
+        const repeats=[
+          ...imgs.map(()=> 'no-repeat'),
+          ...(pageGradient?['no-repeat']:[])
+        ];
+        const attachment=q('bgFixed')?.checked===true?'fixed':'scroll';
+        const attachments=layers.map(()=>attachment);
+
+        extra+='\n\n/* PAGE BACKGROUND STARTS BELOW THE HEADER */\n';
+        extra+='body, #outer, #inner {\n';
+        extra+='  background-image: none !important;\n';
+        extra+='}\n';
+        extra+='#main {\n';
+        extra+='  background-color: '+String(q('bgColor')?.value||'#0B0A0B').toUpperCase()+' !important;\n';
+        if(layers.length){
+          extra+='  background-image: '+layers.join(', ')+' !important;\n';
+          extra+='  background-size: '+sizes.join(', ')+' !important;\n';
+          extra+='  background-position: '+positions.join(', ')+' !important;\n';
+          extra+='  background-repeat: '+repeats.join(', ')+' !important;\n';
+          extra+='  background-attachment: '+attachments.join(', ')+' !important;\n';
+        }else{
+          extra+='  background-image: none !important;\n';
+        }
+        extra+='}\n';
+      }
+
+      const inputBg=inputGradientWithOpacity();
+      extra+='\n\n/* TEXT BOX OPACITY — SLIDER ALWAYS CONTROLS THE BACKGROUND */\n';
+      extra+='input[type="text"],\ninput[type="search"],\ninput[type="email"],\ninput[type="password"],\ninput[type="number"],\ninput[type="url"],\ntextarea,\nselect {\n';
+      extra+='  background: '+inputBg+' !important;\n';
+      extra+='}\n';
+
+      return css+extra;
+    };
+  }catch(e){}
+
+  /* Keep the old transparency checkbox from silently neutralizing the slider.
+     It remains available, but the slider itself always has visible effect. */
+  const checkbox=q('transparentInputs');
+  if(checkbox){
+    const label=checkbox.closest('.toggle')?.querySelector('span');
+    if(label) label.textContent='Allow transparent text boxes';
+  }
+
+  applyBackgroundBoundary();
+  applyInputOpacityPreview();
+})();
+</script>
