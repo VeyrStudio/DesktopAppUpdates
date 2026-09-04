@@ -1,0 +1,286 @@
+<style id="ao3-workspace-browser-tabs-styles">
+#workspaceBrowserTabs{
+  position:sticky;
+  top:38px;
+  z-index:998;
+  display:flex;
+  align-items:flex-end;
+  gap:2px;
+  min-height:36px;
+  padding:5px 8px 0;
+  border-bottom:1px solid #302733;
+  background:#0d0a0f;
+  box-shadow:0 3px 12px rgba(0,0,0,.22);
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+.workspace-browser-tab{
+  flex:0 0 auto;
+  min-width:92px;
+  height:30px;
+  padding:0 13px;
+  border:1px solid #332a36;
+  border-bottom:none;
+  border-radius:8px 8px 0 0;
+  background:#151117;
+  color:#9e929c;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.workspace-browser-tab:hover{background:#211923;color:#eee3ec}
+.workspace-browser-tab.active{
+  background:#241a27;
+  border-color:#67476e;
+  color:#fff;
+  box-shadow:inset 0 2px 0 #9b1dba;
+}
+#workspaceBrowserHost{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:997;
+  display:none;
+  overflow:auto;
+  padding:18px 22px 40px;
+  background:#0b090c;
+}
+#workspaceBrowserHost.active{display:block}
+.workspace-browser-view{
+  display:none;
+  width:min(1180px,100%);
+  margin:0 auto;
+}
+.workspace-browser-view.active{display:block}
+.workspace-page-card{
+  border:1px solid #302833;
+  border-radius:12px;
+  background:#100d12;
+  box-shadow:0 12px 36px rgba(0,0,0,.22);
+  overflow:hidden;
+}
+.workspace-page-title{
+  padding:15px 17px 10px;
+  color:#f0e5ee;
+  font-size:14px;
+  font-weight:900;
+}
+.workspace-page-sub{
+  padding:0 17px 14px;
+  color:#948793;
+  font-size:9px;
+  line-height:1.5;
+  border-bottom:1px solid #28222b;
+}
+.workspace-page-body{padding:14px}
+#workspaceStartersView > #conceptsStartersSection,
+#workspaceColorView > details.section,
+#workspaceGradientView > details.section{
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+#workspaceStartersView > #conceptsStartersSection > summary,
+#workspaceColorView > details.section > summary,
+#workspaceGradientView > details.section > summary{
+  display:none!important;
+}
+#workspaceStartersView #conceptRandomizerTab{display:none!important}
+#workspaceStartersView .concepts-tabs{grid-template-columns:1fr 1fr!important}
+#workspaceRandomizerView #skinRandomizerPanel{
+  display:block!important;
+  margin:0!important;
+}
+#workspaceRandomizerView #skinRandomizerPanel.active{display:block!important}
+.workspace-missing{
+  padding:28px;
+  border:1px dashed #3b313e;
+  border-radius:10px;
+  color:#8b7f89;
+  font-size:9px;
+  line-height:1.6;
+  text-align:center;
+}
+@media(max-width:720px){
+  .workspace-browser-tab{min-width:82px;padding:0 9px}
+  #workspaceBrowserHost{padding:12px 10px 30px}
+}
+</style>
+
+<script id="ao3-workspace-browser-tabs-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('workspaceBrowserTabs')) return;
+
+  const skinTabs=q('skinDocumentTabs');
+  if(!skinTabs) return;
+
+  const bar=document.createElement('div');
+  bar.id='workspaceBrowserTabs';
+  bar.setAttribute('role','tablist');
+  bar.innerHTML=`
+    <button type="button" class="workspace-browser-tab active" data-view="editor">Editor</button>
+    <button type="button" class="workspace-browser-tab" data-view="starters">Starters</button>
+    <button type="button" class="workspace-browser-tab" data-view="randomizer">Randomizer</button>
+    <button type="button" class="workspace-browser-tab" data-view="color">Color Studio</button>
+    <button type="button" class="workspace-browser-tab" data-view="gradient">Gradient Studio</button>
+  `;
+  skinTabs.insertAdjacentElement('afterend',bar);
+
+  const host=document.createElement('div');
+  host.id='workspaceBrowserHost';
+  host.innerHTML=`
+    <div class="workspace-browser-view" id="workspaceStartersView">
+      <div class="workspace-page-card">
+        <div class="workspace-page-title">Starters</div>
+        <div class="workspace-page-sub">Pick a built-in starter or one of your saved concepts, then open it as its own skin tab and keep editing normally.</div>
+        <div class="workspace-page-body" id="workspaceStartersBody"></div>
+      </div>
+    </div>
+    <div class="workspace-browser-view" id="workspaceRandomizerView">
+      <div class="workspace-page-card">
+        <div class="workspace-page-title">Randomizer</div>
+        <div class="workspace-page-sub">Generate a completely new coordinated skin. Randomized results open in their own skin tab so your other work stays untouched.</div>
+        <div class="workspace-page-body" id="workspaceRandomizerBody"></div>
+      </div>
+    </div>
+    <div class="workspace-browser-view" id="workspaceColorView">
+      <div class="workspace-page-card">
+        <div class="workspace-page-title">Color Studio</div>
+        <div class="workspace-page-sub">Work with exact colors, swatches, recent colors, favorites, and custom color values for the active skin.</div>
+        <div class="workspace-page-body" id="workspaceColorBody"></div>
+      </div>
+    </div>
+    <div class="workspace-browser-view" id="workspaceGradientView">
+      <div class="workspace-page-card">
+        <div class="workspace-page-title">Gradient Studio</div>
+        <div class="workspace-page-sub">Build and edit gradients for the active skin without burying the controls in the editor sidebar.</div>
+        <div class="workspace-page-body" id="workspaceGradientBody"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(host);
+
+  function sectionBySummary(match){
+    return Array.from(document.querySelectorAll('details.section')).find(s=>{
+      const txt=(s.querySelector(':scope > summary')?.textContent||'').trim().toLowerCase();
+      return typeof match==='string' ? txt===match.toLowerCase() : match.test(txt);
+    })||null;
+  }
+
+  const concepts=q('conceptsStartersSection');
+  const randomizer=q('skinRandomizerPanel');
+  const color=sectionBySummary('Color Studio');
+  const gradient=sectionBySummary(/gradient( studio|s)?/i);
+
+  if(concepts){
+    concepts.open=true;
+    q('workspaceStartersBody').appendChild(concepts);
+  }else{
+    q('workspaceStartersBody').innerHTML='<div class="workspace-missing">The Starters panel could not be found.</div>';
+  }
+
+  if(randomizer){
+    randomizer.classList.add('active');
+    q('workspaceRandomizerBody').appendChild(randomizer);
+  }else{
+    q('workspaceRandomizerBody').innerHTML='<div class="workspace-missing">The Randomizer panel could not be found.</div>';
+  }
+
+  if(color){
+    color.open=true;
+    q('workspaceColorBody').appendChild(color);
+  }else{
+    q('workspaceColorBody').innerHTML='<div class="workspace-missing">Color Studio is still available from its existing controls, but its panel could not be moved into this workspace.</div>';
+  }
+
+  if(gradient && gradient!==color && gradient!==concepts){
+    gradient.open=true;
+    q('workspaceGradientBody').appendChild(gradient);
+  }else{
+    q('workspaceGradientBody').innerHTML='<div class="workspace-missing">Use the Gradient Lab button in the app header for the separate full gradient window. Inline gradient controls remain available in the Editor.</div>';
+  }
+
+  function normalizeStarters(){
+    const toolbar=concepts?.querySelector('.concepts-toolbar');
+    const grid=q('conceptGrid');
+    const actionRow=concepts?.querySelector('.concept-action-row');
+    const status=q('conceptStatus');
+    const innerTabs=concepts?.querySelector('.concepts-tabs');
+    if(toolbar) toolbar.style.display='';
+    if(grid) grid.style.display='';
+    if(actionRow) actionRow.style.display='';
+    if(status) status.style.display='';
+    if(innerTabs) innerTabs.style.display='grid';
+    if(randomizer) randomizer.classList.remove('active');
+  }
+
+  function normalizeRandomizer(){
+    if(randomizer){
+      randomizer.classList.add('active');
+      randomizer.style.display='block';
+    }
+  }
+
+  function setHostTop(){
+    const rect=bar.getBoundingClientRect();
+    host.style.top=Math.max(0,Math.round(rect.bottom))+'px';
+  }
+  window.addEventListener('resize',setHostTop);
+  setHostTop();
+
+  function showView(name){
+    bar.querySelectorAll('.workspace-browser-tab').forEach(btn=>{
+      btn.classList.toggle('active',btn.dataset.view===name);
+    });
+
+    host.querySelectorAll('.workspace-browser-view').forEach(v=>v.classList.remove('active'));
+
+    if(name==='editor'){
+      host.classList.remove('active');
+      return;
+    }
+
+    host.classList.add('active');
+    if(name==='starters'){
+      normalizeStarters();
+      q('workspaceStartersView')?.classList.add('active');
+    }
+    if(name==='randomizer'){
+      normalizeRandomizer();
+      q('workspaceRandomizerView')?.classList.add('active');
+    }
+    if(name==='color') q('workspaceColorView')?.classList.add('active');
+    if(name==='gradient') q('workspaceGradientView')?.classList.add('active');
+    setHostTop();
+  }
+
+  bar.addEventListener('click',e=>{
+    const btn=e.target.closest('.workspace-browser-tab');
+    if(!btn) return;
+    showView(btn.dataset.view);
+  });
+
+  /* Keep the workspace on Editor automatically when a skin tab itself is clicked. */
+  skinTabs.addEventListener('click',e=>{
+    if(e.target.closest('.skin-doc-tab') || e.target.closest('#skinDocumentAdd')){
+      setTimeout(()=>showView('editor'),0);
+    }
+  });
+
+  /* Starter/Randomizer actions return you to the newly-created skin tab in Editor. */
+  concepts?.addEventListener('click',e=>{
+    if(e.target.closest('[data-action="apply"]') || e.target.closest('#conceptApplySelected')){
+      setTimeout(()=>showView('editor'),140);
+    }
+  },true);
+  q('randomizeWholeSkin')?.addEventListener('click',()=>setTimeout(()=>showView('editor'),140),true);
+
+  window.AO3WorkspaceTabs={
+    show:showView,
+    active:()=>bar.querySelector('.workspace-browser-tab.active')?.dataset.view||'editor'
+  };
+})();
+</script>
