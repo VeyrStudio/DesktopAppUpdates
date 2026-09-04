@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.27",
-  "payloadSha256": "22fe7f7ec8a1d92db2c32a65f8c74f6aab593d5b0d09823d6262fb2699ef9bcc",
-  "executableSha256": "0bf74c98f1fff20fc09326cfe9e864144559bab0bfe4c1fb5fe0c329077d69bb",
+  "version": "0.1.28",
+  "payloadSha256": "136ab7cb6a5d2dcd49ff8ac91aafaad74907a581020e7927c381c8ff570d4879",
+  "executableSha256": "19286273f1f76a5c699625507da547ec696074c59d3f0984bea9221c4792949b",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.27-part-001.txt",
-      "sha256": "8d6380d4d7b437884e30f7a4bee885637935d8e6b76a81ff3dc8fcd2be9de6c1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-001.txt",
+      "sha256": "3e9d8a5b0dddf6f2eca3ffa9210e38d3238b12d99b237d78cb71249ba2acbdd3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.27-part-002.txt",
-      "sha256": "bc29b68c22f38bbe76a9f93441f0df9cf8cf4a0042a5f49c503fc3b1e5f4ace1"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-002.txt",
+      "sha256": "2e14ea067f3943240e0dc792d9975d54484511120c3ee57dd93fd72ea2458b45"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.27-part-003.txt",
-      "sha256": "7e5909bcc3d58ce9422f2e4fc3d8fb5e74a7fbee0156b02e52197cbdb46d54dc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-003.txt",
+      "sha256": "34fc5b168c4a4cb1b567385bd37779aecde280f77e118f2467ab9b9bf5e4362e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.27-part-004.txt",
-      "sha256": "6b02e5cc3541dc7a49606f3823e10b440093dfa2ecc9cba6e17688863f23ea69"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-004.txt",
+      "sha256": "341e404edc2e5598d43642e4edb61530232fb3456e76fb6355c23ec9c02d4f0d"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.27-part-005.txt",
-      "sha256": "6b94501cfa400fc436961e87b4ff36c02c80e067b4bd53e102371efd6fc70e29"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.28-part-005.txt",
+      "sha256": "2cc69aae0c941e9ff2d3ea51d5c98b4e15d769b93d97fa8e5cce7987e8feb1fc"
     }
   ],
-  "notes": "Adds a real Use Header checkbox to the Background panel. With it off, the section is simply Background and the AO3 header is hidden. Turning it on reveals header layout controls plus separate Header Image / GIF upload and hosted-URL fields, position, fit, repeat, opacity, and existing resize/branding controls. Local header images/GIFs preview in-app; hosted direct URLs export to AO3 CSS. Keeps Quick Colors, numbered tabs, and all prior tools."
+  "notes": "Fixes background bleed-through when Use Header is enabled. The header is now an opaque independent surface, so the main page background image cannot continue through the header area. Adds a Header Background Color control; the header uses only that color and its own header image/GIF, while the main background remains below it. Exported AO3 CSS now overrides the older continuous-background rule for the header."
 }
