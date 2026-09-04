@@ -1,0 +1,510 @@
+<style id="ao3-multi-skin-tabs-styles">
+#skinDocumentTabs{
+  position:sticky;
+  top:0;
+  z-index:999;
+  display:flex;
+  align-items:flex-end;
+  gap:2px;
+  min-height:38px;
+  padding:7px 8px 0;
+  border-bottom:1px solid #2e2630;
+  background:#0b090c;
+  box-shadow:0 4px 16px rgba(0,0,0,.28);
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:thin;
+}
+.skin-doc-tab{
+  display:flex;
+  align-items:center;
+  min-width:120px;
+  max-width:220px;
+  height:31px;
+  border:1px solid #302833;
+  border-bottom:none;
+  border-radius:8px 8px 0 0;
+  background:#131015;
+  color:#9f939e;
+  flex:0 0 auto;
+}
+.skin-doc-tab.active{
+  background:#201923;
+  border-color:#5a4560;
+  color:#f2e7ef;
+  box-shadow:inset 0 2px 0 #8d1ca9;
+}
+.skin-doc-tab-title{
+  flex:1;
+  min-width:0;
+  padding:0 6px 0 10px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:9px;
+  font-weight:900;
+  cursor:default;
+}
+.skin-doc-tab-close{
+  width:28px;
+  height:28px;
+  border:0;
+  background:transparent;
+  color:#786e77;
+  font-size:14px;
+  line-height:1;
+  cursor:pointer;
+}
+.skin-doc-tab-close:hover{
+  color:#fff;
+  background:rgba(255,255,255,.06);
+}
+#skinDocumentAdd{
+  flex:0 0 auto;
+  width:34px;
+  height:31px;
+  border:1px solid #342b37;
+  border-bottom:none;
+  border-radius:8px 8px 0 0;
+  background:#141116;
+  color:#bbaeb8;
+  font-size:17px;
+  font-weight:700;
+  cursor:pointer;
+}
+#skinDocumentAdd:hover{background:#241c27;color:#fff}
+#skinTabsMenu{
+  flex:0 0 auto;
+  height:31px;
+  padding:0 10px;
+  border:1px solid #342b37;
+  border-bottom:none;
+  border-radius:8px 8px 0 0;
+  background:#141116;
+  color:#9c909a;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+#skinTabsMenu:hover{background:#241c27;color:#fff}
+.skin-tabs-menu-pop{
+  position:fixed;
+  z-index:10020;
+  min-width:165px;
+  padding:5px;
+  border:1px solid #46384b;
+  border-radius:8px;
+  background:#121014;
+  box-shadow:0 14px 40px rgba(0,0,0,.5);
+}
+.skin-tabs-menu-pop[hidden]{display:none!important}
+.skin-tabs-menu-pop button{
+  display:block;
+  width:100%;
+  padding:8px 9px;
+  border:0;
+  border-radius:5px;
+  background:transparent;
+  color:#c9bdc6;
+  text-align:left;
+  font-size:8px;
+  font-weight:800;
+  cursor:pointer;
+}
+.skin-tabs-menu-pop button:hover{background:#251d28;color:#fff}
+.skin-tabs-hint{
+  flex:0 0 auto;
+  align-self:center;
+  padding:0 7px 6px;
+  color:#5f5660;
+  font-size:7px;
+  white-space:nowrap;
+}
+@media(max-width:650px){
+  .skin-doc-tab{min-width:105px;max-width:160px}
+  .skin-tabs-hint{display:none}
+}
+</style>
+
+<script id="ao3-multi-skin-tabs-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('skinDocumentTabs')) return;
+
+  const STORAGE='ao3SkinStudioDocumentsV1';
+  let documents=[];
+  let activeId=null;
+  let applying=false;
+  let snapshotTimer=null;
+  let untitledCounter=1;
+
+  function clone(v){
+    try{return JSON.parse(JSON.stringify(v))}catch(e){return null}
+  }
+
+  function collectControls(){
+    const controls={};
+    document.querySelectorAll('input[id],select[id],textarea[id]').forEach(el=>{
+      if(el.closest('#skinDocumentTabs') || el.closest('#skinTabsMenuPop')) return;
+      if(el.type==='file'||el.type==='button'||el.type==='submit') return;
+      if(el.type==='checkbox'||el.type==='radio') controls[el.id]=!!el.checked;
+      else controls[el.id]=el.value;
+    });
+    return controls;
+  }
+
+  function captureState(){
+    const state={
+      controls:collectControls(),
+      gradients:(typeof gradients!=='undefined')?clone(gradients):null,
+      localImages:(typeof localImages!=='undefined' && Array.isArray(localImages))?clone(localImages):[],
+      previewMode:q('previewMode')?.value||null,
+      capturedAt:Date.now()
+    };
+    return state;
+  }
+
+  function persistentState(state){
+    const s=clone(state)||{};
+    if(Array.isArray(s.localImages)){
+      s.localImages=s.localImages.map(img=>{
+        const x={...img};
+        if(x.data && String(x.data).startsWith('data:')) x.data='';
+        return x;
+      });
+    }
+    return s;
+  }
+
+  function saveDocuments(){
+    try{
+      const payload={
+        activeId,
+        untitledCounter,
+        documents:documents.map(d=>({...d,state:persistentState(d.state)}))
+      };
+      localStorage.setItem(STORAGE,JSON.stringify(payload));
+    }catch(e){}
+  }
+
+  function activeDoc(){
+    return documents.find(d=>d.id===activeId)||null;
+  }
+
+  function snapshotActive(){
+    if(applying) return;
+    const d=activeDoc();
+    if(!d) return;
+    d.state=captureState();
+    d.modifiedAt=Date.now();
+    saveDocuments();
+  }
+
+  function scheduleSnapshot(){
+    if(applying) return;
+    clearTimeout(snapshotTimer);
+    snapshotTimer=setTimeout(snapshotActive,180);
+  }
+
+  function dispatch(el){
+    try{el.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}
+    try{el.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+  }
+
+  function applyState(state){
+    if(!state) return;
+    applying=true;
+    try{
+      Object.entries(state.controls||{}).forEach(([id,value])=>{
+        const el=q(id);
+        if(!el || el.closest('#skinDocumentTabs') || el.closest('#skinTabsMenuPop')) return;
+        if(el.type==='file'||el.type==='button'||el.type==='submit') return;
+        try{
+          if(el.type==='checkbox'||el.type==='radio') el.checked=!!value;
+          else el.value=value;
+          dispatch(el);
+        }catch(e){}
+      });
+
+      if(state.gradients && typeof gradients!=='undefined'){
+        const incoming=clone(state.gradients);
+        if(incoming) gradients=incoming;
+        try{if(typeof renderGradientEditor==='function')renderGradientEditor()}catch(e){}
+      }
+
+      if(typeof localImages!=='undefined' && Array.isArray(state.localImages)){
+        try{
+          localImages=clone(state.localImages)||[];
+          if(typeof imageSeq!=='undefined'){
+            const ids=localImages.map(x=>Number(x.id)||0);
+            imageSeq=Math.max(1,...ids)+1;
+          }
+          if(typeof renderImageList==='function')renderImageList();
+          if(typeof renderPreviewImages==='function')renderPreviewImages(q('bgFixed')?.checked===true);
+        }catch(e){}
+      }
+
+      try{if(typeof applyRequiredPreview==='function')applyRequiredPreview()}catch(e){}
+      try{if(typeof applyAllRequiredStates==='function')applyAllRequiredStates()}catch(e){}
+      try{if(typeof syncUnifiedBackground==='function')syncUnifiedBackground(false)}catch(e){}
+      try{if(typeof syncNavIntoBackground==='function')syncNavIntoBackground(false)}catch(e){}
+      try{if(typeof update==='function')update()}catch(e){}
+      try{if(typeof applyHeaderLayout==='function')applyHeaderLayout()}catch(e){}
+      try{if(typeof save==='function')save()}catch(e){}
+    }finally{
+      applying=false;
+    }
+  }
+
+  function createId(){
+    return 'skin-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+  }
+
+  function currentUntitledName(){
+    return 'Untitled Skin '+(untitledCounter++);
+  }
+
+  function createDocument(name,state,activate=true){
+    snapshotActive();
+    const doc={
+      id:createId(),
+      name:name||currentUntitledName(),
+      state:state?clone(state):captureState(),
+      createdAt:Date.now(),
+      modifiedAt:Date.now()
+    };
+    documents.push(doc);
+    if(activate){
+      activeId=doc.id;
+      applyState(doc.state);
+    }
+    renderTabs();
+    saveDocuments();
+    return doc;
+  }
+
+  function switchTo(id){
+    if(id===activeId) return;
+    snapshotActive();
+    const target=documents.find(d=>d.id===id);
+    if(!target) return;
+    activeId=id;
+    applyState(target.state);
+    renderTabs();
+    saveDocuments();
+  }
+
+  function closeDocument(id){
+    if(documents.length<=1){
+      try{showToast('Keep at least one skin tab open')}catch(e){}
+      return;
+    }
+    const idx=documents.findIndex(d=>d.id===id);
+    if(idx<0) return;
+    const doc=documents[idx];
+    if(!confirm('Close "'+doc.name+'"?')) return;
+    const wasActive=id===activeId;
+    documents.splice(idx,1);
+    if(wasActive){
+      const next=documents[Math.min(idx,documents.length-1)];
+      activeId=next.id;
+      applyState(next.state);
+    }
+    renderTabs();
+    saveDocuments();
+  }
+
+  function renameDocument(doc){
+    const next=prompt('Rename this skin tab:',doc.name);
+    if(next==null) return;
+    const trimmed=next.trim();
+    if(!trimmed) return;
+    doc.name=trimmed.slice(0,80);
+    renderTabs();
+    saveDocuments();
+  }
+
+  function duplicateActive(){
+    snapshotActive();
+    const d=activeDoc();
+    if(!d) return;
+    createDocument(d.name+' Copy',d.state,true);
+  }
+
+  function newBlank(){
+    snapshotActive();
+    const old=activeDoc();
+    const oldState=old?clone(old.state):captureState();
+    try{
+      applying=true;
+      q('resetBtn')?.click();
+      setTimeout(()=>{
+        applying=false;
+        const blank=captureState();
+        createDocument(currentUntitledName(),blank,true);
+      },45);
+    }catch(e){
+      applying=false;
+      if(oldState) applyState(oldState);
+      createDocument(currentUntitledName(),captureState(),true);
+    }
+  }
+
+  const bar=document.createElement('div');
+  bar.id='skinDocumentTabs';
+  bar.setAttribute('role','tablist');
+  document.body.insertAdjacentElement('afterbegin',bar);
+
+  const menu=document.createElement('div');
+  menu.id='skinTabsMenuPop';
+  menu.className='skin-tabs-menu-pop';
+  menu.hidden=true;
+  menu.innerHTML=`
+    <button type="button" data-cmd="rename">Rename active tab</button>
+    <button type="button" data-cmd="duplicate">Duplicate active tab</button>
+    <button type="button" data-cmd="new">New blank skin</button>
+    <button type="button" data-cmd="closeothers">Close other tabs</button>
+  `;
+  document.body.appendChild(menu);
+
+  function renderTabs(){
+    bar.innerHTML='';
+    documents.forEach(doc=>{
+      const tab=document.createElement('div');
+      tab.className='skin-doc-tab'+(doc.id===activeId?' active':'');
+      tab.dataset.id=doc.id;
+      tab.setAttribute('role','tab');
+      tab.setAttribute('aria-selected',doc.id===activeId?'true':'false');
+      tab.innerHTML='<div class="skin-doc-tab-title" title="'+doc.name.replace(/"/g,'&quot;')+'"></div><button class="skin-doc-tab-close" type="button" title="Close tab">×</button>';
+      tab.querySelector('.skin-doc-tab-title').textContent=doc.name;
+      tab.querySelector('.skin-doc-tab-title').addEventListener('click',()=>switchTo(doc.id));
+      tab.querySelector('.skin-doc-tab-title').addEventListener('dblclick',()=>renameDocument(doc));
+      tab.querySelector('.skin-doc-tab-close').addEventListener('click',e=>{e.stopPropagation();closeDocument(doc.id)});
+      bar.appendChild(tab);
+    });
+
+    const add=document.createElement('button');
+    add.id='skinDocumentAdd';
+    add.type='button';
+    add.title='New skin tab';
+    add.textContent='+';
+    add.addEventListener('click',newBlank);
+    bar.appendChild(add);
+
+    const more=document.createElement('button');
+    more.id='skinTabsMenu';
+    more.type='button';
+    more.textContent='Tabs ▾';
+    more.addEventListener('click',e=>{
+      const r=more.getBoundingClientRect();
+      menu.style.left=Math.max(8,Math.min(window.innerWidth-180,r.left))+'px';
+      menu.style.top=(r.bottom+4)+'px';
+      menu.hidden=!menu.hidden;
+      e.stopPropagation();
+    });
+    bar.appendChild(more);
+
+    const hint=document.createElement('span');
+    hint.className='skin-tabs-hint';
+    hint.textContent='Double-click a tab name to rename';
+    bar.appendChild(hint);
+
+    requestAnimationFrame(()=>bar.querySelector('.skin-doc-tab.active')?.scrollIntoView({block:'nearest',inline:'nearest'}));
+  }
+
+  menu.addEventListener('click',e=>{
+    const cmd=e.target.closest('button')?.dataset.cmd;
+    if(!cmd) return;
+    menu.hidden=true;
+    if(cmd==='rename'){const d=activeDoc();if(d)renameDocument(d)}
+    if(cmd==='duplicate')duplicateActive();
+    if(cmd==='new')newBlank();
+    if(cmd==='closeothers'){
+      snapshotActive();
+      const d=activeDoc();
+      if(!d)return;
+      documents=[d];
+      activeId=d.id;
+      renderTabs();saveDocuments();
+    }
+  });
+  document.addEventListener('click',()=>menu.hidden=true);
+
+  function bootstrap(){
+    let loaded=null;
+    try{loaded=JSON.parse(localStorage.getItem(STORAGE)||'null')}catch(e){}
+    if(loaded && Array.isArray(loaded.documents) && loaded.documents.length){
+      documents=loaded.documents;
+      activeId=documents.some(d=>d.id===loaded.activeId)?loaded.activeId:documents[0].id;
+      untitledCounter=Math.max(1,Number(loaded.untitledCounter)||1);
+      applyState(activeDoc().state);
+    }else{
+      const initial={
+        id:createId(),
+        name:'Untitled Skin 1',
+        state:captureState(),
+        createdAt:Date.now(),
+        modifiedAt:Date.now()
+      };
+      documents=[initial];
+      activeId=initial.id;
+      untitledCounter=2;
+    }
+    renderTabs();
+    saveDocuments();
+  }
+
+  /* Keep each open document continuously snapshotted while you edit. */
+  document.addEventListener('input',e=>{
+    if(e.target.closest('#skinDocumentTabs')||e.target.closest('#skinTabsMenuPop'))return;
+    scheduleSnapshot();
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target.closest('#skinDocumentTabs')||e.target.closest('#skinTabsMenuPop'))return;
+    scheduleSnapshot();
+  },true);
+
+  /* Loading a Starter becomes a NEW skin tab instead of overwriting the old tab. */
+  q('conceptsStartersSection')?.addEventListener('click',e=>{
+    const apply=e.target.closest('[data-action="apply"]');
+    if(!apply) return;
+    snapshotActive();
+    const previousId=activeId;
+    setTimeout(()=>{
+      const card=apply.closest('.concept-card');
+      const name=card?.querySelector('.concept-card-title')?.textContent?.trim()||'Starter Skin';
+      const result=captureState();
+      const previous=documents.find(d=>d.id===previousId);
+      if(previous) previous.state=previous.state||captureState();
+      createDocument(name,result,true);
+    },80);
+  },true);
+
+  /* Randomize Entire Skin also produces a NEW skin tab. */
+  q('randomizeWholeSkin')?.addEventListener('click',()=>{
+    snapshotActive();
+    setTimeout(()=>{
+      const name=q('randomizerResult')?.querySelector('.randomizer-result-name')?.textContent?.trim()||'Randomized Skin';
+      createDocument(name,captureState(),true);
+    },80);
+  },true);
+
+  /* Public hooks for future Starters/Randomizer/main-tab work. */
+  window.AO3SkinDocuments={
+    list:()=>documents.map(d=>({id:d.id,name:d.name,active:d.id===activeId})),
+    active:()=>activeDoc()?{id:activeDoc().id,name:activeDoc().name}:null,
+    snapshot:snapshotActive,
+    newBlank,
+    duplicate:duplicateActive,
+    createFromCurrent:name=>createDocument(name||currentUntitledName(),captureState(),true),
+    switchTo,
+    renameActive:name=>{
+      const d=activeDoc();if(!d||!name)return;
+      d.name=String(name).trim().slice(0,80)||d.name;renderTabs();saveDocuments();
+    }
+  };
+
+  window.addEventListener('beforeunload',snapshotActive);
+  bootstrap();
+})();
+</script>
