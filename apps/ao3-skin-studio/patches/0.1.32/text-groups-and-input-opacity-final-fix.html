@@ -1,0 +1,297 @@
+<style id="ao3-text-groups-opacity-final-fix-styles">
+.text-style-workspace,
+.text-style-subtabs,
+.text-style-subtab{
+  position:relative!important;
+  z-index:20!important;
+  pointer-events:auto!important;
+}
+.text-style-subtab{
+  user-select:none;
+}
+.text-group-picker{
+  display:grid;
+  grid-template-columns:auto minmax(160px,1fr);
+  gap:9px;
+  align-items:center;
+  margin:0 0 10px;
+  padding:8px 9px;
+  border:1px solid #332a36;
+  border-radius:7px;
+  background:#100d12;
+}
+.text-group-picker label{
+  color:#8e828d;
+  font-size:7px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.text-group-picker select{
+  width:100%;
+  min-height:32px;
+  box-sizing:border-box;
+  border:1px solid #493b4c;
+  border-radius:5px;
+  background:#0b090d;
+  color:#e1d5de;
+  padding:5px 7px;
+  font-size:8px;
+}
+</style>
+
+<script id="ao3-text-groups-opacity-final-fix-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const subtabs=document.querySelector('.text-style-subtabs');
+  const groupHost=document.querySelector('.text-style-groups');
+  const textWrap=document.querySelector('.text-style-workspace');
+
+  /* -------- TEXT GROUP SELECTOR: make selection explicit and reliable -------- */
+  const groupDefs=[
+    {id:'title',name:'Title',preview:'.ao3-main > h2, .mock-panel h3, .mock-panel h3 a, h2.title, h3.title, .chapter .title'},
+    {id:'author',name:'Author',preview:'.mock-panel .meta, .byline, .byline a, a[rel="author"]'},
+    {id:'tags',name:'Tags',preview:'.tags, .tag, .warnings, .category, .required-tags'},
+    {id:'main',name:'Summary / Main Text',preview:'.mock-panel > p, .summary, .summary .userstuff, #chapters .userstuff, .chapter .userstuff'},
+    {id:'notes',name:'Notes',preview:'.notes, .notes .userstuff, .preface .notes, .afterword .notes, .end.notes'},
+    {id:'stats',name:'Stats',preview:'.stats, .stats span, dl.stats, .stats dt, .stats dd'},
+    {id:'interface',name:'Interface',preview:'.ao3-logo, .ao3-user, .ao3-nav a, .mock-actions button, .mock-btn, .ao3-footer, #header .primary a, #header .secondary a, .actions a, .actions button, .navigation a, .menu a, #footer a'}
+  ];
+
+  let picker=q('textGroupPicker');
+  if(textWrap && subtabs && groupHost && !picker){
+    const wrap=document.createElement('div');
+    wrap.className='text-group-picker';
+    wrap.innerHTML='<label for="textGroupPicker">Editing</label><select id="textGroupPicker">'+
+      groupDefs.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('')+
+      '</select>';
+    subtabs.insertAdjacentElement('beforebegin',wrap);
+    picker=q('textGroupPicker');
+  }
+
+  function activateTextGroup(id){
+    if(!subtabs || !groupHost) return;
+    const wanted=groupDefs.some(g=>g.id===id)?id:'title';
+
+    subtabs.querySelectorAll('.text-style-subtab').forEach(btn=>{
+      const active=btn.dataset.textGroup===wanted;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-selected',active?'true':'false');
+    });
+    groupHost.querySelectorAll('.text-style-group').forEach(box=>{
+      const active=box.id==='textStyleGroup_'+wanted;
+      box.classList.toggle('active',active);
+      box.style.display=active?'block':'none';
+    });
+    if(picker) picker.value=wanted;
+  }
+
+  if(picker){
+    picker.addEventListener('change',()=>activateTextGroup(picker.value),true);
+  }
+
+  /* Capture-phase handling means older/broken delegated handlers cannot prevent
+     these buttons from selecting their group. */
+  if(subtabs){
+    subtabs.addEventListener('pointerdown',e=>{
+      const btn=e.target.closest?.('.text-style-subtab');
+      if(!btn) return;
+      activateTextGroup(btn.dataset.textGroup);
+    },true);
+    subtabs.addEventListener('click',e=>{
+      const btn=e.target.closest?.('.text-style-subtab');
+      if(!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      activateTextGroup(btn.dataset.textGroup);
+    },true);
+  }
+
+  window.AO3TextGroupSelector={activate:activateTextGroup};
+
+  /* -------- TEXT GROUP PREVIEW: use selectors that actually exist in preview -------- */
+  let previewStyle=q('ao3TextGroupActualPreviewStyle');
+  if(!previewStyle){
+    previewStyle=document.createElement('style');
+    previewStyle.id='ao3TextGroupActualPreviewStyle';
+    document.head.appendChild(previewStyle);
+  }
+
+  function rgba(hex,a){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    if(Number.isNaN(n)) return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+
+  function textGroupCss(g){
+    const font=q('textStyle_'+g.id+'_font')?.value||'Georgia, serif';
+    const size=Math.max(6,Number(q('textStyle_'+g.id+'_size')?.value||12));
+    const color=q('textStyle_'+g.id+'_color')?.value||'#d2c8d0';
+    const spacing=Number(q('textStyle_'+g.id+'_spacing')?.value||0);
+    const bold=q('textStyle_'+g.id+'_bold')?.checked===true;
+    const italic=q('textStyle_'+g.id+'_italic')?.checked===true;
+    const glow=q('textStyle_'+g.id+'_glow')?.value||'none';
+    const glowColor=q('textStyle_'+g.id+'_glowColor')?.value||color;
+    let shadow='none';
+    if(glow==='shadow') shadow='0 1px 2px '+rgba(glowColor,.65);
+    if(glow==='glow') shadow='0 0 4px '+rgba(glowColor,.72);
+    if(glow==='strong') shadow='0 0 3px '+rgba(glowColor,.95)+',0 0 8px '+rgba(glowColor,.72);
+
+    return g.preview.split(',').map(s=>'#mock '+s.trim()).join(',')+
+      '{font-family:'+font+'!important;font-size:'+size+'px!important;color:'+color+
+      '!important;font-weight:'+(bold?'700':'400')+'!important;font-style:'+
+      (italic?'italic':'normal')+'!important;letter-spacing:'+spacing+
+      'px!important;text-shadow:'+shadow+'!important}';
+  }
+
+  function applyActualTextPreview(){
+    if(!mock) return;
+    previewStyle.textContent=groupDefs.map(textGroupCss).join('\n');
+  }
+
+  if(textWrap){
+    textWrap.addEventListener('input',applyActualTextPreview,true);
+    textWrap.addEventListener('change',applyActualTextPreview,true);
+  }
+  applyActualTextPreview();
+  activateTextGroup(picker?.value||'title');
+
+  /* Preview inspector now uses the same proven selector controller. */
+  document.addEventListener('click',e=>{
+    if(!mock?.contains(e.target)) return;
+    const el=e.target;
+    let id=null;
+    if(el.closest('.mock-panel h3,.mock-panel h3 a,.ao3-main > h2')) id='title';
+    else if(el.closest('.mock-panel .meta,.byline,[rel="author"]')) id='author';
+    else if(el.closest('.tags,.tag,.warnings,.category')) id='tags';
+    else if(el.closest('.stats,dl.stats')) id='stats';
+    else if(el.closest('.notes')) id='notes';
+    else if(el.closest('.mock-panel > p,.summary,.userstuff')) id='main';
+    else if(el.closest('.ao3-logo,.ao3-user,.ao3-nav,.mock-actions,.mock-btn,.ao3-footer')) id='interface';
+    if(id) setTimeout(()=>activateTextGroup(id),0);
+  },true);
+
+  /* -------- TEXT BOX OPACITY: directly style the real preview elements -------- */
+  const slider=q('inputOpacity');
+  const transparency=q('transparentInputs');
+
+  function clamp01(n){return Math.max(0,Math.min(1,n))}
+  function inputBackground(){
+    const alpha=clamp01(Number(slider?.value||100)/100);
+    let cfg=null;
+    try{cfg=gradients?.inputs}catch(e){}
+
+    if(!cfg || !cfg.enabled){
+      return rgba(q('inputColor')?.value||'#141011',alpha);
+    }
+
+    const stops=(cfg.stops||[]).slice().sort((a,b)=>Number(a.pos)-Number(b.pos));
+    if(!stops.length) return rgba(q('inputColor')?.value||'#141011',alpha);
+    const stopText=stops.map(s=>{
+      const own=clamp01(Number(s.opacity??100)/100);
+      return rgba(s.color,alpha*own)+' '+Number(s.pos||0)+'%';
+    }).join(', ');
+
+    if(cfg.type==='radial'){
+      return 'radial-gradient('+(cfg.radialShape||'ellipse')+' '+(cfg.radialSize||'farthest-corner')+
+        ' at '+Number(cfg.centerX??50)+'% '+Number(cfg.centerY??50)+'%, '+stopText+')';
+    }
+    if(cfg.type==='conic'){
+      return 'conic-gradient(from '+Number(cfg.conicStart||0)+'deg at '+
+        Number(cfg.conicX??50)+'% '+Number(cfg.conicY??50)+'%, '+stopText+')';
+    }
+    return 'linear-gradient('+(cfg.angle||'90deg')+', '+stopText+')';
+  }
+
+  function enforceInputOpacity(){
+    if(!mock || !slider) return;
+    const pct=Math.max(0,Math.min(100,Number(slider.value||0)));
+    if(q('inputOpacityValue')) q('inputOpacityValue').textContent=Math.round(pct)+'%';
+
+    /* Slider is the source of truth. Anything below 100 is transparent. */
+    if(transparency) transparency.checked=pct<100;
+
+    const bg=inputBackground();
+    mock.style.setProperty('--p-input-background',bg,'important');
+    mock.style.setProperty('--p-input-alpha',String(pct/100),'important');
+
+    mock.querySelectorAll('.mock-form input,.mock-form textarea,.mock-form select').forEach(el=>{
+      el.style.setProperty('background',bg,'important');
+      el.style.setProperty('background-color','transparent','important');
+      el.style.setProperty('opacity','1','important');
+      el.style.setProperty('color','var(--p-text)','important');
+    });
+  }
+
+  if(slider){
+    slider.addEventListener('input',()=>{
+      enforceInputOpacity();
+      try{save()}catch(e){}
+      try{cssOutput.value=buildCss()}catch(e){}
+    },true);
+    slider.addEventListener('change',enforceInputOpacity,true);
+  }
+
+  /* Checkbox becomes a simple 100%/restore convenience instead of a gate that can
+     secretly make the opacity slider do nothing. */
+  let lastTransparentValue=Number(slider?.value||15);
+  if(transparency){
+    transparency.addEventListener('change',()=>{
+      if(!slider) return;
+      if(transparency.checked){
+        slider.value=String(lastTransparentValue>=100?15:lastTransparentValue);
+      }else{
+        lastTransparentValue=Number(slider.value||15);
+        slider.value='100';
+      }
+      enforceInputOpacity();
+      slider.dispatchEvent(new Event('input',{bubbles:true}));
+    },true);
+  }
+
+  q('inputColor')?.addEventListener('input',enforceInputOpacity,true);
+  q('inputText')?.addEventListener('input',enforceInputOpacity,true);
+  document.addEventListener('input',e=>{
+    if(e.target?.closest?.('#gradientStudioWorkspace,#gradientStudioSection')) {
+      requestAnimationFrame(enforceInputOpacity);
+    }
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target?.closest?.('#gradientStudioWorkspace,#gradientStudioSection')) {
+      requestAnimationFrame(enforceInputOpacity);
+    }
+  },true);
+
+  /* Last update wrapper: regardless of what older code does, opacity is re-applied
+     to the actual input elements after the preview update finishes. */
+  try{
+    const olderUpdate=update;
+    update=function(){
+      const result=olderUpdate.apply(this,arguments);
+      enforceInputOpacity();
+      applyActualTextPreview();
+      return result;
+    };
+  }catch(e){}
+
+  /* Final AO3 export override for text-box opacity. */
+  try{
+    const olderBuildCss=buildCss;
+    buildCss=function(){
+      const css=olderBuildCss.apply(this,arguments);
+      const bg=inputBackground();
+      return css+
+        '\n\n/* TEXT BOX OPACITY — FINAL DIRECT OVERRIDE */\n'+
+        'input[type="text"],input[type="search"],input[type="email"],input[type="password"],'+
+        'input[type="number"],input[type="url"],textarea,select {\n'+
+        '  background: '+bg+' !important;\n'+
+        '  opacity: 1 !important;\n'+
+        '}\n';
+    };
+  }catch(e){}
+
+  enforceInputOpacity();
+})();
+</script>
