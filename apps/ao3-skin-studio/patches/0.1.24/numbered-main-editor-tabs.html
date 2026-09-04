@@ -1,0 +1,29 @@
+<style id="ao3-numbered-main-editor-tabs-styles">
+/* Main protruding tabs show only numbers. Full section names live in hover tooltips. */
+.editor-section-tab{
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  font-size:13px!important;
+  letter-spacing:0!important;
+  text-align:center!important;
+}
+</style>
+
+<script id="ao3-numbered-main-editor-tabs-script">
+(function(){
+  const nav=document.getElementById('editorSectionNav');
+  if(!nav) return;
+
+  const tabs=Array.from(nav.querySelectorAll('.editor-section-tab'));
+  tabs.forEach((tab,index)=>{
+    const current=(tab.title||tab.textContent||'').replace(/\s+/g,' ').trim();
+    if(current && !/^\d+$/.test(current)){
+      tab.dataset.fullSectionName=current;
+    }
+    const full=tab.dataset.fullSectionName||current||('Section '+(index+1));
+    tab.title=full;
+    tab.setAttribute('aria-label',full);
+    tab.textContent=String(index+1);
+  });
+})();
+</script>

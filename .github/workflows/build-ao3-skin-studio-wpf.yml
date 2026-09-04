@@ -379,6 +379,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $verticalTabsPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.24: number the main protruding editor tabs.
+          $numberedMainTabsPatchPath = 'apps/ao3-skin-studio/patches/0.1.24/numbered-main-editor-tabs.html'
+          if (-not (Test-Path $numberedMainTabsPatchPath)) { throw 'AO3 Skin Studio 0.1.24 numbered-main-tabs patch was not found.' }
+          $numberedMainTabsPatch = Get-Content $numberedMainTabsPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.24.' }
+          $studioText = $studioText.Replace('</body>', $numberedMainTabsPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -461,16 +470,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.23</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.23.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.23.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.24</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.24.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.24.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.23" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.24" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -610,7 +619,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Corrects the section-tab proportions: the Editor category selectors are now tall, skinny upright tabs attached to and slightly protruding from the left edge instead of wide sidebar rectangles. Text Boxes / Inputs now uses compact numbered tabs (1, 2, 3, 4, etc.); hovering a number shows the full text-box/input name, and the selected item name appears above its controls. Keeps the reorganized Text groups, browser-style workspaces, multi-skin tabs, and all prior tools.'
+            notes = 'Corrects the numbered-tab interpretation: the main tall protruding Editor tabs themselves are now labeled only 1, 2, 3, 4, 5, etc. Hovering each number shows the full section name such as Background / Header, Text, Images / GIFs, Panels / Boxes, Text Boxes / Inputs, Required Tag Grid, Preview, or Export. Keeps the tall narrow proportions, internal numbered input selectors, reorganized Text controls, workspaces, and multi-skin tabs.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
