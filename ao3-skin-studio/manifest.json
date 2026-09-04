@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.18",
-  "payloadSha256": "7ff42e7f1eb94ec03ef99b90c1a6509204b960513ca3c53ea96ca8ed1510aa36",
-  "executableSha256": "d1c57757d126671907b7211d35b8f4ad3f578b25e2dc9a58a1d97cce03260fe1",
+  "version": "0.1.19",
+  "payloadSha256": "0beb3f9bdbb252bf31276260863732f9377a7ba5d887a07ca7bfaad7fd68c2a9",
+  "executableSha256": "cdd76c91a75600274b2474113130746f8f682a295dd6a642f86b80befd984256",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.18-part-001.txt",
-      "sha256": "38bc7c57ca93aa40bed1eb8cc0774ce3be9291953b8fb2fd3b67fbcf8700c572"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.19-part-001.txt",
+      "sha256": "7ff5040612ef2f0fb7931db06c88aaee1073e01068a3fea11c7d7285e679b2e3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.18-part-002.txt",
-      "sha256": "979f69a311bbac3e2607defefd92a1b1054ac9124c9acdfb4f951c3004525f4a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.19-part-002.txt",
+      "sha256": "7b03808bb8a2fed3c3e3cf6318dd5be6cc868eb6d6fa8ee127d1d6965f35bef0"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.18-part-003.txt",
-      "sha256": "f724e4c0d8163ba2479f34f9a626cf01ff40fa9052964ba6960d11b6ece8ae06"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.19-part-003.txt",
+      "sha256": "46752b8d5945ea863b7443f187fd201fd1a397d63f73f8fa3d9c0cf8cb9962ca"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.18-part-004.txt",
-      "sha256": "d22cc8b9faa5f848e57fcadee3bdcd67c6d783593679aa5ac621d039508efbe7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.19-part-004.txt",
+      "sha256": "3dac28531bfc9202b7121b6507ce13ac57d1d10c9af1a568609a52f28b72d757"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.18-part-005.txt",
-      "sha256": "aedd960bd5032e18e434c63b3a8cafe40c9e8cc2542ffe8ece81fbb339ef6e29"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.19-part-005.txt",
+      "sha256": "604d918c5f4a00c9a9668bb21c7f4455111d0fb411929f35adf24d96c84e1624"
     }
   ],
-  "notes": "Adds a full Randomizer tab to Concepts / Starters. Randomize Entire Skin generates a coordinated new skin from scratch across palette, panels, inputs, borders, links, typography, gradients, required-tag colors, and optional header layout, with toggles for which systems to randomize. Generated skins remain fully editable and can be saved directly as My Concepts. Also adds the new built-in Starter Library concept Glorious Purpose: blackened emerald, antique gold, parchment text, metallic-like green/gold gradients, ornate dark panels, a tall resizable header, and themed AO3 required-tag colors. The image/GIF slot remains open for a user-supplied cinematic header. Keeps Falling Angle and all prior tools."
+  "notes": "Adds a normal Windows installer build for AO3 Skin Studio. Version 0.1.19 can be installed from a single AO3-Skin-Studio-Setup executable instead of extracting a ZIP. The installer uses a per-user install location, creates a Start Menu shortcut, optionally creates a desktop shortcut, carries the app icon, and can launch the app when setup finishes. The automatic updater remains unchanged for already-installed copies. Keeps the Randomizer, Glorious Purpose, Falling Angle, resizable header controls, Concepts / Starters, and all prior tools."
 }
