@@ -425,16 +425,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.18</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.18.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.18.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.19</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.19.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.19.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.18" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.19" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -454,6 +454,77 @@ jobs:
           if (-not (Test-Path $exe)) { throw 'AO3SkinStudio.exe was not produced.' }
 
           "AO3_PUBLISH=$publish" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          choco install innosetup --no-progress -y
+          if ($LASTEXITCODE -ne 0) { throw 'Could not install Inno Setup on the build runner.' }
+
+          $isccCandidates = @(
+            (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
+            (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')
+          )
+          $iscc = $isccCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+          if (-not $iscc) { throw 'Inno Setup compiler was not found after installation.' }
+
+          $installerBase = "AO3-Skin-Studio-Setup-$env:AO3_VERSION"
+          $iss = Join-Path $env:RUNNER_TEMP 'ao3-skin-studio-installer.iss'
+          $setupIcon = Join-Path $env:AO3_PUBLISH 'Assets\AO3-Skin-Studio-Icon.ico'
+          if (-not (Test-Path $setupIcon)) { throw 'AO3 Skin Studio installer icon was not found in publish output.' }
+
+          $publishEscaped = $env:AO3_PUBLISH.Replace("\","\\")
+          $iconEscaped = $setupIcon.Replace("\","\\")
+          $outputEscaped = $env:RUNNER_TEMP.Replace("\","\\")
+
+          @"
+[Setup]
+AppId={{C78E6370-6D44-4B21-99A7-6DDF4D88E515}
+AppName=AO3 Skin Studio
+AppVersion=$env:AO3_VERSION
+AppPublisher=VeyrStudio
+DefaultDirName={localappdata}\Programs\AO3 Skin Studio
+DefaultGroupName=AO3 Skin Studio
+DisableProgramGroupPage=yes
+OutputDir=$outputEscaped
+OutputBaseFilename=$installerBase
+SetupIconFile=$iconEscaped
+UninstallDisplayIcon={app}\AO3SkinStudio.exe
+Compression=lzma2
+SolidCompression=yes
+WizardStyle=modern
+PrivilegesRequired=lowest
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+CloseApplications=yes
+RestartApplications=no
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"; Flags: unchecked
+
+[Files]
+Source: "$publishEscaped\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\AO3 Skin Studio"; Filename: "{app}\AO3SkinStudio.exe"
+Name: "{autodesktop}\AO3 Skin Studio"; Filename: "{app}\AO3SkinStudio.exe"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\AO3SkinStudio.exe"; Description: "Launch AO3 Skin Studio"; Flags: nowait postinstall skipifsilent
+"@ | Set-Content $iss -Encoding utf8
+
+          & $iscc $iss
+          if ($LASTEXITCODE -ne 0) { throw 'AO3 Skin Studio installer compilation failed.' }
+
+          $installer = Join-Path $env:RUNNER_TEMP "$installerBase.exe"
+          if (-not (Test-Path $installer)) { throw 'AO3 Skin Studio installer executable was not produced.' }
+
+          "AO3_INSTALLER=$installer" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Sync latest main before release files
         shell: pwsh
@@ -508,7 +579,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds a full Randomizer tab to Concepts / Starters. Randomize Entire Skin generates a coordinated new skin from scratch across palette, panels, inputs, borders, links, typography, gradients, required-tag colors, and optional header layout, with toggles for which systems to randomize. Generated skins remain fully editable and can be saved directly as My Concepts. Also adds the new built-in Starter Library concept Glorious Purpose: blackened emerald, antique gold, parchment text, metallic-like green/gold gradients, ornate dark panels, a tall resizable header, and themed AO3 required-tag colors. The image/GIF slot remains open for a user-supplied cinematic header. Keeps Falling Angle and all prior tools.'
+            notes = 'Adds a normal Windows installer build for AO3 Skin Studio. Version 0.1.19 can be installed from a single AO3-Skin-Studio-Setup executable instead of extracting a ZIP. The installer uses a per-user install location, creates a Start Menu shortcut, optionally creates a desktop shortcut, carries the app icon, and can launch the app when setup finishes. The automatic updater remains unchanged for already-installed copies. Keeps the Randomizer, Glorious Purpose, Falling Angle, resizable header controls, Concepts / Starters, and all prior tools.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
@@ -552,4 +623,11 @@ jobs:
         with:
           name: AO3SkinStudio-win-x64-${{ env.AO3_VERSION }}
           path: ${{ runner.temp }}/AO3SkinStudio-release.zip
+          if-no-files-found: error
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: AO3SkinStudio-Installer-${{ env.AO3_VERSION }}
+          path: ${{ env.AO3_INSTALLER }}
           if-no-files-found: error
