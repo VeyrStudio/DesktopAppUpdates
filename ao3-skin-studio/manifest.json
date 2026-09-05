@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.41",
-  "payloadSha256": "4499346ba3cb534eb3efa4dfb44f7990d3b822648f1d366f00ca0444fdc310ba",
-  "executableSha256": "9f839da86b8bdd9b840af875ca38f9b707da0551209c35113a500678b0f6abef",
+  "version": "0.1.42",
+  "payloadSha256": "808a7b4091d2f3ce705e24b8cdcc46eee923cfb11c89c947c2a64a2f5f9b5755",
+  "executableSha256": "74e4271ebf8bd7c4f452ce4c2022d346d8924f72ee73f23df7c0b253553488b4",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.41-part-001.txt",
-      "sha256": "3ecbba693736cd8ee1bfa2bad9009f0b44e0e852b6cbea57c15363c2839da4ca"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-001.txt",
+      "sha256": "5186284cf711e8c1b12885cb069e1afdc62f44fad7e7a158a271e537cfc6a254"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.41-part-002.txt",
-      "sha256": "db936739a8d0a923d0e35b28eb532e768f5d45d6900d8ec103897c28da90ecf2"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-002.txt",
+      "sha256": "d6a43b42e13058cd90d43ade73f4c76d2a86ff6c77abb0ca5d836cf39f9fa5c8"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.41-part-003.txt",
-      "sha256": "fd25d39cf7bdbdc0cea1bc34b1281d9b9eeb69f8bd04e6b7601be980639333bd"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-003.txt",
+      "sha256": "f7e6a79ee5b181fe0365b1310b0e46cf55b592038d51788f3a96a3fdafe620e3"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.41-part-004.txt",
-      "sha256": "624745277f4fca9db6ecf2eb6cb2017bf57b4d6fe54cc29b8d491f141b3058d2"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-004.txt",
+      "sha256": "ebb73bc6cb3b1c9dd20a0caad4aa246c9578228ee1bc912b9cef7bf273ee0d3e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.41-part-005.txt",
-      "sha256": "7df1034a469ea1be8ab4e8c1114460f0470f59478bd76efbc5d551199335c138"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-005.txt",
+      "sha256": "54019d704c3307641f5536283e27d9f9f3cc30fafa8146ed062e32b8685869fc"
     }
   ],
-  "notes": "Hard-separates Interface styling from work-title styling. Interface now uses only narrow navigation/account/action/footer selectors, while Title is reapplied afterward to Results/Browse work titles and the Inside-a-Fic title so older broad preview rules cannot make Interface changes alter fic titles. Final exported AO3 CSS uses the same isolated selector order."
+  "notes": "Keeps the Interface-vs-Title isolation fix and makes preview navigation behave like a real AO3 page: Results / Browse is the normal list, clicking a work title opens Inside a Fic, the selected title carries into the fic preview, and a Back to Works arrow returns to the previous results scroll position. Manual preview-mode buttons remain as backup controls."
 }
