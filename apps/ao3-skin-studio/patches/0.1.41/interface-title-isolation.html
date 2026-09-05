@@ -1,0 +1,127 @@
+<style id="ao3-interface-title-isolation-style"></style>
+<script id="ao3-interface-title-isolation-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const editor=q('stableTextEditor');
+  if(!mock||!editor)return;
+
+  function rgba(hex,a){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    if(Number.isNaN(n))return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+  function vals(id,defSize,defColor){
+    const get=s=>q('textStyle_'+id+'_'+s);
+    const color=get('color')?.value||defColor;
+    const glow=get('glow')?.value||'none';
+    const gc=get('glowColor')?.value||color;
+    let shadow='none';
+    if(glow==='shadow')shadow='0 1px 2px '+rgba(gc,.65);
+    if(glow==='glow')shadow='0 0 4px '+rgba(gc,.72);
+    if(glow==='strong')shadow='0 0 3px '+rgba(gc,.95)+',0 0 8px '+rgba(gc,.72);
+    return {
+      font:get('font')?.value||'Georgia, serif',
+      size:Math.max(6,Number(get('size')?.value||defSize)),
+      color,
+      spacing:Number(get('spacing')?.value||0),
+      bold:get('bold')?.checked===true,
+      italic:get('italic')?.checked===true,
+      shadow
+    };
+  }
+  function decl(v){
+    return 'font-family:'+v.font+'!important;'+
+      'font-size:'+v.size+'px!important;'+
+      'color:'+v.color+'!important;'+
+      'font-weight:'+(v.bold?'700':'400')+'!important;'+
+      'font-style:'+(v.italic?'italic':'normal')+'!important;'+
+      'letter-spacing:'+v.spacing+'px!important;'+
+      'text-shadow:'+v.shadow+'!important;';
+  }
+
+  const style=q('ao3-interface-title-isolation-style')||document.createElement('style');
+  style.id='ao3-interface-title-isolation-style';
+  if(!style.parentNode)document.head.appendChild(style);
+
+  function apply(){
+    const iv=vals('interface',12,'#c4b3c4');
+    const tv=vals('title',20,'#c9b2cc');
+    const underline=q('textStyle_title_resultsUnderline')?.checked===true;
+
+    /* Interface is intentionally narrow. No generic a/button/menu selectors here. */
+    const interfaceSelectors=[
+      '#mock .ao3-logo',
+      '#mock .ao3-user',
+      '#mock .ao3-user > a',
+      '#mock .ao3-nav > a',
+      '#mock .mock-actions > button',
+      '#mock .mock-btn',
+      '#mock .ao3-footer',
+      '#mock .ao3-footer > a'
+    ];
+
+    /* Title comes LAST so no earlier legacy preview rule can steal it. */
+    const titleResultHeading=['#mock .preview-result-card > h4'];
+    const titleResultLinks=['#mock .preview-result-card > h4 > a'];
+    const titleInside=['#mock .preview-fic-title','#mock #workskin > h2.heading.preview-fic-title'];
+
+    style.textContent=
+      interfaceSelectors.join(',')+'{'+decl(iv)+'}\n'+
+      titleResultHeading.join(',')+'{'+decl(tv)+'text-decoration:none!important;}\n'+
+      titleResultLinks.join(',')+'{'+decl(tv)+'text-decoration:'+(underline?'underline':'none')+'!important;text-decoration-line:'+(underline?'underline':'none')+'!important;}\n'+
+      titleInside.join(',')+'{'+decl(tv)+'text-decoration:none!important;text-decoration-line:none!important;}';
+
+    /* Direct inline reassertion for the rendered Inside Fic title. */
+    mock.querySelectorAll('.preview-fic-title,#workskin > h2.heading.preview-fic-title').forEach(el=>{
+      el.style.setProperty('font-family',tv.font,'important');
+      el.style.setProperty('font-size',tv.size+'px','important');
+      el.style.setProperty('color',tv.color,'important');
+      el.style.setProperty('font-weight',tv.bold?'700':'400','important');
+      el.style.setProperty('font-style',tv.italic?'italic':'normal','important');
+      el.style.setProperty('letter-spacing',tv.spacing+'px','important');
+      el.style.setProperty('text-shadow',tv.shadow,'important');
+      el.style.setProperty('text-decoration','none','important');
+    });
+  }
+
+  editor.addEventListener('input',apply,true);
+  editor.addEventListener('change',apply,true);
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]'))setTimeout(apply,0);
+  },true);
+
+  const obs=new MutationObserver(()=>requestAnimationFrame(apply));
+  obs.observe(mock,{childList:true,subtree:true});
+
+  /* Final export isolation. Interface uses only interface-specific AO3 selectors.
+     Title rules are emitted after it. */
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      const iv=vals('interface',12,'#c4b3c4');
+      const tv=vals('title',20,'#c9b2cc');
+      const underline=q('textStyle_title_resultsUnderline')?.checked===true;
+
+      css+='\n\n/* INTERFACE TEXT — FINAL ISOLATED RULE */\n'+
+        '#header .primary > li > a, #header .secondary > li > a, #header .user a, #footer a, .actions > li > a, .actions > li > button {\n  '+
+        decl(iv).replaceAll('!important;',' !important;\n  ')+'\n}\n';
+
+      css+='\n/* WORK TITLES — FINAL ISOLATED RULE */\n'+
+        '.blurb h4.heading a, .blurb h4 a {\n  '+
+        decl(tv).replaceAll('!important;',' !important;\n  ')+
+        '\n  text-decoration:'+(underline?'underline':'none')+' !important;\n}\n'+
+        '#workskin > h2.heading, #workskin .title, .preface h2.title, .preface h3.title {\n  '+
+        decl(tv).replaceAll('!important;',' !important;\n  ')+
+        '\n  text-decoration:none !important;\n}\n';
+      return css;
+    };
+  }catch(e){}
+
+  window.AO3InterfaceTitleIsolation={apply};
+  setTimeout(apply,60);
+})();
+</script>
