@@ -1,0 +1,42 @@
+<style id="ao3-preview-natural-navigation-styles">
+.preview-fic-back-wrap{display:flex;align-items:center;justify-content:flex-start;margin:0 0 14px}
+.preview-fic-back{appearance:none;border:1px solid rgba(196,154,90,.55);border-radius:7px;background:rgba(15,12,16,.78);color:#eadcc5;padding:7px 11px;font-size:9px;font-weight:900;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+.preview-fic-back:hover{background:rgba(37,28,39,.94);color:#fff3df}
+.preview-result-card>h4>a{cursor:pointer!important}
+</style>
+<script id="ao3-preview-natural-navigation-script">
+(function(){
+ const q=id=>document.getElementById(id),mock=q('mock'); if(!mock)return;
+ let lastResultsScroll=0,pendingTitle='';
+ const pageButton=page=>document.querySelector('.preview-page-btn[data-preview-page="'+page+'"]');
+ const scroller=()=>document.querySelector('.browser')||mock;
+ function injectBack(){
+   const shell=mock.querySelector('.preview-fic-shell'); if(!shell||shell.querySelector('.preview-fic-back-wrap'))return;
+   const wrap=document.createElement('div'); wrap.className='preview-fic-back-wrap';
+   wrap.innerHTML='<button type="button" class="preview-fic-back" aria-label="Back to Results / Browse">← Back to Works</button>';
+   shell.insertBefore(wrap,shell.firstChild);
+   wrap.querySelector('button').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();goBack();},true);
+ }
+ function openFic(title){
+   const s=scroller(); lastResultsScroll=s?.scrollTop||0; pendingTitle=String(title||'').trim();
+   pageButton('fic')?.click();
+   setTimeout(()=>{const t=mock.querySelector('.preview-fic-title');if(t&&pendingTitle)t.textContent=pendingTitle;injectBack();if(s)s.scrollTop=0;},0);
+ }
+ function goBack(){
+   const s=scroller(); pageButton('results')?.click();
+   setTimeout(()=>{if(s)s.scrollTop=lastResultsScroll;},0);
+ }
+ mock.addEventListener('click',e=>{
+   const link=e.target.closest?.('.preview-result-card>h4>a'); if(!link)return;
+   e.preventDefault();e.stopPropagation();openFic(link.textContent);
+ },true);
+ const obs=new MutationObserver(()=>requestAnimationFrame(()=>{const t=mock.querySelector('.preview-fic-title');if(t&&pendingTitle)t.textContent=pendingTitle;injectBack();}));
+ obs.observe(mock,{childList:true,subtree:true});
+ document.addEventListener('click',e=>{
+   const b=e.target.closest?.('.preview-page-btn,[data-page]'); if(!b)return;
+   const p=b.dataset.previewPage||b.dataset.page; if(p==='fic')setTimeout(injectBack,0);
+ },true);
+ setTimeout(injectBack,60);
+ window.AO3PreviewNavigation={openFic,back:goBack};
+})();
+</script>

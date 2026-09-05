@@ -270,7 +270,8 @@
       if(!mock?.contains(e.target)) return;
       const el=e.target;
       let id=null;
-      if(el.closest('.preview-result-card > h4,.preview-result-card > h4 > a,.preview-fic-title,#workskin > h2.heading.preview-fic-title')) id='title';
+      if(el.closest('.preview-result-card > h4 > a')) return;
+      if(el.closest('.preview-result-card > h4,.preview-fic-title,#workskin > h2.heading.preview-fic-title')) id='title';
       else if(el.closest('.mock-panel .meta,.byline,.byline a,[rel="author"]')) id='author';
       else if(el.closest('.preview-result-card .tags,.preview-result-card .tag,.preview-fic-meta a.tag')) id='tags';
       else if(el.closest('.stats,dl.stats')) id='stats';
