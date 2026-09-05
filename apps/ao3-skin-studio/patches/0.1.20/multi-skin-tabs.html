@@ -135,6 +135,7 @@
   let documents=[];
   let activeId=null;
   let applying=false;
+  let bootstrapping=true;
   let snapshotTimer=null;
   let untitledCounter=1;
 
@@ -192,7 +193,7 @@
   }
 
   function snapshotActive(){
-    if(applying) return;
+    if(applying || bootstrapping) return;
     const d=activeDoc();
     if(!d) return;
     d.state=captureState();
@@ -201,7 +202,7 @@
   }
 
   function scheduleSnapshot(){
-    if(applying) return;
+    if(applying || bootstrapping) return;
     clearTimeout(snapshotTimer);
     snapshotTimer=setTimeout(snapshotActive,180);
   }
@@ -432,12 +433,14 @@
 
   function bootstrap(){
     let loaded=null;
+    let startupState=null;
     try{loaded=JSON.parse(localStorage.getItem(STORAGE)||'null')}catch(e){}
     if(loaded && Array.isArray(loaded.documents) && loaded.documents.length){
       documents=loaded.documents;
       activeId=documents.some(d=>d.id===loaded.activeId)?loaded.activeId:documents[0].id;
       untitledCounter=Math.max(1,Number(loaded.untitledCounter)||1);
-      applyState(activeDoc().state);
+      startupState=clone(activeDoc().state);
+      applyState(startupState);
     }else{
       const initial={
         id:createId(),
@@ -452,6 +455,32 @@
     }
     renderTabs();
     saveDocuments();
+
+    /* Later patches create many controls after this script runs. Keep saves
+       locked during startup, then reapply the saved skin after those controls
+       exist. This prevents their defaults from overwriting the saved skin. */
+    const finishStartup=()=>{
+      try{
+        if(startupState) applyState(startupState);
+        try{window.AO3HeaderLocalAsset?.set?.(window.AO3HeaderLocalAsset?.get?.()||'')}catch(e){}
+        try{window.AO3StableTextPreview?.apply?.()}catch(e){}
+        try{window.AO3TitleDirectFix?.apply?.()}catch(e){}
+        try{window.AO3InterfaceTitleIsolation?.apply?.()}catch(e){}
+        try{window.AO3TagsTextGradient?.apply?.()}catch(e){}
+      }catch(e){}
+    };
+    setTimeout(finishStartup,80);
+    setTimeout(finishStartup,240);
+    setTimeout(()=>{
+      finishStartup();
+      bootstrapping=false;
+      const d=activeDoc();
+      if(d){
+        d.state=captureState();
+        d.modifiedAt=Date.now();
+        saveDocuments();
+      }
+    },520);
   }
 
   /* Keep each open document continuously snapshotted while you edit. */
