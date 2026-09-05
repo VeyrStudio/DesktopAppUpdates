@@ -1,0 +1,443 @@
+<style id="ao3-stability-project-fic-preview-export-styles">
+/* 0.1.33 — stability + project persistence + missing panels + fic reading box */
+.editor-native-card{
+  padding:11px;
+  border:1px solid #332a36;
+  border-radius:9px;
+  background:#100d12;
+  margin-bottom:10px;
+}
+.editor-native-card h3{margin:0 0 5px;font-size:11px;color:#eadde7}
+.editor-native-card p{margin:0 0 10px;font-size:8px;line-height:1.5;color:#8f838d}
+.editor-native-actions{display:flex;flex-wrap:wrap;gap:7px}
+.editor-native-actions button{
+  border:1px solid #493b4c;border-radius:6px;background:#171319;color:#ddd1da;
+  padding:8px 10px;font-size:8px;font-weight:900;cursor:pointer;
+}
+.editor-native-actions button:hover{background:#241c27;color:#fff}
+.editor-native-actions button.active{border-color:#9a6c3d;color:#f4e0bd;box-shadow:inset 0 0 0 1px rgba(196,154,90,.18)}
+.editor-native-actions .primary{background:#5c0d70;border-color:#8e1aaa;color:#fff}
+.fic-box-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fic-box-field{padding:8px;border:1px solid #302833;border-radius:6px;background:#0c0a0e}
+.fic-box-field label{display:block;margin-bottom:5px;color:#92858f;font-size:7px;font-weight:900;text-transform:uppercase}
+.fic-box-field input[type="range"],.fic-box-field input[type="number"],.fic-box-field input[type="text"]{width:100%;box-sizing:border-box}
+.fic-box-color-row{display:grid;grid-template-columns:40px minmax(0,1fr);gap:6px}
+.fic-box-color-row input[type="color"]{width:40px;height:31px}
+.project-safety-note{
+  margin-top:8px;padding:8px 9px;border-left:2px solid #8e6a3d;background:#0c0a0d;
+  color:#948891;font-size:7px;line-height:1.5
+}
+#mock .preview-fic-chapter.fic-reading-box-enabled{
+  box-sizing:border-box;
+}
+#mock{
+  --stable-input-background:rgba(20,16,17,.15);
+}
+#mock .mock-form input,
+#mock .mock-form textarea,
+#mock .mock-form select{
+  background:var(--stable-input-background) !important;
+  opacity:1 !important;
+}
+@media(max-width:720px){.fic-box-grid{grid-template-columns:1fr}}
+</style>
+
+<script id="ao3-stability-project-fic-preview-export-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+
+  /* ---------- 7 = PREVIEW, 8 = EXPORT: populate them explicitly ---------- */
+  const previewPanel=q('editorSectionPanel_preview');
+  const exportPanel=q('editorSectionPanel_export');
+
+  function clearEmpty(panel){
+    panel?.querySelectorAll('.editor-section-empty').forEach(x=>x.remove());
+  }
+
+  if(previewPanel && !q('stablePreviewControls')){
+    clearEmpty(previewPanel);
+    const card=document.createElement('div');
+    card.id='stablePreviewControls';
+    card.className='editor-native-card';
+    card.innerHTML=
+      '<h3>Preview</h3>'+
+      '<p>Choose exactly what the live AO3 preview is showing.</p>'+
+      '<div class="editor-native-actions" id="stablePreviewPageActions">'+
+        '<button type="button" data-page="results">Results / Browse</button>'+
+        '<button type="button" data-page="fic">Inside a Fic</button>'+
+        '<button type="button" data-page="split">Split Preview</button>'+
+      '</div>'+
+      '<div style="height:8px"></div>'+
+      '<div class="editor-native-actions" id="stablePreviewDeviceActions">'+
+        '<button type="button" data-device="desktop">Desktop</button>'+
+        '<button type="button" data-device="tablet">Tablet</button>'+
+        '<button type="button" data-device="mobile">Mobile</button>'+
+      '</div>';
+    previewPanel.appendChild(card);
+
+    card.addEventListener('click',e=>{
+      const page=e.target.closest('[data-page]')?.dataset.page;
+      const device=e.target.closest('[data-device]')?.dataset.device;
+      if(page){
+        document.querySelector('.preview-page-btn[data-preview-page="'+page+'"]')?.click();
+        syncPreviewButtons();
+      }
+      if(device){
+        document.querySelector('.device-btn[data-device="'+device+'"]')?.click();
+        syncPreviewButtons();
+      }
+    });
+  }
+
+  function syncPreviewButtons(){
+    const activePage=document.querySelector('.preview-page-btn.active')?.dataset.previewPage||'results';
+    const activeDevice=document.querySelector('.device-btn.active')?.dataset.device||'desktop';
+    q('stablePreviewPageActions')?.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===activePage));
+    q('stablePreviewDeviceActions')?.querySelectorAll('[data-device]').forEach(b=>b.classList.toggle('active',b.dataset.device===activeDevice));
+  }
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('.preview-page-btn,.device-btn')) setTimeout(syncPreviewButtons,0);
+  },true);
+  syncPreviewButtons();
+
+  if(exportPanel && !q('stableExportControls')){
+    clearEmpty(exportPanel);
+    const card=document.createElement('div');
+    card.id='stableExportControls';
+    card.className='editor-native-card';
+    card.innerHTML=
+      '<h3>Export</h3>'+
+      '<p>Copy/download the AO3 CSS, or back up the entire editable skin project including local images and GIFs.</p>'+
+      '<div class="editor-native-actions">'+
+        '<button type="button" id="stableShowCss">Show / Hide CSS</button>'+
+        '<button type="button" id="stableCopyCss" class="primary">Copy CSS</button>'+
+        '<button type="button" id="stableDownloadCss">Download CSS</button>'+
+        '<button type="button" id="stableExportProject">Export Project</button>'+
+        '<button type="button" id="stableImportProject">Import Project</button>'+
+      '</div>'+
+      '<input type="file" id="stableImportProjectFile" accept=".ao3skinproject,.json,application/json" hidden>'+
+      '<div class="project-safety-note">Project export includes your current editable settings and local image/GIF data. App updates do not intentionally delete this project data.</div>';
+    exportPanel.appendChild(card);
+    q('stableShowCss').onclick=()=>q('toggleCode')?.click();
+    q('stableCopyCss').onclick=()=>q('copyBottom')?.click();
+    q('stableDownloadCss').onclick=()=>q('downloadBtn')?.click();
+    q('stableImportProject').onclick=()=>q('stableImportProjectFile')?.click();
+  }
+
+  /* ---------- FIC READING BOX ---------- */
+  const panelsPanel=q('editorSectionPanel_panels');
+  if(panelsPanel && !q('ficBoxEnabled')){
+    clearEmpty(panelsPanel);
+    const card=document.createElement('div');
+    card.className='editor-native-card';
+    card.id='ficReadingBoxControls';
+    card.innerHTML=
+      '<h3>Fic Text Box</h3>'+
+      '<p>Put a readable surface directly behind the actual story text while the page background image stays visible around it.</p>'+
+      '<label style="display:flex;gap:7px;align-items:center;margin-bottom:9px;font-size:9px;font-weight:900;color:#d9cdd6"><input type="checkbox" id="ficBoxEnabled" checked> Use Fic Text Box</label>'+
+      '<div class="fic-box-grid">'+
+        '<div class="fic-box-field"><label>Background Color</label><div class="fic-box-color-row"><input type="color" id="ficBoxColor" value="#0b0a0b"><input type="text" id="ficBoxColorText" value="#0B0A0B"></div></div>'+
+        '<div class="fic-box-field"><label>Opacity <span id="ficBoxOpacityValue">82%</span></label><input type="range" id="ficBoxOpacity" min="0" max="100" value="82"></div>'+
+        '<div class="fic-box-field"><label>Border Color</label><div class="fic-box-color-row"><input type="color" id="ficBoxBorder" value="#72431e"><input type="text" id="ficBoxBorderText" value="#72431E"></div></div>'+
+        '<div class="fic-box-field"><label>Border Width (px)</label><input type="number" id="ficBoxBorderWidth" min="0" max="12" value="1"></div>'+
+        '<div class="fic-box-field"><label>Corner Radius (px)</label><input type="number" id="ficBoxRadius" min="0" max="60" value="8"></div>'+
+        '<div class="fic-box-field"><label>Padding (px)</label><input type="number" id="ficBoxPadding" min="0" max="80" value="24"></div>'+
+        '<div class="fic-box-field"><label>Shadow</label><select id="ficBoxShadow"><option value="none">None</option><option value="soft" selected>Soft</option><option value="strong">Strong</option></select></div>'+
+      '</div>';
+    panelsPanel.prepend(card);
+  }
+
+  function hexRgb(hex){
+    let s=String(hex||'#000000').trim().replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    return Number.isNaN(n)?[0,0,0]:[(n>>16)&255,(n>>8)&255,n&255];
+  }
+  function rgba(hex,a){
+    const [r,g,b]=hexRgb(hex); return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+  function normHex(v,fallback){
+    const x=String(v||'').trim();
+    return /^#[0-9a-f]{6}$/i.test(x)?x.toUpperCase():fallback;
+  }
+
+  function syncPair(colorId,textId){
+    const c=q(colorId),t=q(textId); if(!c||!t)return;
+    c.addEventListener('input',()=>{t.value=c.value.toUpperCase();applyFicBox();});
+    t.addEventListener('input',()=>{
+      const v=normHex(t.value,null); if(v){c.value=v.toLowerCase();applyFicBox();}
+    });
+  }
+  syncPair('ficBoxColor','ficBoxColorText');
+  syncPair('ficBoxBorder','ficBoxBorderText');
+
+  function ficBoxCssValues(){
+    const enabled=q('ficBoxEnabled')?.checked===true;
+    const color=normHex(q('ficBoxColor')?.value,'#0B0A0B');
+    const alpha=Math.max(0,Math.min(1,Number(q('ficBoxOpacity')?.value||82)/100));
+    const border=normHex(q('ficBoxBorder')?.value,'#72431E');
+    const bw=Math.max(0,Math.min(12,Number(q('ficBoxBorderWidth')?.value||0)));
+    const radius=Math.max(0,Math.min(60,Number(q('ficBoxRadius')?.value||0)));
+    const padding=Math.max(0,Math.min(80,Number(q('ficBoxPadding')?.value||0)));
+    const shadow=q('ficBoxShadow')?.value||'none';
+    const shadowCss=shadow==='strong'?'0 10px 32px rgba(0,0,0,.58)':shadow==='soft'?'0 6px 18px rgba(0,0,0,.38)':'none';
+    return {enabled,color,alpha,border,bw,radius,padding,shadowCss};
+  }
+
+  function applyFicBox(){
+    const v=ficBoxCssValues();
+    if(q('ficBoxOpacityValue'))q('ficBoxOpacityValue').textContent=Math.round(v.alpha*100)+'%';
+    document.querySelectorAll('#mock .preview-fic-chapter').forEach(el=>{
+      el.classList.toggle('fic-reading-box-enabled',v.enabled);
+      if(v.enabled){
+        el.style.setProperty('background',rgba(v.color,v.alpha),'important');
+        el.style.setProperty('border',v.bw+'px solid '+v.border,'important');
+        el.style.setProperty('border-radius',v.radius+'px','important');
+        el.style.setProperty('padding',v.padding+'px','important');
+        el.style.setProperty('box-shadow',v.shadowCss,'important');
+      }else{
+        ['background','border','border-radius','padding','box-shadow'].forEach(p=>el.style.removeProperty(p));
+      }
+    });
+  }
+  ['ficBoxEnabled','ficBoxOpacity','ficBoxBorderWidth','ficBoxRadius','ficBoxPadding','ficBoxShadow'].forEach(id=>{
+    q(id)?.addEventListener('input',applyFicBox,true);q(id)?.addEventListener('change',applyFicBox,true);
+  });
+
+  /* ---------- INPUT TRANSPARENCY: one final source of truth ---------- */
+  function stableInputBackground(){
+    const slider=q('inputOpacity');
+    const alpha=Math.max(0,Math.min(1,Number(slider?.value||0)/100));
+    let cfg=null;
+    try{cfg=gradients?.inputs}catch(e){}
+    if(!cfg?.enabled) return rgba(q('inputColor')?.value||'#141011',alpha);
+    const stops=(cfg.stops||[]).slice().sort((a,b)=>Number(a.pos)-Number(b.pos));
+    if(!stops.length)return rgba(q('inputColor')?.value||'#141011',alpha);
+    const stopText=stops.map(s=>rgba(s.color,alpha*Math.max(0,Math.min(1,Number(s.opacity??100)/100)))+' '+Number(s.pos||0)+'%').join(', ');
+    if(cfg.type==='radial')return 'radial-gradient('+(cfg.radialShape||'ellipse')+' '+(cfg.radialSize||'farthest-corner')+' at '+Number(cfg.centerX??50)+'% '+Number(cfg.centerY??50)+'%, '+stopText+')';
+    if(cfg.type==='conic')return 'conic-gradient(from '+Number(cfg.conicStart||0)+'deg at '+Number(cfg.conicX??50)+'% '+Number(cfg.conicY??50)+'%, '+stopText+')';
+    return 'linear-gradient('+(cfg.angle||'90deg')+', '+stopText+')';
+  }
+
+  function applyStableInputOpacity(){
+    if(!mock||!q('inputOpacity'))return;
+    const pct=Math.max(0,Math.min(100,Number(q('inputOpacity').value||0)));
+    if(q('inputOpacityValue'))q('inputOpacityValue').textContent=Math.round(pct)+'%';
+    if(q('transparentInputs'))q('transparentInputs').checked=pct<100;
+    mock.style.setProperty('--stable-input-background',stableInputBackground());
+  }
+  q('inputOpacity')?.addEventListener('input',applyStableInputOpacity,true);
+  q('inputOpacity')?.addEventListener('change',applyStableInputOpacity,true);
+  q('inputColor')?.addEventListener('input',applyStableInputOpacity,true);
+  q('transparentInputs')?.addEventListener('change',()=>{
+    if(!q('inputOpacity'))return;
+    if(!q('transparentInputs').checked)q('inputOpacity').value='100';
+    else if(Number(q('inputOpacity').value)>=100)q('inputOpacity').value='15';
+    applyStableInputOpacity();
+  },true);
+
+  /* ---------- PROJECT ASSET PERSISTENCE IN INDEXEDDB ---------- */
+  const DB_NAME='AO3SkinStudioProjects';
+  const STORE='assets';
+  let dbPromise=null;
+  function openDb(){
+    if(dbPromise)return dbPromise;
+    dbPromise=new Promise((resolve,reject)=>{
+      const req=indexedDB.open(DB_NAME,2);
+      req.onupgradeneeded=()=>{
+        const db=req.result;
+        if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE);
+      };
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+    });
+    return dbPromise;
+  }
+  async function dbPut(key,value){
+    try{
+      const db=await openDb();
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite');
+        tx.objectStore(STORE).put(value,key);
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+      });
+    }catch(e){}
+  }
+  async function dbGet(key){
+    try{
+      const db=await openDb();
+      return await new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readonly');
+        const req=tx.objectStore(STORE).get(key);
+        req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);
+      });
+    }catch(e){return null}
+  }
+  function activeProjectId(){
+    return window.AO3SkinDocuments?.active?.()?.id||'default';
+  }
+  function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+
+  async function persistAssets(){
+    const id=activeProjectId();
+    const payload={
+      version:2,
+      savedAt:Date.now(),
+      localImages:(typeof localImages!=='undefined'&&Array.isArray(localImages))?clone(localImages):[],
+      bottomBorder:(typeof bottomBorderImage!=='undefined')?clone(bottomBorderImage):{data:'',name:''},
+      headerLocal:window.AO3HeaderLocalAsset?.get?.()||''
+    };
+    await dbPut(id,payload);
+  }
+
+  async function restoreAssets(){
+    const id=activeProjectId();
+    const payload=await dbGet(id);
+    if(!payload)return;
+    try{
+      if(typeof localImages!=='undefined'&&Array.isArray(payload.localImages)){
+        localImages=clone(payload.localImages)||[];
+        if(typeof imageSeq!=='undefined'){
+          imageSeq=Math.max(1,...localImages.map(x=>Number(x.id)||0))+1;
+        }
+        renderImageList?.();
+        renderPreviewImages?.(q('bgFixed')?.checked===true);
+      }
+      if(typeof bottomBorderImage!=='undefined'&&payload.bottomBorder){
+        bottomBorderImage=clone(payload.bottomBorder);
+      }
+      if(payload.headerLocal!==undefined)window.AO3HeaderLocalAsset?.set?.(payload.headerLocal);
+      update?.();
+      applyFicBox();
+      applyStableInputOpacity();
+    }catch(e){}
+  }
+
+  let assetTimer=0;
+  function scheduleAssetSave(){
+    clearTimeout(assetTimer);
+    assetTimer=setTimeout(()=>persistAssets(),220);
+  }
+  document.addEventListener('input',e=>{
+    if(e.target?.closest?.('#skinDocumentTabs,#skinTabsMenuPop'))return;
+    scheduleAssetSave();
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target?.closest?.('#skinDocumentTabs,#skinTabsMenuPop'))return;
+    scheduleAssetSave();
+  },true);
+
+  const tabBar=q('skinDocumentTabs');
+  if(tabBar){
+    const tabObserver=new MutationObserver(()=>setTimeout(()=>restoreAssets(),40));
+    tabObserver.observe(tabBar,{subtree:true,attributes:true,attributeFilter:['class']});
+    tabBar.addEventListener('pointerdown',()=>{persistAssets()},true);
+  }
+  window.addEventListener('beforeunload',()=>{persistAssets()});
+
+  /* ---------- COMPLETE PROJECT EXPORT / IMPORT ---------- */
+  function collectControls(){
+    const out={};
+    document.querySelectorAll('input[id],select[id],textarea[id]').forEach(el=>{
+      if(el.type==='file'||el.type==='button'||el.type==='submit')return;
+      if(el.id==='cssOutput')return;
+      out[el.id]=(el.type==='checkbox'||el.type==='radio')?!!el.checked:el.value;
+    });
+    return out;
+  }
+  function applyControls(controls){
+    Object.entries(controls||{}).forEach(([id,value])=>{
+      const el=q(id); if(!el||el.type==='file'||el.type==='button'||el.type==='submit')return;
+      try{
+        if(el.type==='checkbox'||el.type==='radio')el.checked=!!value; else el.value=value;
+        el.dispatchEvent(new Event('input',{bubbles:true}));
+        el.dispatchEvent(new Event('change',{bubbles:true}));
+      }catch(e){}
+    });
+  }
+  async function projectPayload(){
+    await persistAssets();
+    return {
+      schemaVersion:2,
+      type:'ao3-skin-studio-project',
+      exportedAt:new Date().toISOString(),
+      name:window.AO3SkinDocuments?.active?.()?.name||'AO3 Skin',
+      controls:collectControls(),
+      gradients:(typeof gradients!=='undefined')?clone(gradients):null,
+      localImages:(typeof localImages!=='undefined')?clone(localImages):[],
+      bottomBorder:(typeof bottomBorderImage!=='undefined')?clone(bottomBorderImage):null,
+      headerLocal:window.AO3HeaderLocalAsset?.get?.()||''
+    };
+  }
+  q('stableExportProject')?.addEventListener('click',async()=>{
+    const payload=await projectPayload();
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=(payload.name||'ao3-skin').replace(/[^\w.-]+/g,'-')+'.ao3skinproject';
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    try{showToast('Project backup exported')}catch(e){}
+  });
+
+  q('stableImportProjectFile')?.addEventListener('change',async()=>{
+    const file=q('stableImportProjectFile').files?.[0]; if(!file)return;
+    try{
+      const payload=JSON.parse(await file.text());
+      if(payload.type!=='ao3-skin-studio-project')throw new Error('Not an AO3 Skin Studio project');
+      applyControls(payload.controls||{});
+      if(payload.gradients&&typeof gradients!=='undefined'){
+        gradients=clone(payload.gradients);
+        try{renderGradientEditor?.()}catch(e){}
+      }
+      if(typeof localImages!=='undefined')localImages=clone(payload.localImages||[]);
+      if(typeof bottomBorderImage!=='undefined'&&payload.bottomBorder)bottomBorderImage=clone(payload.bottomBorder);
+      window.AO3HeaderLocalAsset?.set?.(payload.headerLocal||'');
+      renderImageList?.();renderPreviewImages?.(q('bgFixed')?.checked===true);update?.();
+      applyFicBox();applyStableInputOpacity();
+      await persistAssets();
+      window.AO3SkinDocuments?.snapshot?.();
+      try{showToast('Project restored')}catch(e){}
+    }catch(err){
+      try{showToast('Could not import project')}catch(e){}
+    }finally{q('stableImportProjectFile').value=''}
+  });
+
+  /* ---------- EXPORT CSS: fic reading box + final input opacity ---------- */
+  try{
+    const previousBuildCss=buildCss;
+    buildCss=function(){
+      let css=previousBuildCss.apply(this,arguments);
+      const v=ficBoxCssValues();
+      css+='\n\n/* INPUT BACKGROUND OPACITY — STABLE FINAL RULE */\n'+
+        'input[type="text"],input[type="search"],input[type="email"],input[type="password"],input[type="number"],input[type="url"],textarea,select {\n'+
+        '  background: '+stableInputBackground()+' !important;\n  opacity:1 !important;\n}\n';
+      if(v.enabled){
+        css+='\n/* FIC READING BOX */\n#chapters .userstuff, .chapter .userstuff {\n'+
+          '  background: '+rgba(v.color,v.alpha)+' !important;\n'+
+          '  border: '+v.bw+'px solid '+v.border+' !important;\n'+
+          '  border-radius: '+v.radius+'px !important;\n'+
+          '  padding: '+v.padding+'px !important;\n'+
+          '  box-shadow: '+v.shadowCss+' !important;\n'+
+          '  box-sizing: border-box !important;\n}\n';
+      }
+      return css;
+    };
+  }catch(e){}
+
+  /* Reapply after preview rerenders / page-mode changes. */
+  if(mock){
+    const obs=new MutationObserver(()=>requestAnimationFrame(()=>{applyFicBox();applyStableInputOpacity()}));
+    obs.observe(mock,{childList:true,subtree:true});
+  }
+
+  /* Save new controls per skin through the existing multi-document collector. */
+  ['ficBoxEnabled','ficBoxColor','ficBoxColorText','ficBoxOpacity','ficBoxBorder','ficBoxBorderText','ficBoxBorderWidth','ficBoxRadius','ficBoxPadding','ficBoxShadow'].forEach(id=>{
+    q(id)?.addEventListener('input',()=>window.AO3SkinDocuments?.snapshot?.(),true);
+    q(id)?.addEventListener('change',()=>window.AO3SkinDocuments?.snapshot?.(),true);
+  });
+
+  setTimeout(()=>{restoreAssets();applyFicBox();applyStableInputOpacity();syncPreviewButtons()},80);
+})();
+</script>

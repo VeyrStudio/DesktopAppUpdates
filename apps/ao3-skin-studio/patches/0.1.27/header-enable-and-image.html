@@ -201,6 +201,13 @@
     try{if(typeof save==='function')save()}catch(e){}
   }
 
+
+  window.AO3HeaderLocalAsset={
+    get:()=>localHeaderData,
+    set:data=>{localHeaderData=String(data||'');applyHeaderImage();},
+    clear:()=>{localHeaderData='';q('headerImageFile').value='';applyHeaderImage();}
+  };
+
   q('headerImageFile').addEventListener('change',()=>{
     const file=q('headerImageFile').files?.[0];
     if(!file){localHeaderData='';applyHeaderImage();return}
