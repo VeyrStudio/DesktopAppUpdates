@@ -1,0 +1,162 @@
+<style id="ao3-stable-text-live-preview-styles"></style>
+<script id="ao3-stable-text-live-preview-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const editor=q('stableTextEditor');
+  if(!mock || !editor) return;
+
+  const defs=[
+    {
+      id:'title',
+      selectors:[
+        '.preview-result-card > h4',
+        '.preview-result-card > h4 > a',
+        '.preview-fic-title',
+        '#workskin > h2.heading.preview-fic-title'
+      ]
+    },
+    {
+      id:'author',
+      selectors:[
+        '.preview-result-card > .byline',
+        '.preview-result-card > .byline a',
+        '.preview-fic-byline',
+        '.preview-fic-byline a'
+      ]
+    },
+    {
+      id:'tags',
+      selectors:[
+        '.preview-result-card .tags',
+        '.preview-result-card .tag',
+        '.preview-fic-meta .tag',
+        '.preview-fic-meta dt',
+        '.preview-fic-meta dd'
+      ]
+    },
+    {
+      id:'summary',
+      selectors:[
+        '.preview-result-card > .summary',
+        '.preview-fic-summary',
+        '.preview-fic-summary .heading',
+        '.preview-fic-summary .summary'
+      ]
+    },
+    {
+      id:'main',
+      selectors:[
+        '.preview-fic-chapter',
+        '.preview-fic-chapter p'
+      ]
+    },
+    {
+      id:'notes',
+      selectors:[
+        '.preview-fic-end',
+        '.notes',
+        '.notes .userstuff'
+      ]
+    },
+    {
+      id:'stats',
+      selectors:[
+        '.preview-result-card > .stats',
+        '.preview-fic-meta'
+      ]
+    },
+    {
+      id:'interface',
+      selectors:[
+        '.ao3-logo',
+        '.ao3-user',
+        '.ao3-user a',
+        '.ao3-nav',
+        '.ao3-nav a',
+        '.mock-actions button',
+        '.mock-btn',
+        '.ao3-footer',
+        '.ao3-footer a'
+      ]
+    }
+  ];
+
+  let style=q('ao3-stable-text-live-preview-styles');
+  if(!style){
+    style=document.createElement('style');
+    style.id='ao3-stable-text-live-preview-styles';
+    document.head.appendChild(style);
+  }
+
+  function rgba(hex,a){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    if(Number.isNaN(n))return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+
+  function read(id,suffix,fallback){
+    const el=q('textStyle_'+id+'_'+suffix);
+    if(!el)return fallback;
+    if(el.type==='checkbox')return !!el.checked;
+    return el.value ?? fallback;
+  }
+
+  function cssFor(def){
+    const id=def.id;
+    const font=read(id,'font','Georgia, serif');
+    const size=Math.max(6,Number(read(id,'size',14)));
+    const color=read(id,'color','#d2c8d0');
+    const spacing=Number(read(id,'spacing',0));
+    const bold=read(id,'bold',false);
+    const italic=read(id,'italic',false);
+    const glow=read(id,'glow','none');
+    const glowColor=read(id,'glowColor',color);
+
+    let shadow='none';
+    if(glow==='shadow')shadow='0 1px 2px '+rgba(glowColor,.65);
+    if(glow==='glow')shadow='0 0 4px '+rgba(glowColor,.72);
+    if(glow==='strong')shadow='0 0 3px '+rgba(glowColor,.95)+',0 0 8px '+rgba(glowColor,.72);
+
+    const sel=def.selectors.map(s=>'#mock '+s).join(',');
+    return sel+'{'+
+      'font-family:'+font+'!important;'+
+      'font-size:'+size+'px!important;'+
+      'color:'+color+'!important;'+
+      'font-weight:'+(bold?'700':'400')+'!important;'+
+      'font-style:'+(italic?'italic':'normal')+'!important;'+
+      'letter-spacing:'+spacing+'px!important;'+
+      'text-shadow:'+shadow+'!important;'+
+    '}';
+  }
+
+  function apply(){
+    style.textContent=defs.map(cssFor).join('\n');
+    try{if(typeof save==='function')save()}catch(e){}
+    try{if(typeof cssOutput!=='undefined' && typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+  }
+
+  /* This is the important fix: listen on the NEW stable editor that actually
+     contains the controls, not the old hidden text-style workspace. */
+  editor.addEventListener('input',apply,true);
+  editor.addEventListener('change',apply,true);
+
+  /* Preview page switching rewrites the preview DOM; CSS remains valid, but
+     reapply anyway so any inline/legacy rules cannot win. */
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]')){
+      requestAnimationFrame(apply);
+    }
+  },true);
+
+  if(mock){
+    const obs=new MutationObserver(()=>requestAnimationFrame(apply));
+    obs.observe(mock,{childList:true,subtree:true});
+  }
+
+  window.AO3StableTextPreview={apply};
+  apply();
+})();
+</script>
