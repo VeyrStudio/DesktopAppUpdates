@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.35",
-  "payloadSha256": "c813d5784b23e9068df2e9c971055260b7209710f97a55738411177ce2e592e8",
-  "executableSha256": "84363cd706fe5cfb1f4da5c1788b8769263fbcaaeb8be6c9effded2f2e1b1e6c",
+  "version": "0.1.36",
+  "payloadSha256": "9d81f4a71d4827f15958d5767cd55c1498948a6f90db47ebf308fbfa5ba74627",
+  "executableSha256": "c98ece6575391909762b347940a3e6c1c2284cd4d25f9248f04a3bda39eb86bd",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.35-part-001.txt",
-      "sha256": "a08f7d24e4ece60bb5f17ebfba8caf21ad49363462f1cae79bfd93df7d40f0d5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-001.txt",
+      "sha256": "4903d88add3237a64792911f5fd8eed9a6b97efb33bc560dcd83bbca154dcda6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.35-part-002.txt",
-      "sha256": "c76909ea261065842749f66e779e49ba21461764c52dc7267623e8c24ee61bed"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-002.txt",
+      "sha256": "e8d9d088cd0b889ab3db91db6e69cea30016c0d4dc9c0043d21a7306f3e2e65c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.35-part-003.txt",
-      "sha256": "812d7e3485b35d29c8a2f83856b0db8526b2096cc13bd6f73635285270fbfa3e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-003.txt",
+      "sha256": "ff38c423588a97297e5f5dfce880fc36af0f2852b98e4c7083b0daa0779adbdf"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.35-part-004.txt",
-      "sha256": "5833260a3fa2504ad5d5704ac7766d41b3868a724e3099c835cc90e7ae876110"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-004.txt",
+      "sha256": "47fab1cec7ee567e617575bb4c17247cc0c607ede40fc9adc794ddc765ca2a99"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.35-part-005.txt",
-      "sha256": "cd6198d367d365e990ba2134ac13f992391a377289f004dbb84ea92f7b0f481c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-005.txt",
+      "sha256": "092053cc1bfc24012d427f8ab2600be5094c9aaebb09601e5851e560afe56c99"
     }
   ],
-  "notes": "Corrects the Text editor semantics: Title now styles only the actual work titles in Results / Browse and Inside a Fic, while Summary is a separate selectable group from Main Fic Text. Summary controls the summary heading/body, and Main Fic Text controls the actual chapter/story text. Preview click-to-edit uses the corrected mappings."
+  "notes": "Fixes the live Text styling pipeline after the Text controls were moved into the rebuilt stable panel. Title, Author, Tags, Summary, Main Fic Text, Notes, Stats and Interface now update the live preview from the actual visible controls. Main Fic Text specifically targets the story/chapter body, while Summary remains separate."
 }
