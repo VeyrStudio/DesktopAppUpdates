@@ -1,0 +1,166 @@
+<style id="ao3-css-roundtrip-safe-styles">
+.css-import-edit-wrap{margin-top:10px;padding-top:10px;border-top:1px solid #302a32}
+.css-import-edit-wrap textarea{width:100%;min-height:140px;resize:vertical;font-family:Consolas,monospace;font-size:8px;line-height:1.45}
+.css-import-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.css-import-note{margin-top:6px;color:#938691;font-size:7px;line-height:1.45}
+</style>
+<script id="ao3-css-roundtrip-safe-script">
+(function(){
+ const q=id=>document.getElementById(id);
+ const exportCard=q('stableExportControls');
+ if(!exportCard)return;
+
+ function collectControls(){
+   const out={};
+   document.querySelectorAll('input[id],select[id],textarea[id]').forEach(el=>{
+     if(el.type==='file'||el.type==='button'||el.type==='submit'||el.id==='cssOutput'||el.id==='cssImportEditText')return;
+     out[el.id]=(el.type==='checkbox'||el.type==='radio')?!!el.checked:el.value;
+   });
+   return out;
+ }
+ function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return null}}
+ function applyControls(controls){
+   Object.entries(controls||{}).forEach(([id,value])=>{
+     const el=q(id); if(!el||el.type==='file'||el.type==='button'||el.type==='submit')return;
+     try{
+       if(el.type==='checkbox'||el.type==='radio')el.checked=!!value; else el.value=value;
+       el.dispatchEvent(new Event('input',{bubbles:true}));
+       el.dispatchEvent(new Event('change',{bubbles:true}));
+     }catch(e){}
+   });
+ }
+ function utf8ToB64(str){
+   const bytes=new TextEncoder().encode(str); let bin='';
+   for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+   return btoa(bin);
+ }
+ function b64ToUtf8(s){
+   const bin=atob(s); const bytes=new Uint8Array(bin.length);
+   for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+   return new TextDecoder().decode(bytes);
+ }
+ function editStateComment(){
+   const state={schema:1,controls:collectControls(),gradients:(typeof gradients!=='undefined')?clone(gradients):null};
+   return '/* AO3_SKIN_STUDIO_EDIT_STATE:'+utf8ToB64(JSON.stringify(state))+' */';
+ }
+
+ function ao3Safe(css){
+   let s=String(css||'');
+   s=s.replace(/\bgap\s*:[^;{}]+;?/gi,'');
+   s=s.replace(/\bclip-path\s*:[^;{}]+;?/gi,'');
+   s=s.replace(/\b-webkit-clip-path\s*:[^;{}]+;?/gi,'');
+   s=s.replace(/\bgrid-template-rows\s*:[^;{}]+;?/gi,'');
+   s=s.replace(/\bgrid-template-columns\s*:\s*repeat\([^;{}]+\)\s*;?/gi,'');
+   s=s.replace(/\bgrid-auto-(?:rows|columns|flow)\s*:[^;{}]+;?/gi,'');
+
+   s+='\n\n/* AO3-SAFE REQUIRED TAG LAYOUT */\n'+
+     '.blurb ul.required-tags {\n'+
+     '  display:flex !important;\n'+
+     '  flex-wrap:wrap !important;\n'+
+     '  width:4.5em !important;\n'+
+     '  margin:0 .6em .4em 0 !important;\n'+
+     '  padding:0 !important;\n'+
+     '  list-style:none !important;\n'+
+     '  float:left !important;\n'+
+     '}\n'+
+     '.blurb ul.required-tags li {\n'+
+     '  display:block !important;\n'+
+     '  width:2.05em !important;\n'+
+     '  height:2.05em !important;\n'+
+     '  margin:0 .12em .12em 0 !important;\n'+
+     '  padding:0 !important;\n'+
+     '}\n';
+
+   s=s.replace(/background\s*:\s*linear-gradient\([^;{}]*\)\s*top\/100%\s*50%\s*no-repeat\s*,\s*linear-gradient\([^;{}]*\)\s*bottom\/100%\s*50%\s*no-repeat\s*!important\s*;/gi,
+     'background:linear-gradient(90deg,var(--req-multi-tl,#88C900) 0 25%,var(--req-multi-tr,#AA0088) 25% 50%,var(--req-multi-bl,#BD0B0B) 50% 75%,var(--req-multi-br,#0759B8) 75% 100%) !important;');
+
+   s=s.replace(/[^{}]+\{\s*\}/g,'');
+   return s.trim();
+ }
+
+ if(!q('cssImportEditText')){
+   const wrap=document.createElement('div');
+   wrap.className='css-import-edit-wrap';
+   wrap.innerHTML='<h3 style="margin:0 0 6px">Import CSS to Edit</h3>'+
+     '<textarea id="cssImportEditText" placeholder="Paste an AO3 site skin CSS here..."></textarea>'+
+     '<div class="css-import-actions">'+
+       '<button type="button" id="cssImportEditApply">Import CSS</button>'+
+       '<button type="button" id="cssImportEditFileBtn">Open CSS File</button>'+
+       '<input type="file" id="cssImportEditFile" accept=".css,text/css" hidden>'+
+     '</div>'+
+     '<div class="css-import-note">Skin Studio CSS restores its editable controls exactly. Other AO3 CSS is preserved as custom CSS and common settings are imported where recognizable.</div>';
+   exportCard.appendChild(wrap);
+ }
+
+ if(!q('importedCustomCssStore')){
+   const store=document.createElement('textarea');
+   store.id='importedCustomCssStore';store.hidden=true;exportCard.appendChild(store);
+ }
+ const customStore=q('importedCustomCssStore');
+
+ function bestEffort(css){
+   const read=(selector,prop)=>{
+     const idx=String(css).toLowerCase().indexOf(String(selector).toLowerCase());
+     if(idx<0)return '';
+     const open=String(css).indexOf('{',idx), close=String(css).indexOf('}',open+1);
+     if(open<0||close<0)return '';
+     const body=String(css).slice(open+1,close);
+     const re=new RegExp(prop+'\\s*:\\s*([^;!}]+)','i');
+     const m=body.match(re);
+     return m?m[1].trim():'';
+   };
+   const setColor=(id,val)=>{
+     const m=String(val).match(/#[0-9a-f]{6}\b/i); if(!m)return;
+     const el=q(id); if(!el)return; el.value=m[0].toLowerCase();
+     el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));
+   };
+   setColor('bgColor',read('body','background-color')||read('body','background'));
+   setColor('headerBgColor',read('#header','background-color')||read('#header','background'));
+   setColor('panelColor',read('.blurb','background-color')||read('.blurb','background'));
+   setColor('textColor',read('body','color'));
+ }
+
+ function importCss(css){
+   const raw=String(css||'').trim(); if(!raw)return;
+   const m=raw.match(/\/\*\s*AO3_SKIN_STUDIO_EDIT_STATE:([A-Za-z0-9+/=]+)\s*\*\//);
+   if(m){
+     try{
+       const state=JSON.parse(b64ToUtf8(m[1]));
+       applyControls(state.controls||{});
+       if(state.gradients&&typeof gradients!=='undefined'){
+         gradients=clone(state.gradients);
+         try{renderGradientEditor?.()}catch(e){}
+       }
+       customStore.value='';
+       window.AO3SkinDocuments?.snapshot?.();
+       try{showToast('Editable Skin Studio CSS restored')}catch(e){}
+       return;
+     }catch(e){}
+   }
+   customStore.value=raw.replace(/\/\*\s*AO3_SKIN_STUDIO_EDIT_STATE:[A-Za-z0-9+/=]+\s*\*\//g,'').trim();
+   bestEffort(importedCustomCss);
+   window.AO3SkinDocuments?.snapshot?.();
+   try{showToast('CSS imported; custom rules preserved')}catch(e){}
+ }
+
+ q('cssImportEditApply').onclick=()=>importCss(q('cssImportEditText').value);
+ q('cssImportEditFileBtn').onclick=()=>q('cssImportEditFile').click();
+ q('cssImportEditFile').addEventListener('change',async()=>{
+   const f=q('cssImportEditFile').files?.[0]; if(!f)return;
+   const css=await f.text(); q('cssImportEditText').value=css; importCss(css); q('cssImportEditFile').value='';
+ });
+
+ try{
+   const oldBuild=buildCss;
+   buildCss=function(){
+     let css=oldBuild.apply(this,arguments);
+     if(customStore.value)css+='\n\n/* IMPORTED CUSTOM CSS */\n'+customStore.value;
+     css=ao3Safe(css);
+     css+='\n\n'+editStateComment();
+     return css;
+   };
+ }catch(e){}
+
+ window.AO3CssRoundTrip={importCss,ao3Safe};
+})();
+</script>
