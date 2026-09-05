@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.36",
-  "payloadSha256": "9d81f4a71d4827f15958d5767cd55c1498948a6f90db47ebf308fbfa5ba74627",
-  "executableSha256": "c98ece6575391909762b347940a3e6c1c2284cd4d25f9248f04a3bda39eb86bd",
+  "version": "0.1.37",
+  "payloadSha256": "3934c47d0dc93118384e3e3431f660d0addf726324b7a47e12902459366fa74a",
+  "executableSha256": "0ae67eafc553acf198f137d1bbd6add87e49a1ec5ded4242bc2336731f5e488a",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-001.txt",
-      "sha256": "4903d88add3237a64792911f5fd8eed9a6b97efb33bc560dcd83bbca154dcda6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.37-part-001.txt",
+      "sha256": "6d8d28d0eddaf3bc4a8f92a054f1fd8c7f7eae9b1b42c26bee6345c5ea296d23"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-002.txt",
-      "sha256": "e8d9d088cd0b889ab3db91db6e69cea30016c0d4dc9c0043d21a7306f3e2e65c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.37-part-002.txt",
+      "sha256": "74212fe0b169ef8cc9c7f8317d01a976a4bd95a7ed0aba9d00be0023c865c806"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-003.txt",
-      "sha256": "ff38c423588a97297e5f5dfce880fc36af0f2852b98e4c7083b0daa0779adbdf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.37-part-003.txt",
+      "sha256": "45786baef12fc9e1a59c591abd63b7e71f6b739da9bf7fa9dd1b9a1b3da5faa4"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-004.txt",
-      "sha256": "47fab1cec7ee567e617575bb4c17247cc0c607ede40fc9adc794ddc765ca2a99"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.37-part-004.txt",
+      "sha256": "8e3ed2c9aecd4c24dd7ba5c238017f1fc87b21afb28d7a3341e7fddaf0135be9"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.36-part-005.txt",
-      "sha256": "092053cc1bfc24012d427f8ab2600be5094c9aaebb09601e5851e560afe56c99"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.37-part-005.txt",
+      "sha256": "9770492a21ac00997071780502d055ae64ea995b37b8100dbb7416db7024e3de"
     }
   ],
-  "notes": "Fixes the live Text styling pipeline after the Text controls were moved into the rebuilt stable panel. Title, Author, Tags, Summary, Main Fic Text, Notes, Stats and Interface now update the live preview from the actual visible controls. Main Fic Text specifically targets the story/chapter body, while Summary remains separate."
+  "notes": "Fixes Inside-a-Fic title styling by applying the Title controls directly to the rendered fic-title H2, including split preview copies, instead of relying only on inherited CSS. Adds an independent Results / Browse title-underlining checkbox so work-title links can be underlined or not without affecting the Inside-a-Fic title."
 }
