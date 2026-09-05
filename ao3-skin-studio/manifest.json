@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.33",
-  "payloadSha256": "686eaa95622daf761578e8d3f178609936ac24f0a411857ba7d0721f6e63a2f0",
-  "executableSha256": "672cef0cbded158c9e1ceebcefd5f2a520b41e5e70a2716694229b4740456849",
+  "version": "0.1.34",
+  "payloadSha256": "c41e65020c494c3830d652d4d9db7eed6ba9bcf6dad674796e8171bd2fe916f9",
+  "executableSha256": "423b529fa47649926aa607c7941f255ef30fbc1c64d4f0414c241b0c98cb8cac",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.33-part-001.txt",
-      "sha256": "23decffebfed773c9d0889f87015474d4367b1b61f86d6a12636518582cbef17"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.34-part-001.txt",
+      "sha256": "5249bd55d7fecdcee7c02900b56963428d60cc112b79d098ed1dedd3382bfb52"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.33-part-002.txt",
-      "sha256": "04ce9e89eb370a7708c9660a5c3202a85cc7fda994aa2540872dec944f3f42f0"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.34-part-002.txt",
+      "sha256": "4e6ef440e62b65fa7b3e1db7eb1b61462604efb4db11d01fee143465a2e1cc1b"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.33-part-003.txt",
-      "sha256": "1deb28bf5c6b9a6608dab8b56009741fd01f0881c8c3567077941d378223bf63"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.34-part-003.txt",
+      "sha256": "8a2add1c2896ae4714ced8063ac0e95a3ecd01451039309ca87552d0237f80ab"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.33-part-004.txt",
-      "sha256": "eadad7d624292498350d7cf39579787b14c071a47b764b83c7b31b61bd59da12"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.34-part-004.txt",
+      "sha256": "ec30074adce9962b44d164594e34078e471fc3634464294ec262f354d1eb2881"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.33-part-005.txt",
-      "sha256": "0a6ae5b83c7ad17504cd95538d7f8d1ac94cae8f2e0d27e0d53f1b477c2a2a20"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.34-part-005.txt",
+      "sha256": "fbe37701a8b016320e29de1bed0ad8fbcd48b0a390ea0ab07693424b0decc0af"
     }
   ],
-  "notes": "Stability bundle: restores real controls to numbered panel 7 Preview and panel 8 Export; adds a dedicated Fic Text Box with color, opacity, border, radius, padding and shadow so story text stays readable over image backgrounds; gives input transparency a final authoritative CSS rule; and adds IndexedDB project-asset persistence so local background images/GIFs, bottom-border images and local header images survive normal app restarts/updates and skin-tab switches. Export/Import Project now backs up editable settings plus local assets. Use Header continues to disable Fixed Background."
+  "notes": "Adds a paste/type color-code field next to every color picker throughout the editor, with automatic two-way sync for #RRGGBB and shorthand hex values. Rebuilds the Text panel selector so Title, Author, Tags, Summary/Main Text, Notes, Stats and Interface are reliably selectable through both dedicated buttons and a dropdown, while preview click-to-edit routes into the same stable selector."
 }
