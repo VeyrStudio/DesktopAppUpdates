@@ -1,0 +1,172 @@
+<style id="ao3-fic-meta-box-final-styles">
+#ficMetaBoxControls{margin-bottom:10px}
+#ficMetaBoxControls .fic-box-grid{margin-top:8px}
+</style>
+
+<script id="ao3-fic-meta-box-final-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const panels=q('editorSectionPanel_panels');
+  if(!mock || !panels) return;
+
+  /* Separate whole-box controls for the large Inside-a-Fic metadata box. */
+  if(!q('ficMetaBoxEnabled')){
+    const card=document.createElement('div');
+    card.id='ficMetaBoxControls';
+    card.className='editor-native-card';
+    card.innerHTML=
+      '<h3>Fic Info Box</h3>'+
+      '<p>Edit the whole Rating / Archive Warning / Category / Relationship / Tags / Language / Words box separately from the text inside it.</p>'+
+      '<label style="display:flex;gap:7px;align-items:center;margin-bottom:9px;font-size:9px;font-weight:900;color:#d9cdd6"><input type="checkbox" id="ficMetaBoxEnabled" checked> Use Fic Info Box Styling</label>'+
+      '<div class="fic-box-grid">'+
+        '<div class="fic-box-field"><label>Background Color</label><input type="color" id="ficMetaBoxColor" value="#171419"></div>'+
+        '<div class="fic-box-field"><label>Opacity <span id="ficMetaBoxOpacityValue">88%</span></label><input type="range" id="ficMetaBoxOpacity" min="0" max="100" value="88"></div>'+
+        '<div class="fic-box-field"><label>Border Color</label><input type="color" id="ficMetaBoxBorder" value="#4b3d4e"></div>'+
+        '<div class="fic-box-field"><label>Border Width (px)</label><input type="number" id="ficMetaBoxBorderWidth" min="0" max="12" value="1"></div>'+
+        '<div class="fic-box-field"><label>Corner Radius (px)</label><input type="number" id="ficMetaBoxRadius" min="0" max="60" value="8"></div>'+
+        '<div class="fic-box-field"><label>Padding (px)</label><input type="number" id="ficMetaBoxPadding" min="0" max="80" value="18"></div>'+
+        '<div class="fic-box-field"><label>Shadow</label><select id="ficMetaBoxShadow"><option value="none">None</option><option value="soft" selected>Soft</option><option value="strong">Strong</option></select></div>'+
+      '</div>';
+    const ficReading=q('ficReadingBoxControls');
+    if(ficReading) ficReading.insertAdjacentElement('afterend',card);
+    else panels.prepend(card);
+  }
+
+  function hexRgb(hex){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    return Number.isNaN(n)?[0,0,0]:[(n>>16)&255,(n>>8)&255,n&255];
+  }
+  function rgba(hex,a){
+    const [r,g,b]=hexRgb(hex);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+  function metaValues(){
+    const alpha=Math.max(0,Math.min(1,Number(q('ficMetaBoxOpacity')?.value||88)/100));
+    const shadow=q('ficMetaBoxShadow')?.value||'soft';
+    return {
+      enabled:q('ficMetaBoxEnabled')?.checked===true,
+      color:q('ficMetaBoxColor')?.value||'#171419',
+      alpha,
+      border:q('ficMetaBoxBorder')?.value||'#4b3d4e',
+      bw:Math.max(0,Number(q('ficMetaBoxBorderWidth')?.value||0)),
+      radius:Math.max(0,Number(q('ficMetaBoxRadius')?.value||0)),
+      padding:Math.max(0,Number(q('ficMetaBoxPadding')?.value||0)),
+      shadow:shadow==='strong'?'0 10px 30px rgba(0,0,0,.58)':shadow==='soft'?'0 5px 18px rgba(0,0,0,.36)':'none'
+    };
+  }
+
+  function applyMetaBox(){
+    const v=metaValues();
+    if(q('ficMetaBoxOpacityValue'))q('ficMetaBoxOpacityValue').textContent=Math.round(v.alpha*100)+'%';
+    mock.querySelectorAll('.preview-fic-meta').forEach(el=>{
+      if(!v.enabled){
+        ['background','border','border-radius','padding','box-shadow','opacity'].forEach(p=>el.style.removeProperty(p));
+        return;
+      }
+      el.style.setProperty('background',rgba(v.color,v.alpha),'important');
+      el.style.setProperty('border',v.bw+'px solid '+v.border,'important');
+      el.style.setProperty('border-radius',v.radius+'px','important');
+      el.style.setProperty('padding',v.padding+'px','important');
+      el.style.setProperty('box-shadow',v.shadow,'important');
+      el.style.setProperty('opacity','1','important');
+    });
+  }
+
+  /* Final direct semantic text application. Inline !important beats all older,
+     overly broad preview rules. */
+  const defs={
+    title:['.preview-result-card > h4','.preview-result-card > h4 > a','.preview-fic-title'],
+    author:['.preview-result-card > .byline','.preview-result-card > .byline a','.preview-fic-byline','.preview-fic-byline a'],
+    tags:['.preview-result-card .tag','.preview-fic-meta a.tag'],
+    summary:['.preview-result-card > .summary','.preview-fic-summary .heading','.preview-fic-summary .summary'],
+    main:['.preview-fic-chapter p'],
+    info:['.preview-fic-meta dt','.preview-fic-meta dd'],
+    notes:['.preview-fic-end','.notes','.notes .userstuff'],
+    stats:['.preview-result-card > .stats'],
+    interface:['.ao3-logo','.ao3-user','.ao3-user a','.ao3-nav','.ao3-nav a','.mock-actions button','.mock-btn','.ao3-footer','.ao3-footer a']
+  };
+
+  function textVals(id){
+    const get=(s,d)=>q('textStyle_'+id+'_'+s);
+    const color=get('color')?.value||'#d2c8d0';
+    const glow=get('glow')?.value||'none';
+    const gc=get('glowColor')?.value||color;
+    let shadow='none';
+    if(glow==='shadow')shadow='0 1px 2px '+rgba(gc,.65);
+    if(glow==='glow')shadow='0 0 4px '+rgba(gc,.72);
+    if(glow==='strong')shadow='0 0 3px '+rgba(gc,.95)+',0 0 8px '+rgba(gc,.72);
+    return {
+      font:get('font')?.value||'Georgia, serif',
+      size:Math.max(6,Number(get('size')?.value||14)),
+      color,
+      spacing:Number(get('spacing')?.value||0),
+      bold:get('bold')?.checked===true,
+      italic:get('italic')?.checked===true,
+      shadow
+    };
+  }
+
+  function applySemanticText(){
+    Object.entries(defs).forEach(([id,selectors])=>{
+      const v=textVals(id);
+      mock.querySelectorAll(selectors.join(',')).forEach(el=>{
+        el.style.setProperty('font-family',v.font,'important');
+        el.style.setProperty('font-size',v.size+'px','important');
+        el.style.setProperty('color',v.color,'important');
+        el.style.setProperty('font-weight',v.bold?'700':'400','important');
+        el.style.setProperty('font-style',v.italic?'italic':'normal','important');
+        el.style.setProperty('letter-spacing',v.spacing+'px','important');
+        el.style.setProperty('text-shadow',v.shadow,'important');
+      });
+    });
+    try{window.AO3TitleDirectFix?.apply?.()}catch(e){}
+  }
+
+  const stable=q('stableTextEditor');
+  stable?.addEventListener('input',applySemanticText,true);
+  stable?.addEventListener('change',applySemanticText,true);
+
+  ['ficMetaBoxEnabled','ficMetaBoxColor','ficMetaBoxOpacity','ficMetaBoxBorder','ficMetaBoxBorderWidth','ficMetaBoxRadius','ficMetaBoxPadding','ficMetaBoxShadow'].forEach(id=>{
+    q(id)?.addEventListener('input',applyMetaBox,true);
+    q(id)?.addEventListener('change',applyMetaBox,true);
+  });
+
+  /* Route clicks in the large info box correctly: tags are Tags; everything else
+     in the box is Fic Info / Meta. */
+  document.addEventListener('click',e=>{
+    if(!mock.contains(e.target))return;
+    if(e.target.closest('.preview-fic-meta a.tag')){
+      setTimeout(()=>window.AO3StableTextEditor?.activate?.('tags',true),0);
+    }else if(e.target.closest('.preview-fic-meta dt,.preview-fic-meta dd')){
+      setTimeout(()=>window.AO3StableTextEditor?.activate?.('info',true),0);
+    }
+  },true);
+
+  const obs=new MutationObserver(()=>requestAnimationFrame(()=>{applyMetaBox();applySemanticText()}));
+  obs.observe(mock,{childList:true,subtree:true});
+
+  /* Final AO3 export rules. */
+  try{
+    const oldBuildCss=buildCss;
+    buildCss=function(){
+      let css=oldBuildCss.apply(this,arguments);
+      const v=metaValues();
+      if(v.enabled){
+        css+='\n\n/* FIC INFO / META BOX */\n.work.meta.group, dl.work.meta.group {\n'+
+          '  background:'+rgba(v.color,v.alpha)+' !important;\n'+
+          '  border:'+v.bw+'px solid '+v.border+' !important;\n'+
+          '  border-radius:'+v.radius+'px !important;\n'+
+          '  padding:'+v.padding+'px !important;\n'+
+          '  box-shadow:'+v.shadow+' !important;\n'+
+          '  box-sizing:border-box !important;\n}\n';
+      }
+      return css;
+    };
+  }catch(e){}
+
+  setTimeout(()=>{applyMetaBox();applySemanticText()},60);
+})();
+</script>

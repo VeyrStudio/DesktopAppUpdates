@@ -343,11 +343,12 @@
   const groups=[
     {id:'title',name:'Title',hint:'Work title in Results / Browse + Inside a Fic',selector:'.preview-result-card > h4, .preview-result-card > h4 > a, .preview-fic-title, #workskin > h2.heading.preview-fic-title',defSize:20,defColor:'#c9b2cc'},
     {id:'author',name:'Author',hint:'Author / creator name',selector:'.byline, .byline a, a[rel="author"]',defSize:14,defColor:'#b9a4bc'},
-    {id:'tags',name:'Tags',hint:'Tags + warnings + category',selector:'.tags, .tags a.tag, .warnings, .category, .required-tags',defSize:12,defColor:'#b9a4bc'},
+    {id:'tags',name:'Tags',hint:'Clickable tags only',selector:'.preview-result-card .tags, .preview-result-card .tag, .preview-fic-meta a.tag',defSize:12,defColor:'#b9a4bc'},
     {id:'summary',name:'Summary',hint:'Summary heading + summary text',selector:'.preview-fic-summary, .preview-fic-summary .heading, .preview-fic-summary .summary, .preview-result-card > .summary',defSize:14,defColor:'#d2c8d0'},
-    {id:'main',name:'Main Fic Text',hint:'Actual story/chapter text',selector:'.preview-fic-chapter, .preview-fic-chapter p, #chapters .userstuff, .chapter .userstuff',defSize:15,defColor:'#d2c8d0'},
+    {id:'main',name:'Main Fic Text',hint:'Actual story/chapter paragraphs only',selector:'.preview-fic-chapter p, #chapters .userstuff p, .chapter .userstuff p',defSize:15,defColor:'#d2c8d0'},
+    {id:'info',name:'Fic Info / Meta',hint:'Rating, archive warning, category, relationship, language, words and other work information',selector:'.preview-fic-meta dt, .preview-fic-meta dd',defSize:12,defColor:'#d2c8d0'},
     {id:'notes',name:'Notes',hint:'Beginning notes + end notes',selector:'.notes .userstuff, .preface .notes, .afterword .notes, .end.notes',defSize:14,defColor:'#bdb1ba'},
-    {id:'stats',name:'Stats',hint:'Chapters, words, kudos, bookmarks, hits, etc.',selector:'.stats, dl.stats, .stats dt, .stats dd',defSize:11,defColor:'#9f929d'},
+    {id:'stats',name:'Stats',hint:'Results-page stats such as chapters, words, kudos, bookmarks and hits',selector:'.preview-result-card > .stats, .stats, dl.stats, .stats dt, .stats dd',defSize:11,defColor:'#9f929d'},
     {id:'interface',name:'Interface',hint:'Log In, Subscribe, Bookmark, Works, Dashboard, etc.',selector:'#header .primary a, #header .secondary a, .actions a, .actions button, .navigation a, .menu a, #footer a',defSize:12,defColor:'#c4b3c4'}
   ];
 

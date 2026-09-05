@@ -30,9 +30,7 @@
       selectors:[
         '.preview-result-card .tags',
         '.preview-result-card .tag',
-        '.preview-fic-meta .tag',
-        '.preview-fic-meta dt',
-        '.preview-fic-meta dd'
+        '.preview-fic-meta a.tag'
       ]
     },
     {
@@ -47,8 +45,14 @@
     {
       id:'main',
       selectors:[
-        '.preview-fic-chapter',
         '.preview-fic-chapter p'
+      ]
+    },
+    {
+      id:'info',
+      selectors:[
+        '.preview-fic-meta dt',
+        '.preview-fic-meta dd'
       ]
     },
     {
@@ -62,8 +66,7 @@
     {
       id:'stats',
       selectors:[
-        '.preview-result-card > .stats',
-        '.preview-fic-meta'
+        '.preview-result-card > .stats'
       ]
     },
     {

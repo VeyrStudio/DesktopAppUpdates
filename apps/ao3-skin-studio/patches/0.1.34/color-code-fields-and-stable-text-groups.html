@@ -192,6 +192,7 @@
     {id:'tags',name:'Tags'},
     {id:'summary',name:'Summary'},
     {id:'main',name:'Main Fic Text'},
+    {id:'info',name:'Fic Info / Meta'},
     {id:'notes',name:'Notes'},
     {id:'stats',name:'Stats'},
     {id:'interface',name:'Interface'}
@@ -271,11 +272,12 @@
       let id=null;
       if(el.closest('.preview-result-card > h4,.preview-result-card > h4 > a,.preview-fic-title,#workskin > h2.heading.preview-fic-title')) id='title';
       else if(el.closest('.mock-panel .meta,.byline,.byline a,[rel="author"]')) id='author';
-      else if(el.closest('.tags,.tag,.warnings,.category,.required-tags')) id='tags';
+      else if(el.closest('.preview-result-card .tags,.preview-result-card .tag,.preview-fic-meta a.tag')) id='tags';
       else if(el.closest('.stats,dl.stats')) id='stats';
       else if(el.closest('.notes,.preface .notes,.afterword .notes,.end.notes')) id='notes';
       else if(el.closest('.preview-fic-summary,.preview-result-card > .summary')) id='summary';
-      else if(el.closest('.preview-fic-chapter,.preview-fic-chapter p,#chapters .userstuff,.chapter .userstuff')) id='main';
+      else if(el.closest('.preview-fic-chapter p,#chapters .userstuff p,.chapter .userstuff p')) id='main';
+      else if(el.closest('.preview-fic-meta dt,.preview-fic-meta dd')) id='info';
       else if(el.closest('.ao3-logo,.ao3-user,.ao3-nav,.mock-actions,.mock-btn,.ao3-footer,.actions,.navigation,.menu')) id='interface';
 
       if(id){
