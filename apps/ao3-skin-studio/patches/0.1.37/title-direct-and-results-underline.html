@@ -1,0 +1,134 @@
+<style id="ao3-title-direct-fix-styles">
+#textStyle_title_resultsUnderline_row{
+  margin-top:8px;
+}
+</style>
+
+<script id="ao3-title-direct-fix-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const titleBox=q('textStyleGroup_title');
+  const mock=q('mock');
+  if(!titleBox || !mock) return;
+
+  /* Add a dedicated Results-page underline control to the Title group. */
+  if(!q('textStyle_title_resultsUnderline')){
+    const row=document.createElement('label');
+    row.id='textStyle_title_resultsUnderline_row';
+    row.className='text-style-check';
+    row.innerHTML='<input id="textStyle_title_resultsUnderline" type="checkbox" checked> Underline fic titles on Results / Browse';
+    const note=titleBox.querySelector('.text-style-note');
+    if(note) note.insertAdjacentElement('beforebegin',row);
+    else titleBox.appendChild(row);
+  }
+
+  const underline=q('textStyle_title_resultsUnderline');
+
+  function rgba(hex,a){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s.slice(0,6),16);
+    if(Number.isNaN(n))return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+
+  function read(suffix,fallback){
+    const el=q('textStyle_title_'+suffix);
+    if(!el)return fallback;
+    if(el.type==='checkbox')return !!el.checked;
+    return el.value ?? fallback;
+  }
+
+  function values(){
+    const color=read('color','#c9b2cc');
+    const glow=read('glow','none');
+    const glowColor=read('glowColor',color);
+    let shadow='none';
+    if(glow==='shadow')shadow='0 1px 2px '+rgba(glowColor,.65);
+    if(glow==='glow')shadow='0 0 4px '+rgba(glowColor,.72);
+    if(glow==='strong')shadow='0 0 3px '+rgba(glowColor,.95)+',0 0 8px '+rgba(glowColor,.72);
+    return {
+      font:read('font','Georgia, serif'),
+      size:Math.max(6,Number(read('size',20))),
+      color,
+      spacing:Number(read('spacing',0)),
+      bold:read('bold',false),
+      italic:read('italic',false),
+      shadow,
+      underline:underline?.checked===true
+    };
+  }
+
+  function styleTitle(el,v,isResultLink){
+    if(!el)return;
+    el.style.setProperty('font-family',v.font,'important');
+    el.style.setProperty('font-size',v.size+'px','important');
+    el.style.setProperty('color',v.color,'important');
+    el.style.setProperty('font-weight',v.bold?'700':'400','important');
+    el.style.setProperty('font-style',v.italic?'italic':'normal','important');
+    el.style.setProperty('letter-spacing',v.spacing+'px','important');
+    el.style.setProperty('text-shadow',v.shadow,'important');
+    if(isResultLink){
+      el.style.setProperty('text-decoration',v.underline?'underline':'none','important');
+      el.style.setProperty('text-decoration-line',v.underline?'underline':'none','important');
+    }else{
+      /* Inside-fic title should never inherit anchor-style underlining. */
+      el.style.setProperty('text-decoration','none','important');
+      el.style.setProperty('text-decoration-line','none','important');
+    }
+  }
+
+  function applyTitleDirect(){
+    const v=values();
+
+    /* RESULTS/BROWSE: title is the H4 + its A link. */
+    mock.querySelectorAll('.preview-result-card > h4').forEach(el=>styleTitle(el,v,false));
+    mock.querySelectorAll('.preview-result-card > h4 > a').forEach(el=>styleTitle(el,v,true));
+
+    /* INSIDE A FIC: style the actual H2 directly. Do not depend on inherited CSS. */
+    mock.querySelectorAll('.preview-fic-title, #workskin > h2.heading.preview-fic-title').forEach(el=>styleTitle(el,v,false));
+
+    /* Split-preview copies use the same classes; the selectors above cover them too. */
+  }
+
+  titleBox.addEventListener('input',applyTitleDirect,true);
+  titleBox.addEventListener('change',applyTitleDirect,true);
+  underline?.addEventListener('input',applyTitleDirect,true);
+  underline?.addEventListener('change',applyTitleDirect,true);
+
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]')){
+      setTimeout(applyTitleDirect,0);
+    }
+  },true);
+
+  const obs=new MutationObserver(()=>requestAnimationFrame(applyTitleDirect));
+  obs.observe(mock,{childList:true,subtree:true});
+
+  /* Export a final explicit title override for real AO3 pages too. */
+  try{
+    const oldBuildCss=buildCss;
+    buildCss=function(){
+      let css=oldBuildCss.apply(this,arguments);
+      const v=values();
+      const shared=
+        'font-family:'+v.font+' !important;'+
+        'font-size:'+v.size+'px !important;'+
+        'color:'+v.color+' !important;'+
+        'font-weight:'+(v.bold?'700':'400')+' !important;'+
+        'font-style:'+(v.italic?'italic':'normal')+' !important;'+
+        'letter-spacing:'+v.spacing+'px !important;'+
+        'text-shadow:'+v.shadow+' !important;';
+      css+='\n\n/* WORK TITLES — FINAL OVERRIDE */\n'+
+        '.blurb h4.heading a, .blurb h4 a {\n  '+shared+
+        '\n  text-decoration:'+(v.underline?'underline':'none')+' !important;\n}\n'+
+        '#workskin > h2.heading, #workskin .title, .preface h2.title, .preface h3.title {\n  '+shared+
+        '\n  text-decoration:none !important;\n}\n';
+      return css;
+    };
+  }catch(e){}
+
+  window.AO3TitleDirectFix={apply:applyTitleDirect};
+  applyTitleDirect();
+})();
+</script>
