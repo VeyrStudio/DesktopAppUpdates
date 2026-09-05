@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.42",
-  "payloadSha256": "808a7b4091d2f3ce705e24b8cdcc46eee923cfb11c89c947c2a64a2f5f9b5755",
-  "executableSha256": "74e4271ebf8bd7c4f452ce4c2022d346d8924f72ee73f23df7c0b253553488b4",
+  "version": "0.1.43",
+  "payloadSha256": "3697f53f549f7edf4712a3f120938518c9503017a55cd5b868df980529cdfe21",
+  "executableSha256": "c34ca52410cecceab669a5a64e05125ec7229d945938c9ee7cdecc53c0b5d92c",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-001.txt",
-      "sha256": "5186284cf711e8c1b12885cb069e1afdc62f44fad7e7a158a271e537cfc6a254"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.43-part-001.txt",
+      "sha256": "41bffe9a3e4ea3b729cb6c88fcef5bbc77202c6bd9f08705e211e47da47abded"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-002.txt",
-      "sha256": "d6a43b42e13058cd90d43ade73f4c76d2a86ff6c77abb0ca5d836cf39f9fa5c8"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.43-part-002.txt",
+      "sha256": "b68fd5f6846a28890e9269248d6ab467d5ae4a78cc30eba0f19ae33180c274b2"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-003.txt",
-      "sha256": "f7e6a79ee5b181fe0365b1310b0e46cf55b592038d51788f3a96a3fdafe620e3"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.43-part-003.txt",
+      "sha256": "44c5e34b8eac1f3d2933b8ba0ba75ec71c4b2ca88ea9f4f746b77d454410e2a0"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-004.txt",
-      "sha256": "ebb73bc6cb3b1c9dd20a0caad4aa246c9578228ee1bc912b9cef7bf273ee0d3e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.43-part-004.txt",
+      "sha256": "8ad5f7487b47e42e5f5005dfaaa148278e376dc0ced112440f8d76a000fb83e9"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.42-part-005.txt",
-      "sha256": "54019d704c3307641f5536283e27d9f9f3cc30fafa8146ed062e32b8685869fc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.43-part-005.txt",
+      "sha256": "c44e0a59a722c11ad6c86d2df62be1fac920fcd63544182b5b202e4d409d1157"
     }
   ],
-  "notes": "Keeps the Interface-vs-Title isolation fix and makes preview navigation behave like a real AO3 page: Results / Browse is the normal list, clicking a work title opens Inside a Fic, the selected title carries into the fic preview, and a Back to Works arrow returns to the previous results scroll position. Manual preview-mode buttons remain as backup controls."
+  "notes": "Fixes full per-skin persistence on startup. The multi-skin system now blocks startup snapshots while later editor controls are still being created, then reapplies the saved skin state in delayed passes after all controls exist before saving again. Colors, fonts, sizes, toggles, gradients, opacity, panel settings, header settings, tag settings and other controls now persist per skin alongside the already-persistent image assets."
 }
