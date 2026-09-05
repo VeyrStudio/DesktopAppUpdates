@@ -1,0 +1,111 @@
+<style id="ao3-tags-text-gradient-styles">
+.tags-gradient-shortcut{margin-top:9px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.tags-gradient-shortcut button{border:1px solid #6b4b72;border-radius:6px;background:#171319;color:#eadfe7;padding:7px 9px;font-size:8px;font-weight:900;cursor:pointer}
+.tags-gradient-shortcut button:hover{background:#241c27}
+.tags-gradient-shortcut span{color:#958894;font-size:7px;line-height:1.4}
+</style>
+<script id="ao3-tags-text-gradient-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock'), target=q('gradientTarget');
+  if(!mock||!target||typeof gradients==='undefined')return;
+
+  ['ficTextBox','ficInfoBox'].forEach(key=>{
+    target.querySelector('option[value="'+key+'"]')?.remove();
+    if(gradients[key])gradients[key].enabled=false;
+  });
+  document.querySelectorAll('.box-gradient-shortcut').forEach(x=>x.remove());
+  if(typeof currentGradientTarget!=='undefined'&&(currentGradientTarget==='ficTextBox'||currentGradientTarget==='ficInfoBox')){
+    currentGradientTarget='page'; target.value='page';
+  }
+
+  if(!gradients.tagsText){
+    gradients.tagsText={enabled:false,type:'linear',angle:'90deg',custom:'',stops:[
+      {color:'#8FD4FF',pos:0,opacity:100},{color:'#4EA6FF',pos:45,opacity:100},{color:'#C9A85C',pos:100,opacity:100}
+    ]};
+  }
+  if(!target.querySelector('option[value="tagsText"]')){
+    const opt=document.createElement('option'); opt.value='tagsText'; opt.textContent='Tags Text'; target.appendChild(opt);
+  }
+
+  function tagEls(){return mock.querySelectorAll('.preview-result-card .tag,.preview-fic-meta a.tag');}
+  function gradCss(){if(!gradients.tagsText?.enabled)return '';try{return gradientCssFor('tagsText')||''}catch(e){return ''}}
+  function apply(){
+    const css=gradCss();
+    tagEls().forEach(el=>{
+      if(css){
+        el.style.setProperty('background-image',css,'important');
+        el.style.setProperty('background-clip','text','important');
+        el.style.setProperty('-webkit-background-clip','text','important');
+        el.style.setProperty('color','transparent','important');
+        el.style.setProperty('-webkit-text-fill-color','transparent','important');
+      }else{
+        el.style.removeProperty('background-image');
+        el.style.removeProperty('background-clip');
+        el.style.removeProperty('-webkit-background-clip');
+        el.style.removeProperty('-webkit-text-fill-color');
+      }
+    });
+    if(!css){try{window.AO3StableTextPreview?.apply?.()}catch(e){}}
+  }
+
+  const tagsBox=q('textStyleGroup_tags');
+  if(tagsBox&&!tagsBox.querySelector('.tags-gradient-shortcut')){
+    const row=document.createElement('div');row.className='tags-gradient-shortcut';
+    row.innerHTML='<button type="button">Edit Tag Text Gradient</button><span>Gradient applies to the tag letters themselves, not their box/background.</span>';
+    tagsBox.appendChild(row);
+    row.querySelector('button').addEventListener('click',()=>{
+      currentGradientTarget='tagsText';target.value='tagsText';
+      try{renderGradientEditor()}catch(e){}
+      try{window.AO3WorkspaceTabs?.show?.('gradient')}catch(e){}
+    });
+  }
+
+  function status(){
+    if(currentGradientTarget!=='tagsText')return;
+    const s=q('gradientTargetStatus'); if(s)s.textContent='Tags Text: '+(gradients.tagsText?.enabled?'gradient ON':'gradient off');
+  }
+  try{
+    const old=renderGradientEditor;
+    renderGradientEditor=function(){old.apply(this,arguments);status();setTimeout(apply,0);}
+  }catch(e){}
+  try{
+    const old=updateGradientPreviewStrip;
+    updateGradientPreviewStrip=function(){old.apply(this,arguments);status();apply();}
+  }catch(e){}
+
+  document.addEventListener('input',e=>{
+    if(e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls')||e.target===q('gradientEnabled')||e.target===q('gradientType')||e.target===q('gradientAngle')||e.target===q('gradientPaste'))setTimeout(apply,0);
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls')||e.target===q('gradientEnabled')||e.target===q('gradientType')||e.target===q('gradientAngle')||e.target===target)setTimeout(()=>{apply();status()},0);
+  },true);
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('#gradientAddStop,#gradientEven,#gradientReverse,#gradientApplyPaste,#gradientUseBuilder,#gradientRotateMinus15,#gradientRotatePlus15,#gradientRotate90,#gradientFlipDirection,.preview-page-btn,[data-page]'))setTimeout(apply,0);
+  },true);
+
+  const obs=new MutationObserver(()=>requestAnimationFrame(apply));obs.observe(mock,{childList:true,subtree:true});
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      css=css.replace(/\/\* FIC TEXT BOX GRADIENT — FINAL \*\/[\s\S]*?\n}\n/g,'');
+      css=css.replace(/\/\* FIC INFO BOX GRADIENT — FINAL \*\/[\s\S]*?\n}\n/g,'');
+      const tg=gradCss();
+      if(tg){
+        css+='\n\n/* TAG TEXT GRADIENT */\n.tags a.tag, a.tag {\n'+
+          '  background-image:'+tg+' !important;\n'+
+          '  background-clip:text !important;\n'+
+          '  -webkit-background-clip:text !important;\n'+
+          '  color:transparent !important;\n'+
+          '  -webkit-text-fill-color:transparent !important;\n}\n';
+      }
+      return css;
+    };
+  }catch(e){}
+
+  setTimeout(()=>{try{renderGradientEditor()}catch(e){}apply();status()},80);
+  window.AO3TagsTextGradient={apply,select:function(){currentGradientTarget='tagsText';target.value='tagsText';renderGradientEditor();}};
+})();
+</script>
