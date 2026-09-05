@@ -1,0 +1,27 @@
+<script id="ao3-summary-text-group-migration">
+(function(){
+  const q=id=>document.getElementById(id);
+  const pairs=[
+    ['font','Georgia, serif'],
+    ['size','14'],
+    ['color','#d2c8d0'],
+    ['spacing','0'],
+    ['bold',false],
+    ['italic',false],
+    ['glow','none'],
+    ['glowColor','#d2c8d0']
+  ];
+  pairs.forEach(([suffix,def])=>{
+    const s=q('textStyle_summary_'+suffix);
+    const m=q('textStyle_main_'+suffix);
+    if(!s)return;
+    if((suffix==='bold'||suffix==='italic')){
+      if(!s.dataset.migrated && m) s.checked=!!m.checked;
+    }else if(!s.dataset.migrated && m && m.value!==undefined){
+      s.value=m.value||def;
+    }
+    s.dataset.migrated='1';
+  });
+  try{window.AO3StableTextEditor?.activate?.('title')}catch(e){}
+})();
+</script>

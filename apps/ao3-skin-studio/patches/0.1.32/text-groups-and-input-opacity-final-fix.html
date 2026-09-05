@@ -49,10 +49,11 @@
 
   /* -------- TEXT GROUP SELECTOR: make selection explicit and reliable -------- */
   const groupDefs=[
-    {id:'title',name:'Title',preview:'.ao3-main > h2, .mock-panel h3, .mock-panel h3 a, h2.title, h3.title, .chapter .title'},
+    {id:'title',name:'Title',preview:'.preview-result-card > h4, .preview-result-card > h4 > a, .preview-fic-title, #workskin > h2.heading.preview-fic-title'},
     {id:'author',name:'Author',preview:'.mock-panel .meta, .byline, .byline a, a[rel="author"]'},
     {id:'tags',name:'Tags',preview:'.tags, .tag, .warnings, .category, .required-tags'},
-    {id:'main',name:'Summary / Main Text',preview:'.mock-panel > p, .summary, .summary .userstuff, #chapters .userstuff, .chapter .userstuff'},
+    {id:'summary',name:'Summary',preview:'.preview-fic-summary, .preview-fic-summary .heading, .preview-fic-summary .summary, .preview-result-card > .summary'},
+    {id:'main',name:'Main Fic Text',preview:'.preview-fic-chapter, .preview-fic-chapter p, #chapters .userstuff, .chapter .userstuff'},
     {id:'notes',name:'Notes',preview:'.notes, .notes .userstuff, .preface .notes, .afterword .notes, .end.notes'},
     {id:'stats',name:'Stats',preview:'.stats, .stats span, dl.stats, .stats dt, .stats dd'},
     {id:'interface',name:'Interface',preview:'.ao3-logo, .ao3-user, .ao3-nav a, .mock-actions button, .mock-btn, .ao3-footer, #header .primary a, #header .secondary a, .actions a, .actions button, .navigation a, .menu a, #footer a'}
@@ -163,12 +164,13 @@
     if(!mock?.contains(e.target)) return;
     const el=e.target;
     let id=null;
-    if(el.closest('.mock-panel h3,.mock-panel h3 a,.ao3-main > h2')) id='title';
+    if(el.closest('.preview-result-card > h4,.preview-result-card > h4 > a,.preview-fic-title,#workskin > h2.heading.preview-fic-title')) id='title';
     else if(el.closest('.mock-panel .meta,.byline,[rel="author"]')) id='author';
     else if(el.closest('.tags,.tag,.warnings,.category')) id='tags';
     else if(el.closest('.stats,dl.stats')) id='stats';
     else if(el.closest('.notes')) id='notes';
-    else if(el.closest('.mock-panel > p,.summary,.userstuff')) id='main';
+    else if(el.closest('.preview-fic-summary,.preview-result-card > .summary')) id='summary';
+    else if(el.closest('.preview-fic-chapter,.preview-fic-chapter p,#chapters .userstuff,.chapter .userstuff')) id='main';
     else if(el.closest('.ao3-logo,.ao3-user,.ao3-nav,.mock-actions,.mock-btn,.ao3-footer')) id='interface';
     if(id) setTimeout(()=>activateTextGroup(id),0);
   },true);
