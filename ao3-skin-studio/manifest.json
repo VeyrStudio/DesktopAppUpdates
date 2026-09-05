@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.39",
-  "payloadSha256": "fd76268e24d1bf3920ddb075724aaf5816186a689e80810c4fc168d0566f7f3d",
-  "executableSha256": "a5b30cb480b39a7f923f916548c218069173524222744a72e263ab3a40955757",
+  "version": "0.1.40",
+  "payloadSha256": "907a068094d50f01e2a904ccc09d5ea3af74e2898f464b3fa3dab7ac8310d06c",
+  "executableSha256": "e164dee7f08ce7c1ba0356f5996d69f7b7f7c3c5c0c4d415f7f57e3c57c57117",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.39-part-001.txt",
-      "sha256": "126ab52ab7176550ca1c10535196850580a4771717790c724f5ad67daab799a9"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.40-part-001.txt",
+      "sha256": "6e2495d9f215f53bc025e7349c601b4ed75662a8c0be4b217ba96d76b56ec455"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.39-part-002.txt",
-      "sha256": "a91fa27ba1d0f4d425543bc4af8ba2c3bb7461bf2f09d3dee04c9834e869560c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.40-part-002.txt",
+      "sha256": "5e20e7f2e58092ee03f11fe7dce48bd4d4bb7166a1ff58656fe4d4023e765ee5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.39-part-003.txt",
-      "sha256": "9f5e17db568ccfb336347ad51e1248d4e94386b269ed1ba2944835c13d89c451"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.40-part-003.txt",
+      "sha256": "6b7a6beda2dde819ade8486eec61455923cb04aa755bd7b5c2e931976d125a3e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.39-part-004.txt",
-      "sha256": "2a92263b3ff2e6e12d4ed542f7a11ec22148dad0277117c027c24f68ec246bc6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.40-part-004.txt",
+      "sha256": "039ad31d9de6d9750c591659474fb304ae92c0f3fa8d4c60fde0b564d6994dd6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.39-part-005.txt",
-      "sha256": "15bfa95396cfaf555194c2cabdab39c7e4f0b1debe0b50fc828238239d407521"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.40-part-005.txt",
+      "sha256": "71f6a3ff0b1cfa3bc0a81e0cfe9b5eb54368eb7f2073efd7560f9850f26e1fd8"
     }
   ],
-  "notes": "Adds Fic Text Box and Fic Info Box as full Gradient Studio targets. Both support the existing linear, radial, conic, multi-stop, per-stop opacity, metallic/pasted CSS gradient workflow. Each box has an Edit Gradient shortcut, box opacity is multiplied into the gradient background while text/content stays fully opaque, and the final AO3 CSS export includes the selected box gradients."
+  "notes": "Removes the mistaken Fic Text Box and Fic Info Box gradient targets. Box styling remains solid color plus opacity. Adds Tags Text as a Gradient Studio target so gradients apply to the tag letters themselves, with an Edit Tag Text Gradient shortcut in the Tags controls and exported tag-text gradient CSS."
 }
