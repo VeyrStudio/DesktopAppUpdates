@@ -580,6 +580,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $semanticTagGroupsPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.51: unified tabbed Tags + Stats/Metadata, corrected fic layout, and new gradient-text targets.
+          $taxonomyStatsPatchPath = 'apps/ao3-skin-studio/patches/0.1.51/taxonomy-stats-layout.html'
+          if (-not (Test-Path $taxonomyStatsPatchPath)) { throw 'AO3 Skin Studio 0.1.51 taxonomy/stats patch was not found.' }
+          $taxonomyStatsPatch = Get-Content $taxonomyStatsPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.51.' }
+          $studioText = $studioText.Replace('</body>', $taxonomyStatsPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -662,16 +671,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.50</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.50.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.50.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.51</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.51.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.51.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.50" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.51" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -811,7 +820,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Splits AO3 tag-like text into four independent editable groups: Warnings, Categories, Relationships, and Additional Tags. Results/Browse shows each on its own tag line, and Inside-a-Fic metadata renders those values as tag links too. The first mock work uses The Midnight Visitor with Thomas Thorn/Oisín. Each group has separate font/color/size/glow settings and its own Gradient Studio target, existing Tags settings migrate forward as Additional Tags, and the final preview decorator is guarded so its metadata conversion cannot retrigger itself in a mutation loop.'
+            notes = 'Adds one tabbed Tags section for Rating, Archive Warnings, Categories, Fandoms, Relationships, Characters, and Additional Tags, plus a separate tabbed Stats & Metadata section for Language, Words, Chapters, Completion, Comments, Kudos, Bookmarks, and Hits. Every tag/stat group can be styled independently with flat colors, box styling, text gradients, and box gradients. Fandom is now first-class throughout preview/export/state. Inside-a-Fic preview now follows AO3 order with the upper work-action bar above metadata, then title/summary/chapters, bottom actions, kudos, comments, and footer. Chapter titles and Interface text gain separate gradient-lettering targets. Gradient Library adds the color-family shade randomizer and correct Gracebound preset (#35090B → #D8564C → #F6CF81 at 135deg). Existing CSS round-trip and per-skin state preservation carry the new controls and gradients forward.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
