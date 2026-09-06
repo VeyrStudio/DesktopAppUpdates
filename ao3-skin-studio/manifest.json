@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.46",
-  "payloadSha256": "721609fb8721345dd3731696d9309e0ba7dfb17b481cd4c4623883b318d30be8",
-  "executableSha256": "e545766214e4b9b4d87876767eaa0995058e1ac9b8a966043ddecce91d112a97",
+  "version": "0.1.47",
+  "payloadSha256": "e17456995616e557b7b0a8a6d389ef77ad4c706e516f8adff8bdd1ef19b3cac1",
+  "executableSha256": "0b8ab150d8f1b5ed0e01d7b23252304dea53a8d0502ccf0a45e6b55a6e5ae83b",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-001.txt",
-      "sha256": "79929bf23c679163193f2eaeb982006a1034aaaf92478c2cad1f4656584802e7"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-001.txt",
+      "sha256": "275c3e8791635dff8dab61e663295388e6253c634c37bac8fa685fbe2d385eaa"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-002.txt",
-      "sha256": "88ea6f3e5ec01ec8204323060532ea0d14a460fc02d7c5adf2eb1cba7480cabc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-002.txt",
+      "sha256": "249320bc7a1a640b60a89c5530be66efa07b4ab5e67b6a17fa2654ece387e641"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-003.txt",
-      "sha256": "9c6c6e9c7da03bb12bac3218aaee1fb890251384bbb3a99506fd72b12e01e612"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-003.txt",
+      "sha256": "4a769ff8065850bf9530cf27fd8c1d7008b732ca0e7359d19578528fccf1d8a2"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-004.txt",
-      "sha256": "be957c452aff7924419c509a727b001a0c4e6da999905053471c492a9b18fc45"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-004.txt",
+      "sha256": "a7f2d018fde56c9deae767afcf5307244bd433b02d3e9326fe338759fd5cffda"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-005.txt",
-      "sha256": "797808c23d78fc8aae00e8a4cdd4c3888472c53ce3ac62f920523b23aaa6d166"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-005.txt",
+      "sha256": "72d0abfbbc8574ec8978a377237757f1cc749e003cba8f937f9eab6858844287"
     }
   ],
-  "notes": "Fully repairs Import CSS to Edit. Fixes a shipped stale-variable error that broke older/external CSS imports, replaces the remaining old importCss implementation with the intended batched importer, refreshes the preview once after import, reports clear Importing / complete / failed status, and includes a small importer self-check hook for build validation."
+  "notes": "Full audit repair pass plus Gradient Library. Fixes the preview inspector intercepting the Inside-a-Fic Back to Works button. Adds a persistent Gradient Library with visual swatches, built-in Gracebound, Save Current Gradient, apply-to-current-target behavior, and rename/delete for custom gradients. Retains the repaired CSS importer, AO3-safe export cleanup, per-skin persistence, Title/Interface isolation, tag-text gradients, preview navigation, and header/fixed-background lock."
 }
