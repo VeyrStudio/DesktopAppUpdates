@@ -51,7 +51,10 @@
   const groupDefs=[
     {id:'title',name:'Title',preview:'.preview-result-card > h4, .preview-result-card > h4 > a, .preview-fic-title, #workskin > h2.heading.preview-fic-title'},
     {id:'author',name:'Author',preview:'.mock-panel .meta, .byline, .byline a, a[rel="author"]'},
-    {id:'tags',name:'Tags',preview:'.preview-result-card .tags, .preview-result-card .tag, .preview-fic-meta a.tag'},
+    {id:'warnings',name:'Warnings',preview:'.preview-warning-tag, li.warnings a.tag, dd.warning.tags a.tag'},
+    {id:'categories',name:'Categories',preview:'.preview-category-tag, li.category a.tag, dd.category.tags a.tag'},
+    {id:'relationships',name:'Relationships',preview:'.preview-relationship-tag, li.relationships a.tag, dd.relationship.tags a.tag'},
+    {id:'tags',name:'Additional Tags',preview:'.preview-additional-tag, li.freeforms a.tag, dd.freeform.tags a.tag'},
     {id:'summary',name:'Summary',preview:'.preview-fic-summary, .preview-fic-summary .heading, .preview-fic-summary .summary, .preview-result-card > .summary'},
     {id:'main',name:'Main Fic Text',preview:'.preview-fic-chapter p, #chapters .userstuff p, .chapter .userstuff p'},
     {id:'info',name:'Fic Info / Meta',preview:'.preview-fic-meta dt, .preview-fic-meta dd'},
@@ -167,7 +170,10 @@
     let id=null;
     if(el.closest('.preview-result-card > h4,.preview-result-card > h4 > a,.preview-fic-title,#workskin > h2.heading.preview-fic-title')) id='title';
     else if(el.closest('.mock-panel .meta,.byline,[rel="author"]')) id='author';
-    else if(el.closest('.tags,.tag,.warnings,.category')) id='tags';
+    else if(el.closest('.preview-warning-tag')) id='warnings';
+    else if(el.closest('.preview-category-tag')) id='categories';
+    else if(el.closest('.preview-relationship-tag')) id='relationships';
+    else if(el.closest('.preview-additional-tag')) id='tags';
     else if(el.closest('.stats,dl.stats')) id='stats';
     else if(el.closest('.notes')) id='notes';
     else if(el.closest('.preview-fic-summary,.preview-result-card > .summary')) id='summary';

@@ -1,0 +1,369 @@
+<style id="ao3-semantic-tag-lines-styles">
+.preview-tag-lines{
+  clear:both;
+  margin:9px 0 10px;
+}
+.preview-tag-line{
+  display:flex;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:5px;
+  margin:4px 0;
+}
+.preview-tag-line-label{
+  flex:0 0 92px;
+  padding-top:3px;
+  color:#8f838d;
+  font-size:8px;
+  font-weight:800;
+}
+.preview-tag-line-values{
+  display:flex;
+  flex:1 1 220px;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.preview-tag-line a.tag{
+  display:inline-block;
+}
+.preview-fic-meta dd.preview-semantic-tag-dd{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  align-items:center;
+}
+.semantic-tag-gradient-shortcut{
+  margin-top:9px;
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.semantic-tag-gradient-shortcut button{
+  border:1px solid #6b4b72;
+  border-radius:6px;
+  background:#171319;
+  color:#eadfe7;
+  padding:7px 9px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.semantic-tag-gradient-shortcut button:hover{background:#241c27}
+.semantic-tag-gradient-shortcut span{
+  color:#958894;
+  font-size:7px;
+  line-height:1.4;
+}
+</style>
+
+<script id="ao3-semantic-tag-lines-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const target=q('gradientTarget');
+  if(!mock||!target||typeof gradients==='undefined')return;
+
+  const relationByTitle={
+    'The Midnight Visitor':'Thomas Thorn/Oisín',
+    'All the Roads We Never Took':'Alex Mercer/Jamie Bell',
+    'A Study in Red':'Elias Ward/Julian Cross',
+    'The Shape of Summer':'Noah Reed/Evan Hale',
+    'Where the Stars Go Quiet':'Milo Hart/Adrian Vale'
+  };
+
+  function currentTitle(card){
+    return (card?.querySelector('h4 a')?.textContent||'').trim();
+  }
+  function firstText(card,selector,fallback){
+    return (card?.querySelector(selector)?.textContent||fallback||'').trim();
+  }
+  function aTag(text,cls){
+    const a=document.createElement('a');
+    a.href='#';
+    a.className='tag '+cls;
+    a.textContent=text;
+    return a;
+  }
+  function line(label,cls,values){
+    const row=document.createElement('div');
+    row.className='preview-tag-line '+cls+'-line';
+    const lab=document.createElement('span');
+    lab.className='preview-tag-line-label';
+    lab.textContent=label+':';
+    const vals=document.createElement('span');
+    vals.className='preview-tag-line-values';
+    values.forEach(v=>vals.appendChild(aTag(v,cls)));
+    row.append(lab,vals);
+    return row;
+  }
+
+  function decorateResultCard(card,index){
+    if(card.dataset.semanticTagLines49==='1')return;
+
+    const titleLink=card.querySelector(':scope > h4 > a');
+    if(index===0 && titleLink && titleLink.textContent.trim()==='The House at the Edge of the Wood'){
+      titleLink.textContent='The Midnight Visitor';
+      const summary=card.querySelector(':scope > .summary');
+      if(summary)summary.textContent='Thomas Thorn has spent a long time being left alone. Then someone begins knocking at his door every night.';
+    }
+
+    const title=currentTitle(card);
+    const warning=firstText(card,'.preview-required-tags .warnings .text','No Archive Warnings Apply');
+    const category=firstText(card,'.preview-required-tags .category .text','M/M');
+    const relationship=relationByTitle[title]||(index===0?'Thomas Thorn/Oisín':'Character A/Character B');
+
+    const oldTags=card.querySelector(':scope > .tags');
+    let additional=oldTags?[...oldTags.querySelectorAll('a.tag')].map(a=>a.textContent.trim()).filter(Boolean):[];
+    if(title==='The Midnight Visitor'){
+      additional=['Fae & Fairies','Slow Burn','Doorway Magic','Falling in Love'];
+    }
+    if(!additional.length)additional=['Slow Burn'];
+
+    const wrap=document.createElement('div');
+    wrap.className='tags preview-tag-lines';
+    wrap.append(
+      line('Warnings','preview-warning-tag',[warning]),
+      line('Category','preview-category-tag',[category]),
+      line('Relationships','preview-relationship-tag',[relationship]),
+      line('Additional Tags','preview-additional-tag',additional)
+    );
+
+    if(oldTags)oldTags.replaceWith(wrap);
+    else{
+      const req=card.querySelector('.preview-required-tags');
+      if(req)req.insertAdjacentElement('afterend',wrap);
+      else card.querySelector('.byline')?.insertAdjacentElement('afterend',wrap);
+    }
+
+    card.dataset.semanticTagLines49='1';
+  }
+
+  function dtByText(meta,text){
+    return [...meta.querySelectorAll('dt')].find(dt=>dt.textContent.replace(':','').trim()===text)||null;
+  }
+  function ddAfter(dt){return dt?.nextElementSibling?.tagName==='DD'?dt.nextElementSibling:null}
+
+  function decorateFicMeta(){
+    const meta=mock.querySelector('.preview-fic-meta');
+    if(!meta)return;
+
+    const ficTitle=(mock.querySelector('.preview-fic-title')?.textContent||'').trim();
+    if(ficTitle==='The House at the Edge of the Wood'){
+      const t=mock.querySelector('.preview-fic-title');
+      if(t)t.textContent='The Midnight Visitor';
+    }
+    const effectiveTitle=(mock.querySelector('.preview-fic-title')?.textContent||'').trim();
+    const relationship=relationByTitle[effectiveTitle]||'Character A/Character B';
+
+    const defs=[
+      {dt:'Archive Warning',cls:'preview-warning-tag',fallback:'No Archive Warnings Apply'},
+      {dt:'Category',cls:'preview-category-tag',fallback:'M/M'},
+      {dt:'Relationship',cls:'preview-relationship-tag',fallback:relationship},
+      {dt:'Additional Tags',cls:'preview-additional-tag',fallback:'Slow Burn'}
+    ];
+
+    defs.forEach(def=>{
+      const dt=dtByText(meta,def.dt);
+      const dd=ddAfter(dt);
+      if(!dd)return;
+      let values=[...dd.querySelectorAll('a.tag')].map(a=>a.textContent.trim()).filter(Boolean);
+      if(!values.length){
+        const raw=dd.textContent.trim();
+        values=raw?[raw]:[def.fallback];
+      }
+      if(def.dt==='Relationship')values=[relationship];
+      if(def.dt==='Additional Tags'&&effectiveTitle==='The Midnight Visitor'){
+        values=['Fae & Fairies','Slow Burn','Doorway Magic','Falling in Love'];
+      }
+      dd.innerHTML='';
+      dd.classList.add('preview-semantic-tag-dd');
+      values.forEach(v=>dd.appendChild(aTag(v,def.cls)));
+    });
+
+    meta.dataset.semanticTagLines49='1';
+  }
+
+  function decoratePreview(){
+    mock.querySelectorAll('.preview-result-card').forEach((card,i)=>decorateResultCard(card,i));
+    decorateFicMeta();
+    applyAllGradients();
+    try{window.AO3StableTextPreview?.apply?.()}catch(e){}
+  }
+
+  const gradientDefs=[
+    {
+      key:'warningsText',
+      label:'Warnings Text',
+      group:'warnings',
+      selector:'.preview-warning-tag',
+      exportSelector:'li.warnings a.tag, dd.warning.tags a.tag',
+      colors:['#E3B7C1','#B95C70','#7B3047']
+    },
+    {
+      key:'categoriesText',
+      label:'Categories Text',
+      group:'categories',
+      selector:'.preview-category-tag',
+      exportSelector:'li.category a.tag, dd.category.tags a.tag',
+      colors:['#9FC9FF','#7897D8','#A98BCB']
+    },
+    {
+      key:'relationshipsText',
+      label:'Relationships Text',
+      group:'relationships',
+      selector:'.preview-relationship-tag',
+      exportSelector:'li.relationships a.tag, dd.relationship.tags a.tag',
+      colors:['#9CC9E8','#B8A7DE','#E1B4C2']
+    }
+  ];
+
+  gradientDefs.forEach(def=>{
+    if(!gradients[def.key]){
+      gradients[def.key]={
+        enabled:false,
+        type:'linear',
+        angle:'90deg',
+        custom:'',
+        stops:def.colors.map((c,i)=>({color:c,pos:i===0?0:i===def.colors.length-1?100:50,opacity:100}))
+      };
+    }
+    if(!target.querySelector('option[value="'+def.key+'"]')){
+      const opt=document.createElement('option');
+      opt.value=def.key;
+      opt.textContent=def.label;
+      target.appendChild(opt);
+    }
+  });
+
+  function gradientCss(key){
+    if(!gradients[key]?.enabled)return '';
+    try{return gradientCssFor(key)||''}catch(e){return ''}
+  }
+  function clearGradient(el){
+    el.style.removeProperty('background-image');
+    el.style.removeProperty('background-clip');
+    el.style.removeProperty('-webkit-background-clip');
+    el.style.removeProperty('-webkit-text-fill-color');
+  }
+  function applyGradient(def){
+    const css=gradientCss(def.key);
+    mock.querySelectorAll(def.selector).forEach(el=>{
+      if(css){
+        el.style.setProperty('background-image',css,'important');
+        el.style.setProperty('background-clip','text','important');
+        el.style.setProperty('-webkit-background-clip','text','important');
+        el.style.setProperty('color','transparent','important');
+        el.style.setProperty('-webkit-text-fill-color','transparent','important');
+      }else{
+        clearGradient(el);
+      }
+    });
+  }
+  function applyAllGradients(){
+    gradientDefs.forEach(applyGradient);
+    try{window.AO3TagsTextGradient?.apply?.()}catch(e){}
+  }
+
+  function addShortcut(def){
+    const box=q('textStyleGroup_'+def.group);
+    if(!box||box.querySelector('.semantic-tag-gradient-shortcut'))return;
+    const row=document.createElement('div');
+    row.className='semantic-tag-gradient-shortcut';
+    row.innerHTML='<button type="button">Edit '+def.label.replace(' Text','')+' Gradient</button><span>This gradient applies only to '+def.label.replace(' Text','')+'.</span>';
+    box.appendChild(row);
+    row.querySelector('button').addEventListener('click',()=>{
+      currentGradientTarget=def.key;
+      target.value=def.key;
+      try{renderGradientEditor()}catch(e){}
+      try{window.AO3WorkspaceTabs?.show?.('gradient')}catch(e){}
+    });
+  }
+  gradientDefs.forEach(addShortcut);
+
+  const tagsGroup=q('textStyleGroup_tags');
+  if(tagsGroup){
+    const strong=tagsGroup.querySelector('.text-style-group-title strong');
+    if(strong)strong.textContent='Additional Tags';
+  }
+  const stableSelect=q('stableTextGroupSelect');
+  if(stableSelect?.querySelector('option[value="tags"]'))stableSelect.querySelector('option[value="tags"]').textContent='Additional Tags';
+  q('stableTextGroupButtons')?.querySelector('[data-group="tags"]')?.replaceChildren(document.createTextNode('Additional Tags'));
+
+  function routeTagClick(e){
+    if(!mock.contains(e.target))return;
+    let id=null;
+    if(e.target.closest('.preview-warning-tag'))id='warnings';
+    else if(e.target.closest('.preview-category-tag'))id='categories';
+    else if(e.target.closest('.preview-relationship-tag'))id='relationships';
+    else if(e.target.closest('.preview-additional-tag'))id='tags';
+    if(!id)return;
+    setTimeout(()=>{
+      try{window.AO3EditorSectionTabs?.show?.('text')}catch(err){}
+      try{window.AO3StableTextEditor?.activate?.(id,true)}catch(err){}
+    },20);
+  }
+  document.addEventListener('click',routeTagClick,true);
+
+  document.addEventListener('input',e=>{
+    if(e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls')||
+       e.target===q('gradientEnabled')||e.target===q('gradientType')||
+       e.target===q('gradientAngle')||e.target===q('gradientPaste')){
+      requestAnimationFrame(applyAllGradients);
+    }
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls')||
+       e.target===q('gradientEnabled')||e.target===q('gradientType')||
+       e.target===q('gradientAngle')||e.target===target){
+      requestAnimationFrame(applyAllGradients);
+    }
+  },true);
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('#gradientAddStop,#gradientEven,#gradientReverse,#gradientApplyPaste,#gradientUseBuilder,#gradientRotateMinus15,#gradientRotatePlus15,#gradientRotate90,#gradientFlipDirection,.preview-page-btn,[data-page]')){
+      setTimeout(()=>{decoratePreview();applyAllGradients()},0);
+    }
+  },true);
+
+  try{
+    const oldRender=renderGradientEditor;
+    renderGradientEditor=function(){
+      const out=oldRender.apply(this,arguments);
+      setTimeout(applyAllGradients,0);
+      return out;
+    };
+  }catch(e){}
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      gradientDefs.forEach(def=>{
+        const g=gradientCss(def.key);
+        if(!g)return;
+        css+='\n\n/* '+def.label.toUpperCase()+' GRADIENT */\n'+def.exportSelector+' {\n'+
+          '  background-image:'+g+' !important;\n'+
+          '  background-clip:text !important;\n'+
+          '  -webkit-background-clip:text !important;\n'+
+          '  color:transparent !important;\n'+
+          '  -webkit-text-fill-color:transparent !important;\n'+
+        '}\n';
+      });
+      try{if(window.AO3CssRoundTrip?.ao3Safe)css=window.AO3CssRoundTrip.ao3Safe(css)}catch(e){}
+      return css;
+    };
+  }catch(e){}
+
+  const observer=new MutationObserver(()=>requestAnimationFrame(decoratePreview));
+  observer.observe(mock,{childList:true,subtree:true});
+
+  setTimeout(decoratePreview,40);
+  setTimeout(decoratePreview,180);
+
+  window.AO3SemanticTagGroups={
+    refresh:decoratePreview,
+    applyGradients:applyAllGradients,
+    groups:['warnings','categories','relationships','tags']
+  };
+})();
+</script>

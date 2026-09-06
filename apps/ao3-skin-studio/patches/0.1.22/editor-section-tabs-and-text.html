@@ -343,7 +343,10 @@
   const groups=[
     {id:'title',name:'Title',hint:'Work title in Results / Browse + Inside a Fic',selector:'.preview-result-card > h4, .preview-result-card > h4 > a, .preview-fic-title, #workskin > h2.heading.preview-fic-title',defSize:20,defColor:'#c9b2cc'},
     {id:'author',name:'Author',hint:'Author / creator name',selector:'.byline, .byline a, a[rel="author"]',defSize:14,defColor:'#b9a4bc'},
-    {id:'tags',name:'Tags',hint:'Clickable tags only',selector:'.preview-result-card .tags, .preview-result-card .tag, .preview-fic-meta a.tag',defSize:12,defColor:'#b9a4bc'},
+    {id:'warnings',name:'Warnings',hint:'Archive warning tags on their own line',selector:'.preview-warning-tag, li.warnings a.tag, dd.warning.tags a.tag',defSize:12,defColor:'#b9a4bc'},
+    {id:'categories',name:'Categories',hint:'Category tags such as M/M on their own line',selector:'.preview-category-tag, li.category a.tag, dd.category.tags a.tag',defSize:12,defColor:'#b9a4bc'},
+    {id:'relationships',name:'Relationships',hint:'Relationship tags on their own line',selector:'.preview-relationship-tag, li.relationships a.tag, dd.relationship.tags a.tag',defSize:12,defColor:'#b9a4bc'},
+    {id:'tags',name:'Additional Tags',hint:'Additional / freeform tags on their own line',selector:'.preview-additional-tag, li.freeforms a.tag, dd.freeform.tags a.tag',defSize:12,defColor:'#b9a4bc'},
     {id:'summary',name:'Summary',hint:'Summary heading + summary text',selector:'.preview-fic-summary, .preview-fic-summary .heading, .preview-fic-summary .summary, .preview-result-card > .summary',defSize:14,defColor:'#d2c8d0'},
     {id:'main',name:'Main Fic Text',hint:'Actual story/chapter paragraphs only',selector:'.preview-fic-chapter p, #chapters .userstuff p, .chapter .userstuff p',defSize:15,defColor:'#d2c8d0'},
     {id:'info',name:'Fic Info / Meta',hint:'Rating, archive warning, category, relationship, language, words and other work information',selector:'.preview-fic-meta dt, .preview-fic-meta dd',defSize:12,defColor:'#d2c8d0'},

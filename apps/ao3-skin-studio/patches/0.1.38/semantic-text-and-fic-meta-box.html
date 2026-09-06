@@ -80,7 +80,10 @@
   const defs={
     title:['.preview-result-card > h4','.preview-result-card > h4 > a','.preview-fic-title'],
     author:['.preview-result-card > .byline','.preview-result-card > .byline a','.preview-fic-byline','.preview-fic-byline a'],
-    tags:['.preview-result-card .tag','.preview-fic-meta a.tag'],
+    warnings:['.preview-warning-tag'],
+    categories:['.preview-category-tag'],
+    relationships:['.preview-relationship-tag'],
+    tags:['.preview-additional-tag'],
     summary:['.preview-result-card > .summary','.preview-fic-summary .heading','.preview-fic-summary .summary'],
     main:['.preview-fic-chapter p'],
     info:['.preview-fic-meta dt','.preview-fic-meta dd'],
@@ -138,7 +141,13 @@
      in the box is Fic Info / Meta. */
   document.addEventListener('click',e=>{
     if(!mock.contains(e.target))return;
-    if(e.target.closest('.preview-fic-meta a.tag')){
+    if(e.target.closest('.preview-warning-tag')){
+      setTimeout(()=>window.AO3StableTextEditor?.activate?.('warnings',true),0);
+    }else if(e.target.closest('.preview-category-tag')){
+      setTimeout(()=>window.AO3StableTextEditor?.activate?.('categories',true),0);
+    }else if(e.target.closest('.preview-relationship-tag')){
+      setTimeout(()=>window.AO3StableTextEditor?.activate?.('relationships',true),0);
+    }else if(e.target.closest('.preview-additional-tag')){
       setTimeout(()=>window.AO3StableTextEditor?.activate?.('tags',true),0);
     }else if(e.target.closest('.preview-fic-meta dt,.preview-fic-meta dd')){
       setTimeout(()=>window.AO3StableTextEditor?.activate?.('info',true),0);

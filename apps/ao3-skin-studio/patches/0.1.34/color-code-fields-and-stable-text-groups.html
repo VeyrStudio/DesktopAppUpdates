@@ -189,7 +189,10 @@
   const groups=[
     {id:'title',name:'Title'},
     {id:'author',name:'Author'},
-    {id:'tags',name:'Tags'},
+    {id:'warnings',name:'Warnings'},
+    {id:'categories',name:'Categories'},
+    {id:'relationships',name:'Relationships'},
+    {id:'tags',name:'Additional Tags'},
     {id:'summary',name:'Summary'},
     {id:'main',name:'Main Fic Text'},
     {id:'info',name:'Fic Info / Meta'},
@@ -273,7 +276,10 @@
       if(el.closest('.preview-result-card > h4 > a')) return;
       if(el.closest('.preview-result-card > h4,.preview-fic-title,#workskin > h2.heading.preview-fic-title')) id='title';
       else if(el.closest('.mock-panel .meta,.byline,.byline a,[rel="author"]')) id='author';
-      else if(el.closest('.preview-result-card .tags,.preview-result-card .tag,.preview-fic-meta a.tag')) id='tags';
+      else if(el.closest('.preview-warning-tag')) id='warnings';
+      else if(el.closest('.preview-category-tag')) id='categories';
+      else if(el.closest('.preview-relationship-tag')) id='relationships';
+      else if(el.closest('.preview-additional-tag')) id='tags';
       else if(el.closest('.stats,dl.stats')) id='stats';
       else if(el.closest('.notes,.preface .notes,.afterword .notes,.end.notes')) id='notes';
       else if(el.closest('.preview-fic-summary,.preview-result-card > .summary')) id='summary';
