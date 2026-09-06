@@ -154,6 +154,11 @@
       if(t)t.textContent='The Midnight Visitor';
     }
     const effectiveTitle=(mock.querySelector('.preview-fic-title')?.textContent||'').trim();
+
+    /* Do not rewrite the same metadata repeatedly: this patch watches preview
+       child changes, and rewriting the dd contents would otherwise trigger itself. */
+    if(meta.dataset.semanticTagLines49==='1' && meta.dataset.semanticTitle49===effectiveTitle)return;
+
     const relationship=relationByTitle[effectiveTitle]||'Character A/Character B';
 
     const defs=[
@@ -182,6 +187,7 @@
     });
 
     meta.dataset.semanticTagLines49='1';
+    meta.dataset.semanticTitle49=effectiveTitle;
   }
 
   function decoratePreview(){
