@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.48",
-  "payloadSha256": "686aca36b0b97d46b33188630010c4ba23f1927792cb5cd86240ed1494de8a02",
-  "executableSha256": "8875740e042d3df6ff86dcd96355553af17fbbf66f348712ebc17a7b0e78dca1",
+  "version": "0.1.49",
+  "payloadSha256": "f3aa6fbe0e994b4c7ddb840d8295450d1c1c978296d127e4cbf8b89c08159a4a",
+  "executableSha256": "e036ad345ad3c54a2fea8ead734398f3c904609ce16fdec1869f15ea45f2e4da",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-001.txt",
-      "sha256": "9b7c60c3c93f91e69c1e80a25bae636f8266742e253054f1f0e16b9ab52b0691"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.49-part-001.txt",
+      "sha256": "2ee6a74bea09339fbb1a25a1741056785848f14b420605b3845c75d56ef25690"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-002.txt",
-      "sha256": "62e9103cb194b2f30f2614cd7d5eac02a9e6dbc49adbae20e3bdaa56c2d6fb87"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.49-part-002.txt",
+      "sha256": "59072adce447e47504302a0dd73bd6cd9f35f41f50125a26823ba58856573a52"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-003.txt",
-      "sha256": "515fb167fa18a0693d78c9095364aa22c4baf88a547f56cf2492203e13022805"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.49-part-003.txt",
+      "sha256": "34dd645acb685af56aecca9dc913516ea2af72ef4b265410390f78d7277379fc"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-004.txt",
-      "sha256": "b56433865956d7e9e9bedeeee1397e0cba1a0b3dad35633ecf221df5c8027d87"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.49-part-004.txt",
+      "sha256": "ce421f238170e398a1d9394d5e71929f9cba4b26a06e1df276d850406b179de9"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-005.txt",
-      "sha256": "dd577ea65b8933b04d6c744d91390c94ed994f7d603e64e78d3737bf2070f79a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.49-part-005.txt",
+      "sha256": "8abe6ad108209b29038c32b0cfa5481b6749fc055f79f594054ade7acf13f67d"
     }
   ],
-  "notes": "Expands the Gradient Library into a full preset and randomizer system. Includes 180+ built-in gradients across Celestial, Blues, Golds, Metallic, Reds, Purples, Gothic, Forest, Ocean, Fire, Sunset, Romantic, Pastel, High Contrast and Random Finds; Gracebound is included. Adds search, category filters, favorites, saved-gradient migration, rename/delete, Copy CSS, Apply to current target, and a Gradient Randomizer with Balanced, Soft, Bold, Dark, Metallic, Celestial and Chaos modes, lock colors/angle/type controls, and Generate 12 random choices."
+  "notes": "Splits AO3 tag-like text into four independent editable groups: Warnings, Categories, Relationships, and Additional Tags. Results/Browse now shows each on its own tag line, and Inside-a-Fic metadata renders those values as tag links too. The first mock work uses The Midnight Visitor with Thomas Thorn/Oisín. Each group has separate font/color/size/glow settings and its own Gradient Studio target, while existing Tags settings migrate forward as Additional Tags. Gradient export selectors are separated so one tag type no longer recolors every other tag type."
 }
