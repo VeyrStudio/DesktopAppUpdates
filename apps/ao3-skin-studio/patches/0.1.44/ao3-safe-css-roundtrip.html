@@ -140,28 +140,54 @@
  }
 
  function importCss(css){
-   const raw=String(css||'').trim(); if(!raw)return;
-   const m=raw.match(/\/\*\s*AO3_SKIN_STUDIO_EDIT_STATE:([A-Za-z0-9+/=]+)\s*\*\//);
-   if(m){
-     try{
-       const state=JSON.parse(b64ToUtf8(m[1]));
-       applyControls(state.controls||{});
-       if(state.gradients&&typeof gradients!=='undefined'){
-         gradients=clone(state.gradients);
-         try{renderGradientEditor?.()}catch(e){}
-       }
-       customStore.value='';
-       window.AO3SkinDocuments?.snapshot?.();
-       try{showToast('Editable Skin Studio CSS restored')}catch(e){}
-       return;
-     }catch(e){}
+   const raw=String(css||'').trim();
+   if(!raw){
+     window.AO3CssRoundTripStatus?.set?.('Paste some CSS first.');
+     return;
    }
-   customStore.value=raw.replace(/\/\*\s*AO3_SKIN_STUDIO_EDIT_STATE:[A-Za-z0-9+/=]+\s*\*\//g,'').trim();
-   bestEffort(importedCustomCss);
-   window.AO3SkinDocuments?.snapshot?.();
-   try{showToast('CSS imported; custom rules preserved')}catch(e){}
- }
 
+   const btn=q('cssImportEditApply');
+   if(btn)btn.disabled=true;
+   window.AO3CssRoundTripStatus?.set?.('Importing…');
+
+   requestAnimationFrame(()=>{
+     try{
+       const m=raw.match(/\/\*\s*AO3_SKIN_STUDIO_EDIT_STATE:([A-Za-z0-9+/=]+)\s*\*\//);
+
+       if(m){
+         try{
+           const state=JSON.parse(b64ToUtf8(m[1]));
+           applyControls(state.controls||{});
+           if(state.gradients&&typeof gradients!=='undefined'){
+             gradients=clone(state.gradients);
+           }
+           customStore.value='';
+           refreshAfterImport();
+           window.AO3CssRoundTripStatus?.set?.('Import complete — editable Skin Studio CSS restored.');
+           try{showToast('Editable Skin Studio CSS restored')}catch(e){}
+           return;
+         }catch(err){
+           window.AO3CssRoundTripStatus?.set?.('Could not read edit data; importing as regular CSS…');
+         }
+       }
+
+       customStore.value=raw
+         .replace(/\/\*\s*AO3_SKIN_STUDIO_EDIT_STATE:[A-Za-z0-9+/=]+\s*\*\//g,'')
+         .trim();
+
+       bestEffort(customStore.value);
+       refreshAfterImport();
+       window.AO3CssRoundTripStatus?.set?.('Import complete — CSS preserved for editing/export.');
+       try{showToast('CSS imported; custom rules preserved')}catch(e){}
+     }catch(err){
+       console.error('CSS import failed',err);
+       window.AO3CssRoundTripStatus?.set?.('Import failed: '+(err?.message||String(err)));
+       try{showToast('CSS import failed')}catch(e){}
+     }finally{
+       if(btn)btn.disabled=false;
+     }
+   });
+ }
  q('cssImportEditApply').onclick=()=>importCss(q('cssImportEditText').value);
  q('cssImportEditFileBtn').onclick=()=>q('cssImportEditFile').click();
  q('cssImportEditFile').addEventListener('change',async()=>{
@@ -180,6 +206,6 @@
    };
  }catch(e){}
 
- window.AO3CssRoundTrip={importCss,ao3Safe};
+ window.AO3CssRoundTrip={importCss,ao3Safe,selfCheck:function(){return !!q('cssImportEditApply')&&!!q('cssImportEditText')&&typeof importCss==='function'&&typeof bestEffort==='function'&&!!customStore;}};
 })();
 </script>
