@@ -1,153 +1,719 @@
 <style id="ao3-gradient-library-styles">
-.gradient-library-card{margin-top:12px;padding:11px;border:1px solid #352e38;border-radius:10px;background:#0e0d10}
-.gradient-library-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-.gradient-library-head strong{font-size:10px;color:#e7dbe4}
-.gradient-library-actions{display:flex;gap:6px;flex-wrap:wrap}
-.gradient-library-actions button{border:1px solid #5e4863;border-radius:6px;background:#171319;color:#e7dbe4;padding:6px 8px;font-size:8px;font-weight:900;cursor:pointer}
-.gradient-library-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:9px}
-.gradient-library-item{position:relative;border:1px solid #3a313e;border-radius:8px;background:#151217;padding:7px;cursor:pointer}
-.gradient-library-item:hover{border-color:#80658a}
-.gradient-library-swatch{height:42px;border-radius:6px;border:1px solid rgba(255,255,255,.09);margin-bottom:6px}
-.gradient-library-name{font-size:8px;font-weight:900;color:#eadfe7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gradient-library-kind{margin-top:2px;font-size:7px;color:#8f828e}
-.gradient-library-item-controls{display:flex;gap:5px;margin-top:6px}
-.gradient-library-item-controls button{flex:1;border:1px solid #443848;border-radius:5px;background:#100e12;color:#bcaeb9;padding:4px 5px;font-size:7px;cursor:pointer}
-.gradient-library-built-in{font-size:6px;color:#b89b63;text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.gradient-library-card{
+  margin-top:12px;
+  padding:11px;
+  border:1px solid #3a303d;
+  border-radius:10px;
+  background:#0e0c10;
+}
+.gradient-library-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+.gradient-library-head h3{margin:0;color:#eadfe7;font-size:11px}
+.gradient-library-head .help{margin:3px 0 0}
+.gradient-library-toolbar{
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) minmax(115px,.65fr);
+  gap:7px;
+  margin-bottom:8px;
+}
+.gradient-library-toolbar input,
+.gradient-library-toolbar select,
+.gradient-randomizer select,
+.gradient-save-row input{
+  width:100%;
+  box-sizing:border-box;
+}
+.gradient-library-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:9px;
+}
+.gradient-library-actions button,
+.gradient-randomizer button,
+.gradient-preset-card button{
+  border:1px solid #57455d;
+  border-radius:6px;
+  background:#171319;
+  color:#e8dce5;
+  padding:6px 8px;
+  font-size:8px;
+  font-weight:850;
+  cursor:pointer;
+}
+.gradient-library-actions button:hover,
+.gradient-randomizer button:hover,
+.gradient-preset-card button:hover{background:#261d29}
+.gradient-library-actions button.primary,
+.gradient-randomizer button.primary{
+  border-color:#8a658e;
+  background:#2b2030;
+}
+.gradient-randomizer{
+  margin:9px 0;
+  padding:9px;
+  border:1px solid #302734;
+  border-radius:8px;
+  background:#121015;
+}
+.gradient-randomizer-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px;
+  color:#dfd2dc;
+  font-size:9px;
+  font-weight:900;
+}
+.gradient-randomizer-grid{
+  display:grid;
+  grid-template-columns:minmax(120px,1fr) repeat(3,minmax(88px,.65fr));
+  gap:7px;
+  align-items:end;
+}
+.gradient-randomizer-locks{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
+  color:#a99ba6;
+  font-size:8px;
+}
+.gradient-randomizer-locks label{display:flex;align-items:center;gap:5px}
+.gradient-library-count{
+  margin:7px 0;
+  color:#8f828e;
+  font-size:7px;
+  font-weight:800;
+}
+.gradient-preset-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+  gap:8px;
+  max-height:420px;
+  overflow:auto;
+  padding-right:3px;
+}
+.gradient-preset-card{
+  min-width:0;
+  padding:7px;
+  border:1px solid #2f2832;
+  border-radius:8px;
+  background:#111014;
+}
+.gradient-preset-preview{
+  height:48px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:6px;
+  margin-bottom:6px;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.14);
+}
+.gradient-preset-name-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+}
+.gradient-preset-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#e5d9e2;
+  font-size:8px;
+  font-weight:900;
+}
+.gradient-preset-category{
+  margin-top:2px;
+  color:#837783;
+  font-size:7px;
+}
+.gradient-preset-star{
+  width:26px;
+  min-width:26px;
+  padding:4px!important;
+  font-size:12px!important;
+  line-height:1;
+}
+.gradient-preset-star.active{color:#f0cf6a;border-color:#8e7544}
+.gradient-preset-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  margin-top:7px;
+}
+.gradient-preset-actions button{padding:5px 6px}
+.gradient-preset-actions .apply{grid-column:1/-1;border-color:#7e5d83;background:#241a29}
+.gradient-saved-delete{border-color:#6d3c49!important;color:#dcaab5!important}
+.gradient-save-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px;
+  margin-top:8px;
+}
+.gradient-library-empty{
+  padding:18px 8px;
+  text-align:center;
+  color:#897b86;
+  font-size:8px;
+  grid-column:1/-1;
+}
+.gradient-random-results{
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid #2d2630;
+}
+@media(max-width:700px){
+  .gradient-randomizer-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .gradient-library-toolbar,.gradient-randomizer-grid{grid-template-columns:1fr}
+}
 </style>
+
 <script id="ao3-gradient-library-script">
 (function(){
   const q=id=>document.getElementById(id);
-  const anchor=q('gradientOutputControls') || q('gradientStops')?.closest('.control');
-  if(!anchor || typeof gradients==='undefined') return;
+  if(q('gradientLibraryCard'))return;
 
-  const STORAGE='ao3SkinStudioGradientLibraryV1';
-  const clone=v=>{try{return JSON.parse(JSON.stringify(v))}catch(e){return null}};
-  const builtins=[{
-    id:'builtin-gracebound',
-    name:'Gracebound',
-    builtIn:true,
-    cfg:{
-      enabled:true,type:'linear',angle:'90deg',custom:'',
-      stops:[
-        {color:'#183A59',pos:0,opacity:100},
-        {color:'#4F86B4',pos:27,opacity:100},
-        {color:'#A8D3E8',pos:50,opacity:100},
-        {color:'#F1D26C',pos:73,opacity:100},
-        {color:'#C79A45',pos:100,opacity:100}
-      ]
+  const gradSection=Array.from(document.querySelectorAll('details.section')).find(function(s){
+    return ((s.querySelector('summary')||{}).textContent||'').trim()==='Gradient Studio';
+  });
+  const sectionBody=gradSection&&gradSection.querySelector('.section-body');
+  const target=q('gradientTarget');
+  if(!sectionBody||!target||typeof gradients==='undefined')return;
+
+  const SAVED_KEY='ao3GradientLibrarySavedV1';
+  const FAVORITES_KEY='ao3GradientLibraryFavoritesV1';
+  const RECENT_KEY='ao3GradientLibraryRecentV1';
+
+  function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return null}}
+  function readJson(key,fallback){
+    try{
+      const v=JSON.parse(localStorage.getItem(key)||'null');
+      return v==null?fallback:v;
+    }catch(e){return fallback}
+  }
+  function writeJson(key,value){
+    try{localStorage.setItem(key,JSON.stringify(value))}catch(e){}
+  }
+  function normalizeConfig(cfg){
+    cfg=clone(cfg)||{};
+    cfg.enabled=true;
+    if(!['linear','radial','conic'].includes(cfg.type))cfg.type='linear';
+    if(!cfg.angle)cfg.angle='90deg';
+    if(!Array.isArray(cfg.stops)||cfg.stops.length<2){
+      cfg.stops=[
+        {color:'#2F5C8A',pos:0,opacity:100},
+        {color:'#D8B65C',pos:100,opacity:100}
+      ];
     }
-  }];
-
-  let custom=[];
-  try{
-    const saved=JSON.parse(localStorage.getItem(STORAGE)||'[]');
-    if(Array.isArray(saved)) custom=saved.filter(x=>x&&x.id&&x.name&&x.cfg);
-  }catch(e){}
-
-  const card=document.createElement('div');
-  card.className='gradient-library-card';
-  card.id='gradientLibrary';
-  card.innerHTML=
-    '<div class="gradient-library-head">'+
-      '<strong>Gradient Library</strong>'+
-      '<div class="gradient-library-actions">'+
-        '<button type="button" id="gradientLibrarySave">Save Current Gradient</button>'+
-      '</div>'+
-    '</div>'+
-    '<div class="gradient-library-list" id="gradientLibraryList"></div>';
-  anchor.insertAdjacentElement('afterend',card);
-
-  function persist(){
-    try{localStorage.setItem(STORAGE,JSON.stringify(custom))}catch(e){}
+    cfg.stops=cfg.stops.map(function(s,i){
+      return {
+        color:/^#[0-9a-f]{6}$/i.test(String(s.color||''))?String(s.color).toUpperCase():'#FFFFFF',
+        pos:Number.isFinite(Number(s.pos))?Math.max(0,Math.min(100,Number(s.pos))):(i/(cfg.stops.length-1))*100,
+        opacity:Number.isFinite(Number(s.opacity))?Math.max(0,Math.min(100,Number(s.opacity))):100
+      };
+    });
+    if(typeof cfg.custom!=='string')cfg.custom='';
+    if(typeof cfg.radialShape!=='string')cfg.radialShape='ellipse';
+    if(typeof cfg.radialSize!=='string')cfg.radialSize='farthest-corner';
+    if(!Number.isFinite(Number(cfg.centerX)))cfg.centerX=50;
+    if(!Number.isFinite(Number(cfg.centerY)))cfg.centerY=50;
+    if(!Number.isFinite(Number(cfg.conicStart)))cfg.conicStart=0;
+    if(!Number.isFinite(Number(cfg.conicX)))cfg.conicX=50;
+    if(!Number.isFinite(Number(cfg.conicY)))cfg.conicY=50;
+    if(typeof cfg.repeating!=='boolean')cfg.repeating=false;
+    if(!Number.isFinite(Number(cfg.repeatSize)))cfg.repeatSize=35;
+    return cfg;
+  }
+  function stopCss(s){
+    const opacity=Math.max(0,Math.min(100,Number(s.opacity==null?100:s.opacity)));
+    if(opacity>=100)return s.color;
+    let h=String(s.color||'#000000').replace('#','');
+    const n=parseInt(h,16);
+    const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+    return 'rgba('+r+','+g+','+b+','+(opacity/100).toFixed(3).replace(/0+$/,'').replace(/\.$/,'')+')';
+  }
+  function cfgCss(input){
+    const cfg=normalizeConfig(input);
+    if(cfg.custom&&/^(?:(?:repeating-)?(?:linear|radial|conic))-gradient\(/i.test(cfg.custom.trim()))return cfg.custom.trim();
+    const ordered=cfg.stops.slice().sort(function(a,b){return a.pos-b.pos});
+    const scale=cfg.repeating?(cfg.repeatSize/100):1;
+    const stops=ordered.map(function(s){return stopCss(s)+' '+Math.round(Number(s.pos)*scale*10)/10+'%'}).join(', ');
+    const prefix=cfg.repeating?'repeating-':'';
+    if(cfg.type==='radial'){
+      return prefix+'radial-gradient('+cfg.radialShape+' '+cfg.radialSize+' at '+cfg.centerX+'% '+cfg.centerY+'%, '+stops+')';
+    }
+    if(cfg.type==='conic'){
+      return prefix+'conic-gradient(from '+cfg.conicStart+'deg at '+cfg.conicX+'% '+cfg.conicY+'%, '+stops+')';
+    }
+    return prefix+'linear-gradient('+parseFloat(cfg.angle||'90')+'deg, '+stops+')';
+  }
+  function makeCfg(colors,angle,type){
+    const c=colors.slice();
+    return normalizeConfig({
+      enabled:true,
+      type:type||'linear',
+      angle:String(angle==null?90:angle)+'deg',
+      custom:'',
+      stops:c.map(function(color,i){
+        return {color:color,pos:c.length===1?0:Math.round((i/(c.length-1))*1000)/10,opacity:100};
+      }),
+      radialShape:'ellipse',
+      radialSize:'farthest-corner',
+      centerX:50,centerY:50,
+      conicStart:0,conicX:50,conicY:50,
+      repeating:false,repeatSize:35
+    });
   }
 
-  function ensureCfg(cfg){
-    const c=clone(cfg)||{};
-    c.enabled=true;
-    if(!c.type)c.type='linear';
-    if(!Array.isArray(c.stops)||!c.stops.length)c.stops=[
-      {color:'#111111',pos:0,opacity:100},{color:'#eeeeee',pos:100,opacity:100}
-    ];
-    return c;
-  }
+  const palettes=[
+    ['Gracebound','Celestial',['#183A59','#4F86B4','#A8D3E8','#F1D26C','#C79A45']],
+    ['Archangel','Celestial',['#071C33','#1D5D92','#8FD4FF','#F2DC8D','#B78635']],
+    ['Starlit Chapel','Celestial',['#101B35','#343A72','#8D83C6','#E7CF8B']],
+    ['Blue Hour','Blues',['#071D2E','#174B75','#4C8FC0','#B6DBEA']],
+    ['Deepwater','Blues',['#041D28','#0C445E','#207DA0','#80C4D6']],
+    ['Winter Sky','Blues',['#1C3F60','#5C91BA','#B9DAEA','#EAF4F8']],
+    ['Antique Gold','Golds',['#4A3215','#8A642B','#D1A94D','#F3DB8B','#A87528']],
+    ['Gilded Light','Golds',['#60451C','#B18A3C','#F0D57A','#FFF1B7']],
+    ['Honeyed Brass','Metallic',['#332413','#785626','#B78939','#E0C16D','#795525']],
+    ['Silver Smoke','Metallic',['#24272A','#656B70','#BFC3C5','#F1F1EE','#777C81']],
+    ['Rose Gold','Metallic',['#5A3030','#A4655C','#D7A28D','#F2D5BE','#9C5E53']],
+    ['Blood Velvet','Reds',['#25070B','#65111D','#9A2633','#D75C64']],
+    ['Crimson Ink','Reds',['#16090D','#4A0D19','#86162A','#C93B4A']],
+    ['Black Cherry','Reds',['#180A11','#4F132D','#7E2845','#B85B72']],
+    ['Royal Violet','Purples',['#170C2A','#43256E','#7552A3','#B19BD0']],
+    ['Witching Hour','Gothic',['#08070B','#1F1228','#4B234E','#8C5A78']],
+    ['Cathedral Night','Gothic',['#090B10','#171E2C','#3A4052','#8F805F']],
+    ['Forest Lantern','Forest',['#0C211A','#1F5139','#56865E','#D2B664']],
+    ['Moss & Gold','Forest',['#15221A','#41583A','#87915A','#D1B469']],
+    ['Moonlit Moss','Forest',['#0C1715','#28443B','#507A68','#A6BFA6']],
+    ['Ocean Glass','Ocean',['#05242B','#0A5C6B','#36A6B6','#AFE0DD']],
+    ['Storm Coast','Ocean',['#0E2536','#2D566F','#638BA0','#C2D6DD']],
+    ['Seafoam','Ocean',['#225A5D','#5A9B94','#A6D1BF','#E2E8C7']],
+    ['Emberfall','Fire',['#1F0B08','#6E1C0F','#C44917','#EFA13B','#F7D77A']],
+    ['Molten Gold','Fire',['#43100B','#962819','#DA6522','#F5C150']],
+    ['Sunset Wine','Sunset',['#3D1730','#8A3159','#D86165','#F0A35A','#E7C477']],
+    ['Afterglow','Sunset',['#513052','#9A526D','#D88679','#EFC697']],
+    ['Lavender Dawn','Romantic',['#493F68','#8276A2','#B9AED0','#E3D3D1']],
+    ['Blush Letter','Romantic',['#6A3D4C','#A86D79','#DDA6A8','#F1D7C7']],
+    ['Peony Cream','Romantic',['#7C4F65','#C4879D','#E8BFC4','#F4E3D3']],
+    ['Pastel Sky','Pastel',['#8CB9DB','#B5D4EA','#D6C9E6','#F2D0D8']],
+    ['Pastel Sorbet','Pastel',['#F0A7AF','#F4C7A3','#E8DC9A','#A8D5C0','#A8BDE0']],
+    ['Neon Dusk','High Contrast',['#19102B','#6A21B8','#E62F8F','#FFB23E']],
+    ['Electric Tide','High Contrast',['#031D2D','#006F98','#00C2C7','#E4E84E']]
+  ];
 
-  function cfgCss(cfg){
-    const old=gradients.__library_preview__;
-    gradients.__library_preview__=ensureCfg(cfg);
-    let css='';
-    try{css=gradientCssFor('__library_preview__')||''}catch(e){}
-    if(old===undefined)delete gradients.__library_preview__;else gradients.__library_preview__=old;
-    return css;
-  }
-
-  function applyEntry(entry){
-    const key=typeof currentGradientTarget!=='undefined'?currentGradientTarget:q('gradientTarget')?.value;
-    if(!key || !gradients[key]) return;
-    gradients[key]=ensureCfg(entry.cfg);
-    try{renderGradientEditor()}catch(e){}
-    try{updateGradientPreviewStrip()}catch(e){}
-    try{window.AO3TagsTextGradient?.apply?.()}catch(e){}
-    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
-    try{showToast('Applied '+entry.name)}catch(e){}
-  }
-
-  function render(){
-    const list=q('gradientLibraryList'); if(!list)return;
-    list.innerHTML='';
-    [...builtins,...custom].forEach(entry=>{
-      const item=document.createElement('div');
-      item.className='gradient-library-item';
-      item.dataset.gradientLibraryId=entry.id;
-      const css=cfgCss(entry.cfg);
-      item.innerHTML=
-        '<div class="gradient-library-swatch"></div>'+
-        '<div class="gradient-library-name"></div>'+
-        '<div class="gradient-library-kind">'+((entry.cfg?.type||'linear')+' gradient')+'</div>'+
-        (entry.builtIn?'<div class="gradient-library-built-in">Built in</div>':'')+
-        (!entry.builtIn?'<div class="gradient-library-item-controls"><button type="button" data-act="rename">Rename</button><button type="button" data-act="delete">Delete</button></div>':'');
-      item.querySelector('.gradient-library-swatch').style.background=css||'#222';
-      item.querySelector('.gradient-library-name').textContent=entry.name;
-      item.addEventListener('click',e=>{
-        const act=e.target.closest('button')?.dataset.act;
-        if(act==='rename'){
-          e.stopPropagation();
-          const next=prompt('Rename gradient:',entry.name);
-          if(next&&next.trim()){entry.name=next.trim().slice(0,80);persist();render();}
-          return;
-        }
-        if(act==='delete'){
-          e.stopPropagation();
-          if(confirm('Delete "'+entry.name+'" from the Gradient Library?')){
-            custom=custom.filter(x=>x.id!==entry.id);persist();render();
-          }
-          return;
-        }
-        applyEntry(entry);
+  const angles=[
+    {deg:90,suffix:''},
+    {deg:135,suffix:' — Diagonal'},
+    {deg:180,suffix:' — Vertical'},
+    {deg:45,suffix:' — Rising'}
+  ];
+  const builtins=[];
+  let seq=1;
+  palettes.forEach(function(pal){
+    angles.forEach(function(a,idx){
+      builtins.push({
+        id:'builtin-'+(seq++),
+        name:pal[0]+a.suffix,
+        category:pal[1],
+        config:makeCfg(idx===0?pal[2]:pal[2].slice(),a.deg,'linear'),
+        builtin:true
       });
-      list.appendChild(item);
     });
-  }
-
-  q('gradientLibrarySave').addEventListener('click',()=>{
-    const key=typeof currentGradientTarget!=='undefined'?currentGradientTarget:q('gradientTarget')?.value;
-    const cfg=key?gradients[key]:null;
-    if(!cfg)return;
-    const name=prompt('Name this gradient:','My Gradient');
-    if(!name||!name.trim())return;
-    custom.push({
-      id:'grad-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
-      name:name.trim().slice(0,80),
-      cfg:ensureCfg(cfg)
-    });
-    persist();render();
-    try{showToast('Gradient saved to library')}catch(e){}
   });
 
-  render();
+  function seeded(n){
+    let x=(n*9301+49297)%233280;
+    return function(){
+      x=(x*9301+49297)%233280;
+      return x/233280;
+    };
+  }
+  function hslToHex(h,s,l){
+    s/=100;l/=100;
+    const c=(1-Math.abs(2*l-1))*s;
+    const x=c*(1-Math.abs((h/60)%2-1));
+    const m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+    const hex=function(v){return Math.round((v+m)*255).toString(16).padStart(2,'0')};
+    return ('#'+hex(r)+hex(g)+hex(b)).toUpperCase();
+  }
+  for(let i=1;i<=48;i++){
+    const rnd=seeded(1000+i);
+    const count=2+Math.floor(rnd()*4);
+    const colors=[];
+    let base=Math.floor(rnd()*360);
+    for(let j=0;j<count;j++){
+      const hue=(base+j*(28+Math.floor(rnd()*95))+Math.floor(rnd()*25))%360;
+      colors.push(hslToHex(hue,48+Math.floor(rnd()*45),28+Math.floor(rnd()*48)));
+    }
+    const types=['linear','linear','linear','radial','conic'];
+    const type=types[Math.floor(rnd()*types.length)];
+    const cfg=makeCfg(colors,Math.floor(rnd()*360),type);
+    if(type==='radial'){
+      cfg.centerX=20+Math.floor(rnd()*61);
+      cfg.centerY=20+Math.floor(rnd()*61);
+      cfg.radialShape=rnd()>.5?'circle':'ellipse';
+    }
+    if(type==='conic'){
+      cfg.conicStart=Math.floor(rnd()*360);
+      cfg.conicX=30+Math.floor(rnd()*41);
+      cfg.conicY=30+Math.floor(rnd()*41);
+    }
+    builtins.push({
+      id:'random-find-'+i,
+      name:'Random Find '+String(i).padStart(2,'0'),
+      category:'Random Finds',
+      config:cfg,
+      builtin:true
+    });
+  }
+
+  const card=document.createElement('div');
+  card.id='gradientLibraryCard';
+  card.className='gradient-library-card';
+  card.innerHTML=
+    '<div class="gradient-library-head">'+
+      '<div><h3>Gradient Library</h3><div class="help">Browse 100+ gradients, save your own, favorite them, or generate something completely random.</div></div>'+
+    '</div>'+
+    '<div class="gradient-library-toolbar">'+
+      '<input type="search" id="gradientLibrarySearch" placeholder="Search gradients...">'+
+      '<select id="gradientLibraryCategory"></select>'+
+    '</div>'+
+    '<div class="gradient-library-actions">'+
+      '<button type="button" id="gradientLibraryShowFavorites">★ Favorites</button>'+
+      '<button type="button" id="gradientLibraryShowSaved">My Saved</button>'+
+      '<button type="button" id="gradientLibraryShowAll">Show All</button>'+
+    '</div>'+
+    '<div class="gradient-randomizer">'+
+      '<div class="gradient-randomizer-title"><span>Gradient Randomizer</span><span id="gradientRandomizerTarget"></span></div>'+
+      '<div class="gradient-randomizer-grid">'+
+        '<div><label>Style</label><select id="gradientRandomStyle">'+
+          '<option value="balanced">Balanced</option>'+
+          '<option value="soft">Soft</option>'+
+          '<option value="bold">Bold</option>'+
+          '<option value="dark">Dark</option>'+
+          '<option value="metallic">Metallic</option>'+
+          '<option value="celestial">Celestial</option>'+
+          '<option value="chaos">Chaos</option>'+
+        '</select></div>'+
+        '<button type="button" class="primary" id="gradientRandomizeCurrent">Randomize Current</button>'+
+        '<button type="button" id="gradientGenerateBatch">Generate 12</button>'+
+        '<button type="button" id="gradientSaveCurrent">Save Current</button>'+
+      '</div>'+
+      '<div class="gradient-randomizer-locks">'+
+        '<label><input type="checkbox" id="gradientRandLockColors"> Lock colors</label>'+
+        '<label><input type="checkbox" id="gradientRandLockAngle"> Lock angle</label>'+
+        '<label><input type="checkbox" id="gradientRandLockType"> Lock type</label>'+
+      '</div>'+
+      '<div id="gradientRandomResults" class="gradient-random-results" hidden></div>'+
+    '</div>'+
+    '<div id="gradientLibraryCount" class="gradient-library-count"></div>'+
+    '<div id="gradientPresetGrid" class="gradient-preset-grid"></div>';
+
+  const intro=sectionBody.querySelector('.gradient-section-intro');
+  if(intro)intro.insertAdjacentElement('afterend',card);
+  else sectionBody.insertAdjacentElement('afterbegin',card);
+
+  let favorites=readJson(FAVORITES_KEY,[]);
+  if(!Array.isArray(favorites))favorites=[];
+  let saved=readJson(SAVED_KEY,[]);
+  if(!Array.isArray(saved))saved=[];
+  if(!saved.length){
+    const legacy=readJson('ao3SkinStudioGradientLibraryV1',[]);
+    if(Array.isArray(legacy)&&legacy.length){
+      saved=legacy.filter(function(x){return x&&x.name&&x.cfg}).map(function(x){
+        return {
+          id:x.id||('saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)),
+          name:String(x.name).slice(0,80),
+          category:'My Saved',
+          config:normalizeConfig(x.cfg),
+          saved:true,
+          builtin:false
+        };
+      });
+      writeJson(SAVED_KEY,saved);
+    }
+  }
+  let recents=readJson(RECENT_KEY,[]);
+  if(!Array.isArray(recents))recents=[];
+  let specialFilter='';
+
+  const categories=['All'].concat(Array.from(new Set(builtins.map(function(x){return x.category}))).sort()).concat(['My Saved']);
+  q('gradientLibraryCategory').innerHTML=categories.map(function(c){
+    return '<option value="'+c.replace(/"/g,'&quot;')+'">'+c+'</option>';
+  }).join('');
+
+  function targetLabel(){
+    return (target.options[target.selectedIndex]||{}).textContent||target.value||'Current target';
+  }
+  function syncTargetLabel(){
+    q('gradientRandomizerTarget').textContent=targetLabel();
+  }
+
+  function currentCfg(){
+    const key=(typeof currentGradientTarget!=='undefined'&&currentGradientTarget)?currentGradientTarget:target.value;
+    return normalizeConfig(gradients[key]||{});
+  }
+  function touchRecent(id){
+    recents=[id].concat(recents.filter(function(x){return x!==id})).slice(0,20);
+    writeJson(RECENT_KEY,recents);
+  }
+  function applyConfig(cfg,id){
+    const key=(typeof currentGradientTarget!=='undefined'&&currentGradientTarget)?currentGradientTarget:target.value;
+    gradients[key]=normalizeConfig(cfg);
+    gradients[key].enabled=true;
+    try{renderGradientEditor()}catch(e){}
+    try{update()}catch(e){}
+    try{save()}catch(e){}
+    try{window.AO3TagsTextGradient?.apply?.()}catch(e){}
+    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+    if(id)touchRecent(id);
+    syncTargetLabel();
+  }
+  async function copyCss(cfg){
+    const css=cfgCss(cfg);
+    try{
+      await navigator.clipboard.writeText(css);
+      try{showToast('Gradient CSS copied')}catch(e){}
+    }catch(e){
+      const ta=document.createElement('textarea');
+      ta.value=css;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+      try{showToast('Gradient CSS copied')}catch(e){}
+    }
+  }
+  function toggleFavorite(id){
+    if(favorites.includes(id))favorites=favorites.filter(function(x){return x!==id});
+    else favorites.push(id);
+    writeJson(FAVORITES_KEY,favorites);
+    renderLibrary();
+  }
+  function deleteSaved(id){
+    saved=saved.filter(function(x){return x.id!==id});
+    favorites=favorites.filter(function(x){return x!==id});
+    writeJson(SAVED_KEY,saved);
+    writeJson(FAVORITES_KEY,favorites);
+    renderLibrary();
+  }
+  function saveCurrent(){
+    const def='My Gradient '+(saved.length+1);
+    const name=prompt('Name this gradient:',def);
+    if(name==null)return;
+    const trimmed=name.trim();
+    if(!trimmed)return;
+    const item={
+      id:'saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+      name:trimmed.slice(0,80),
+      category:'My Saved',
+      config:currentCfg(),
+      builtin:false,
+      saved:true
+    };
+    saved.unshift(item);
+    writeJson(SAVED_KEY,saved);
+    specialFilter='saved';
+    renderLibrary();
+    try{showToast('Gradient saved to library')}catch(e){}
+  }
+
+  function allItems(){
+    return builtins.concat(saved);
+  }
+  function renderLibrary(){
+    const search=String(q('gradientLibrarySearch').value||'').trim().toLowerCase();
+    const category=q('gradientLibraryCategory').value||'All';
+    let items=allItems();
+
+    if(specialFilter==='favorites'){
+      items=items.filter(function(x){return favorites.includes(x.id)});
+    }else if(specialFilter==='saved'){
+      items=saved.slice();
+    }else if(category!=='All'){
+      items=items.filter(function(x){return x.category===category});
+    }
+
+    if(search){
+      items=items.filter(function(x){
+        return (x.name+' '+x.category).toLowerCase().includes(search);
+      });
+    }
+
+    q('gradientLibraryCount').textContent=items.length+' gradient'+(items.length===1?'':'s')+' shown';
+    const grid=q('gradientPresetGrid');
+    grid.innerHTML='';
+    if(!items.length){
+      grid.innerHTML='<div class="gradient-library-empty">No gradients match this filter.</div>';
+      return;
+    }
+
+    items.forEach(function(item){
+      const c=document.createElement('div');
+      c.className='gradient-preset-card';
+      c.innerHTML=
+        '<div class="gradient-preset-preview"></div>'+
+        '<div class="gradient-preset-name-row">'+
+          '<div class="gradient-preset-name" title="'+item.name.replace(/"/g,'&quot;')+'">'+item.name+'</div>'+
+          '<button type="button" class="gradient-preset-star'+(favorites.includes(item.id)?' active':'')+'" title="Favorite">★</button>'+
+        '</div>'+
+        '<div class="gradient-preset-category">'+item.category+'</div>'+
+        '<div class="gradient-preset-actions">'+
+          '<button type="button" class="apply">Apply to '+targetLabel()+'</button>'+
+          '<button type="button" class="copy">Copy CSS</button>'+
+          (item.saved?'<button type="button" class="gradient-saved-rename">Rename</button><button type="button" class="gradient-saved-delete">Delete</button>':'<button type="button" class="save-copy">Save Copy</button>')+
+        '</div>';
+      c.querySelector('.gradient-preset-preview').style.backgroundImage=cfgCss(item.config);
+      c.querySelector('.gradient-preset-star').onclick=function(){toggleFavorite(item.id)};
+      c.querySelector('.apply').onclick=function(){applyConfig(item.config,item.id)};
+      c.querySelector('.copy').onclick=function(){copyCss(item.config)};
+      const last=item.saved?c.querySelector('.gradient-saved-delete'):c.querySelector('.save-copy');
+      if(item.saved){
+        const rename=c.querySelector('.gradient-saved-rename');
+        rename.onclick=function(){
+          const next=prompt('Rename gradient:',item.name);
+          if(next!=null&&next.trim()){
+            item.name=next.trim().slice(0,80);
+            writeJson(SAVED_KEY,saved);
+            renderLibrary();
+          }
+        };
+        last.onclick=function(){if(confirm('Delete "'+item.name+'" from your Gradient Library?'))deleteSaved(item.id)};
+      }else{
+        last.onclick=function(){
+          const copy=clone(item);
+          copy.id='saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+          copy.name=item.name+' Copy';copy.category='My Saved';copy.saved=true;copy.builtin=false;
+          saved.unshift(copy);writeJson(SAVED_KEY,saved);renderLibrary();try{showToast('Gradient saved')}catch(e){}
+        };
+      }
+      grid.appendChild(c);
+    });
+  }
+
+  function randomChoice(arr){return arr[Math.floor(Math.random()*arr.length)]}
+  function randomColor(style){
+    if(style==='metallic'){
+      return randomChoice(['#17191C','#3E4247','#70767B','#A8A9A3','#D7C58C','#B08A48','#7B5D2E','#C39A84','#8E6661']);
+    }
+    if(style==='celestial'){
+      return randomChoice(['#071C33','#123A66','#245F98','#4E8DC4','#8FD4FF','#191536','#392B6E','#7264A8','#C9A85C','#F1D26C']);
+    }
+    if(style==='dark'){
+      return hslToHex(Math.floor(Math.random()*360),42+Math.floor(Math.random()*40),10+Math.floor(Math.random()*27));
+    }
+    if(style==='soft'){
+      return hslToHex(Math.floor(Math.random()*360),30+Math.floor(Math.random()*35),68+Math.floor(Math.random()*20));
+    }
+    if(style==='bold'){
+      return hslToHex(Math.floor(Math.random()*360),72+Math.floor(Math.random()*28),38+Math.floor(Math.random()*27));
+    }
+    if(style==='chaos'){
+      return hslToHex(Math.floor(Math.random()*360),20+Math.floor(Math.random()*81),18+Math.floor(Math.random()*72));
+    }
+    return hslToHex(Math.floor(Math.random()*360),48+Math.floor(Math.random()*35),30+Math.floor(Math.random()*43));
+  }
+  function randomConfig(){
+    const style=q('gradientRandomStyle').value||'balanced';
+    const cur=currentCfg();
+    const lockColors=q('gradientRandLockColors').checked;
+    const lockAngle=q('gradientRandLockAngle').checked;
+    const lockType=q('gradientRandLockType').checked;
+
+    let colors;
+    if(lockColors){
+      colors=cur.stops.map(function(s){return s.color});
+    }else{
+      const count=2+Math.floor(Math.random()*4);
+      colors=[];
+      for(let i=0;i<count;i++)colors.push(randomColor(style));
+    }
+
+    let type=lockType?cur.type:randomChoice(style==='metallic'?['linear','linear','radial']:['linear','linear','radial','conic']);
+    let angle=lockAngle?parseFloat(cur.angle||'90'):Math.floor(Math.random()*360);
+    const cfg=makeCfg(colors,angle,type);
+
+    if(type==='radial'){
+      cfg.centerX=20+Math.floor(Math.random()*61);
+      cfg.centerY=20+Math.floor(Math.random()*61);
+      cfg.radialShape=Math.random()>.5?'circle':'ellipse';
+      cfg.radialSize=randomChoice(['closest-side','farthest-side','farthest-corner']);
+    }
+    if(type==='conic'){
+      cfg.conicStart=Math.floor(Math.random()*360);
+      cfg.conicX=25+Math.floor(Math.random()*51);
+      cfg.conicY=25+Math.floor(Math.random()*51);
+    }
+    return cfg;
+  }
+  function renderRandomBatch(){
+    const host=q('gradientRandomResults');
+    host.hidden=false;
+    host.innerHTML='<div class="gradient-library-count">12 fresh random gradients — apply one or save it.</div><div class="gradient-preset-grid" id="gradientRandomPresetGrid"></div>';
+    const grid=q('gradientRandomPresetGrid');
+    for(let i=1;i<=12;i++){
+      const cfg=randomConfig();
+      const c=document.createElement('div');
+      c.className='gradient-preset-card';
+      c.innerHTML=
+        '<div class="gradient-preset-preview"></div>'+
+        '<div class="gradient-preset-name">Random '+i+'</div>'+
+        '<div class="gradient-preset-category">'+(q('gradientRandomStyle').value||'balanced')+'</div>'+
+        '<div class="gradient-preset-actions">'+
+          '<button type="button" class="apply">Apply</button>'+
+          '<button type="button" class="copy">Copy CSS</button>'+
+          '<button type="button" class="save-copy">Save</button>'+
+        '</div>';
+      c.querySelector('.gradient-preset-preview').style.backgroundImage=cfgCss(cfg);
+      c.querySelector('.apply').onclick=function(){applyConfig(cfg)};
+      c.querySelector('.copy').onclick=function(){copyCss(cfg)};
+      c.querySelector('.save-copy').onclick=function(){
+        const name=prompt('Name this gradient:','Random Gradient');
+        if(name==null||!name.trim())return;
+        const item={id:'saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:name.trim().slice(0,80),category:'My Saved',config:clone(cfg),saved:true,builtin:false};
+        saved.unshift(item);writeJson(SAVED_KEY,saved);renderLibrary();try{showToast('Gradient saved')}catch(e){}
+      };
+      grid.appendChild(c);
+    }
+  }
+
+  q('gradientLibrarySearch').addEventListener('input',renderLibrary);
+  q('gradientLibraryCategory').addEventListener('change',function(){specialFilter='';renderLibrary()});
+  q('gradientLibraryShowFavorites').onclick=function(){specialFilter='favorites';renderLibrary()};
+  q('gradientLibraryShowSaved').onclick=function(){specialFilter='saved';renderLibrary()};
+  q('gradientLibraryShowAll').onclick=function(){specialFilter='';q('gradientLibraryCategory').value='All';q('gradientLibrarySearch').value='';renderLibrary()};
+  q('gradientSaveCurrent').onclick=saveCurrent;
+  q('gradientRandomizeCurrent').onclick=function(){
+    const cfg=randomConfig();applyConfig(cfg);try{showToast('Gradient randomized')}catch(e){}
+  };
+  q('gradientGenerateBatch').onclick=renderRandomBatch;
+
+  target.addEventListener('change',function(){
+    setTimeout(function(){syncTargetLabel();renderLibrary()},0);
+  });
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('.tags-gradient-shortcut'))setTimeout(function(){syncTargetLabel();renderLibrary()},0);
+  },true);
+
+  syncTargetLabel();
+  renderLibrary();
+
   window.AO3GradientLibrary={
-    list:()=>[...builtins,...custom].map(x=>({id:x.id,name:x.name,builtIn:!!x.builtIn})),
-    apply:id=>{const e=[...builtins,...custom].find(x=>x.id===id);if(e)applyEntry(e)},
-    render
+    refresh:renderLibrary,
+    render:renderLibrary,
+    randomize:function(){const cfg=randomConfig();applyConfig(cfg);return clone(cfg)},
+    saveCurrent:saveCurrent,
+    count:function(){return allItems().length},
+    list:function(){return allItems().map(function(x){return {id:x.id,name:x.name,builtIn:!!x.builtin,category:x.category};})},
+    apply:function(id){const e=allItems().find(function(x){return x.id===id});if(e)applyConfig(e.config,e.id)}
   };
 })();
 </script>
