@@ -1,0 +1,153 @@
+<style id="ao3-gradient-library-styles">
+.gradient-library-card{margin-top:12px;padding:11px;border:1px solid #352e38;border-radius:10px;background:#0e0d10}
+.gradient-library-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.gradient-library-head strong{font-size:10px;color:#e7dbe4}
+.gradient-library-actions{display:flex;gap:6px;flex-wrap:wrap}
+.gradient-library-actions button{border:1px solid #5e4863;border-radius:6px;background:#171319;color:#e7dbe4;padding:6px 8px;font-size:8px;font-weight:900;cursor:pointer}
+.gradient-library-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:9px}
+.gradient-library-item{position:relative;border:1px solid #3a313e;border-radius:8px;background:#151217;padding:7px;cursor:pointer}
+.gradient-library-item:hover{border-color:#80658a}
+.gradient-library-swatch{height:42px;border-radius:6px;border:1px solid rgba(255,255,255,.09);margin-bottom:6px}
+.gradient-library-name{font-size:8px;font-weight:900;color:#eadfe7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gradient-library-kind{margin-top:2px;font-size:7px;color:#8f828e}
+.gradient-library-item-controls{display:flex;gap:5px;margin-top:6px}
+.gradient-library-item-controls button{flex:1;border:1px solid #443848;border-radius:5px;background:#100e12;color:#bcaeb9;padding:4px 5px;font-size:7px;cursor:pointer}
+.gradient-library-built-in{font-size:6px;color:#b89b63;text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+</style>
+<script id="ao3-gradient-library-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const anchor=q('gradientOutputControls') || q('gradientStops')?.closest('.control');
+  if(!anchor || typeof gradients==='undefined') return;
+
+  const STORAGE='ao3SkinStudioGradientLibraryV1';
+  const clone=v=>{try{return JSON.parse(JSON.stringify(v))}catch(e){return null}};
+  const builtins=[{
+    id:'builtin-gracebound',
+    name:'Gracebound',
+    builtIn:true,
+    cfg:{
+      enabled:true,type:'linear',angle:'90deg',custom:'',
+      stops:[
+        {color:'#183A59',pos:0,opacity:100},
+        {color:'#4F86B4',pos:27,opacity:100},
+        {color:'#A8D3E8',pos:50,opacity:100},
+        {color:'#F1D26C',pos:73,opacity:100},
+        {color:'#C79A45',pos:100,opacity:100}
+      ]
+    }
+  }];
+
+  let custom=[];
+  try{
+    const saved=JSON.parse(localStorage.getItem(STORAGE)||'[]');
+    if(Array.isArray(saved)) custom=saved.filter(x=>x&&x.id&&x.name&&x.cfg);
+  }catch(e){}
+
+  const card=document.createElement('div');
+  card.className='gradient-library-card';
+  card.id='gradientLibrary';
+  card.innerHTML=
+    '<div class="gradient-library-head">'+
+      '<strong>Gradient Library</strong>'+
+      '<div class="gradient-library-actions">'+
+        '<button type="button" id="gradientLibrarySave">Save Current Gradient</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="gradient-library-list" id="gradientLibraryList"></div>';
+  anchor.insertAdjacentElement('afterend',card);
+
+  function persist(){
+    try{localStorage.setItem(STORAGE,JSON.stringify(custom))}catch(e){}
+  }
+
+  function ensureCfg(cfg){
+    const c=clone(cfg)||{};
+    c.enabled=true;
+    if(!c.type)c.type='linear';
+    if(!Array.isArray(c.stops)||!c.stops.length)c.stops=[
+      {color:'#111111',pos:0,opacity:100},{color:'#eeeeee',pos:100,opacity:100}
+    ];
+    return c;
+  }
+
+  function cfgCss(cfg){
+    const old=gradients.__library_preview__;
+    gradients.__library_preview__=ensureCfg(cfg);
+    let css='';
+    try{css=gradientCssFor('__library_preview__')||''}catch(e){}
+    if(old===undefined)delete gradients.__library_preview__;else gradients.__library_preview__=old;
+    return css;
+  }
+
+  function applyEntry(entry){
+    const key=typeof currentGradientTarget!=='undefined'?currentGradientTarget:q('gradientTarget')?.value;
+    if(!key || !gradients[key]) return;
+    gradients[key]=ensureCfg(entry.cfg);
+    try{renderGradientEditor()}catch(e){}
+    try{updateGradientPreviewStrip()}catch(e){}
+    try{window.AO3TagsTextGradient?.apply?.()}catch(e){}
+    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+    try{showToast('Applied '+entry.name)}catch(e){}
+  }
+
+  function render(){
+    const list=q('gradientLibraryList'); if(!list)return;
+    list.innerHTML='';
+    [...builtins,...custom].forEach(entry=>{
+      const item=document.createElement('div');
+      item.className='gradient-library-item';
+      item.dataset.gradientLibraryId=entry.id;
+      const css=cfgCss(entry.cfg);
+      item.innerHTML=
+        '<div class="gradient-library-swatch"></div>'+
+        '<div class="gradient-library-name"></div>'+
+        '<div class="gradient-library-kind">'+((entry.cfg?.type||'linear')+' gradient')+'</div>'+
+        (entry.builtIn?'<div class="gradient-library-built-in">Built in</div>':'')+
+        (!entry.builtIn?'<div class="gradient-library-item-controls"><button type="button" data-act="rename">Rename</button><button type="button" data-act="delete">Delete</button></div>':'');
+      item.querySelector('.gradient-library-swatch').style.background=css||'#222';
+      item.querySelector('.gradient-library-name').textContent=entry.name;
+      item.addEventListener('click',e=>{
+        const act=e.target.closest('button')?.dataset.act;
+        if(act==='rename'){
+          e.stopPropagation();
+          const next=prompt('Rename gradient:',entry.name);
+          if(next&&next.trim()){entry.name=next.trim().slice(0,80);persist();render();}
+          return;
+        }
+        if(act==='delete'){
+          e.stopPropagation();
+          if(confirm('Delete "'+entry.name+'" from the Gradient Library?')){
+            custom=custom.filter(x=>x.id!==entry.id);persist();render();
+          }
+          return;
+        }
+        applyEntry(entry);
+      });
+      list.appendChild(item);
+    });
+  }
+
+  q('gradientLibrarySave').addEventListener('click',()=>{
+    const key=typeof currentGradientTarget!=='undefined'?currentGradientTarget:q('gradientTarget')?.value;
+    const cfg=key?gradients[key]:null;
+    if(!cfg)return;
+    const name=prompt('Name this gradient:','My Gradient');
+    if(!name||!name.trim())return;
+    custom.push({
+      id:'grad-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+      name:name.trim().slice(0,80),
+      cfg:ensureCfg(cfg)
+    });
+    persist();render();
+    try{showToast('Gradient saved to library')}catch(e){}
+  });
+
+  render();
+  window.AO3GradientLibrary={
+    list:()=>[...builtins,...custom].map(x=>({id:x.id,name:x.name,builtIn:!!x.builtIn})),
+    apply:id=>{const e=[...builtins,...custom].find(x=>x.id===id);if(e)applyEntry(e)},
+    render
+  };
+})();
+</script>

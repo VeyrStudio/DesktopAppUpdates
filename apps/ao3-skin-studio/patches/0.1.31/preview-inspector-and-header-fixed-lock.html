@@ -166,6 +166,9 @@
     const el=target?.nodeType===1 ? target : target?.parentElement;
     if(!el || !mock.contains(el)) return false;
 
+    /* Preview navigation controls are real navigation, not editor-inspector targets. */
+    if(el.closest('.preview-fic-back,.preview-result-card > h4 > a')) return false;
+
     const reqKey=requiredKeyFor(el);
     if(reqKey){
       chooseRequired(reqKey);
