@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.45",
-  "payloadSha256": "e3e4ec06f1f1c77b8aba40e8a2755b1f330cd591ae49ba665acdd65ebef0e816",
-  "executableSha256": "c0779dc8e01232ada7771e947c34f21141c331671b613fa6980acec36fbfc0f3",
+  "version": "0.1.46",
+  "payloadSha256": "721609fb8721345dd3731696d9309e0ba7dfb17b481cd4c4623883b318d30be8",
+  "executableSha256": "e545766214e4b9b4d87876767eaa0995058e1ac9b8a966043ddecce91d112a97",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.45-part-001.txt",
-      "sha256": "10d373d5b391d198e3933127fda51ba28bf52c4930079f90982960b1176d6c9f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-001.txt",
+      "sha256": "79929bf23c679163193f2eaeb982006a1034aaaf92478c2cad1f4656584802e7"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.45-part-002.txt",
-      "sha256": "1054b403895118baa00d9f28c02b6ac81d411b2c8ca77d27a644bcf624c32827"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-002.txt",
+      "sha256": "88ea6f3e5ec01ec8204323060532ea0d14a460fc02d7c5adf2eb1cba7480cabc"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.45-part-003.txt",
-      "sha256": "0a44e5bf5469ddd924b5ada4dd52be24d49aa0e7398eef939e9630bf4cfec1da"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-003.txt",
+      "sha256": "9c6c6e9c7da03bb12bac3218aaee1fb890251384bbb3a99506fd72b12e01e612"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.45-part-004.txt",
-      "sha256": "c0830883116cf59b155fd465edb49fcbc1559e1af62cb045017aa2b57e873f96"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-004.txt",
+      "sha256": "be957c452aff7924419c509a727b001a0c4e6da999905053471c492a9b18fc45"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.45-part-005.txt",
-      "sha256": "49be9358a175e0cb2253836d10973e9b3b60c8b5565148934cdfed34f454500d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.46-part-005.txt",
+      "sha256": "797808c23d78fc8aae00e8a4cdd4c3888472c53ce3ac62f920523b23aaa6d166"
     }
   ],
-  "notes": "Speeds up Import CSS to Edit by restoring controls in one silent batch instead of firing hundreds of individual input/change events. The preview and skin state now refresh once after import, and the importer shows Importing / Import complete status so large Skin Studio CSS no longer appears frozen or stalls under repeated live-preview rebuilds."
+  "notes": "Fully repairs Import CSS to Edit. Fixes a shipped stale-variable error that broke older/external CSS imports, replaces the remaining old importCss implementation with the intended batched importer, refreshes the preview once after import, reports clear Importing / complete / failed status, and includes a small importer self-check hook for build validation."
 }
