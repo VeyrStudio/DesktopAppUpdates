@@ -1,0 +1,1371 @@
+<style id="ao3-taxonomy-stats-layout-v51-styles">
+/* 0.1.51 — unified tabbed Tags + Stats/Metadata editors, corrected fic layout,
+   chapter/interface gradient text, and family-shade gradient randomizer. */
+
+.taxonomy-hub-v51{
+  margin:10px 0;
+  border:1px solid #3a303d;
+  border-radius:10px;
+  background:#0e0c10;
+  overflow:hidden;
+}
+.taxonomy-hub-v51 > summary{
+  cursor:pointer;
+  list-style:none;
+  padding:11px 12px;
+  color:#eadfe7;
+  font-size:11px;
+  font-weight:900;
+  user-select:none;
+}
+.taxonomy-hub-v51 > summary::-webkit-details-marker{display:none}
+.taxonomy-hub-v51[open] > summary{border-bottom:1px solid #302833}
+.taxonomy-hub-body-v51{padding:10px}
+.taxonomy-tabbar-v51{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-bottom:10px;
+}
+.taxonomy-tab-v51{
+  appearance:none;
+  border:1px solid #493b4c;
+  border-radius:6px;
+  background:#131015;
+  color:#a99ca6;
+  padding:7px 8px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.taxonomy-tab-v51:hover{background:#201923;color:#f4eaf1}
+.taxonomy-tab-v51.active{
+  border-color:#a47948;
+  background:#251b28;
+  color:#f5e2c6;
+  box-shadow:inset 0 -2px 0 #a47948;
+}
+.taxonomy-tab-panel-v51{display:none}
+.taxonomy-tab-panel-v51.active{display:block}
+.taxonomy-tab-panel-v51 > .text-style-group{
+  display:block!important;
+  margin:0!important;
+}
+.taxonomy-tab-panel-v51 .text-style-group-title{
+  margin-bottom:8px;
+}
+.taxonomy-box-card-v51{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #2e2731;
+}
+.taxonomy-box-title-v51{
+  margin:0 0 8px;
+  color:#d8cbd5;
+  font-size:9px;
+  font-weight:900;
+}
+.taxonomy-box-grid-v51{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.taxonomy-box-field-v51 label{
+  display:block;
+  margin-bottom:4px;
+  color:#8f828d;
+  font-size:7px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.taxonomy-box-field-v51 input,
+.taxonomy-box-field-v51 select{
+  width:100%;
+  box-sizing:border-box;
+}
+.taxonomy-gradient-actions-v51{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:9px;
+}
+.taxonomy-gradient-actions-v51 button{
+  border:1px solid #6b4b72;
+  border-radius:6px;
+  background:#171319;
+  color:#eadfe7;
+  padding:7px 9px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.taxonomy-gradient-actions-v51 button:hover{background:#241c27}
+.taxonomy-help-v51{
+  margin:6px 0 0;
+  color:#8d808b;
+  font-size:7px;
+  line-height:1.45;
+}
+.taxonomy-chapter-card-v51{
+  margin:10px 0;
+  padding:10px;
+  border:1px solid #3a303d;
+  border-radius:10px;
+  background:#0e0c10;
+}
+.taxonomy-chapter-card-v51 > h3{margin:0 0 7px;color:#eadfe7;font-size:11px}
+.taxonomy-interface-gradient-v51{margin-top:9px}
+
+/* Semantic tag/stat preview rows. */
+#mock .preview-tag-lines,
+#mock .preview-stat-lines-v51{
+  clear:both;
+  margin:9px 0 10px;
+}
+#mock .preview-tag-line,
+#mock .preview-stat-line-v51{
+  display:flex;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  column-gap:5px;
+  row-gap:5px;
+  margin:4px 0;
+}
+#mock .preview-tag-line-label,
+#mock .preview-stat-line-label-v51{
+  flex:0 0 98px;
+  padding-top:4px;
+  color:#8f838d;
+  font-size:8px;
+  font-weight:800;
+}
+#mock .preview-tag-line-values,
+#mock .preview-stat-line-values-v51{
+  display:flex;
+  flex:1 1 230px;
+  flex-wrap:wrap;
+  column-gap:5px;
+  row-gap:5px;
+}
+#mock .taxonomy-pill-v51{
+  display:inline-block!important;
+  position:relative;
+  box-sizing:border-box;
+  text-decoration:none!important;
+  line-height:1.25;
+  cursor:pointer;
+  max-width:100%;
+}
+#mock .taxonomy-pill-text-v51{
+  display:inline!important;
+  position:relative!important;
+  width:auto!important;
+  height:auto!important;
+  clip:auto!important;
+  overflow:visible!important;
+  white-space:normal!important;
+}
+
+/* Correct inside-fic structure. */
+#mock .preview-fic-shell{
+  max-width:920px;
+  margin:0 auto;
+}
+#mock .preview-fic-upper-actions-v51,
+#mock .preview-fic-bottom-actions-v51{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  column-gap:6px;
+  row-gap:6px;
+}
+#mock .preview-fic-upper-actions-v51{
+  margin:2px 0 14px;
+  padding:7px 0;
+  border-top:1px solid rgba(255,255,255,.08);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+#mock .preview-fic-upper-actions-v51 button,
+#mock .preview-fic-bottom-actions-v51 button,
+#mock .preview-comment-form-v51 button{
+  border:1px solid var(--p-border);
+  border-radius:var(--p-radius);
+  background:var(--p-ui-background);
+  color:var(--p-text);
+  padding:6px 9px;
+  font-size:9px;
+  cursor:pointer;
+}
+#mock .preview-fic-meta{margin:0 0 22px}
+#mock .preview-fic-meta dl{
+  display:grid;
+  grid-template-columns:max-content minmax(0,1fr);
+  column-gap:12px;
+  row-gap:7px;
+  margin:0;
+}
+#mock .preview-fic-meta dt{font-weight:700}
+#mock .preview-fic-meta dd{
+  margin:0;
+  display:flex;
+  flex-wrap:wrap;
+  column-gap:5px;
+  row-gap:5px;
+  align-items:center;
+}
+#mock .preview-fic-title{margin-top:20px}
+#mock .preview-fic-summary{margin:18px 0 24px}
+#mock .preview-fic-bottom-actions-v51{
+  margin:34px auto 14px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+#mock .preview-kudos-v51{
+  margin:10px 0 18px;
+  padding:10px 12px;
+  border:1px solid var(--p-border);
+  border-radius:var(--p-radius);
+  background:var(--p-panel-background);
+  font-size:9px;
+  line-height:1.5;
+}
+#mock .preview-kudos-v51 strong{font-weight:900}
+#mock .preview-comment-form-v51{
+  margin:12px 0 26px;
+  padding:12px;
+  border:1px solid var(--p-border);
+  border-radius:var(--p-radius);
+  background:var(--p-panel-background);
+}
+#mock .preview-comment-form-v51 label{
+  display:block;
+  margin-bottom:7px;
+  font-size:9px;
+  font-weight:900;
+}
+#mock .preview-comment-form-v51 textarea{
+  width:100%;
+  min-height:110px;
+  box-sizing:border-box;
+  resize:vertical;
+}
+#mock .preview-comment-foot-v51{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:6px;
+  color:var(--p-muted);
+  font-size:8px;
+}
+#mock .preview-fic-chapter h3.heading{
+  text-align:center;
+  margin:24px 0;
+}
+
+/* Family shade randomizer. */
+.gradient-family-randomizer-v51{
+  margin:9px 0;
+  padding:9px;
+  border:1px solid #302734;
+  border-radius:8px;
+  background:#121015;
+}
+.gradient-family-head-v51{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px;
+  color:#dfd2dc;
+  font-size:9px;
+  font-weight:900;
+}
+.gradient-family-count-v51{
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) 84px;
+  gap:7px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.gradient-family-count-v51 input{width:100%;box-sizing:border-box}
+.gradient-family-inputs-v51{display:grid;gap:6px}
+.gradient-family-input-v51{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr);
+  gap:6px;
+  align-items:center;
+}
+.gradient-family-input-v51 label{
+  color:#91848f;
+  font-size:7px;
+  font-weight:900;
+}
+.gradient-family-input-v51 input{width:100%;box-sizing:border-box}
+.gradient-family-options-v51{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:8px 0;
+  color:#a99ba6;
+  font-size:8px;
+}
+.gradient-family-options-v51 label{display:flex;align-items:center;gap:5px}
+.gradient-family-preview-v51{
+  height:56px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:6px;
+  margin:8px 0;
+  background:#171419;
+}
+.gradient-family-swatches-v51{
+  display:flex;
+  gap:4px;
+  min-height:18px;
+  margin-bottom:8px;
+}
+.gradient-family-swatch-v51{
+  flex:1 1 0;
+  height:18px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:4px;
+}
+.gradient-family-actions-v51{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.gradient-family-actions-v51 button{
+  border:1px solid #57455d;
+  border-radius:6px;
+  background:#171319;
+  color:#e8dce5;
+  padding:6px 8px;
+  font-size:8px;
+  font-weight:850;
+  cursor:pointer;
+}
+.gradient-family-actions-v51 button.primary{border-color:#8a658e;background:#2b2030}
+.gradient-family-note-v51{
+  margin-top:6px;
+  color:#8f828e;
+  font-size:7px;
+  line-height:1.4;
+}
+@media(max-width:600px){
+  .taxonomy-box-grid-v51{grid-template-columns:1fr}
+  #mock .preview-fic-meta dl{grid-template-columns:1fr}
+  #mock .preview-fic-meta dd{margin-bottom:5px}
+}
+</style>
+
+<script id="ao3-taxonomy-stats-layout-v51-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const textPanel=q('editorSectionPanel_text');
+  const stable=q('stableTextEditor');
+  const target=q('gradientTarget');
+  if(!mock||!textPanel||!stable||!target||typeof gradients==='undefined')return;
+  if(q('taxonomyTagsHubV51'))return;
+
+  const TAGS=[
+    {id:'rating',label:'Rating',short:'Rating',source:'tags',semantic:'preview-rating-tag',
+      textKey:'ratingText',bgKey:'ratingBackground',
+      export:'dd.rating.tags a.tag, .blurb .rating, .blurb ul.required-tags .rating'},
+    {id:'warnings',label:'Archive Warnings',short:'Warnings',source:'warnings',semantic:'preview-warning-tag',
+      textKey:'warningsText',bgKey:'warningsBackground',
+      export:'dd.warning.tags a.tag, li.warnings a.tag, .blurb ul.required-tags .warnings'},
+    {id:'categories',label:'Categories',short:'Categories',source:'categories',semantic:'preview-category-tag',
+      textKey:'categoriesText',bgKey:'categoriesBackground',
+      export:'dd.category.tags a.tag, li.category a.tag, .blurb ul.required-tags .category'},
+    {id:'fandoms',label:'Fandoms',short:'Fandoms',source:'tags',semantic:'preview-fandom-tag',
+      textKey:'fandomsText',bgKey:'fandomsBackground',
+      export:'dd.fandom.tags a.tag, .blurb .fandoms a.tag, li.fandoms a.tag'},
+    {id:'relationships',label:'Relationships',short:'Relationships',source:'relationships',semantic:'preview-relationship-tag',
+      textKey:'relationshipsText',bgKey:'relationshipsBackground',
+      export:'dd.relationship.tags a.tag, li.relationships a.tag'},
+    {id:'characters',label:'Characters',short:'Characters',source:'tags',semantic:'preview-character-tag',
+      textKey:'charactersText',bgKey:'charactersBackground',
+      export:'dd.character.tags a.tag, li.characters a.tag'},
+    {id:'tags',label:'Additional Tags',short:'Additional Tags',source:'tags',semantic:'preview-additional-tag',
+      textKey:'tagsText',bgKey:'tagsBackground',
+      export:'dd.freeform.tags a.tag, li.freeforms a.tag'}
+  ];
+
+  const STATS=[
+    {id:'language',label:'Language',source:'stats',textKey:'languageText',bgKey:'languageBackground',
+      export:'dd.language, dl.stats dd.language, .stats .language'},
+    {id:'words',label:'Words',source:'stats',textKey:'wordsText',bgKey:'wordsBackground',
+      export:'dl.stats dd.words, .stats .words'},
+    {id:'chapters',label:'Chapters',source:'stats',textKey:'chaptersText',bgKey:'chaptersBackground',
+      export:'dl.stats dd.chapters, .stats .chapters'},
+    {id:'completion',label:'Completion Status',source:'stats',textKey:'completionText',bgKey:'completionBackground',
+      export:'.blurb ul.required-tags .iswip, .stats .status, .completion'},
+    {id:'comments',label:'Comments',source:'stats',textKey:'commentsText',bgKey:'commentsBackground',
+      export:'dl.stats dd.comments, .stats .comments'},
+    {id:'kudos',label:'Kudos',source:'stats',textKey:'kudosText',bgKey:'kudosBackground',
+      export:'dl.stats dd.kudos, .stats .kudos'},
+    {id:'bookmarks',label:'Bookmarks',source:'stats',textKey:'bookmarksText',bgKey:'bookmarksBackground',
+      export:'dl.stats dd.bookmarks, .stats .bookmarks'},
+    {id:'hits',label:'Hits',source:'stats',textKey:'hitsText',bgKey:'hitsBackground',
+      export:'dl.stats dd.hits, .stats .hits'}
+  ];
+
+  const ALL=TAGS.concat(STATS);
+  const defById=Object.fromEntries(ALL.map(x=>[x.id,x]));
+  const boxDefaults={
+    rating:['#201622','#654267'],
+    warnings:['#21171A','#69424C'],
+    categories:['#151B24','#3F5D7D'],
+    fandoms:['#151D22','#3A6370'],
+    relationships:['#211724','#744B74'],
+    characters:['#181D22','#4C6170'],
+    tags:['#19191B','#615640'],
+    language:['#171A1F','#4D5968'],
+    words:['#1B171F','#604C68'],
+    chapters:['#151C22','#486273'],
+    completion:['#172018','#4E704E'],
+    comments:['#1F1917','#6A5747'],
+    kudos:['#21191A','#714B55'],
+    bookmarks:['#1D1820','#654D70'],
+    hits:['#161C20','#466273']
+  };
+
+  function esc(s){
+    return String(s==null?'':s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function normHex(v){
+    const s=String(v||'').trim();
+    if(/^#[0-9a-f]{6}$/i.test(s))return s.toUpperCase();
+    if(/^[0-9a-f]{6}$/i.test(s))return ('#'+s).toUpperCase();
+    if(/^#[0-9a-f]{3}$/i.test(s)){
+      const a=s.slice(1).split('');return ('#'+a.map(c=>c+c).join('')).toUpperCase();
+    }
+    if(/^[0-9a-f]{3}$/i.test(s)){
+      const a=s.split('');return ('#'+a.map(c=>c+c).join('')).toUpperCase();
+    }
+    return null;
+  }
+  function rgba(hex,a){
+    let s=String(hex||'#000000').replace('#','');
+    if(s.length===3)s=s.split('').map(c=>c+c).join('');
+    const n=parseInt(s,16);
+    if(Number.isNaN(n))return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+
+  function unwrapCodePairs(root){
+    root.querySelectorAll('.color-code-pair').forEach(wrap=>{
+      const color=wrap.querySelector('input[type="color"]');
+      if(!color)return;
+      color.removeAttribute('data-code-field-ready');
+      wrap.replaceWith(color);
+    });
+  }
+
+  function cloneTextGroup(newId,label,sourceId){
+    const existing=q('textStyleGroup_'+newId);
+    if(existing)return existing;
+    const source=q('textStyleGroup_'+sourceId)||q('textStyleGroup_tags')||q('textStyleGroup_stats');
+    if(!source)return null;
+    const box=source.cloneNode(true);
+    unwrapCodePairs(box);
+    box.querySelectorAll('.tags-gradient-shortcut,.semantic-tag-gradient-shortcut,.taxonomy-gradient-actions-v51').forEach(x=>x.remove());
+    box.id='textStyleGroup_'+newId;
+    box.classList.remove('active','stable-active');
+    box.style.display='block';
+    box.querySelectorAll('[id]').forEach(el=>{
+      if(el.id.startsWith('textStyle_'+sourceId+'_')){
+        el.id='textStyle_'+newId+'_'+el.id.slice(('textStyle_'+sourceId+'_').length);
+      }
+    });
+    box.querySelectorAll('label[for]').forEach(el=>{
+      const f=el.getAttribute('for')||'';
+      if(f.startsWith('textStyle_'+sourceId+'_')){
+        el.setAttribute('for','textStyle_'+newId+'_'+f.slice(('textStyle_'+sourceId+'_').length));
+      }
+    });
+    const strong=box.querySelector('.text-style-group-title strong');
+    if(strong)strong.textContent=label;
+    return box;
+  }
+
+  function ensureGradient(key,label,colors){
+    if(!gradients[key]){
+      gradients[key]={
+        enabled:false,type:'linear',angle:'90deg',custom:'',
+        stops:colors.map((color,i)=>({color,pos:colors.length===1?0:Math.round(i/(colors.length-1)*100),opacity:100}))
+      };
+    }
+    if(!target.querySelector('option[value="'+key+'"]')){
+      const opt=document.createElement('option');
+      opt.value=key;opt.textContent=label;target.appendChild(opt);
+    }
+  }
+
+  TAGS.forEach((d,i)=>{
+    const colors=i%2?['#B9A3CE','#E1B4C2']:['#8FD4FF','#6B8FD3','#D7B55E'];
+    ensureGradient(d.textKey,'Tags — '+d.label+' Text',colors);
+    ensureGradient(d.bgKey,'Tags — '+d.label+' Background',['#171419','#302337','#4A314B']);
+  });
+  STATS.forEach((d,i)=>{
+    const colors=i%2?['#D7B36A','#C97775']:['#89C7E8','#8B75C5'];
+    ensureGradient(d.textKey,'Stats — '+d.label+' Text',colors);
+    ensureGradient(d.bgKey,'Stats — '+d.label+' Background',['#151318','#2A2330','#3D3244']);
+  });
+  ensureGradient('chapterTitlesText','Chapter Titles Text',['#D8564C','#F6CF81']);
+  ensureGradient('interfaceText','Interface Text',['#8FD4FF','#A98BCB','#F1D26C']);
+
+  function selectGradient(key){
+    currentGradientTarget=key;
+    target.value=key;
+    try{renderGradientEditor()}catch(e){}
+    try{window.AO3WorkspaceTabs?.show?.('gradient')}catch(e){}
+    setTimeout(()=>q('gradientTarget')?.scrollIntoView?.({behavior:'smooth',block:'nearest'}),0);
+  }
+
+  function boxControls(def){
+    const defaults=boxDefaults[def.id]||['#171419','#4B3D4E'];
+    const wrap=document.createElement('div');
+    wrap.className='taxonomy-box-card-v51';
+    wrap.innerHTML=
+      '<div class="taxonomy-box-title-v51">Tag / Metadata Box</div>'+
+      '<div class="taxonomy-box-grid-v51">'+
+        '<div class="taxonomy-box-field-v51"><label>Background</label><input type="color" id="taxBox_'+def.id+'_bg" value="'+defaults[0]+'"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Border</label><input type="color" id="taxBox_'+def.id+'_border" value="'+defaults[1]+'"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Border Width (px)</label><input type="number" id="taxBox_'+def.id+'_borderWidth" min="0" max="8" step="1" value="1"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Corner Radius (px)</label><input type="number" id="taxBox_'+def.id+'_radius" min="0" max="40" step="1" value="5"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Horizontal Padding (px)</label><input type="number" id="taxBox_'+def.id+'_padX" min="0" max="32" step="1" value="7"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Vertical Padding (px)</label><input type="number" id="taxBox_'+def.id+'_padY" min="0" max="24" step="1" value="3"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Hover Background</label><input type="color" id="taxBox_'+def.id+'_hoverBg" value="'+defaults[1]+'"></div>'+
+        '<div class="taxonomy-box-field-v51"><label>Hover Text</label><input type="color" id="taxBox_'+def.id+'_hoverText" value="#FFFFFF"></div>'+
+      '</div>'+
+      '<div class="taxonomy-gradient-actions-v51">'+
+        '<button type="button" data-gradient="'+def.textKey+'">Edit '+esc(def.short)+' Text Gradient</button>'+
+        '<button type="button" data-gradient="'+def.bgKey+'">Edit '+esc(def.short)+' Box Gradient</button>'+
+      '</div>'+
+      '<div class="taxonomy-help-v51">Flat colors remain the fallback. Turn a gradient on in Gradient Studio only when you want it.</div>';
+    wrap.querySelectorAll('[data-gradient]').forEach(b=>b.addEventListener('click',()=>selectGradient(b.dataset.gradient)));
+    return wrap;
+  }
+
+  function createHub(id,title,defs,open){
+    const hub=document.createElement('details');
+    hub.id=id;
+    hub.className='taxonomy-hub-v51';
+    hub.open=!!open;
+    hub.innerHTML='<summary>'+title+'</summary><div class="taxonomy-hub-body-v51"><div class="taxonomy-tabbar-v51"></div><div class="taxonomy-tabpanels-v51"></div></div>';
+    const tabs=hub.querySelector('.taxonomy-tabbar-v51');
+    const panels=hub.querySelector('.taxonomy-tabpanels-v51');
+
+    defs.forEach((def,index)=>{
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='taxonomy-tab-v51'+(index===0?' active':'');
+      btn.dataset.taxonomyTab=def.id;
+      btn.textContent=(index+1)+' — '+def.label;
+      tabs.appendChild(btn);
+
+      const panel=document.createElement('div');
+      panel.className='taxonomy-tab-panel-v51'+(index===0?' active':'');
+      panel.dataset.taxonomyPanel=def.id;
+
+      let group=q('textStyleGroup_'+def.id);
+      if(!group)group=cloneTextGroup(def.id,def.label,def.source);
+      if(group){
+        group.style.display='block';
+        panel.appendChild(group);
+      }
+      panel.appendChild(boxControls(def));
+      panels.appendChild(panel);
+
+      btn.addEventListener('click',()=>{
+        openHubTab(hub,def.id,true);
+      });
+    });
+    return hub;
+  }
+
+  function openHubTab(hubOrId,group,scroll){
+    const hub=typeof hubOrId==='string'?q(hubOrId):hubOrId;
+    if(!hub)return;
+    hub.open=true;
+    hub.querySelectorAll('[data-taxonomy-tab]').forEach(b=>b.classList.toggle('active',b.dataset.taxonomyTab===group));
+    hub.querySelectorAll('[data-taxonomy-panel]').forEach(p=>p.classList.toggle('active',p.dataset.taxonomyPanel===group));
+    if(scroll)hub.scrollIntoView?.({behavior:'smooth',block:'nearest'});
+  }
+
+  const stableSelect=q('stableTextGroupSelect');
+  const stableButtons=q('stableTextGroupButtons');
+  const stableName=q('stableTextGroupName');
+  const stableHost=q('stableTextGroupHost');
+  const anchor=stableSelect||stableButtons||stableName||stableHost||stable.firstChild;
+
+  const tagsHub=createHub('taxonomyTagsHubV51','Tags',TAGS,true);
+  const statsHub=createHub('taxonomyStatsHubV51','Stats & Metadata',STATS,false);
+  stable.insertBefore(tagsHub,anchor);
+  stable.insertBefore(statsHub,anchor);
+
+  /* Hide the old separate tag/stat picker entries. Their real controls now live
+     inside the two tabbed sections above. */
+  ['warnings','categories','relationships','tags','stats'].forEach(id=>{
+    const b=stableButtons?.querySelector('[data-group="'+id+'"]');
+    if(b)b.style.display='none';
+    const o=stableSelect?.querySelector('option[value="'+id+'"]');
+    if(o)o.remove();
+  });
+  const legacyStatsGroup=q('textStyleGroup_stats');
+  if(legacyStatsGroup){
+    legacyStatsGroup.classList.remove('active','stable-active');
+    legacyStatsGroup.style.display='none';
+  }
+
+  /* Dedicated Chapter Titles controls. */
+  const chapterCard=document.createElement('div');
+  chapterCard.id='chapterTitlesCardV51';
+  chapterCard.className='taxonomy-chapter-card-v51';
+  chapterCard.innerHTML='<h3>Chapter Titles</h3><p class="taxonomy-help-v51" style="margin-bottom:9px">Style “Chapter 1”, “Chapter 2”, etc. separately from work titles and main fic text.</p>';
+  const chapterGroup=cloneTextGroup('chapterTitles','Chapter Titles','title');
+  if(chapterGroup){
+    chapterGroup.style.display='block';
+    chapterGroup.querySelectorAll('.tags-gradient-shortcut,.semantic-tag-gradient-shortcut').forEach(x=>x.remove());
+    chapterCard.appendChild(chapterGroup);
+  }
+  const chapterGrad=document.createElement('div');
+  chapterGrad.className='taxonomy-gradient-actions-v51';
+  chapterGrad.innerHTML='<button type="button" data-gradient="chapterTitlesText">Edit Chapter Title Gradient</button>';
+  chapterGrad.querySelector('button').addEventListener('click',()=>selectGradient('chapterTitlesText'));
+  chapterCard.appendChild(chapterGrad);
+  stable.insertBefore(chapterCard,anchor);
+
+  /* Interface gets its own independent gradient shortcut. */
+  const interfaceGroup=q('textStyleGroup_interface');
+  if(interfaceGroup&&!interfaceGroup.querySelector('.taxonomy-interface-gradient-v51')){
+    const row=document.createElement('div');
+    row.className='taxonomy-gradient-actions-v51 taxonomy-interface-gradient-v51';
+    row.innerHTML='<button type="button" data-gradient="interfaceText">Edit Interface Text Gradient</button><span class="taxonomy-help-v51">Navigation, action buttons, and AO3 interface text only.</span>';
+    row.querySelector('button').addEventListener('click',()=>selectGradient('interfaceText'));
+    interfaceGroup.appendChild(row);
+  }
+
+  /* Route the existing text-editor public API into the new hubs for semantic
+     tag/stat groups, while preserving every older group. */
+  try{
+    const previousActivate=window.AO3StableTextEditor?.activate;
+    if(previousActivate){
+      window.AO3StableTextEditor.activate=function(id,scroll){
+        if(TAGS.some(x=>x.id===id)){openHubTab('taxonomyTagsHubV51',id,scroll);return;}
+        if(STATS.some(x=>x.id===id)){openHubTab('taxonomyStatsHubV51',id,scroll);return;}
+        if(id==='chapterTitles'){chapterCard.scrollIntoView?.({behavior:'smooth',block:'nearest'});return;}
+        return previousActivate.call(this,id,scroll);
+      };
+    }
+  }catch(e){}
+
+  function readStyle(id,defaultSize,defaultColor){
+    const get=s=>q('textStyle_'+id+'_'+s);
+    const color=get('color')?.value||defaultColor||'#D2C8D0';
+    const glow=get('glow')?.value||'none';
+    const gc=get('glowColor')?.value||color;
+    let shadow='none';
+    if(glow==='shadow')shadow='0 1px 2px '+rgba(gc,.65);
+    if(glow==='glow')shadow='0 0 4px '+rgba(gc,.72);
+    if(glow==='strong')shadow='0 0 3px '+rgba(gc,.95)+',0 0 8px '+rgba(gc,.72);
+    return {
+      font:get('font')?.value||'Georgia, serif',
+      size:Math.max(6,Number(get('size')?.value||defaultSize||12)),
+      color,
+      spacing:Number(get('spacing')?.value||0),
+      bold:get('bold')?.checked===true,
+      italic:get('italic')?.checked===true,
+      shadow
+    };
+  }
+
+  function readBox(id){
+    const defaults=boxDefaults[id]||['#171419','#4B3D4E'];
+    return {
+      bg:q('taxBox_'+id+'_bg')?.value||defaults[0],
+      border:q('taxBox_'+id+'_border')?.value||defaults[1],
+      bw:Math.max(0,Number(q('taxBox_'+id+'_borderWidth')?.value||1)),
+      radius:Math.max(0,Number(q('taxBox_'+id+'_radius')?.value||5)),
+      padX:Math.max(0,Number(q('taxBox_'+id+'_padX')?.value||7)),
+      padY:Math.max(0,Number(q('taxBox_'+id+'_padY')?.value||3)),
+      hoverBg:q('taxBox_'+id+'_hoverBg')?.value||defaults[1],
+      hoverText:q('taxBox_'+id+'_hoverText')?.value||'#FFFFFF'
+    };
+  }
+
+  function gradCss(key){
+    if(!gradients[key]?.enabled)return '';
+    try{return gradientCssFor(key)||''}catch(e){return ''}
+  }
+  function clearTextGradient(el){
+    el.style.removeProperty('background-image');
+    el.style.removeProperty('background-clip');
+    el.style.removeProperty('-webkit-background-clip');
+    el.style.removeProperty('-webkit-text-fill-color');
+  }
+  function applyTextStyle(el,v,textGradient){
+    el.style.setProperty('font-family',v.font,'important');
+    el.style.setProperty('font-size',v.size+'px','important');
+    el.style.setProperty('font-weight',v.bold?'700':'400','important');
+    el.style.setProperty('font-style',v.italic?'italic':'normal','important');
+    el.style.setProperty('letter-spacing',v.spacing+'px','important');
+    el.style.setProperty('text-shadow',v.shadow,'important');
+    if(textGradient){
+      el.style.setProperty('background-image',textGradient,'important');
+      el.style.setProperty('background-clip','text','important');
+      el.style.setProperty('-webkit-background-clip','text','important');
+      el.style.setProperty('color','transparent','important');
+      el.style.setProperty('-webkit-text-fill-color','transparent','important');
+    }else{
+      clearTextGradient(el);
+      el.style.setProperty('color',v.color,'important');
+      el.style.removeProperty('-webkit-text-fill-color');
+    }
+  }
+
+  function applyPillGroup(def){
+    const v=readStyle(def.id,10,'#D7CDD5');
+    const box=readBox(def.id);
+    const textGradient=gradCss(def.textKey);
+    const bgGradient=gradCss(def.bgKey);
+    mock.querySelectorAll('.taxonomy-pill-v51[data-taxonomy-group="'+def.id+'"]').forEach(outer=>{
+      outer.style.setProperty('background',bgGradient||box.bg,'important');
+      outer.style.setProperty('border',box.bw+'px solid '+box.border,'important');
+      outer.style.setProperty('border-radius',box.radius+'px','important');
+      outer.style.setProperty('padding',box.padY+'px '+box.padX+'px','important');
+      outer.style.setProperty('box-sizing','border-box','important');
+      const inner=outer.querySelector('.taxonomy-pill-text-v51')||outer;
+      applyTextStyle(inner,v,textGradient);
+      outer.dataset.hoverBg=box.hoverBg;
+      outer.dataset.hoverText=box.hoverText;
+    });
+  }
+
+  const hoverStyle=document.createElement('style');
+  hoverStyle.id='taxonomyHoverStyleV51';
+  document.head.appendChild(hoverStyle);
+  function applyHoverRules(){
+    hoverStyle.textContent=ALL.map(def=>{
+      const b=readBox(def.id);
+      return '#mock .taxonomy-pill-v51[data-taxonomy-group="'+def.id+'"]:hover{background:'+b.hoverBg+'!important}'+
+        '#mock .taxonomy-pill-v51[data-taxonomy-group="'+def.id+'"]:hover .taxonomy-pill-text-v51{color:'+b.hoverText+'!important;-webkit-text-fill-color:'+b.hoverText+'!important;background-image:none!important}';
+    }).join('\n');
+  }
+
+  function interfaceEls(){
+    return mock.querySelectorAll('.ao3-logo,.ao3-user,.ao3-user a,.ao3-nav a,.mock-actions button,.mock-btn,.preview-fic-upper-actions-v51 button,.preview-fic-bottom-actions-v51 button,.preview-comment-form-v51 button,.ao3-footer,.ao3-footer a');
+  }
+  function applyInterface(){
+    const v=readStyle('interface',12,'#C4B3C4');
+    const g=gradCss('interfaceText');
+    interfaceEls().forEach(el=>applyTextStyle(el,v,g));
+  }
+
+  function applyChapterTitles(){
+    const v=readStyle('chapterTitles',18,'#D7CDD5');
+    const g=gradCss('chapterTitlesText');
+    mock.querySelectorAll('.preview-fic-chapter h3.heading,.preview-chapter-title-v51').forEach(el=>applyTextStyle(el,v,g));
+  }
+
+  function applyAllStyles(){
+    ALL.forEach(applyPillGroup);
+    applyHoverRules();
+    applyChapterTitles();
+    applyInterface();
+    try{window.AO3TitleDirectFix?.apply?.()}catch(e){}
+  }
+
+  function semanticClass(id){
+    return defById[id]?.semantic||'preview-'+id+'-stat';
+  }
+  function pill(id,text,kind){
+    const outer=document.createElement(kind==='stat'?'span':'a');
+    if(kind!=='stat'){outer.href='#';}
+    outer.className='taxonomy-pill-v51 '+(kind==='stat'?'preview-stat-pill-v51':'preview-tag-pill-v51');
+    outer.dataset.taxonomyGroup=id;
+    const inner=document.createElement('span');
+    inner.className='taxonomy-pill-text-v51 '+semanticClass(id);
+    inner.textContent=text;
+    outer.appendChild(inner);
+    return outer;
+  }
+  function line(label,id,values){
+    const row=document.createElement('div');
+    row.className='preview-tag-line '+id+'-line';
+    const lab=document.createElement('span');
+    lab.className='preview-tag-line-label';lab.textContent=label+':';
+    const vals=document.createElement('span');
+    vals.className='preview-tag-line-values';
+    values.forEach(v=>vals.appendChild(pill(id,v,'tag')));
+    row.append(lab,vals);
+    return row;
+  }
+  function statLine(values){
+    const row=document.createElement('div');
+    row.className='preview-stat-line-v51';
+    const lab=document.createElement('span');
+    lab.className='preview-stat-line-label-v51';lab.textContent='Stats:';
+    const vals=document.createElement('span');
+    vals.className='preview-stat-line-values-v51';
+    values.forEach(v=>vals.appendChild(pill(v.id,v.text,'stat')));
+    row.append(lab,vals);
+    return row;
+  }
+
+  const workMap={
+    'The Midnight Visitor':{
+      fandom:'Original Work',
+      relationship:'Thomas Thorn/Oisín',
+      characters:['Thomas Thorn','Oisín'],
+      tags:['Fae & Fairies','Slow Burn','Doorway Magic','Falling in Love']
+    },
+    'All the Roads We Never Took':{
+      fandom:'Original Work',relationship:'Alex Mercer/Jamie Bell',
+      characters:['Alex Mercer','Jamie Bell'],tags:['Road Trips','Friends to Lovers','Mutual Pining']
+    },
+    'A Study in Red':{
+      fandom:'Original Work',relationship:'Elias Ward/Julian Cross',
+      characters:['Elias Ward','Julian Cross'],tags:['Enemies to Lovers','Mystery','Dark Romance']
+    },
+    'The Shape of Summer':{
+      fandom:'Original Work',relationship:'Noah Reed/Evan Hale',
+      characters:['Noah Reed','Evan Hale'],tags:['Summer Romance','Small Town','Happy Ending']
+    },
+    'Where the Stars Go Quiet':{
+      fandom:'Original Work',relationship:'Milo Hart/Adrian Vale',
+      characters:['Milo Hart','Adrian Vale'],tags:['Space','Found Family','First Kiss']
+    }
+  };
+
+  function textOf(card,selector,fallback){
+    return (card.querySelector(selector)?.textContent||fallback||'').trim();
+  }
+  function extractStat(raw,name,fallback){
+    const re=new RegExp(name+'\\s*:\\s*([\\d,?\\/]+)','i');
+    return String(raw||'').match(re)?.[1]||fallback;
+  }
+
+  function decorateResultCard(card,index){
+    const title=(card.querySelector(':scope > h4 > a')?.textContent||'').trim();
+    const info=workMap[title]||{
+      fandom:'Original Work',
+      relationship:'Character A/Character B',
+      characters:['Character A','Character B'],
+      tags:['Slow Burn']
+    };
+    const rating=textOf(card,'.preview-required-tags .rating .text','Mature');
+    const warning=textOf(card,'.preview-required-tags .warnings .text','No Archive Warnings Apply');
+    const category=textOf(card,'.preview-required-tags .category .text','M/M');
+    const completion=textOf(card,'.preview-required-tags .iswip .text','Complete');
+
+    let wrap=card.querySelector(':scope > .preview-tag-lines');
+    if(!wrap){
+      wrap=document.createElement('div');
+      wrap.className='tags preview-tag-lines';
+      const req=card.querySelector(':scope > .preview-required-tags');
+      if(req)req.insertAdjacentElement('afterend',wrap);
+      else card.querySelector(':scope > .byline')?.insertAdjacentElement('afterend',wrap);
+    }
+    wrap.innerHTML='';
+    wrap.append(
+      line('Rating','rating',[rating]),
+      line('Warnings','warnings',[warning]),
+      line('Category','categories',[category]),
+      line('Fandoms','fandoms',[info.fandom]),
+      line('Relationships','relationships',[info.relationship]),
+      line('Characters','characters',info.characters),
+      line('Additional Tags','tags',info.tags)
+    );
+
+    const oldStats=card.querySelector(':scope > .stats');
+    const raw=oldStats?.textContent||'';
+    const values=[
+      {id:'language',text:'English'},
+      {id:'words',text:extractStat(raw,'Words',index===0?'42,183':'18,906')+' Words'},
+      {id:'chapters',text:extractStat(raw,'Chapters',index===0?'12/12':'4/4')+' Chapters'},
+      {id:'completion',text:completion},
+      {id:'comments',text:extractStat(raw,'Comments',index===0?'48':'91')+' Comments'},
+      {id:'kudos',text:extractStat(raw,'Kudos',index===0?'1,284':'842')+' Kudos'},
+      {id:'bookmarks',text:extractStat(raw,'Bookmarks',index===0?'306':'120')+' Bookmarks'},
+      {id:'hits',text:extractStat(raw,'Hits',index===0?'12,904':'8,411')+' Hits'}
+    ];
+    let stats=card.querySelector(':scope > .preview-stat-lines-v51');
+    if(!stats){
+      stats=document.createElement('div');
+      stats.className='preview-stat-lines-v51';
+      const summary=card.querySelector(':scope > .summary');
+      if(summary)summary.insertAdjacentElement('afterend',stats);
+      else card.appendChild(stats);
+    }
+    stats.innerHTML='';
+    stats.appendChild(statLine(values));
+    if(oldStats)oldStats.style.display='none';
+
+    card.dataset.semanticTagLines49='1';
+    card.dataset.taxonomyV51='1';
+  }
+
+  function ficTitle(){
+    return (mock.querySelector('.preview-fic-title')?.textContent||'The Midnight Visitor').trim()||'The Midnight Visitor';
+  }
+
+  function tagPillHtml(id,text){
+    return '<a class="taxonomy-pill-v51 preview-tag-pill-v51" data-taxonomy-group="'+id+'" href="#">'+
+      '<span class="taxonomy-pill-text-v51 '+semanticClass(id)+'">'+esc(text)+'</span></a>';
+  }
+  function statPillHtml(id,text){
+    return '<span class="taxonomy-pill-v51 preview-stat-pill-v51" data-taxonomy-group="'+id+'">'+
+      '<span class="taxonomy-pill-text-v51 '+semanticClass(id)+'">'+esc(text)+'</span></span>';
+  }
+
+  function buildFicLayout(shell,title){
+    const info=workMap[title]||workMap['The Midnight Visitor'];
+    shell.innerHTML=
+      '<div class="mock-actions preview-fic-upper-actions-v51">'+
+        '<button>Chapter by Chapter</button><button>Edit Bookmark</button><button>Mark for Later</button><button>Comments</button>'+
+        '<button>Hide Creator\'s Style</button><button>Share</button><button>Subscribe</button><button>Download</button>'+
+      '</div>'+
+      '<div class="mock-panel preview-fic-meta"><dl>'+
+        '<dt>Rating:</dt><dd>'+tagPillHtml('rating','Mature')+'</dd>'+
+        '<dt>Archive Warning:</dt><dd>'+tagPillHtml('warnings','No Archive Warnings Apply')+'</dd>'+
+        '<dt>Category:</dt><dd>'+tagPillHtml('categories','M/M')+'</dd>'+
+        '<dt>Fandoms:</dt><dd>'+tagPillHtml('fandoms',info.fandom)+'</dd>'+
+        '<dt>Relationship:</dt><dd>'+tagPillHtml('relationships',info.relationship)+'</dd>'+
+        '<dt>Characters:</dt><dd>'+info.characters.map(x=>tagPillHtml('characters',x)).join('')+'</dd>'+
+        '<dt>Additional Tags:</dt><dd>'+info.tags.map(x=>tagPillHtml('tags',x)).join('')+'</dd>'+
+        '<dt>Language:</dt><dd>'+statPillHtml('language','English')+'</dd>'+
+        '<dt>Series:</dt><dd><a href="#">Part 1 of Midnight Doors</a></dd>'+
+        '<dt>Stats:</dt><dd>'+
+          statPillHtml('words','42,183 Words')+
+          statPillHtml('chapters','2/2 Chapters')+
+          statPillHtml('completion','Complete')+
+          statPillHtml('comments','48 Comments')+
+          statPillHtml('kudos','312 Kudos')+
+          statPillHtml('bookmarks','55 Bookmarks')+
+          statPillHtml('hits','4,102 Hits')+
+        '</dd>'+
+      '</dl></div>'+
+      '<h2 class="heading preview-fic-title">'+esc(title)+'</h2>'+
+      '<div class="byline preview-fic-byline">by <a href="#">nightgarden</a></div>'+
+      '<div class="mock-panel preview-fic-summary"><h3 class="heading">Summary</h3><blockquote class="summary">'+
+        'Thomas Thorn has spent a long time being left alone. Then someone begins knocking at his door every night.'+
+      '</blockquote></div>'+
+      '<div class="userstuff preview-fic-chapter">'+
+        '<h3 class="heading preview-chapter-title-v51">Chapter 1</h3>'+
+        '<p>The rain had started sometime after midnight, soft enough at first that he mistook it for branches brushing the roof.</p>'+
+        '<p>By two in the morning it had become a steady hiss against the windows. The old house seemed to shrink around the sound.</p>'+
+        '<p>He was halfway through convincing himself to go back to sleep when someone knocked at the front door.</p>'+
+        '<p>Three knocks. Slow. Deliberate.</p>'+
+        '<p>“Who is it?”</p>'+
+        '<p>For several seconds there was nothing.</p>'+
+        '<p>Then a voice, low and strangely calm, answered from the other side.</p>'+
+        '<h3 class="heading preview-chapter-title-v51">Chapter 2</h3>'+
+        '<p>By morning there were no footprints in the mud.</p>'+
+        '<p>Still, when night came again, he found himself watching the door.</p>'+
+      '</div>'+
+      '<div class="mock-actions preview-fic-bottom-actions-v51"><button>↑ Top</button><button>Kudos</button><button>Edit Bookmark</button><button>Comments</button></div>'+
+      '<div class="preview-kudos-v51"><strong>Kudos:</strong> nightgarden, paperghosts, seaglass, blackriver, starlitreader, and 307 guests left kudos on this work!</div>'+
+      '<div class="preview-comment-form-v51">'+
+        '<label>Comment as skinmaker</label>'+
+        '<textarea placeholder="Leave a comment"></textarea>'+
+        '<div class="preview-comment-foot-v51"><span>10,000 characters left</span><button type="button">Comment</button></div>'+
+      '</div>';
+
+    const meta=shell.querySelector('.preview-fic-meta');
+    if(meta){
+      meta.dataset.semanticTagLines49='1';
+      meta.dataset.semanticTitle49=title;
+    }
+    shell.dataset.taxonomyLayout51=title;
+  }
+
+  function decorateFic(){
+    const shell=mock.querySelector('.preview-fic-shell');
+    if(!shell)return;
+    const title=ficTitle();
+    if(shell.dataset.taxonomyLayout51!==title)buildFicLayout(shell,title);
+  }
+
+  let decorating=false;
+  function decoratePreview(){
+    if(decorating)return;
+    decorating=true;
+    try{
+      mock.querySelectorAll('.preview-result-card').forEach(decorateResultCard);
+      decorateFic();
+      applyAllStyles();
+    }finally{decorating=false;}
+  }
+
+  /* Taxonomy pills open exactly their tab; they do not fall through to old
+     tag click-routing that treated several categories as the same editor. */
+  document.addEventListener('click',e=>{
+    if(!mock.contains(e.target))return;
+    const p=e.target.closest?.('.taxonomy-pill-v51');
+    if(!p)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const id=p.dataset.taxonomyGroup;
+    setTimeout(()=>{
+      try{window.AO3EditorSectionTabs?.show?.('text')}catch(err){}
+      if(TAGS.some(x=>x.id===id))openHubTab('taxonomyTagsHubV51',id,true);
+      else if(STATS.some(x=>x.id===id))openHubTab('taxonomyStatsHubV51',id,true);
+    },0);
+  },true);
+
+  document.addEventListener('click',e=>{
+    if(!mock.contains(e.target))return;
+    if(e.target.closest?.('.preview-fic-chapter h3.heading')){
+      setTimeout(()=>{
+        try{window.AO3EditorSectionTabs?.show?.('text')}catch(err){}
+        chapterCard.scrollIntoView?.({behavior:'smooth',block:'nearest'});
+      },0);
+    }
+  },true);
+
+  const styleEventsRoot=stable;
+  styleEventsRoot.addEventListener('input',()=>requestAnimationFrame(()=>{applyAllStyles();try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}}),true);
+  styleEventsRoot.addEventListener('change',()=>requestAnimationFrame(()=>{applyAllStyles();try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}}),true);
+
+  function gradientEvent(e){
+    return e.target===target||e.target===q('gradientEnabled')||e.target===q('gradientType')||
+      e.target===q('gradientAngle')||e.target===q('gradientPaste')||
+      e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls');
+  }
+  document.addEventListener('input',e=>{if(gradientEvent(e))requestAnimationFrame(applyAllStyles)},true);
+  document.addEventListener('change',e=>{if(gradientEvent(e))requestAnimationFrame(applyAllStyles)},true);
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('#gradientAddStop,#gradientEven,#gradientReverse,#gradientApplyPaste,#gradientUseBuilder,#gradientRotateMinus15,#gradientRotatePlus15,#gradientRotate90,#gradientFlipDirection,.preview-page-btn,[data-page]')){
+      setTimeout(decoratePreview,0);
+    }
+  },true);
+
+  try{
+    const oldRender=renderGradientEditor;
+    renderGradientEditor=function(){
+      const out=oldRender.apply(this,arguments);
+      const opt=target.options[target.selectedIndex];
+      const status=q('gradientTargetStatus');
+      if(status&&opt&&gradients[currentGradientTarget]){
+        status.textContent=opt.textContent+': '+(gradients[currentGradientTarget].enabled?'gradient ON':'gradient off');
+      }
+      setTimeout(applyAllStyles,0);
+      return out;
+    };
+  }catch(e){}
+
+  /* ---------- FAMILY-SHADE GRADIENT RANDOMIZER ---------- */
+  function hslToHex(h,s,l){
+    h=((Number(h)%360)+360)%360;s=Math.max(0,Math.min(100,s))/100;l=Math.max(0,Math.min(100,l))/100;
+    const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}
+    const hx=v=>Math.round((v+m)*255).toString(16).padStart(2,'0');
+    return ('#'+hx(r)+hx(g)+hx(b)).toUpperCase();
+  }
+  function rb(a,b){return a+Math.random()*(b-a)}
+  function rh(range){
+    const a=range[0],b=range[1];
+    if(a<=b)return rb(a,b);
+    const first=360-a,total=first+b,p=Math.random()*total;
+    return p<first?a+p:p-first;
+  }
+  const families={
+    red:[[350,10],[62,92],[35,64]],orange:[[18,36],[68,94],[40,65]],yellow:[[46,61],[64,92],[48,76]],
+    gold:[[39,51],[52,83],[37,68]],green:[[92,145],[40,78],[28,58]],teal:[[160,185],[42,78],[30,60]],
+    cyan:[[185,202],[55,88],[42,68]],blue:[[203,235],[50,88],[34,68]],navy:[[214,231],[45,78],[18,38]],
+    purple:[[266,296],[48,84],[34,66]],violet:[[278,309],[50,86],[38,70]],pink:[[320,344],[50,88],[58,82]],
+    rose:[[341,356],[45,78],[42,72]],magenta:[[302,326],[55,88],[40,68]],brown:[[18,34],[28,58],[20,44]],
+    burgundy:[[338,353],[48,76],[20,39]],crimson:[[345,358],[58,88],[31,52]],lilac:[[270,292],[35,68],[68,84]],
+    lavender:[[255,282],[30,62],[68,86]],peach:[[12,28],[58,88],[68,84]],coral:[[3,18],[62,88],[53,72]],
+    bronze:[[27,40],[42,70],[30,53]],copper:[[18,31],[48,76],[34,58]],silver:[[205,225],[4,18],[58,82]],
+    gray:[[0,360],[0,10],[28,72]],black:[[0,360],[0,12],[3,16]],white:[[0,360],[0,12],[91,99]],
+    cream:[[38,55],[28,62],[82,94]],ivory:[[43,58],[24,52],[88,97]]
+  };
+  families.grey=families.gray;
+  const familyAliases={
+    darkblue:'navy',forestgreen:'green',forest:'green',turquoise:'teal',aqua:'cyan',skyblue:'blue',babyblue:'blue',
+    royalblue:'blue',maroon:'burgundy',wine:'burgundy',scarlet:'red',ruby:'red',lemon:'yellow',mustard:'gold',
+    champagne:'gold',plum:'purple',orchid:'purple',mauve:'purple',fuchsia:'magenta',blush:'pink',salmon:'coral',
+    tan:'brown',beige:'cream'
+  };
+  function shadeFromInput(input){
+    const raw=String(input||'').trim();
+    const exact=normHex(raw);
+    if(exact)return {color:exact,fixed:true};
+    const key0=raw.toLowerCase().replace(/[\s_-]+/g,'');
+    const key=families[key0]?key0:familyAliases[key0];
+    const f=families[key];
+    if(!f)return null;
+    return {color:hslToHex(rh(f[0]),rb(f[1][0],f[1][1]),rb(f[2][0],f[2][1])),fixed:false};
+  }
+  function familyCfg(colors){
+    const randomStops=q('gradientFamilyRandomStopsV51')?.checked!==false;
+    let ordered=colors.slice();
+    if(q('gradientFamilyShuffleV51')?.checked){
+      for(let i=ordered.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ordered[i],ordered[j]]=[ordered[j],ordered[i]]}
+    }
+    const stops=ordered.map((color,i)=>{
+      if(i===0)return {color,pos:0,opacity:100};
+      if(i===ordered.length-1)return {color,pos:100,opacity:100};
+      const base=100*i/(ordered.length-1);
+      const jitter=randomStops?rb(-Math.min(9,30/ordered.length),Math.min(9,30/ordered.length)):0;
+      return {color,pos:Math.round(Math.max(1,Math.min(99,base+jitter))),opacity:100};
+    }).sort((a,b)=>a.pos-b.pos);
+    const angle=q('gradientFamilyRandomAngleV51')?.checked!==false?Math.floor(Math.random()*360):135;
+    return {enabled:true,type:'linear',angle:angle+'deg',custom:'',stops};
+  }
+  function familyCss(cfg){
+    return 'linear-gradient('+cfg.angle+', '+cfg.stops.map(s=>s.color+' '+s.pos+'%').join(', ')+')';
+  }
+
+  let familyCurrent=null;
+  function setupFamilyRandomizer(){
+    const lib=q('gradientLibraryCard');
+    if(!lib||q('gradientFamilyRandomizerV51'))return;
+    const div=document.createElement('div');
+    div.id='gradientFamilyRandomizerV51';
+    div.className='gradient-family-randomizer-v51';
+    div.innerHTML=
+      '<div class="gradient-family-head-v51"><span>Color Family Shade Randomizer</span><span id="gradientFamilyTargetV51"></span></div>'+
+      '<div class="gradient-family-count-v51"><label for="gradientFamilyCountV51">How many color families?</label><input id="gradientFamilyCountV51" type="number" min="2" max="8" value="2"></div>'+
+      '<div class="gradient-family-inputs-v51" id="gradientFamilyInputsV51"></div>'+
+      '<div class="gradient-family-options-v51">'+
+        '<label><input id="gradientFamilyRandomAngleV51" type="checkbox" checked> Random angle</label>'+
+        '<label><input id="gradientFamilyRandomStopsV51" type="checkbox" checked> Random blend positions</label>'+
+        '<label><input id="gradientFamilyShuffleV51" type="checkbox"> Shuffle color order</label>'+
+      '</div>'+
+      '<div class="gradient-family-preview-v51" id="gradientFamilyPreviewV51"></div>'+
+      '<div class="gradient-family-swatches-v51" id="gradientFamilySwatchesV51"></div>'+
+      '<div class="gradient-family-actions-v51">'+
+        '<button class="primary" type="button" id="gradientFamilyRandomizeV51">Randomize Shades</button>'+
+        '<button type="button" id="gradientFamilyApplyV51">Apply to Current Target</button>'+
+        '<button type="button" id="gradientFamilySaveV51">Save to Library</button>'+
+      '</div>'+
+      '<div class="gradient-family-note-v51">Type names like pink, blue, gold, burgundy, lavender, or teal. Each reroll picks a new shade from that family. Put a hex code in any box to keep that one exact color fixed.</div>';
+
+    const existingRandom=lib.querySelector('.gradient-randomizer');
+    if(existingRandom)existingRandom.insertAdjacentElement('afterend',div);
+    else lib.appendChild(div);
+
+    function count(){return Math.max(2,Math.min(8,Number(q('gradientFamilyCountV51')?.value||2)))}
+    function renderInputs(){
+      const host=q('gradientFamilyInputsV51');if(!host)return;
+      const old={};
+      host.querySelectorAll('input[data-family-index]').forEach(x=>old[x.dataset.familyIndex]=x.value);
+      const n=count();q('gradientFamilyCountV51').value=n;
+      host.innerHTML='';
+      for(let i=0;i<n;i++){
+        const row=document.createElement('div');row.className='gradient-family-input-v51';
+        const val=old[i]??(i===0?'pink':i===1?'blue':i===2?'gold':'');
+        row.innerHTML='<label>Color '+(i+1)+'</label><input type="text" id="gradientFamilyInput'+(i+1)+'V51" data-family-index="'+i+'" value="'+esc(val)+'" placeholder="pink, blue, gold, or #HEX">';
+        host.appendChild(row);
+      }
+    }
+    function updateTarget(){const el=q('gradientFamilyTargetV51');if(el)el.textContent=(target.options[target.selectedIndex]?.textContent||target.value)}
+    function renderCurrent(){
+      const p=q('gradientFamilyPreviewV51'),s=q('gradientFamilySwatchesV51');
+      if(!p||!s)return;
+      if(!familyCurrent){p.style.background='linear-gradient(135deg,#F09ABD,#568CD7)';s.innerHTML='';return}
+      p.style.background=familyCss(familyCurrent);
+      s.innerHTML=familyCurrent.stops.map(x=>'<span class="gradient-family-swatch-v51" title="'+x.color+'" style="background:'+x.color+'"></span>').join('');
+    }
+    function randomizeFamily(){
+      const values=[...q('gradientFamilyInputsV51').querySelectorAll('input[data-family-index]')].map(x=>x.value.trim());
+      if(values.some(x=>!x)){try{showToast('Fill in every color family box')}catch(e){};return null}
+      const resolved=[];
+      for(const value of values){
+        const c=shadeFromInput(value);
+        if(!c){try{showToast('Unknown color family: '+value)}catch(e){};return null}
+        resolved.push(c.color);
+      }
+      familyCurrent=familyCfg(resolved);renderCurrent();return familyCurrent;
+    }
+    function applyFamily(){
+      if(!familyCurrent&&!randomizeFamily())return;
+      const key=currentGradientTarget||target.value;
+      gradients[key]=JSON.parse(JSON.stringify(familyCurrent));
+      gradients[key].enabled=true;
+      try{renderGradientEditor()}catch(e){}
+      try{update()}catch(e){}
+      applyAllStyles();
+      try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+    }
+
+    q('gradientFamilyCountV51').addEventListener('input',()=>{renderInputs();try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}});
+    q('gradientFamilyRandomizeV51').onclick=()=>{randomizeFamily();};
+    q('gradientFamilyApplyV51').onclick=()=>{applyFamily();try{showToast('Family gradient applied')}catch(e){}};
+    q('gradientFamilySaveV51').onclick=()=>{
+      applyFamily();
+      try{window.AO3GradientLibrary?.saveCurrent?.()}catch(e){}
+    };
+    target.addEventListener('change',updateTarget);
+    renderInputs();updateTarget();renderCurrent();
+  }
+
+  /* Correct the built-in Gracebound preset to the exact requested gradient:
+     #35090B → #D8564C → #F6CF81 at 135deg. */
+  const graceCfg={
+    enabled:true,type:'linear',angle:'135deg',custom:'',
+    stops:[
+      {color:'#35090B',pos:0,opacity:100},
+      {color:'#D8564C',pos:50,opacity:100},
+      {color:'#F6CF81',pos:100,opacity:100}
+    ]
+  };
+  const graceCss='linear-gradient(135deg, #35090B 0%, #D8564C 50%, #F6CF81 100%)';
+  function applyGrace(){
+    const key=currentGradientTarget||target.value;
+    gradients[key]=JSON.parse(JSON.stringify(graceCfg));
+    try{renderGradientEditor()}catch(e){}
+    try{update()}catch(e){}
+    applyAllStyles();
+    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+  }
+  function patchGracebound(){
+    const grid=q('gradientPresetGrid');if(!grid)return;
+    grid.querySelectorAll('.gradient-preset-card').forEach(card=>{
+      const name=card.querySelector('.gradient-preset-name')?.textContent?.trim();
+      if(name!=='Gracebound')return;
+      card.querySelector('.gradient-preset-preview').style.backgroundImage=graceCss;
+      const apply=card.querySelector('.apply');
+      if(apply)apply.onclick=()=>{applyGrace();try{showToast('Gracebound applied')}catch(e){}};
+      const copy=card.querySelector('.copy');
+      if(copy)copy.onclick=async()=>{
+        try{await navigator.clipboard.writeText(graceCss);showToast('Gracebound CSS copied')}catch(e){}
+      };
+      const saveCopy=card.querySelector('.save-copy');
+      if(saveCopy)saveCopy.onclick=()=>{
+        try{
+          const key='ao3GradientLibrarySavedV1';
+          const list=JSON.parse(localStorage.getItem(key)||'[]');
+          list.unshift({id:'saved-'+Date.now(),name:'Gracebound Copy',category:'My Saved',config:JSON.parse(JSON.stringify(graceCfg)),saved:true,builtin:false});
+          localStorage.setItem(key,JSON.stringify(list));
+          window.AO3GradientLibrary?.refresh?.();
+          showToast('Gracebound saved');
+        }catch(e){}
+      };
+    });
+  }
+
+  setupFamilyRandomizer();
+  patchGracebound();
+  const graceObserver=q('gradientPresetGrid')?new MutationObserver(()=>requestAnimationFrame(patchGracebound)):null;
+  if(graceObserver)graceObserver.observe(q('gradientPresetGrid'),{childList:true,subtree:true});
+
+  /* ---------- FINAL AO3 CSS EXPORT ---------- */
+  function decl(v){
+    return 'font-family:'+v.font+' !important;\n'+
+      '  font-size:'+v.size+'px !important;\n'+
+      '  color:'+v.color+' !important;\n'+
+      '  font-weight:'+(v.bold?'700':'400')+' !important;\n'+
+      '  font-style:'+(v.italic?'italic':'normal')+' !important;\n'+
+      '  letter-spacing:'+v.spacing+'px !important;\n'+
+      '  text-shadow:'+v.shadow+' !important;';
+  }
+  function cssTextGradient(selector,g){
+    if(!g)return '';
+    return selector+' {\n'+
+      '  background-image:'+g+' !important;\n'+
+      '  background-clip:text !important;\n'+
+      '  -webkit-background-clip:text !important;\n'+
+      '  color:transparent !important;\n'+
+      '  -webkit-text-fill-color:transparent !important;\n'+
+      '}\n';
+  }
+  function cssPill(def){
+    const v=readStyle(def.id,10,'#D7CDD5'),b=readBox(def.id);
+    const tg=gradCss(def.textKey),bg=gradCss(def.bgKey);
+    const selectors=def.export.split(',').map(x=>x.trim()).filter(Boolean);
+    const sel=selectors.join(', ');
+    const beforeSel=selectors.map(x=>x+'::before').join(', ');
+    const hoverBeforeSel=selectors.map(x=>x+':hover::before').join(', ');
+    const hoverSel=selectors.map(x=>x+':hover').join(', ');
+    let css='\n/* '+def.label.toUpperCase()+' — TAG/METADATA BOX */\n'+
+      sel+' {\n'+
+      '  position:relative !important;\n'+
+      '  z-index:0 !important;\n'+
+      '  display:inline-block !important;\n'+
+      '  box-sizing:border-box !important;\n'+
+      '  padding:'+b.padY+'px '+b.padX+'px !important;\n'+
+      '  border:'+b.bw+'px solid '+b.border+' !important;\n'+
+      '  border-radius:'+b.radius+'px !important;\n'+
+      '  text-decoration:none !important;\n'+
+      '  background:transparent !important;\n'+
+      '  '+decl(v).replace(/\n/g,'\n  ')+'\n'+
+      '}\n'+
+      beforeSel+' {\n'+
+      '  content:"" !important;\n'+
+      '  position:absolute !important;\n'+
+      '  z-index:-1 !important;\n'+
+      '  top:0 !important; right:0 !important; bottom:0 !important; left:0 !important;\n'+
+      '  border-radius:'+b.radius+'px !important;\n'+
+      '  background:'+(bg||b.bg)+' !important;\n'+
+      '}\n'+
+      hoverBeforeSel+' { background:'+b.hoverBg+' !important; }\n'+
+      hoverSel+' { color:'+b.hoverText+' !important; -webkit-text-fill-color:'+b.hoverText+' !important; background-image:none !important; }\n';
+    css+=cssTextGradient(sel,tg);
+    return css;
+  }
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      css+='\n\n/* 0.1.51 — INDEPENDENT TAG + STATS/METADATA STYLING */\n';
+      ALL.forEach(def=>{css+=cssPill(def)});
+
+      const cv=readStyle('chapterTitles',18,'#D7CDD5');
+      const cg=gradCss('chapterTitlesText');
+      const chapterSel='#workskin .chapter .title, #workskin .chapter h3.title, #chapters .chapter .title, .chapter .title, .chapter h3.title';
+      css+='\n/* CHAPTER TITLES — INDEPENDENT */\n'+chapterSel+' {\n  '+decl(cv).replace(/\n/g,'\n  ')+'\n}\n';
+      css+=cssTextGradient(chapterSel,cg);
+
+      const iv=readStyle('interface',12,'#C4B3C4');
+      const ig=gradCss('interfaceText');
+      const interfaceSel='#header .primary > li > a, #header .secondary > li > a, #header .user a, #footer a, .actions > li > a, .actions > li > button';
+      css+='\n/* INTERFACE TEXT — INDEPENDENT */\n'+interfaceSel+' {\n  '+decl(iv).replace(/\n/g,'\n  ')+'\n}\n';
+      css+=cssTextGradient(interfaceSel,ig);
+
+      return css;
+    };
+  }catch(e){}
+
+  /* Keep preview decoration stable without the old semantic mutation loop. */
+  const obs=new MutationObserver(records=>{
+    if(decorating)return;
+    const relevant=records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1));
+    if(relevant)requestAnimationFrame(decoratePreview);
+  });
+  obs.observe(mock,{childList:true,subtree:true});
+
+  document.addEventListener('click',e=>{
+    const b=e.target.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]');
+    if(b)setTimeout(decoratePreview,0);
+  },true);
+
+  /* Public hook used by importer/startup refreshes. */
+  window.AO3TaxonomyStatsV51={
+    refresh:decoratePreview,
+    apply:applyAllStyles,
+    openTag:id=>openHubTab('taxonomyTagsHubV51',id,true),
+    openStat:id=>openHubTab('taxonomyStatsHubV51',id,true),
+    selectGradient,
+    gracebound:applyGrace
+  };
+
+  setTimeout(decoratePreview,30);
+  setTimeout(()=>{decoratePreview();setupFamilyRandomizer();patchGracebound();},160);
+  setTimeout(()=>{
+    decoratePreview();
+    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+  },560);
+})();
+</script>
