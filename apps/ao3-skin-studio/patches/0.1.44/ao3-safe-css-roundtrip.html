@@ -20,14 +20,31 @@
  }
  function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return null}}
  function applyControls(controls){
+   /* Fast batch restore: assign everything first without broadcasting hundreds
+      of input/change events. Older behavior could trigger a full preview rebuild
+      and save for every single control and make imports appear frozen. */
    Object.entries(controls||{}).forEach(([id,value])=>{
      const el=q(id); if(!el||el.type==='file'||el.type==='button'||el.type==='submit')return;
      try{
        if(el.type==='checkbox'||el.type==='radio')el.checked=!!value; else el.value=value;
-       el.dispatchEvent(new Event('input',{bubbles:true}));
-       el.dispatchEvent(new Event('change',{bubbles:true}));
      }catch(e){}
    });
+ }
+
+ function refreshAfterImport(){
+   try{if(typeof renderGradientEditor==='function')renderGradientEditor()}catch(e){}
+   try{if(typeof applyRequiredPreview==='function')applyRequiredPreview()}catch(e){}
+   try{if(typeof applyAllRequiredStates==='function')applyAllRequiredStates()}catch(e){}
+   try{if(typeof syncUnifiedBackground==='function')syncUnifiedBackground(false)}catch(e){}
+   try{if(typeof syncNavIntoBackground==='function')syncNavIntoBackground(false)}catch(e){}
+   try{if(typeof update==='function')update()}catch(e){}
+   try{if(typeof applyHeaderLayout==='function')applyHeaderLayout()}catch(e){}
+   try{window.AO3StableTextPreview?.apply?.()}catch(e){}
+   try{window.AO3TitleDirectFix?.apply?.()}catch(e){}
+   try{window.AO3InterfaceTitleIsolation?.apply?.()}catch(e){}
+   try{window.AO3TagsTextGradient?.apply?.()}catch(e){}
+   try{window.AO3CssRoundTripStatus?.set?.('Import complete')}catch(e){}
+   setTimeout(()=>{try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}},0);
  }
  function utf8ToB64(str){
    const bytes=new TextEncoder().encode(str); let bin='';
@@ -88,9 +105,11 @@
        '<button type="button" id="cssImportEditFileBtn">Open CSS File</button>'+
        '<input type="file" id="cssImportEditFile" accept=".css,text/css" hidden>'+
      '</div>'+
+     '<div id="cssImportEditStatus" class="css-import-note">Ready to import.</div>'+
      '<div class="css-import-note">Skin Studio CSS restores its editable controls exactly. Other AO3 CSS is preserved as custom CSS and common settings are imported where recognizable.</div>';
    exportCard.appendChild(wrap);
  }
+ window.AO3CssRoundTripStatus={set:function(msg){const s=q('cssImportEditStatus');if(s)s.textContent=msg;}};
 
  if(!q('importedCustomCssStore')){
    const store=document.createElement('textarea');
