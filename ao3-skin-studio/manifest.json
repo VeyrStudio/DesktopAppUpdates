@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.50",
-  "payloadSha256": "2ec1c9cab248ef070106050250571af74fb1131773ce49d5f588ef85c9a18edb",
-  "executableSha256": "c6898d5ae77d3be8889d98cf34249cba3927effa11eb069a2ee098afe1cd4f16",
+  "version": "0.1.51",
+  "payloadSha256": "541f39d746ea94281b7608170a944d06a3b594295fc1e84b18ec6d4526ae6b3f",
+  "executableSha256": "d5a174fa21371956c060101163c35614876cd2a5d6fc88b568d1ebda94527385",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.50-part-001.txt",
-      "sha256": "a6844b49ad6732587c3de6961ebdb08212aea4287f685a110ac85bf7d634595a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.51-part-001.txt",
+      "sha256": "dbb6caf82458149a801b9b2551cbb2b1c7dfd856e85168b2803d6685d85b3a3e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.50-part-002.txt",
-      "sha256": "5abf2277f08c27c1c5068dd879e8c5a90a0f4608d1d52c8a87fcf66b3848019c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.51-part-002.txt",
+      "sha256": "1947a83d59662493a6cf00b21514fadf46a8382db50aab0362d11b59a621fee6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.50-part-003.txt",
-      "sha256": "798a2e29a4df55158b157801fa95793405c8341986f5138af63ad4e40bf6fa8c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.51-part-003.txt",
+      "sha256": "3656cc3a6e641220d8000ee27402a9f013f9e0c840fcba6a2cb84fd6ba08b0e1"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.50-part-004.txt",
-      "sha256": "c57ed2a1390596bd7a5fb2664ea6e986c80e6df5c3aad5d1a500dfd2977b9883"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.51-part-004.txt",
+      "sha256": "37703dbc15147b1a4e835a07c36060c3ccb6c9a7699518e2239845ce90a57bcb"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.50-part-005.txt",
-      "sha256": "e29194ee69b4a8133ebb3dee06d4692e35004b928724b7ab861ce77afcff3895"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.51-part-005.txt",
+      "sha256": "26347cde6aca0c52efdfe762dfd169194db8d278ce16ff15068d71f5790efe82"
     }
   ],
-  "notes": "Splits AO3 tag-like text into four independent editable groups: Warnings, Categories, Relationships, and Additional Tags. Results/Browse shows each on its own tag line, and Inside-a-Fic metadata renders those values as tag links too. The first mock work uses The Midnight Visitor with Thomas Thorn/Oisín. Each group has separate font/color/size/glow settings and its own Gradient Studio target, existing Tags settings migrate forward as Additional Tags, and the final preview decorator is guarded so its metadata conversion cannot retrigger itself in a mutation loop."
+  "notes": "Adds one tabbed Tags section for Rating, Archive Warnings, Categories, Fandoms, Relationships, Characters, and Additional Tags, plus a separate tabbed Stats & Metadata section for Language, Words, Chapters, Completion, Comments, Kudos, Bookmarks, and Hits. Every tag/stat group can be styled independently with flat colors, box styling, text gradients, and box gradients. Fandom is now first-class throughout preview/export/state. Inside-a-Fic preview now follows AO3 order with the upper work-action bar above metadata, then title/summary/chapters, bottom actions, kudos, comments, and footer. Chapter titles and Interface text gain separate gradient-lettering targets. Gradient Library adds the color-family shade randomizer and correct Gracebound preset (#35090B → #D8564C → #F6CF81 at 135deg). Existing CSS round-trip and per-skin state preservation carry the new controls and gradients forward."
 }
