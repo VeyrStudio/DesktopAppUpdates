@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.47",
-  "payloadSha256": "e17456995616e557b7b0a8a6d389ef77ad4c706e516f8adff8bdd1ef19b3cac1",
-  "executableSha256": "0b8ab150d8f1b5ed0e01d7b23252304dea53a8d0502ccf0a45e6b55a6e5ae83b",
+  "version": "0.1.48",
+  "payloadSha256": "686aca36b0b97d46b33188630010c4ba23f1927792cb5cd86240ed1494de8a02",
+  "executableSha256": "8875740e042d3df6ff86dcd96355553af17fbbf66f348712ebc17a7b0e78dca1",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-001.txt",
-      "sha256": "275c3e8791635dff8dab61e663295388e6253c634c37bac8fa685fbe2d385eaa"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-001.txt",
+      "sha256": "9b7c60c3c93f91e69c1e80a25bae636f8266742e253054f1f0e16b9ab52b0691"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-002.txt",
-      "sha256": "249320bc7a1a640b60a89c5530be66efa07b4ab5e67b6a17fa2654ece387e641"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-002.txt",
+      "sha256": "62e9103cb194b2f30f2614cd7d5eac02a9e6dbc49adbae20e3bdaa56c2d6fb87"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-003.txt",
-      "sha256": "4a769ff8065850bf9530cf27fd8c1d7008b732ca0e7359d19578528fccf1d8a2"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-003.txt",
+      "sha256": "515fb167fa18a0693d78c9095364aa22c4baf88a547f56cf2492203e13022805"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-004.txt",
-      "sha256": "a7f2d018fde56c9deae767afcf5307244bd433b02d3e9326fe338759fd5cffda"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-004.txt",
+      "sha256": "b56433865956d7e9e9bedeeee1397e0cba1a0b3dad35633ecf221df5c8027d87"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.47-part-005.txt",
-      "sha256": "72d0abfbbc8574ec8978a377237757f1cc749e003cba8f937f9eab6858844287"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.48-part-005.txt",
+      "sha256": "dd577ea65b8933b04d6c744d91390c94ed994f7d603e64e78d3737bf2070f79a"
     }
   ],
-  "notes": "Full audit repair pass plus Gradient Library. Fixes the preview inspector intercepting the Inside-a-Fic Back to Works button. Adds a persistent Gradient Library with visual swatches, built-in Gracebound, Save Current Gradient, apply-to-current-target behavior, and rename/delete for custom gradients. Retains the repaired CSS importer, AO3-safe export cleanup, per-skin persistence, Title/Interface isolation, tag-text gradients, preview navigation, and header/fixed-background lock."
+  "notes": "Expands the Gradient Library into a full preset and randomizer system. Includes 180+ built-in gradients across Celestial, Blues, Golds, Metallic, Reds, Purples, Gothic, Forest, Ocean, Fire, Sunset, Romantic, Pastel, High Contrast and Random Finds; Gracebound is included. Adds search, category filters, favorites, saved-gradient migration, rename/delete, Copy CSS, Apply to current target, and a Gradient Randomizer with Balanced, Soft, Bold, Dark, Metallic, Celestial and Chaos modes, lock colors/angle/type controls, and Generate 12 random choices."
 }
