@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.52",
-  "payloadSha256": "3f57acf104a9aca984ca5a524f32394430d360f60adefdf086181e5b334cf321",
-  "executableSha256": "a07a48d4ef4873322456c31fb37578ab3becffea1cb6fa6a8658c242fcaca8e5",
+  "version": "0.1.53",
+  "payloadSha256": "302212bd32d9d3ed25dbae63e478cc3872ab90672786641875d8439db7f05a9d",
+  "executableSha256": "10928de4ae21ef8102b76892743239e8cc94bf7bc182fdf2cb6b4853da788eff",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.52-part-001.txt",
-      "sha256": "97afec82e31370ac2deb59b54449ede32d732029e4265ee0a7d4d9cf7b98a040"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-001.txt",
+      "sha256": "40c5f1a00eec53107a700a43101f695bdad4c7950876dc0513b7a5a577051a5e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.52-part-002.txt",
-      "sha256": "142f2d26251b8dcd8e3f3874b3cc07272c28ca7767b8b255b0a3cb67bcf57d0b"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-002.txt",
+      "sha256": "2b9db607e5d7f3b4e82e9041fe9da9d56f6d59f817dcef5ddd2c25e1a140a12e"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.52-part-003.txt",
-      "sha256": "e3434776a12295b99b30b8ccd7cae2a28c634f970dc2aeeeb5eeb1802c131610"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-003.txt",
+      "sha256": "42b6867fd5bfe57ecc85c8b89a4546e4a1d570379583de2dc107501b4b4d246c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.52-part-004.txt",
-      "sha256": "c2cd4f551046b30e04691e316949107432dd26c2205b9372c0cde4f25a97811f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-004.txt",
+      "sha256": "9dba9312afaad7284f1405b379715ffd26f86b818b6d2e62bbcc7957b62e2fd6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.52-part-005.txt",
-      "sha256": "8f8500476b644bbb1b24e72b59cd5451bae98f239607950f4dead94dfc6f63f0"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-005.txt",
+      "sha256": "c38e8de23a7e668610608689c5942bc3544adce93e76b4217b58579c17af2a30"
     }
   ],
-  "notes": "Expands gradient lettering to every editable text group: work titles, author/byline, summary, main fic text, fic-info/metadata labels, notes, all tag categories, all Stats & Metadata values, chapter titles, and Interface text. Each text group keeps its solid color as a fallback and gets a shortcut into the shared Gradient Studio, with preview, AO3-safe CSS export, CSS edit-state round-trip, and per-skin persistence. Interface gradient coverage now includes AO3 navigation/actions, preview headings/counts, comment UI, and footer text. Adds the built-in Gilded Ivory gradient: #FFFDF7 → #F4E8C8 → #D9B967 → #A77A2C at 135deg."
+  "notes": "Adds Series as the eighth first-class Tags tab with independent font/color, text gradient, background gradient, border/radius/padding, hover styling, preview styling, AO3 CSS output, CSS edit-state round-trip, and per-skin persistence. Adds a Whole Skin / Global Style panel with a reversible Font for Everything override and an All Text override that can be off, one solid color, or one global gradient. Global overrides do not erase the individual text settings underneath; turning them off restores the per-element styling."
 }
