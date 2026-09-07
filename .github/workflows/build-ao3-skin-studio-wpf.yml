@@ -607,6 +607,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $seriesGlobalPatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.54: restore full AO3 preview header, repair work-blurb hierarchy, and speed up live editing.
+          $previewRepairPatchPath = 'apps/ao3-skin-studio/patches/0.1.54/preview-repair-performance.html'
+          if (-not (Test-Path $previewRepairPatchPath)) { throw 'AO3 Skin Studio 0.1.54 preview repair/performance patch was not found.' }
+          $previewRepairPatch = Get-Content $previewRepairPatchPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.54.' }
+          $studioText = $studioText.Replace('</body>', $previewRepairPatch + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -689,16 +698,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.53</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.53.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.53.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.54</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.54.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.54.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.53" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.54" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -838,7 +847,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds Series as the eighth first-class Tags tab with independent font/color, text gradient, background gradient, border/radius/padding, hover styling, preview styling, AO3 CSS output, CSS edit-state round-trip, and per-skin persistence. Adds a Whole Skin / Global Style panel with a reversible Font for Everything override and an All Text override that can be off, one solid color, or one global gradient. Global overrides do not erase the individual text settings underneath; turning them off restores the per-element styling.'
+            notes = 'Restores the complete logged-in AO3 preview header/chrome above Results, Inside a Fic, and Split Screen, including Archive of Our Own branding, primary navigation, profile/dashboard shortcuts, bookmarks/history/Marked for Later, Subscriptions, Preferences, Post, Inbox, and Log Out. Rebuilds Results/Browse blurbs into AO3 hierarchy: the 2x2 required-tag icon block remains at left, title/byline lead the work, Fandom gets its own natural line, Relationships/Characters/Additional Tags/Series flow as wrapping tags, Summary follows, and compact stats sit at the bottom. Inside-a-Fic metadata stays a proper AO3 label/value list. Performance work makes Results decoration idempotent, removes a mutation-driven rebuild loop, coalesces live-preview repaint/update passes, eliminates duplicate Split Screen updates, debounces per-skin snapshots/CSS regeneration, and caches expensive whole-preview text scans.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

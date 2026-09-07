@@ -137,31 +137,9 @@
     });
   });
 
-  document.addEventListener('input', e => {
-    if(!splitActive) return;
-    if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
-    setTimeout(() => {
-      try{
-        if(typeof applyGradientPreview === 'function') applyGradientPreview();
-      }catch(err){}
-      try{
-        if(typeof update === 'function') update();
-      }catch(err){}
-    },0);
-  },true);
+  /* 0.1.54 performance: the main preview listener already refreshes split-screen
+     contents, so do not run a second full update() for every input/change. */
 
-  document.addEventListener('change', e => {
-    if(!splitActive) return;
-    if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
-    setTimeout(() => {
-      try{
-        if(typeof applyGradientPreview === 'function') applyGradientPreview();
-      }catch(err){}
-      try{
-        if(typeof update === 'function') update();
-      }catch(err){}
-    },0);
-  },true);
 
   if(localStorage.getItem('ao3SkinStudioSplitPreview') === '1'){
     renderSplit();

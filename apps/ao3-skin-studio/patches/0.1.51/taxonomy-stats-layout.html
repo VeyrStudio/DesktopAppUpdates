@@ -864,6 +864,8 @@
     const warning=textOf(card,'.preview-required-tags .warnings .text','No Archive Warnings Apply');
     const category=textOf(card,'.preview-required-tags .category .text','M/M');
     const completion=textOf(card,'.preview-required-tags .iswip .text','Complete');
+    const layoutSig='ao3-v54:'+title;
+    if(card.dataset.ao3ResultLayout54===layoutSig)return;
 
     let wrap=card.querySelector(':scope > .preview-tag-lines');
     if(!wrap){
@@ -874,15 +876,20 @@
       else card.querySelector(':scope > .byline')?.insertAdjacentElement('afterend',wrap);
     }
     wrap.innerHTML='';
-    wrap.append(
-      line('Rating','rating',[rating]),
-      line('Warnings','warnings',[warning]),
-      line('Category','categories',[category]),
-      line('Fandoms','fandoms',[info.fandom]),
-      line('Relationships','relationships',[info.relationship]),
-      line('Characters','characters',info.characters),
-      line('Additional Tags','tags',info.tags)
-    );
+    wrap.classList.add('preview-ao3-tag-area-v54');
+
+    const fandomRow=document.createElement('div');
+    fandomRow.className='preview-fandom-heading-v54';
+    fandomRow.appendChild(pill('fandoms',info.fandom,'tag'));
+
+    const stream=document.createElement('div');
+    stream.className='preview-tag-stream-v54';
+    [pill('relationships',info.relationship,'tag')]
+      .concat(info.characters.map(x=>pill('characters',x,'tag')))
+      .concat(info.tags.map(x=>pill('tags',x,'tag')))
+      .forEach(x=>stream.appendChild(x));
+
+    wrap.append(fandomRow,stream);
 
     const oldStats=card.querySelector(':scope > .stats');
     const raw=oldStats?.textContent||'';
@@ -890,7 +897,6 @@
       {id:'language',text:'English'},
       {id:'words',text:extractStat(raw,'Words',index===0?'42,183':'18,906')+' Words'},
       {id:'chapters',text:extractStat(raw,'Chapters',index===0?'12/12':'4/4')+' Chapters'},
-      {id:'completion',text:completion},
       {id:'comments',text:extractStat(raw,'Comments',index===0?'48':'91')+' Comments'},
       {id:'kudos',text:extractStat(raw,'Kudos',index===0?'1,284':'842')+' Kudos'},
       {id:'bookmarks',text:extractStat(raw,'Bookmarks',index===0?'306':'120')+' Bookmarks'},
@@ -910,6 +916,7 @@
 
     card.dataset.semanticTagLines49='1';
     card.dataset.taxonomyV51='1';
+    card.dataset.ao3ResultLayout54=layoutSig;
   }
 
   function ficTitle(){
@@ -1031,16 +1038,32 @@
   },true);
 
   const styleEventsRoot=stable;
-  styleEventsRoot.addEventListener('input',()=>requestAnimationFrame(()=>{applyAllStyles();try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}}),true);
-  styleEventsRoot.addEventListener('change',()=>requestAnimationFrame(()=>{applyAllStyles();try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}}),true);
+  let styleApplyFrameV54=0;
+  let stateSnapshotTimerV54=0;
+  function scheduleStyleApplyV54(saveState){
+    if(!styleApplyFrameV54){
+      styleApplyFrameV54=requestAnimationFrame(()=>{
+        styleApplyFrameV54=0;
+        applyAllStyles();
+      });
+    }
+    if(saveState){
+      clearTimeout(stateSnapshotTimerV54);
+      stateSnapshotTimerV54=setTimeout(()=>{
+        try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+      },220);
+    }
+  }
+  styleEventsRoot.addEventListener('input',()=>scheduleStyleApplyV54(true),true);
+  styleEventsRoot.addEventListener('change',()=>scheduleStyleApplyV54(true),true);
 
   function gradientEvent(e){
     return e.target===target||e.target===q('gradientEnabled')||e.target===q('gradientType')||
       e.target===q('gradientAngle')||e.target===q('gradientPaste')||
       e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls');
   }
-  document.addEventListener('input',e=>{if(gradientEvent(e))requestAnimationFrame(applyAllStyles)},true);
-  document.addEventListener('change',e=>{if(gradientEvent(e))requestAnimationFrame(applyAllStyles)},true);
+  document.addEventListener('input',e=>{if(gradientEvent(e))scheduleStyleApplyV54(false)},true);
+  document.addEventListener('change',e=>{if(gradientEvent(e))scheduleStyleApplyV54(false)},true);
   document.addEventListener('click',e=>{
     if(e.target?.closest?.('#gradientAddStop,#gradientEven,#gradientReverse,#gradientApplyPaste,#gradientUseBuilder,#gradientRotateMinus15,#gradientRotatePlus15,#gradientRotate90,#gradientFlipDirection,.preview-page-btn,[data-page]')){
       setTimeout(decoratePreview,0);

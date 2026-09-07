@@ -118,6 +118,15 @@
 
   GROUPS.forEach(addShortcut);
 
+  let universalApplyFrameV54=0;
+  function scheduleUniversalApplyV54(){
+    if(universalApplyFrameV54)return;
+    universalApplyFrameV54=requestAnimationFrame(()=>{
+      universalApplyFrameV54=0;
+      applyAll();
+    });
+  }
+
   function gradientCss(key){
     if(!gradients[key]?.enabled)return '';
     try{return gradientCssFor(key)||''}catch(e){return ''}
@@ -187,26 +196,26 @@
   }
 
   document.addEventListener('input',e=>{
-    if(isGradientControl(e))requestAnimationFrame(applyAll);
+    if(isGradientControl(e))scheduleUniversalApplyV54();
   },true);
   document.addEventListener('change',e=>{
-    if(isGradientControl(e))requestAnimationFrame(applyAll);
+    if(isGradientControl(e))scheduleUniversalApplyV54();
   },true);
   document.addEventListener('click',e=>{
     if(e.target?.closest?.('#gradientAddStop,#gradientEven,#gradientReverse,#gradientApplyPaste,#gradientUseBuilder,#gradientRotateMinus15,#gradientRotatePlus15,#gradientRotate90,#gradientFlipDirection,.preview-page-btn,[data-page],.device-btn,[data-device]')){
-      setTimeout(applyAll,0);
+      scheduleUniversalApplyV54();
     }
   },true);
 
   const stable=q('stableTextEditor');
-  stable?.addEventListener('input',()=>requestAnimationFrame(applyAll),true);
-  stable?.addEventListener('change',()=>requestAnimationFrame(applyAll),true);
+  stable?.addEventListener('input',()=>scheduleUniversalApplyV54(),true);
+  stable?.addEventListener('change',()=>scheduleUniversalApplyV54(),true);
 
   try{
     const oldRender=renderGradientEditor;
     renderGradientEditor=function(){
       const out=oldRender.apply(this,arguments);
-      setTimeout(applyAll,0);
+      scheduleUniversalApplyV54();
       return out;
     };
   }catch(e){}
@@ -217,7 +226,7 @@
     const oldUpdate=update;
     update=function(){
       const out=oldUpdate.apply(this,arguments);
-      setTimeout(applyAll,0);
+      scheduleUniversalApplyV54();
       return out;
     };
   }catch(e){}
@@ -248,7 +257,7 @@
     };
   }catch(e){}
 
-  const obs=new MutationObserver(()=>requestAnimationFrame(applyAll));
+  const obs=new MutationObserver(()=>scheduleUniversalApplyV54());
   obs.observe(mock,{childList:true,subtree:true});
 
   window.AO3UniversalTextGradientsV52={

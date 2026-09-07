@@ -1,0 +1,256 @@
+<style id="ao3-preview-repair-v54-styles">
+/* 0.1.54 — restore complete AO3 chrome and put work blurbs back into AO3 hierarchy. */
+#mock .ao3-header-v54{
+  position:relative;
+  z-index:15;
+  width:100%;
+  box-sizing:border-box;
+  background:transparent!important;
+  color:var(--p-text);
+}
+#mock .ao3-header-main-v54{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:12px 18px 8px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+#mock .ao3-logo-v54{
+  display:inline-flex;
+  align-items:baseline;
+  gap:5px;
+  font-family:Georgia,serif;
+  font-size:22px;
+  font-weight:700;
+  line-height:1;
+  white-space:nowrap;
+}
+#mock .ao3-logo-v54 a{text-decoration:none}
+#mock .ao3-logo-v54 sup{
+  font-size:9px;
+  font-weight:700;
+  opacity:.72;
+}
+#mock .ao3-user-v54{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:4px 10px;
+  font-size:9px;
+}
+#mock .ao3-user-v54 a,
+#mock .ao3-primary-v54 a,
+#mock .ao3-user-links-v54 a{text-decoration:none}
+#mock .ao3-primary-v54{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px;
+  padding:6px 18px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+#mock .ao3-primary-v54 a{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:4px;
+}
+#mock .ao3-header-search-v54{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+#mock .ao3-header-search-v54 input{
+  width:150px;
+  max-width:28vw;
+  padding:4px 6px;
+  box-sizing:border-box;
+}
+#mock .ao3-header-search-v54 button{
+  padding:4px 7px;
+  cursor:pointer;
+}
+#mock .ao3-user-links-v54{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px 12px;
+  padding:6px 18px 8px;
+  font-size:8px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+/* Results/Browse: compact AO3 blurb hierarchy, not a dashboard grid. */
+#mock .preview-result-card .preview-ao3-tag-area-v54{
+  display:block!important;
+  margin:7px 0 9px!important;
+  clear:none!important;
+}
+#mock .preview-result-card .preview-fandom-heading-v54{
+  display:block!important;
+  margin:2px 0 7px!important;
+  padding:0!important;
+}
+#mock .preview-result-card .preview-tag-stream-v54{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:0!important;
+}
+#mock .preview-result-card .preview-tag-stream-v54 > .taxonomy-pill-v51{
+  flex:0 0 auto!important;
+}
+#mock .preview-result-card .preview-stat-lines-v51{
+  display:block!important;
+  margin:9px 0 0!important;
+  clear:both!important;
+}
+#mock .preview-result-card .preview-stat-line-v51{
+  display:block!important;
+  margin:0!important;
+}
+#mock .preview-result-card .preview-stat-line-label-v51{
+  display:none!important;
+}
+#mock .preview-result-card .preview-stat-line-values-v51{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:5px!important;
+  margin:0!important;
+}
+#mock .preview-result-card > .summary{
+  clear:both;
+  margin-top:10px!important;
+}
+
+/* Inside-a-Fic metadata remains AO3's label/value list, never a card-column grid. */
+#mock .preview-fic-meta dl{
+  display:grid!important;
+  grid-template-columns:max-content minmax(0,1fr)!important;
+  column-gap:12px!important;
+  row-gap:7px!important;
+  align-items:start!important;
+}
+#mock .preview-fic-meta dt{
+  display:block!important;
+  margin:0!important;
+  text-align:right;
+  white-space:nowrap;
+}
+#mock .preview-fic-meta dd{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:5px!important;
+  margin:0!important;
+}
+
+@media(max-width:700px){
+  #mock .ao3-header-main-v54{align-items:flex-start;flex-direction:column}
+  #mock .ao3-user-v54{justify-content:flex-start}
+  #mock .ao3-header-search-v54{margin-left:0;width:100%}
+  #mock .ao3-header-search-v54 input{max-width:none;flex:1 1 auto}
+  #mock .preview-fic-meta dl{grid-template-columns:1fr!important}
+  #mock .preview-fic-meta dt{text-align:left}
+}
+</style>
+
+<script id="ao3-preview-repair-v54-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  if(!mock||q('ao3PreviewRepairSentinelV54'))return;
+
+  const sentinel=document.createElement('span');
+  sentinel.id='ao3PreviewRepairSentinelV54';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  function ensureHeader(){
+    const main=mock.querySelector('.ao3-main');
+    if(!main)return;
+
+    const existing=q('ao3PreviewHeaderV54');
+    if(existing){
+      if(existing.nextElementSibling!==main)main.insertAdjacentElement('beforebegin',existing);
+      return;
+    }
+
+    /* Remove only stale preview chrome. The real editor controls are outside #mock. */
+    mock.querySelectorAll('.ao3-header').forEach(old=>old.remove());
+
+    const header=document.createElement('header');
+    header.id='ao3PreviewHeaderV54';
+    header.className='ao3-header ao3-header-v54';
+    header.innerHTML=
+      '<div class="ao3-header-main-v54">'+
+        '<div class="ao3-logo ao3-logo-v54"><a href="#">Archive of Our Own</a><sup>beta</sup></div>'+
+        '<nav class="ao3-user ao3-user-v54" aria-label="User navigation">'+
+          '<a href="#"><strong>Hi, skinmaker!</strong></a>'+
+          '<a href="#">Post</a>'+
+          '<a href="#">Inbox (0)</a>'+
+          '<a href="#">Log Out</a>'+
+        '</nav>'+
+      '</div>'+
+      '<nav class="ao3-nav ao3-primary-v54" aria-label="Primary navigation">'+
+        '<a href="#">Fandoms</a>'+
+        '<a href="#">Browse</a>'+
+        '<a href="#">Search</a>'+
+        '<a href="#">About</a>'+
+        '<span class="ao3-header-search-v54"><input type="text" aria-label="Search works" placeholder="Search"><button type="button">Search</button></span>'+
+      '</nav>'+
+      '<nav class="ao3-user ao3-user-links-v54" aria-label="Account shortcuts">'+
+        '<a href="#">Profile</a>'+
+        '<a href="#">Dashboard</a>'+
+        '<a href="#">Works</a>'+
+        '<a href="#">Series</a>'+
+        '<a href="#">Bookmarks</a>'+
+        '<a href="#">History</a>'+
+        '<a href="#">Marked for Later</a>'+
+        '<a href="#">Subscriptions</a>'+
+        '<a href="#">Preferences</a>'+
+      '</nav>';
+
+    main.insertAdjacentElement('beforebegin',header);
+  }
+
+  function finishPreview(){
+    ensureHeader();
+    try{window.AO3TaxonomyStatsV51?.refresh?.()}catch(e){}
+    try{window.AO3SeriesGlobalV53?.refresh?.()}catch(e){}
+    try{window.AO3UniversalTextGradientsV52?.apply?.()}catch(e){}
+    try{window.AO3InterfaceTitleIsolation?.apply?.()}catch(e){}
+  }
+
+  let finishFrame=0;
+  function scheduleFinish(){
+    if(finishFrame)return;
+    finishFrame=requestAnimationFrame(()=>{
+      finishFrame=0;
+      finishPreview();
+    });
+  }
+
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]')){
+      setTimeout(scheduleFinish,0);
+    }
+  },true);
+
+  /* The preview page swaps only .ao3-main; this observer is intentionally shallow
+     and coalesced so it does not become another source of editor lag. */
+  const main=mock.querySelector('.ao3-main');
+  if(main){
+    const obs=new MutationObserver(scheduleFinish);
+    obs.observe(main,{childList:true});
+  }
+
+  window.AO3PreviewRepairV54={refresh:scheduleFinish,ensureHeader};
+  scheduleFinish();
+})();
+</script>

@@ -308,13 +308,18 @@
   let previewPage = localStorage.getItem('ao3SkinStudioPreviewPage') || 'results';
   if(!['results','fic'].includes(previewPage)) previewPage = 'results';
 
+  let previewRefreshFrame = 0;
   function rerunPreviewStyling(){
-    try{
-      if(typeof applyGradientPreview === 'function') applyGradientPreview();
-    }catch(e){}
-    try{
-      if(typeof update === 'function') update();
-    }catch(e){}
+    if(previewRefreshFrame) return;
+    previewRefreshFrame = requestAnimationFrame(() => {
+      previewRefreshFrame = 0;
+      try{
+        if(typeof applyGradientPreview === 'function') applyGradientPreview();
+      }catch(e){}
+      try{
+        if(typeof update === 'function') update();
+      }catch(e){}
+    });
   }
 
   function renderPreviewPage(){
@@ -340,12 +345,12 @@
   // Keep the new preview contents synchronized when skin controls change.
   document.addEventListener('input', e => {
     if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
-    setTimeout(rerunPreviewStyling, 0);
+    rerunPreviewStyling();
   }, true);
 
   document.addEventListener('change', e => {
     if(e.target && e.target.closest && e.target.closest('.preview-page-toolbar')) return;
-    setTimeout(rerunPreviewStyling, 0);
+    rerunPreviewStyling();
   }, true);
 
   renderPreviewPage();

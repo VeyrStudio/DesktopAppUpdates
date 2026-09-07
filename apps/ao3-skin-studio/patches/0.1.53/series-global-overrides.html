@@ -293,12 +293,18 @@
   function decorateSeries(){
     mock.querySelectorAll('.preview-result-card').forEach((card,index)=>{
       const wrap=card.querySelector(':scope > .preview-tag-lines');
-      if(!wrap||wrap.querySelector('.series-line-v53'))return;
-      const row=document.createElement('div');
-      row.className='preview-tag-line series-line-v53';
-      row.innerHTML='<span class="preview-tag-line-label">Series:</span><span class="preview-tag-line-values"></span>';
-      row.querySelector('.preview-tag-line-values').appendChild(seriesPill(index===0?'Midnight Doors':'Archive Series '+(index+1)));
-      wrap.appendChild(row);
+      if(!wrap||wrap.querySelector('.preview-series-tag'))return;
+      const series=seriesPill(index===0?'Midnight Doors':'Archive Series '+(index+1));
+      const stream=wrap.querySelector('.preview-tag-stream-v54');
+      if(stream){
+        stream.appendChild(series);
+      }else{
+        const row=document.createElement('div');
+        row.className='preview-tag-line series-line-v53';
+        row.innerHTML='<span class="preview-tag-line-label">Series:</span><span class="preview-tag-line-values"></span>';
+        row.querySelector('.preview-tag-line-values').appendChild(series);
+        wrap.appendChild(row);
+      }
     });
 
     mock.querySelectorAll('.preview-fic-meta dl').forEach(dl=>{
@@ -414,14 +420,19 @@
   }
   ensureGlobalCard();
 
+  let globalTargetsDirtyV54=true;
   function markDirectText(){
+    if(!globalTargetsDirtyV54)return;
     mock.querySelectorAll('.global-text-target-v53').forEach(el=>el.classList.remove('global-text-target-v53'));
     mock.querySelectorAll('*').forEach(el=>{
       const hasDirect=[...el.childNodes].some(n=>n.nodeType===3&&String(n.textContent||'').trim());
       const tag=el.tagName;
       if(hasDirect||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')el.classList.add('global-text-target-v53');
     });
+    globalTargetsDirtyV54=false;
   }
+  const globalTargetObserverV54=new MutationObserver(()=>{globalTargetsDirtyV54=true;});
+  globalTargetObserverV54.observe(mock,{childList:true,subtree:true});
 
   function applyGlobal(){
     markDirectText();
@@ -448,20 +459,35 @@
     }
   }
 
+  let globalControlFrameV54=0;
+  let globalPersistTimerV54=0;
+  function scheduleGlobalControlV54(){
+    if(!globalControlFrameV54){
+      globalControlFrameV54=requestAnimationFrame(()=>{
+        globalControlFrameV54=0;
+        applyGlobal();
+      });
+    }
+    clearTimeout(globalPersistTimerV54);
+    globalPersistTimerV54=setTimeout(()=>{
+      try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+      try{if(typeof cssOutput!=='undefined'&&typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+    },220);
+  }
   ['globalFontEnabledV53','globalFontV53','globalTextModeV53','globalTextColorV53'].forEach(id=>{
-    q(id)?.addEventListener('input',()=>{
-      applyGlobal();
-      try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
-      try{if(typeof cssOutput!=='undefined'&&typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
-    },true);
-    q(id)?.addEventListener('change',()=>{
-      applyGlobal();
-      try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
-      try{if(typeof cssOutput!=='undefined'&&typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
-    },true);
+    q(id)?.addEventListener('input',scheduleGlobalControlV54,true);
+    q(id)?.addEventListener('change',scheduleGlobalControlV54,true);
   });
 
-  const stableInput=()=>requestAnimationFrame(()=>{applySeriesStyle();applyGlobal()});
+  let stableFrameV54=0;
+  const stableInput=()=>{
+    if(stableFrameV54)return;
+    stableFrameV54=requestAnimationFrame(()=>{
+      stableFrameV54=0;
+      applySeriesStyle();
+      applyGlobal();
+    });
+  };
   stable.addEventListener('input',stableInput,true);
   stable.addEventListener('change',stableInput,true);
   document.addEventListener('input',e=>{
