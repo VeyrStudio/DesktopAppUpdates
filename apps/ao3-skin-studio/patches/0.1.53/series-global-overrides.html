@@ -1,0 +1,568 @@
+<style id="ao3-series-global-v53-styles">
+.global-style-card-v53{
+  margin:10px 0;
+  padding:11px;
+  border:1px solid #4a3b4d;
+  border-radius:10px;
+  background:#100d12;
+}
+.global-style-card-v53 h3{
+  margin:0 0 5px;
+  color:#f0e2ec;
+  font-size:11px;
+}
+.global-style-intro-v53{
+  margin:0 0 10px;
+  color:#968894;
+  font-size:8px;
+  line-height:1.45;
+}
+.global-style-grid-v53{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.global-style-field-v53{
+  padding:8px;
+  border:1px solid #302833;
+  border-radius:7px;
+  background:#0d0b0f;
+}
+.global-style-field-v53 > label:first-child{
+  display:block;
+  margin-bottom:6px;
+  color:#cdbfca;
+  font-size:8px;
+  font-weight:900;
+}
+.global-style-check-v53{
+  display:flex!important;
+  align-items:center;
+  gap:6px;
+  margin:0 0 7px!important;
+  color:#a99ca6!important;
+  font-size:8px!important;
+  font-weight:800!important;
+}
+.global-style-field-v53 select,
+.global-style-field-v53 input[type="color"]{
+  width:100%;
+  box-sizing:border-box;
+}
+.global-style-actions-v53{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+.global-style-actions-v53 button{
+  border:1px solid #6b4b72;
+  border-radius:6px;
+  background:#171319;
+  color:#eadfe7;
+  padding:7px 9px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.global-style-actions-v53 button:hover{background:#241c27}
+.global-style-note-v53{
+  margin-top:7px;
+  color:#817580;
+  font-size:7px;
+  line-height:1.4;
+}
+#mock.global-font-v53,
+#mock.global-font-v53 *{
+  font-family:var(--global-font-v53)!important;
+}
+#mock.global-text-solid-v53,
+#mock.global-text-solid-v53 *{
+  color:var(--global-text-color-v53)!important;
+  -webkit-text-fill-color:var(--global-text-color-v53)!important;
+}
+#mock.global-text-gradient-v53 .global-text-target-v53{
+  background-image:var(--global-text-gradient-v53)!important;
+  background-clip:text!important;
+  -webkit-background-clip:text!important;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+}
+.series-box-card-v53{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #2e2731;
+}
+.series-box-grid-v53{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.series-box-grid-v53 label{
+  display:block;
+  margin-bottom:4px;
+  color:#8f828d;
+  font-size:7px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.series-box-grid-v53 input{width:100%;box-sizing:border-box}
+.series-actions-v53{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:9px;
+}
+.series-actions-v53 button{
+  border:1px solid #6b4b72;
+  border-radius:6px;
+  background:#171319;
+  color:#eadfe7;
+  padding:7px 9px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+@media(max-width:600px){
+  .global-style-grid-v53,.series-box-grid-v53{grid-template-columns:1fr}
+}
+</style>
+
+<script id="ao3-series-global-v53-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const stable=q('stableTextEditor');
+  const target=q('gradientTarget');
+  const tagsHub=q('taxonomyTagsHubV51');
+  if(!mock||!stable||!target||!tagsHub||typeof gradients==='undefined'||q('seriesGlobalSentinelV53'))return;
+
+  const sentinel=document.createElement('span');
+  sentinel.id='seriesGlobalSentinelV53';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  function ensureGradient(key,label,colors){
+    if(!gradients[key]){
+      gradients[key]={
+        enabled:false,type:'linear',angle:'90deg',custom:'',
+        stops:colors.map((color,i)=>({color,pos:colors.length===1?0:Math.round(i/(colors.length-1)*100),opacity:100}))
+      };
+    }
+    if(!target.querySelector('option[value="'+key+'"]')){
+      const opt=document.createElement('option');
+      opt.value=key;opt.textContent=label;target.appendChild(opt);
+    }
+  }
+  ensureGradient('seriesText','Tags — Series Text',['#F4E8C8','#D9B967','#A77A2C']);
+  ensureGradient('seriesBackground','Tags — Series Background',['#171419','#302337','#4A314B']);
+  ensureGradient('globalAllText','Whole Skin — All Text',['#FFFDF7','#F4E8C8','#D9B967','#A77A2C']);
+
+  function selectGradient(key){
+    if(window.AO3TaxonomyStatsV51?.selectGradient){
+      window.AO3TaxonomyStatsV51.selectGradient(key);
+      return;
+    }
+    currentGradientTarget=key;
+    target.value=key;
+    try{renderGradientEditor()}catch(e){}
+    try{window.AO3WorkspaceTabs?.show?.('gradient')}catch(e){}
+  }
+
+  function unwrapCodePairs(root){
+    root.querySelectorAll('.color-code-pair').forEach(wrap=>{
+      const color=wrap.querySelector('input[type="color"]');
+      if(color)wrap.replaceWith(color);
+    });
+  }
+
+  /* -------- SERIES AS A FIRST-CLASS TAG CATEGORY -------- */
+  function ensureSeriesEditor(){
+    const tabs=tagsHub.querySelector('.taxonomy-tabbar-v51');
+    const panels=tagsHub.querySelector('.taxonomy-tabpanels-v51');
+    if(!tabs||!panels)return;
+
+    if(!tabs.querySelector('[data-taxonomy-tab="series"]')){
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='taxonomy-tab-v51';
+      b.dataset.taxonomyTab='series';
+      b.textContent='8 — Series';
+      tabs.appendChild(b);
+      b.addEventListener('click',()=>{
+        tagsHub.open=true;
+        tabs.querySelectorAll('[data-taxonomy-tab]').forEach(x=>x.classList.toggle('active',x.dataset.taxonomyTab==='series'));
+        panels.querySelectorAll('[data-taxonomy-panel]').forEach(x=>x.classList.toggle('active',x.dataset.taxonomyPanel==='series'));
+        tagsHub.scrollIntoView?.({behavior:'smooth',block:'nearest'});
+      });
+    }
+
+    if(!panels.querySelector('[data-taxonomy-panel="series"]')){
+      const panel=document.createElement('div');
+      panel.className='taxonomy-tab-panel-v51';
+      panel.dataset.taxonomyPanel='series';
+
+      let group=q('textStyleGroup_series');
+      if(!group){
+        const source=q('textStyleGroup_tags');
+        if(source){
+          group=source.cloneNode(true);
+          unwrapCodePairs(group);
+          group.querySelectorAll('.tags-gradient-shortcut,.semantic-tag-gradient-shortcut,.taxonomy-gradient-actions-v51,.universal-gradient-shortcut-v52').forEach(x=>x.remove());
+          group.id='textStyleGroup_series';
+          group.classList.remove('active','stable-active');
+          group.style.display='block';
+          group.querySelectorAll('[id]').forEach(el=>{
+            if(el.id.startsWith('textStyle_tags_'))el.id='textStyle_series_'+el.id.slice('textStyle_tags_'.length);
+          });
+          group.querySelectorAll('label[for]').forEach(el=>{
+            const f=el.getAttribute('for')||'';
+            if(f.startsWith('textStyle_tags_'))el.setAttribute('for','textStyle_series_'+f.slice('textStyle_tags_'.length));
+          });
+          const strong=group.querySelector('.text-style-group-title strong');
+          if(strong)strong.textContent='Series';
+        }
+      }
+      if(group)panel.appendChild(group);
+
+      const box=document.createElement('div');
+      box.className='series-box-card-v53';
+      box.innerHTML=
+        '<div style="margin:0 0 8px;color:#d8cbd5;font-size:9px;font-weight:900">Series Tag Box</div>'+
+        '<div class="series-box-grid-v53">'+
+          '<div><label>Background</label><input type="color" id="taxBox_series_bg" value="#19191B"></div>'+
+          '<div><label>Border</label><input type="color" id="taxBox_series_border" value="#6A583F"></div>'+
+          '<div><label>Border Width (px)</label><input type="number" id="taxBox_series_borderWidth" min="0" max="8" step="1" value="1"></div>'+
+          '<div><label>Corner Radius (px)</label><input type="number" id="taxBox_series_radius" min="0" max="40" step="1" value="5"></div>'+
+          '<div><label>Horizontal Padding (px)</label><input type="number" id="taxBox_series_padX" min="0" max="32" step="1" value="7"></div>'+
+          '<div><label>Vertical Padding (px)</label><input type="number" id="taxBox_series_padY" min="0" max="24" step="1" value="3"></div>'+
+          '<div><label>Hover Background</label><input type="color" id="taxBox_series_hoverBg" value="#6A583F"></div>'+
+          '<div><label>Hover Text</label><input type="color" id="taxBox_series_hoverText" value="#FFFFFF"></div>'+
+        '</div>'+
+        '<div class="series-actions-v53">'+
+          '<button type="button" data-series-gradient="seriesText">Edit Series Text Gradient</button>'+
+          '<button type="button" data-series-gradient="seriesBackground">Edit Series Box Gradient</button>'+
+        '</div>';
+      box.querySelectorAll('[data-series-gradient]').forEach(b=>b.addEventListener('click',()=>selectGradient(b.dataset.seriesGradient)));
+      panel.appendChild(box);
+      panels.appendChild(panel);
+    }
+  }
+  ensureSeriesEditor();
+
+  function gradientCss(key){
+    if(!gradients[key]?.enabled)return '';
+    try{return gradientCssFor(key)||''}catch(e){return ''}
+  }
+  function readSeriesStyle(){
+    const get=s=>q('textStyle_series_'+s);
+    return {
+      font:get('font')?.value||'Georgia, serif',
+      size:Math.max(6,Number(get('size')?.value||10)),
+      color:get('color')?.value||'#D7CDD5',
+      bold:get('bold')?.checked===true,
+      italic:get('italic')?.checked===true,
+      spacing:Number(get('spacing')?.value||0)
+    };
+  }
+  function readSeriesBox(){
+    return {
+      bg:q('taxBox_series_bg')?.value||'#19191B',
+      border:q('taxBox_series_border')?.value||'#6A583F',
+      bw:Math.max(0,Number(q('taxBox_series_borderWidth')?.value||1)),
+      radius:Math.max(0,Number(q('taxBox_series_radius')?.value||5)),
+      padX:Math.max(0,Number(q('taxBox_series_padX')?.value||7)),
+      padY:Math.max(0,Number(q('taxBox_series_padY')?.value||3)),
+      hoverBg:q('taxBox_series_hoverBg')?.value||'#6A583F',
+      hoverText:q('taxBox_series_hoverText')?.value||'#FFFFFF'
+    };
+  }
+
+  function seriesPill(text){
+    const a=document.createElement('a');
+    a.href='#';
+    a.className='taxonomy-pill-v51 preview-tag-pill-v51 preview-series-tag';
+    a.dataset.taxonomyGroup='series';
+    const span=document.createElement('span');
+    span.className='taxonomy-pill-text-v51 preview-series-tag-text';
+    span.textContent=text;
+    a.appendChild(span);
+    return a;
+  }
+
+  function decorateSeries(){
+    mock.querySelectorAll('.preview-result-card').forEach((card,index)=>{
+      const wrap=card.querySelector(':scope > .preview-tag-lines');
+      if(!wrap||wrap.querySelector('.series-line-v53'))return;
+      const row=document.createElement('div');
+      row.className='preview-tag-line series-line-v53';
+      row.innerHTML='<span class="preview-tag-line-label">Series:</span><span class="preview-tag-line-values"></span>';
+      row.querySelector('.preview-tag-line-values').appendChild(seriesPill(index===0?'Midnight Doors':'Archive Series '+(index+1)));
+      wrap.appendChild(row);
+    });
+
+    mock.querySelectorAll('.preview-fic-meta dl').forEach(dl=>{
+      const dts=[...dl.querySelectorAll(':scope > dt')];
+      const dt=dts.find(x=>x.textContent.trim().toLowerCase().startsWith('series'));
+      const dd=dt?.nextElementSibling;
+      if(!dd)return;
+      if(!dd.querySelector('.preview-series-tag')){
+        const text=(dd.textContent||'Part 1 of Midnight Doors').trim()||'Part 1 of Midnight Doors';
+        dd.innerHTML='';
+        dd.appendChild(seriesPill(text));
+      }
+    });
+    applySeriesStyle();
+  }
+
+  function applyTextGradient(el,g,color){
+    if(g){
+      el.style.setProperty('background-image',g,'important');
+      el.style.setProperty('background-clip','text','important');
+      el.style.setProperty('-webkit-background-clip','text','important');
+      el.style.setProperty('color','transparent','important');
+      el.style.setProperty('-webkit-text-fill-color','transparent','important');
+    }else{
+      el.style.removeProperty('background-image');
+      el.style.removeProperty('background-clip');
+      el.style.removeProperty('-webkit-background-clip');
+      el.style.removeProperty('-webkit-text-fill-color');
+      el.style.setProperty('color',color,'important');
+    }
+  }
+
+  function applySeriesStyle(){
+    const s=readSeriesStyle(),b=readSeriesBox();
+    const tg=gradientCss('seriesText'),bg=gradientCss('seriesBackground');
+    mock.querySelectorAll('.preview-series-tag').forEach(el=>{
+      el.style.setProperty('display','inline-block','important');
+      el.style.setProperty('position','relative','important');
+      el.style.setProperty('box-sizing','border-box','important');
+      el.style.setProperty('padding',b.padY+'px '+b.padX+'px','important');
+      el.style.setProperty('border',b.bw+'px solid '+b.border,'important');
+      el.style.setProperty('border-radius',b.radius+'px','important');
+      el.style.setProperty('background',bg||b.bg,'important');
+      el.style.setProperty('text-decoration','none','important');
+      const t=el.querySelector('.preview-series-tag-text')||el;
+      t.style.setProperty('font-family',s.font,'important');
+      t.style.setProperty('font-size',s.size+'px','important');
+      t.style.setProperty('font-weight',s.bold?'700':'400','important');
+      t.style.setProperty('font-style',s.italic?'italic':'normal','important');
+      t.style.setProperty('letter-spacing',s.spacing+'px','important');
+      applyTextGradient(t,tg,s.color);
+      el.onmouseenter=()=>{
+        el.style.setProperty('background',b.hoverBg,'important');
+        t.style.setProperty('color',b.hoverText,'important');
+        t.style.setProperty('-webkit-text-fill-color',b.hoverText,'important');
+        t.style.setProperty('background-image','none','important');
+      };
+      el.onmouseleave=()=>applySeriesStyle();
+    });
+  }
+
+  /* Clicking a Series pill opens the Series tag tab. */
+  document.addEventListener('click',e=>{
+    const p=e.target.closest?.('.preview-series-tag');
+    if(!p||!mock.contains(p))return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    try{window.AO3EditorSectionTabs?.show?.('text')}catch(err){}
+    tagsHub.open=true;
+    tagsHub.querySelectorAll('[data-taxonomy-tab]').forEach(x=>x.classList.toggle('active',x.dataset.taxonomyTab==='series'));
+    tagsHub.querySelectorAll('[data-taxonomy-panel]').forEach(x=>x.classList.toggle('active',x.dataset.taxonomyPanel==='series'));
+    tagsHub.scrollIntoView?.({behavior:'smooth',block:'nearest'});
+  },true);
+
+  /* -------- WHOLE SKIN / GLOBAL STYLE OVERRIDES -------- */
+  function ensureGlobalCard(){
+    if(q('globalStyleCardV53'))return;
+    const card=document.createElement('div');
+    card.id='globalStyleCardV53';
+    card.className='global-style-card-v53';
+    const fontOptions=q('textStyle_title_font')?.innerHTML||q('fontFamily')?.innerHTML||
+      '<option value="Georgia, serif">Georgia</option><option value="Arial, sans-serif">Arial</option>';
+    card.innerHTML=
+      '<h3>Whole Skin / Global Style</h3>'+
+      '<p class="global-style-intro-v53">Temporarily override the entire skin at once. Your individual text settings stay saved underneath and come back when an override is turned off.</p>'+
+      '<div class="global-style-grid-v53">'+
+        '<div class="global-style-field-v53">'+
+          '<label>Font for Everything</label>'+
+          '<label class="global-style-check-v53"><input type="checkbox" id="globalFontEnabledV53"> Use one font everywhere</label>'+
+          '<select id="globalFontV53">'+fontOptions+'</select>'+
+        '</div>'+
+        '<div class="global-style-field-v53">'+
+          '<label>Text for Everything</label>'+
+          '<label for="globalTextModeV53" style="display:block;margin-bottom:4px;color:#8f828d;font-size:7px;font-weight:900">OVERRIDE MODE</label>'+
+          '<select id="globalTextModeV53">'+
+            '<option value="off">Off — use individual text settings</option>'+
+            '<option value="solid">One solid color everywhere</option>'+
+            '<option value="gradient">One gradient everywhere</option>'+
+          '</select>'+
+          '<label for="globalTextColorV53" style="display:block;margin:7px 0 4px;color:#8f828d;font-size:7px;font-weight:900">GLOBAL SOLID COLOR</label>'+
+          '<input type="color" id="globalTextColorV53" value="#F2E8EF">'+
+          '<div class="global-style-actions-v53"><button type="button" id="globalTextGradientEditV53">Edit Global Text Gradient</button></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="global-style-note-v53">Global overrides never replace your per-element choices. Switch them off and the individual fonts, colors, and gradients are still there.</div>';
+    stable.insertBefore(card,stable.firstChild);
+    q('globalTextGradientEditV53').addEventListener('click',()=>{
+      gradients.globalAllText.enabled=true;
+      q('globalTextModeV53').value='gradient';
+      selectGradient('globalAllText');
+      applyGlobal();
+    });
+  }
+  ensureGlobalCard();
+
+  function markDirectText(){
+    mock.querySelectorAll('.global-text-target-v53').forEach(el=>el.classList.remove('global-text-target-v53'));
+    mock.querySelectorAll('*').forEach(el=>{
+      const hasDirect=[...el.childNodes].some(n=>n.nodeType===3&&String(n.textContent||'').trim());
+      const tag=el.tagName;
+      if(hasDirect||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')el.classList.add('global-text-target-v53');
+    });
+  }
+
+  function applyGlobal(){
+    markDirectText();
+    const fontOn=q('globalFontEnabledV53')?.checked===true;
+    const font=q('globalFontV53')?.value||'Georgia, serif';
+    const mode=q('globalTextModeV53')?.value||'off';
+    const color=q('globalTextColorV53')?.value||'#F2E8EF';
+
+    mock.classList.toggle('global-font-v53',fontOn);
+    mock.style.setProperty('--global-font-v53',font);
+
+    mock.classList.remove('global-text-solid-v53','global-text-gradient-v53');
+    mock.style.setProperty('--global-text-color-v53',color);
+
+    if(mode==='solid'){
+      mock.classList.add('global-text-solid-v53');
+    }else if(mode==='gradient'){
+      gradients.globalAllText.enabled=true;
+      const g=gradientCss('globalAllText');
+      if(g){
+        mock.style.setProperty('--global-text-gradient-v53',g);
+        mock.classList.add('global-text-gradient-v53');
+      }
+    }
+  }
+
+  ['globalFontEnabledV53','globalFontV53','globalTextModeV53','globalTextColorV53'].forEach(id=>{
+    q(id)?.addEventListener('input',()=>{
+      applyGlobal();
+      try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+      try{if(typeof cssOutput!=='undefined'&&typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+    },true);
+    q(id)?.addEventListener('change',()=>{
+      applyGlobal();
+      try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+      try{if(typeof cssOutput!=='undefined'&&typeof buildCss==='function')cssOutput.value=buildCss()}catch(e){}
+    },true);
+  });
+
+  const stableInput=()=>requestAnimationFrame(()=>{applySeriesStyle();applyGlobal()});
+  stable.addEventListener('input',stableInput,true);
+  stable.addEventListener('change',stableInput,true);
+  document.addEventListener('input',e=>{
+    if(e.target===target||e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls'))requestAnimationFrame(()=>{applySeriesStyle();applyGlobal()});
+  },true);
+  document.addEventListener('change',e=>{
+    if(e.target===target||e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls'))requestAnimationFrame(()=>{applySeriesStyle();applyGlobal()});
+  },true);
+
+  function scheduleDecorate(){
+    setTimeout(()=>{ensureSeriesEditor();decorateSeries();applyGlobal()},30);
+    setTimeout(()=>{decorateSeries();applyGlobal()},180);
+  }
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]'))scheduleDecorate();
+  },true);
+
+  /* -------- AO3 CSS EXPORT -------- */
+  function seriesCss(){
+    const s=readSeriesStyle(),b=readSeriesBox(),tg=gradientCss('seriesText'),bg=gradientCss('seriesBackground');
+    const sel='dd.series a, dd.series.tags a.tag, .blurb .series a, li.series a.tag';
+    let css='\n\n/* SERIES — FIRST-CLASS TAG CATEGORY */\n'+sel+' {\n'+
+      '  display:inline-block !important;\n'+
+      '  box-sizing:border-box !important;\n'+
+      '  padding:'+b.padY+'px '+b.padX+'px !important;\n'+
+      '  border:'+b.bw+'px solid '+b.border+' !important;\n'+
+      '  border-radius:'+b.radius+'px !important;\n'+
+      '  background:'+(bg||b.bg)+' !important;\n'+
+      '  text-decoration:none !important;\n'+
+      '  font-family:'+s.font+' !important;\n'+
+      '  font-size:'+s.size+'px !important;\n'+
+      '  font-weight:'+(s.bold?'700':'400')+' !important;\n'+
+      '  font-style:'+(s.italic?'italic':'normal')+' !important;\n'+
+      '  letter-spacing:'+s.spacing+'px !important;\n'+
+      '  color:'+s.color+' !important;\n'+
+      '}\n'+
+      sel.split(',').map(x=>x.trim()+':hover').join(', ')+' {\n'+
+      '  background:'+b.hoverBg+' !important;\n'+
+      '  color:'+b.hoverText+' !important;\n'+
+      '  -webkit-text-fill-color:'+b.hoverText+' !important;\n'+
+      '}\n';
+    if(tg){
+      css+=sel+' {\n'+
+        '  background-image:'+tg+' !important;\n'+
+        '  background-clip:text !important;\n'+
+        '  -webkit-background-clip:text !important;\n'+
+        '  color:transparent !important;\n'+
+        '  -webkit-text-fill-color:transparent !important;\n'+
+        '}\n';
+    }
+    return css;
+  }
+
+  function globalCss(){
+    let css='';
+    if(q('globalFontEnabledV53')?.checked){
+      const font=q('globalFontV53')?.value||'Georgia, serif';
+      css+='\n\n/* WHOLE SKIN — GLOBAL FONT OVERRIDE */\nbody, body * { font-family:'+font+' !important; }\n';
+    }
+    const mode=q('globalTextModeV53')?.value||'off';
+    if(mode==='solid'){
+      const color=(q('globalTextColorV53')?.value||'#F2E8EF').toUpperCase();
+      css+='\n\n/* WHOLE SKIN — GLOBAL TEXT COLOR OVERRIDE */\nbody, body * { color:'+color+' !important; -webkit-text-fill-color:'+color+' !important; }\n';
+    }else if(mode==='gradient'){
+      const g=gradientCss('globalAllText');
+      if(g){
+        const sel='body, a, p, span, strong, em, b, i, li, dt, dd, h1, h2, h3, h4, h5, h6, blockquote, label, button, .actions a, .navigation a, #header a, #footer, #footer a';
+        css+='\n\n/* WHOLE SKIN — GLOBAL TEXT GRADIENT OVERRIDE */\n'+sel+' {\n'+
+          '  background-image:'+g+' !important;\n'+
+          '  background-clip:text !important;\n'+
+          '  -webkit-background-clip:text !important;\n'+
+          '  color:transparent !important;\n'+
+          '  -webkit-text-fill-color:transparent !important;\n'+
+          '}\n';
+      }
+    }
+    return css;
+  }
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      css+=seriesCss();
+      css+=globalCss();
+      return css;
+    };
+  }catch(e){}
+
+  window.AO3SeriesGlobalV53={
+    refresh:()=>{ensureSeriesEditor();decorateSeries();applyGlobal()},
+    applyGlobal,
+    openSeries:()=>{
+      tagsHub.open=true;
+      tagsHub.querySelector('[data-taxonomy-tab="series"]')?.click();
+    }
+  };
+
+  scheduleDecorate();
+  setTimeout(()=>{
+    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+  },560);
+})();
+</script>
