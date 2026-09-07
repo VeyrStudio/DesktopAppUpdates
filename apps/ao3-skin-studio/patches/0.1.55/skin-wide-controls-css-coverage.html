@@ -1,0 +1,317 @@
+<style id="ao3-skin-wide-css-coverage-v55-styles">
+/* 0.1.55 — make Skin-Wide Controls visually independent from per-element controls. */
+.skin-wide-controls-v55{
+  width:min(360px,100%);
+  min-height:430px;
+  box-sizing:border-box;
+  margin:10px 0 14px;
+  padding:12px;
+  border:1px solid #4a3b4d;
+  border-radius:10px;
+  background:#100d12;
+  display:flex;
+  flex-direction:column;
+}
+.skin-wide-controls-v55 > h2{
+  margin:0 0 5px;
+  color:#f0e2ec;
+  font-size:12px;
+  font-weight:900;
+}
+.skin-wide-controls-intro-v55{
+  margin:0 0 10px;
+  color:#968894;
+  font-size:8px;
+  line-height:1.45;
+}
+.skin-wide-controls-v55 .global-style-card-v53{
+  flex:1 1 auto;
+  min-height:0;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+.skin-wide-controls-v55 .global-style-card-v53 > h3{
+  display:none;
+}
+.skin-wide-controls-v55 .global-style-intro-v53{
+  display:none;
+}
+.skin-wide-controls-v55 .global-style-grid-v53{
+  grid-template-columns:1fr!important;
+  gap:10px;
+}
+.skin-wide-controls-v55 .global-style-field-v53{
+  padding:10px;
+}
+.skin-wide-css-note-v55{
+  margin-top:auto;
+  padding-top:10px;
+  border-top:1px solid #302833;
+  color:#8f828e;
+  font-size:7px;
+  line-height:1.5;
+}
+@media(max-width:600px){
+  .skin-wide-controls-v55{width:100%;min-height:0}
+}
+</style>
+
+<script id="ao3-skin-wide-css-coverage-v55-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const stable=q('stableTextEditor');
+  const globalCard=q('globalStyleCardV53');
+  if(!stable||!globalCard||q('skinWideCoverageSentinelV55'))return;
+
+  const sentinel=document.createElement('span');
+  sentinel.id='skinWideCoverageSentinelV55';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  /* Keep the site-wide master controls in their own tall rectangle instead of
+     mixing them into the individual Text/Tags/Stats controls. */
+  function placeSkinWideControls(){
+    let box=q('skinWideControlsPanelV55');
+    if(!box){
+      box=document.createElement('section');
+      box.id='skinWideControlsPanelV55';
+      box.className='skin-wide-controls-v55';
+      box.innerHTML=
+        '<h2>Skin-Wide Controls</h2>'+
+        '<p class="skin-wide-controls-intro-v55">Master overrides for the whole AO3 skin. Individual settings stay saved underneath.</p>';
+      const parent=stable.parentElement;
+      if(parent)parent.insertBefore(box,stable);
+    }
+    if(globalCard.parentElement!==box)box.appendChild(globalCard);
+    if(!box.querySelector('.skin-wide-css-note-v55')){
+      const note=document.createElement('div');
+      note.className='skin-wide-css-note-v55';
+      note.textContent='Export coverage uses real AO3 selectors, so these master settings still apply to AO3 header/account/navigation text even if a preview element is missing or arranged incorrectly.';
+      box.appendChild(note);
+    }
+  }
+  placeSkinWideControls();
+
+  /* This registry is intentionally based on REAL AO3 structure rather than
+     whatever happens to be visible in the mock preview. */
+  const AO3_GLOBAL_TEXT_SELECTORS_V55=[
+    'body',
+    '#outer',
+    '#inner',
+    '#header',
+    '#header .heading',
+    '#header .heading a',
+    '#header .logo',
+    '#header .primary',
+    '#header .primary a',
+    '#header .primary > li',
+    '#header .secondary',
+    '#header .secondary a',
+    '#header .secondary > li',
+    '#header .user',
+    '#header .user a',
+    '#header .menu',
+    '#header .menu a',
+    '#header .dropdown',
+    '#header .dropdown a',
+    '#header .search',
+    '#header .search input',
+    '#header .search button',
+    '#main',
+    '#main .heading',
+    '#main a',
+    '.navigation',
+    '.navigation a',
+    '.pagination',
+    '.pagination a',
+    '.actions',
+    '.actions a',
+    '.actions button',
+    '.blurb',
+    '.blurb h4',
+    '.blurb h4 a',
+    '.blurb .byline',
+    '.blurb .byline a',
+    '.blurb .fandoms',
+    '.blurb .fandoms a',
+    '.blurb .tags',
+    '.blurb .tags a',
+    '.blurb .summary',
+    '.blurb .stats',
+    '.blurb .stats a',
+    'dl.work.meta',
+    'dl.work.meta dt',
+    'dl.work.meta dd',
+    'dl.work.meta dd a',
+    'dd.series',
+    'dd.series a',
+    'dd.rating',
+    'dd.rating a',
+    'dd.warning',
+    'dd.warning a',
+    'dd.category',
+    'dd.category a',
+    'dd.fandom',
+    'dd.fandom a',
+    'dd.relationship',
+    'dd.relationship a',
+    'dd.character',
+    'dd.character a',
+    'dd.freeform',
+    'dd.freeform a',
+    '#workskin',
+    '#workskin .heading',
+    '#workskin .title',
+    '#workskin .byline',
+    '#workskin .byline a',
+    '#workskin .summary',
+    '#workskin .notes',
+    '#workskin .userstuff',
+    '#workskin .userstuff p',
+    '#chapters',
+    '#chapters .chapter',
+    '#chapters .chapter .title',
+    '#chapters .userstuff',
+    '#chapters .userstuff p',
+    '#comments',
+    '#comments .heading',
+    '#comments .comment',
+    '#comments .comment a',
+    '#comments form',
+    '#comments form label',
+    '#comments form textarea',
+    '#comments form input',
+    '#kudos',
+    '#kudos a',
+    '#footer',
+    '#footer a',
+    'input',
+    'textarea',
+    'select',
+    'button'
+  ];
+
+  const AO3_GLOBAL_FONT_SELECTOR_V55=AO3_GLOBAL_TEXT_SELECTORS_V55.join(', ');
+  const AO3_GLOBAL_COLOR_SELECTOR_V55=AO3_GLOBAL_TEXT_SELECTORS_V55.join(', ');
+
+  /* Gradient text is restricted to text-bearing elements where background-clip
+     is useful. Form controls remain covered by global font/solid color. */
+  const AO3_GLOBAL_GRADIENT_SELECTORS_V55=[
+    '#header .heading a',
+    '#header .primary a',
+    '#header .secondary a',
+    '#header .user',
+    '#header .user a',
+    '#header .menu a',
+    '#header .dropdown a',
+    '#main .heading',
+    '#main a',
+    '.navigation a',
+    '.pagination a',
+    '.actions a',
+    '.actions button',
+    '.blurb h4',
+    '.blurb h4 a',
+    '.blurb .byline',
+    '.blurb .byline a',
+    '.blurb .fandoms',
+    '.blurb .fandoms a',
+    '.blurb .tags',
+    '.blurb .tags a',
+    '.blurb .summary',
+    '.blurb .stats',
+    '.blurb .stats a',
+    'dl.work.meta dt',
+    'dl.work.meta dd',
+    'dl.work.meta dd a',
+    '#workskin .heading',
+    '#workskin .title',
+    '#workskin .byline',
+    '#workskin .byline a',
+    '#workskin .summary',
+    '#workskin .notes',
+    '#workskin .userstuff',
+    '#workskin .userstuff p',
+    '#chapters .chapter .title',
+    '#chapters .userstuff',
+    '#chapters .userstuff p',
+    '#comments .heading',
+    '#comments .comment',
+    '#comments .comment a',
+    '#comments form label',
+    '#kudos',
+    '#kudos a',
+    '#footer',
+    '#footer a'
+  ];
+  const AO3_GLOBAL_GRADIENT_SELECTOR_V55=AO3_GLOBAL_GRADIENT_SELECTORS_V55.join(', ');
+
+  function gradientCss(){
+    if(!gradients?.globalAllText?.enabled)return '';
+    try{return gradientCssFor('globalAllText')||''}catch(e){return ''}
+  }
+
+  function finalGlobalCssV55(){
+    let css='\n\n/* 0.1.55 — SKIN-WIDE OVERRIDES: REAL AO3 SELECTOR COVERAGE */\n';
+    const fontOn=q('globalFontEnabledV53')?.checked===true;
+    const font=q('globalFontV53')?.value||'Georgia, serif';
+    const mode=q('globalTextModeV53')?.value||'off';
+    const color=(q('globalTextColorV53')?.value||'#F2E8EF').toUpperCase();
+
+    if(fontOn){
+      css+=AO3_GLOBAL_FONT_SELECTOR_V55+' {\n'+
+        '  font-family:'+font+' !important;\n'+
+      '}\n';
+    }
+
+    if(mode==='solid'){
+      css+=AO3_GLOBAL_COLOR_SELECTOR_V55+' {\n'+
+        '  color:'+color+' !important;\n'+
+        '  -webkit-text-fill-color:'+color+' !important;\n'+
+      '}\n';
+    }else if(mode==='gradient'){
+      const g=gradientCss();
+      if(g){
+        css+=AO3_GLOBAL_GRADIENT_SELECTOR_V55+' {\n'+
+          '  background-image:'+g+' !important;\n'+
+          '  background-clip:text !important;\n'+
+          '  -webkit-background-clip:text !important;\n'+
+          '  color:transparent !important;\n'+
+          '  -webkit-text-fill-color:transparent !important;\n'+
+        '}\n';
+        /* Inputs/buttons still inherit a usable color while the rest of the
+           visible AO3 text receives the global gradient. */
+        css+='input, textarea, select {\n'+
+          '  color:'+color+' !important;\n'+
+          '  -webkit-text-fill-color:'+color+' !important;\n'+
+        '}\n';
+      }
+    }
+    return css;
+  }
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      css+=finalGlobalCssV55();
+      return css;
+    };
+  }catch(e){}
+
+  /* Give CSS round-trip/state capture a moment to see the relocated controls.
+     IDs are unchanged, so existing saved skins keep their current values. */
+  setTimeout(()=>{
+    placeSkinWideControls();
+    try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+  },560);
+
+  window.AO3SkinWideCoverageV55={
+    selectors:AO3_GLOBAL_TEXT_SELECTORS_V55.slice(),
+    refresh:placeSkinWideControls
+  };
+})();
+</script>
