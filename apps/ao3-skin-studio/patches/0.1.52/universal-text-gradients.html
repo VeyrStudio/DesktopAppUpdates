@@ -1,0 +1,263 @@
+<style id="ao3-universal-text-gradients-v52-styles">
+.universal-gradient-shortcut-v52{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:9px;
+}
+.universal-gradient-shortcut-v52 button{
+  border:1px solid #6b4b72;
+  border-radius:6px;
+  background:#171319;
+  color:#eadfe7;
+  padding:7px 9px;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.universal-gradient-shortcut-v52 button:hover{background:#241c27}
+.universal-gradient-status-v52{
+  color:#8f828e;
+  font-size:7px;
+  line-height:1.4;
+}
+</style>
+
+<script id="ao3-universal-text-gradients-v52-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  const target=q('gradientTarget');
+  if(!mock||!target||typeof gradients==='undefined'||q('universalGradientSentinelV52'))return;
+
+  const sentinel=document.createElement('span');
+  sentinel.id='universalGradientSentinelV52';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  const GROUPS=[
+    {
+      id:'title',label:'Work Titles',key:'titleText',
+      preview:'.preview-result-card > h4,.preview-result-card > h4 > a,.preview-fic-title',
+      export:'.blurb h4.heading a, .blurb h4 a, #workskin > h2.heading, .preface > h2.title'
+    },
+    {
+      id:'author',label:'Author / Byline',key:'authorText',
+      preview:'.preview-result-card > .byline,.preview-result-card > .byline a,.preview-fic-byline,.preview-fic-byline a',
+      export:'.blurb .byline, .blurb .byline a, .byline, .byline a, a[rel="author"]'
+    },
+    {
+      id:'summary',label:'Summary',key:'summaryText',
+      preview:'.preview-result-card > .summary,.preview-fic-summary .heading,.preview-fic-summary .summary,.preview-fic-summary blockquote',
+      export:'.summary, .summary .heading, .preface .summary, .preface .summary .userstuff'
+    },
+    {
+      id:'main',label:'Main Fic Text',key:'mainText',
+      preview:'.preview-fic-chapter p',
+      export:'#chapters .userstuff, #chapters .userstuff p, .chapter .userstuff, .chapter .userstuff p'
+    },
+    {
+      id:'info',label:'Fic Info / Metadata Labels',key:'infoText',
+      preview:'.preview-fic-meta dt,.preview-fic-meta dd > a:not(.taxonomy-pill-v51),.preview-tag-line-label,.preview-stat-line-label-v51',
+      export:'dl.work.meta dt, .work.meta dt, dl.work.meta dd.series, dl.work.meta dd.series a, .work.meta dd.series, .work.meta dd.series a'
+    },
+    {
+      id:'notes',label:'Notes',key:'notesText',
+      preview:'.preview-fic-end,.notes,.notes .heading,.notes .userstuff',
+      export:'.notes, .notes .heading, .notes .userstuff, .preface .notes, .afterword .notes, .end.notes'
+    }
+  ];
+
+  function ensureGradient(key,label,colors){
+    if(!gradients[key]){
+      gradients[key]={
+        enabled:false,type:'linear',angle:'90deg',custom:'',
+        stops:colors.map((color,i)=>({color,pos:colors.length===1?0:Math.round(i/(colors.length-1)*100),opacity:100}))
+      };
+    }
+    if(!target.querySelector('option[value="'+key+'"]')){
+      const opt=document.createElement('option');
+      opt.value=key;
+      opt.textContent=label;
+      target.appendChild(opt);
+    }
+  }
+
+  GROUPS.forEach((g,i)=>ensureGradient(
+    g.key,
+    g.label+' Text',
+    i%2?['#E8D8B5','#B98945']:['#A8D8F2','#A98CC8','#E1B76A']
+  ));
+
+  /* Existing 0.1.51 targets are also part of the universal text-gradient system. */
+  ensureGradient('chapterTitlesText','Chapter Titles Text',['#D8564C','#F6CF81']);
+  ensureGradient('interfaceText','Interface Text',['#8FD4FF','#A98BCB','#F1D26C']);
+
+  function selectGradient(key){
+    if(window.AO3TaxonomyStatsV51?.selectGradient){
+      window.AO3TaxonomyStatsV51.selectGradient(key);
+      return;
+    }
+    currentGradientTarget=key;
+    target.value=key;
+    try{renderGradientEditor()}catch(e){}
+    try{window.AO3WorkspaceTabs?.show?.('gradient')}catch(e){}
+  }
+
+  function addShortcut(group){
+    const host=q('textStyleGroup_'+group.id);
+    if(!host||host.querySelector('.universal-gradient-shortcut-v52[data-gradient-key="'+group.key+'"]'))return;
+    const row=document.createElement('div');
+    row.className='universal-gradient-shortcut-v52';
+    row.dataset.gradientKey=group.key;
+    row.innerHTML='<button type="button">Edit '+group.label+' Gradient</button><span class="universal-gradient-status-v52"></span>';
+    row.querySelector('button').addEventListener('click',()=>selectGradient(group.key));
+    host.appendChild(row);
+  }
+
+  GROUPS.forEach(addShortcut);
+
+  function gradientCss(key){
+    if(!gradients[key]?.enabled)return '';
+    try{return gradientCssFor(key)||''}catch(e){return ''}
+  }
+
+  function flatColor(id,fallback){
+    return q('textStyle_'+id+'_color')?.value||fallback||'#D2C8D0';
+  }
+
+  function applyGradientTo(el,key,color){
+    const g=gradientCss(key);
+    if(g){
+      el.style.setProperty('background-image',g,'important');
+      el.style.setProperty('background-clip','text','important');
+      el.style.setProperty('-webkit-background-clip','text','important');
+      el.style.setProperty('color','transparent','important');
+      el.style.setProperty('-webkit-text-fill-color','transparent','important');
+    }else{
+      el.style.removeProperty('background-image');
+      el.style.removeProperty('background-clip');
+      el.style.removeProperty('-webkit-background-clip');
+      el.style.removeProperty('-webkit-text-fill-color');
+      el.style.setProperty('color',color,'important');
+    }
+  }
+
+  function applyGroup(group){
+    const color=flatColor(group.id,'#D2C8D0');
+    mock.querySelectorAll(group.preview).forEach(el=>applyGradientTo(el,group.key,color));
+  }
+
+  function applyInterfaceExpansion(){
+    const color=flatColor('interface','#C4B3C4');
+    const selectors=[
+      '.ao3-logo','.ao3-user','.ao3-user a','.ao3-nav a',
+      '.mock-actions button','.mock-btn',
+      '.preview-fic-upper-actions-v51 button','.preview-fic-bottom-actions-v51 button',
+      '.preview-comment-form-v51 label','.preview-comment-form-v51 button','.preview-comment-foot-v51',
+      '.preview-results-heading .heading','.preview-results-count',
+      '.ao3-footer','.ao3-footer a'
+    ].join(',');
+    mock.querySelectorAll(selectors).forEach(el=>applyGradientTo(el,'interfaceText',color));
+  }
+
+  function refreshStatuses(){
+    GROUPS.forEach(group=>{
+      const row=document.querySelector('.universal-gradient-shortcut-v52[data-gradient-key="'+group.key+'"]');
+      const status=row?.querySelector('.universal-gradient-status-v52');
+      if(status)status.textContent=gradients[group.key]?.enabled?'Gradient ON':'Gradient off — flat color is the fallback';
+    });
+  }
+
+  function applyAll(){
+    GROUPS.forEach(applyGroup);
+    applyInterfaceExpansion();
+    try{window.AO3TaxonomyStatsV51?.apply?.()}catch(e){}
+    refreshStatuses();
+  }
+
+  function isGradientControl(e){
+    return e.target===target||
+      e.target===q('gradientEnabled')||
+      e.target===q('gradientType')||
+      e.target===q('gradientAngle')||
+      e.target===q('gradientPaste')||
+      e.target?.closest?.('#gradientStops,#gradientRadialControls,#gradientConicControls');
+  }
+
+  document.addEventListener('input',e=>{
+    if(isGradientControl(e))requestAnimationFrame(applyAll);
+  },true);
+  document.addEventListener('change',e=>{
+    if(isGradientControl(e))requestAnimationFrame(applyAll);
+  },true);
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('#gradientAddStop,#gradientEven,#gradientReverse,#gradientApplyPaste,#gradientUseBuilder,#gradientRotateMinus15,#gradientRotatePlus15,#gradientRotate90,#gradientFlipDirection,.preview-page-btn,[data-page],.device-btn,[data-device]')){
+      setTimeout(applyAll,0);
+    }
+  },true);
+
+  const stable=q('stableTextEditor');
+  stable?.addEventListener('input',()=>requestAnimationFrame(applyAll),true);
+  stable?.addEventListener('change',()=>requestAnimationFrame(applyAll),true);
+
+  try{
+    const oldRender=renderGradientEditor;
+    renderGradientEditor=function(){
+      const out=oldRender.apply(this,arguments);
+      setTimeout(applyAll,0);
+      return out;
+    };
+  }catch(e){}
+
+  /* Import and major preview refreshes call update(); make the new gradient
+     layer re-apply after those operations too. */
+  try{
+    const oldUpdate=update;
+    update=function(){
+      const out=oldUpdate.apply(this,arguments);
+      setTimeout(applyAll,0);
+      return out;
+    };
+  }catch(e){}
+
+  function cssTextGradient(selector,key){
+    const g=gradientCss(key);
+    if(!g)return '';
+    return '\n'+selector+' {\n'+
+      '  background-image:'+g+' !important;\n'+
+      '  background-clip:text !important;\n'+
+      '  -webkit-background-clip:text !important;\n'+
+      '  color:transparent !important;\n'+
+      '  -webkit-text-fill-color:transparent !important;\n'+
+      '}\n';
+  }
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      let css=oldBuild.apply(this,arguments);
+      css+='\n\n/* 0.1.52 — UNIVERSAL EDITABLE TEXT GRADIENTS */\n';
+      GROUPS.forEach(group=>{css+=cssTextGradient(group.export,group.key);});
+      css+=cssTextGradient(
+        '#header .heading a, #header .primary a, #header .secondary a, #header .user a, .actions a, .actions button, .navigation a, .menu a, #footer, #footer a, #comments .heading, #comments form label, #comments .footnote',
+        'interfaceText'
+      );
+      return css;
+    };
+  }catch(e){}
+
+  const obs=new MutationObserver(()=>requestAnimationFrame(applyAll));
+  obs.observe(mock,{childList:true,subtree:true});
+
+  window.AO3UniversalTextGradientsV52={
+    apply:applyAll,
+    select:selectGradient,
+    groups:GROUPS.map(x=>({id:x.id,label:x.label,key:x.key}))
+  };
+
+  setTimeout(()=>{GROUPS.forEach(addShortcut);applyAll();},70);
+  setTimeout(()=>{GROUPS.forEach(addShortcut);applyAll();},260);
+})();
+</script>

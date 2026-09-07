@@ -318,6 +318,13 @@
     {deg:45,suffix:' — Rising'}
   ];
   const builtins=[];
+  builtins.push({
+    id:'builtin-gilded-ivory',
+    name:'Gilded Ivory',
+    category:'Golds',
+    config:makeCfg(['#FFFDF7','#F4E8C8','#D9B967','#A77A2C'],135,'linear'),
+    builtin:true
+  });
   let seq=1;
   palettes.forEach(function(pal){
     angles.forEach(function(a,idx){
