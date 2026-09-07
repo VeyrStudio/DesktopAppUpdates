@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.54",
-  "payloadSha256": "4955e2d14ab46de089ca6f3b62c456fef7f6534b7cbc37e8f405a0848d7f099f",
-  "executableSha256": "d72d08bebe8b04e9f096e9631748e6f5d2a3d3c50a284b636d8cb4fbd7d7adcd",
+  "version": "0.1.55",
+  "payloadSha256": "e013dad9cd9ccd86570fd8495295be4d760e68087c912e6d58911e380af8f280",
+  "executableSha256": "c7d1a3256715f284c1caa686edb4dd460dcb3b8df35357b3c3d7be2d2f893d30",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-001.txt",
-      "sha256": "47c2ae44ece94f5c44a0e6fc4a082e5625c0e9fb12fe7fc411f10d4fe9a964c4"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-001.txt",
+      "sha256": "a5b0f40e1d18d961d0fe136682e283cdff8291df3df177b76b27c38e73e2ae59"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-002.txt",
-      "sha256": "2de14067e1b916b6e50fa463964054bd4059dcc07204d402e5be764c4cc93d38"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-002.txt",
+      "sha256": "eb773f9389f1bcbfef33e06ddb0a0fcc87269d73bf9858d68611c0bc638b967f"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-003.txt",
-      "sha256": "6d8040ff595edd409eb7c46d424b47e22c3a2e90e9a4611b10d51e4688aa226a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-003.txt",
+      "sha256": "457c8cc8e86e9c5ba478c835b544b4a58fc5c2a74e6ea56580539bae2b5a72bf"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-004.txt",
-      "sha256": "bb17e3639ec85159c40319f15a7c6bb5df1aef509f24ece7005ab596ef28219a"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-004.txt",
+      "sha256": "a4b03e8e88880084875b7b6d3b7f8eced2e36d22067fe7652c6bbaeb3245d6dc"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-005.txt",
-      "sha256": "c4ed6351cd4f0d5166eda15567b7f6db909aaf90ecbe41d5878878fca664d0fc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-005.txt",
+      "sha256": "437415c0fa9d30f800611b7d65ce2aff5e163d0836ec38824d98499faf4321fe"
     }
   ],
-  "notes": "Restores the complete logged-in AO3 preview header/chrome above Results, Inside a Fic, and Split Screen, including Archive of Our Own branding, primary navigation, profile/dashboard shortcuts, bookmarks/history/Marked for Later, Subscriptions, Preferences, Post, Inbox, and Log Out. Rebuilds Results/Browse blurbs into AO3 hierarchy: the 2x2 required-tag icon block remains at left, title/byline lead the work, Fandom gets its own natural line, Relationships/Characters/Additional Tags/Series flow as wrapping tags, Summary follows, and compact stats sit at the bottom. Inside-a-Fic metadata stays a proper AO3 label/value list. Performance work makes Results decoration idempotent, removes a mutation-driven rebuild loop, coalesces live-preview repaint/update passes, eliminates duplicate Split Screen updates, debounces per-skin snapshots/CSS regeneration, and caches expensive whole-preview text scans."
+  "notes": "Moves Whole Skin / Global Style into its own dedicated tall Skin-Wide Controls rectangle, separate from individual Text, Tags, and Stats controls. Global font and all-text solid/gradient overrides now export through an explicit registry of real AO3 selectors rather than depending on the mock preview. Coverage includes the AO3 logo/header, primary and secondary navigation, logged-in user/profile menus, dropdowns, search, Dashboard/Subscriptions/Bookmarks/History-style header links, work titles/bylines, fandoms/tags/Series/metadata/stats, chapter and fic text, comments, kudos, actions/navigation, forms, and footer. Existing per-element settings remain preserved underneath the reversible global overrides."
 }
