@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.53",
-  "payloadSha256": "302212bd32d9d3ed25dbae63e478cc3872ab90672786641875d8439db7f05a9d",
-  "executableSha256": "10928de4ae21ef8102b76892743239e8cc94bf7bc182fdf2cb6b4853da788eff",
+  "version": "0.1.54",
+  "payloadSha256": "4955e2d14ab46de089ca6f3b62c456fef7f6534b7cbc37e8f405a0848d7f099f",
+  "executableSha256": "d72d08bebe8b04e9f096e9631748e6f5d2a3d3c50a284b636d8cb4fbd7d7adcd",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-001.txt",
-      "sha256": "40c5f1a00eec53107a700a43101f695bdad4c7950876dc0513b7a5a577051a5e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-001.txt",
+      "sha256": "47c2ae44ece94f5c44a0e6fc4a082e5625c0e9fb12fe7fc411f10d4fe9a964c4"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-002.txt",
-      "sha256": "2b9db607e5d7f3b4e82e9041fe9da9d56f6d59f817dcef5ddd2c25e1a140a12e"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-002.txt",
+      "sha256": "2de14067e1b916b6e50fa463964054bd4059dcc07204d402e5be764c4cc93d38"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-003.txt",
-      "sha256": "42b6867fd5bfe57ecc85c8b89a4546e4a1d570379583de2dc107501b4b4d246c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-003.txt",
+      "sha256": "6d8040ff595edd409eb7c46d424b47e22c3a2e90e9a4611b10d51e4688aa226a"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-004.txt",
-      "sha256": "9dba9312afaad7284f1405b379715ffd26f86b818b6d2e62bbcc7957b62e2fd6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-004.txt",
+      "sha256": "bb17e3639ec85159c40319f15a7c6bb5df1aef509f24ece7005ab596ef28219a"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.53-part-005.txt",
-      "sha256": "c38e8de23a7e668610608689c5942bc3544adce93e76b4217b58579c17af2a30"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.54-part-005.txt",
+      "sha256": "c4ed6351cd4f0d5166eda15567b7f6db909aaf90ecbe41d5878878fca664d0fc"
     }
   ],
-  "notes": "Adds Series as the eighth first-class Tags tab with independent font/color, text gradient, background gradient, border/radius/padding, hover styling, preview styling, AO3 CSS output, CSS edit-state round-trip, and per-skin persistence. Adds a Whole Skin / Global Style panel with a reversible Font for Everything override and an All Text override that can be off, one solid color, or one global gradient. Global overrides do not erase the individual text settings underneath; turning them off restores the per-element styling."
+  "notes": "Restores the complete logged-in AO3 preview header/chrome above Results, Inside a Fic, and Split Screen, including Archive of Our Own branding, primary navigation, profile/dashboard shortcuts, bookmarks/history/Marked for Later, Subscriptions, Preferences, Post, Inbox, and Log Out. Rebuilds Results/Browse blurbs into AO3 hierarchy: the 2x2 required-tag icon block remains at left, title/byline lead the work, Fandom gets its own natural line, Relationships/Characters/Additional Tags/Series flow as wrapping tags, Summary follows, and compact stats sit at the bottom. Inside-a-Fic metadata stays a proper AO3 label/value list. Performance work makes Results decoration idempotent, removes a mutation-driven rebuild loop, coalesces live-preview repaint/update passes, eliminates duplicate Split Screen updates, debounces per-skin snapshots/CSS regeneration, and caches expensive whole-preview text scans."
 }
