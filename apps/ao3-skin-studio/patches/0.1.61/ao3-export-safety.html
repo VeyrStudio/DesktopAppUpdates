@@ -1,0 +1,52 @@
+<script id="ao3-export-safety-v61">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(window.AO3ExportSafetyV61)return;
+
+  function literalColor(id,fallback){
+    const value=String(q(id)?.value||fallback).trim();
+    return /^#[0-9a-f]{6}$/i.test(value)?value.toUpperCase():fallback;
+  }
+
+  function sanitizeCategoryMulti(css){
+    let s=String(css||'');
+
+    /* AO3 rejects the old category-multi background shorthand. Remove every
+       generated background/background-* declaration from category-multi rules,
+       then add one final literal-color AO3-safe rule. Pseudo-element label
+       rules are left alone. */
+    s=s.replace(/([^{}]*\.category-multi[^{}]*)\{([^{}]*)\}/gi,function(match,selectors,body){
+      if(/::(?:before|after)/i.test(selectors))return match;
+      const cleaned=body.replace(/\bbackground(?:-[a-z-]+)?\s*:[^;{}]+;?/gi,'');
+      return selectors+'{'+cleaned+'}';
+    });
+
+    const tl=literalColor('req_multiTL','#88C900');
+    const tr=literalColor('req_multiTR','#AA0088');
+    const bl=literalColor('req_multiBL','#BD0B0B');
+    const br=literalColor('req_multiBR','#0759B8');
+
+    s+='\n\n/* AO3-SAFE MULTI-CATEGORY ICON — 0.1.61 */\n'+
+      '.blurb .category-multi,\n'+
+      '.blurb ul.required-tags .category-multi {\n'+
+      '  background-color: '+tl+' !important;\n'+
+      '  background-image: linear-gradient(90deg, '+tl+' 0%, '+tl+' 50%, '+tr+' 50%, '+tr+' 100%), linear-gradient(90deg, '+bl+' 0%, '+bl+' 50%, '+br+' 50%, '+br+' 100%) !important;\n'+
+      '  background-size: 100% 50%, 100% 50% !important;\n'+
+      '  background-position: top left, bottom left !important;\n'+
+      '  background-repeat: no-repeat !important;\n'+
+      '}\n';
+
+    return s;
+  }
+
+  try{
+    const oldBuild=buildCss;
+    buildCss=function(){
+      return sanitizeCategoryMulti(oldBuild.apply(this,arguments));
+    };
+  }catch(e){}
+
+  window.AO3ExportSafetyV61={sanitizeCategoryMulti};
+  try{if(typeof cssOutput!=='undefined'&&cssOutput)cssOutput.value=buildCss();}catch(e){}
+})();
+</script>
