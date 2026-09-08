@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.58",
-  "payloadSha256": "5ec89343a5efe40a90291e063553f9a89455fccafdb815171c6657a3d76c7313",
-  "executableSha256": "2f9f286b18c1cdbac77de8557b9a1541bebde61135844c7f70073c3a78fed1a1",
+  "version": "0.1.59",
+  "payloadSha256": "f10b5dbae85ec1bf7abce8778829dbc778d084c6020ebccf39f88b6b73162512",
+  "executableSha256": "03a490c4af72f2e20899d07cd0bc4207fef55942957992d0773ac72534e84dbc",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-001.txt",
-      "sha256": "acfb4f4c8bca548132fff76234be19b669cbbf1436b214e3d6a5576d98b79152"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.59-part-001.txt",
+      "sha256": "d8e9beed1985e142fce0b3c4b3c294d41fb876d9f89e363549e606a2079d9968"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-002.txt",
-      "sha256": "b5117cf1d1dbb6dec1cb102d75d20e975945c25ad5690143699de829cf09966c"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.59-part-002.txt",
+      "sha256": "4d1be78527dfcf745feb15151c3d743f651e94f9ef817d9ae383b2761831fd18"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-003.txt",
-      "sha256": "2c21bc01f271456dbb35d73b023674f1b5402a54c2bea0a8c240f853e1056830"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.59-part-003.txt",
+      "sha256": "e696f9b814de72408e2173063d814bb40202a3167b5a0a6349289359c5a7174d"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-004.txt",
-      "sha256": "899b9e9200ae4b0ddbd9a8da13c36bfb066d668923601926d792621fcafca98d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.59-part-004.txt",
+      "sha256": "74a204836aeb75d2bb2c4c25d25dfb277f05db13263363034b0be76f165c5548"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-005.txt",
-      "sha256": "330e3bda33a71b2e2aa645b173cbf1d0957f4900ec3e82cdadd01b1a2db33726"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.59-part-005.txt",
+      "sha256": "fb2f8f103d38a694bcd81a7ef9cc50f802a4749d4b37e9b71769d1b1794f4aab"
     }
   ],
-  "notes": "Adds the Enemies to Lovers built-in gradient preset to the Gradient Library under Romantic. It uses the exact 135-degree four-stop palette #1A0F14 at 0%, #7A1F2F at 35%, #59305F at 68%, and #D58B72 at 100%, so it can be applied to any supported gradient target just like the existing built-in presets."
+  "notes": "Adds the full romance-trope gradient preset pack to the Gradient Library: Forbidden Romance, Vampire x Human, Werewolf x Anyone, Secret Relationship, Royal x Commoner, Dark Romance, Slow Burn, Grumpy x Sunshine, Angel x Demon, Captor x Captive, Friends to Lovers, Second Chances, Tragedy to Love, Soulmates, Mutual Destruction, A Quieter Kind of Love, Across Worlds, Vampire x Werewolf, and Alpha x Alpha. All are built-in 135-degree four-stop presets with the exact palettes shown in chat, alongside the existing Enemies to Lovers preset."
 }
