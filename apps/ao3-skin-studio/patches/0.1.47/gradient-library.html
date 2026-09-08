@@ -348,6 +348,53 @@
     }),
     builtin:true
   });
+  function romanticPresetV59(id,name,category,colors){
+    return {
+      id:id,
+      name:name,
+      category:category,
+      config:normalizeConfig({
+        enabled:true,
+        type:'linear',
+        angle:'135deg',
+        custom:'',
+        stops:[
+          {color:colors[0],pos:0,opacity:100},
+          {color:colors[1],pos:35,opacity:100},
+          {color:colors[2],pos:68,opacity:100},
+          {color:colors[3],pos:100,opacity:100}
+        ],
+        radialShape:'ellipse',
+        radialSize:'farthest-corner',
+        centerX:50,centerY:50,
+        conicStart:0,conicX:50,conicY:50,
+        repeating:false,repeatSize:35
+      }),
+      builtin:true
+    };
+  }
+
+  [
+    ['builtin-forbidden-romance','Forbidden Romance','Romantic',['#0B0B0F','#8B1E3F','#5B2A6B','#F2C6A0']],
+    ['builtin-vampire-x-human','Vampire x Human','Romantic',['#0A0006','#6B0F1A','#4B2C5E','#E8D6DC']],
+    ['builtin-werewolf-x-anyone','Werewolf x Anyone','Romantic',['#0D1B0F','#3B2F1F','#8A5A2B','#E6C88A']],
+    ['builtin-secret-relationship','Secret Relationship','Romantic',['#0B132B','#3A0CA3','#A4508B','#F7D6E0']],
+    ['builtin-royal-x-commoner','Royal x Commoner','Romantic',['#0A1A3A','#3B5BA7','#B88F3A','#F6E7B1']],
+    ['builtin-dark-romance','Dark Romance','Romantic',['#000000','#8B0000','#5A2A2A','#D9B7B7']],
+    ['builtin-slow-burn','Slow Burn','Romantic',['#1B1033','#5C2A6D','#B56576','#F4C095']],
+    ['builtin-grumpy-x-sunshine','Grumpy x Sunshine','Romantic',['#1F2D3D','#536976','#C9A227','#FBE7C6']],
+    ['builtin-angel-x-demon','Angel x Demon','Romantic',['#0B0B0F','#7A1F2F','#A855F7','#F5F5F7']],
+    ['builtin-captor-x-captive','Captor x Captive','Dark',['#0A0A0A','#2F3E2F','#6B705C','#E8DCC6']],
+    ['builtin-friends-to-lovers','Friends to Lovers','Romantic',['#0F1B3D','#6C63FF','#D16BA5','#FFD1DC']],
+    ['builtin-second-chances','Second Chances','Romantic',['#0B3D2E','#287271','#C4A484','#FFF1D0']],
+    ['builtin-tragedy-to-love','Tragedy to Love','Romantic',['#0B0B0F','#4A0E4E','#9D4EDD','#F1B7C1']],
+    ['builtin-soulmates','Soulmates','Romantic',['#0A0A2A','#3A0CA3','#7F5AF0','#E0E7FF']],
+    ['builtin-mutual-destruction','Mutual Destruction','Dark',['#050505','#8B0000','#E85D04','#F9D342']],
+    ['builtin-a-quieter-kind-of-love','A Quieter Kind of Love','Romantic',['#2E3440','#6D597A','#B08968','#F2E9E4']],
+    ['builtin-across-worlds','Across Worlds','Fantasy',['#000428','#5A189A','#4361EE','#4CC9F0']],
+    ['builtin-vampire-x-werewolf','Vampire x Werewolf','Fantasy',['#12070F','#7A1028','#8A5A2B','#E5C98B']],
+    ['builtin-alpha-x-alpha','Alpha x Alpha','Romantic',['#161A24','#3C4A63','#6E2235','#C89B5A']]
+  ].forEach(function(p){builtins.push(romanticPresetV59(p[0],p[1],p[2],p[3]));});
   let seq=1;
   palettes.forEach(function(pal){
     angles.forEach(function(a,idx){
