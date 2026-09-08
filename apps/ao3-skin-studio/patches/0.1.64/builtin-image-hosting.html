@@ -1,0 +1,387 @@
+<style id="ao3-v64-image-host-styles">
+.ao3-host-actions-v64{
+  grid-column:1/-1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+.ao3-host-btn-v64,
+#ao3UploadAllV64{
+  min-height:30px;
+  padding:6px 9px;
+  border:1px solid #6c5742;
+  border-radius:6px;
+  background:linear-gradient(180deg,#2b2118,#17130f);
+  color:#e4c28d;
+  font-size:8px;
+  font-weight:900;
+  cursor:pointer;
+}
+.ao3-host-btn-v64:hover,
+#ao3UploadAllV64:hover{border-color:#b48650;color:#fff0cf}
+.ao3-host-btn-v64:disabled,
+#ao3UploadAllV64:disabled{opacity:.45;cursor:wait}
+.ao3-host-btn-v64.ready{
+  border-color:#3f7058;
+  background:#102019;
+  color:#a9d8bc;
+}
+.ao3-host-all-wrap-v64{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:8px 0 4px;
+}
+.ao3-host-all-note-v64{
+  color:#8f8578;
+  font-size:7px;
+  line-height:1.4;
+}
+.ao3-host-service-note-v64{
+  margin-top:6px;
+  color:#8f8170;
+  font-size:7px;
+  line-height:1.45;
+}
+</style>
+
+<script id="ao3-v64-image-host-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('ao3V64Sentinel'))return;
+  const sentinel=document.createElement('span');
+  sentinel.id='ao3V64Sentinel';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  const pending=new Map();
+  let uploadSeq=0;
+
+  function canNativeUpload(){
+    return !!(window.chrome&&window.chrome.webview&&typeof window.chrome.webview.postMessage==='function');
+  }
+  function directUrl(v){
+    return /^https?:\/\/[^\s"']+\.(?:png|jpe?g|gif)$/i.test(String(v||'').trim());
+  }
+  function extensionFromData(data){
+    const m=String(data||'').match(/^data:image\/(png|jpeg|jpg|gif);base64,/i);
+    if(!m)return '.png';
+    const t=m[1].toLowerCase();
+    return t==='jpeg'?'.jpg':'.'+t;
+  }
+  function safeName(name,data,fallback){
+    let n=String(name||fallback||'ao3-skin-image').replace(/[\\/:*?"<>|]+/g,'-').trim();
+    const ext=extensionFromData(data);
+    if(!/\.(?:png|jpe?g|gif)$/i.test(n))n+=ext;
+    return n;
+  }
+  function publicUploadConsent(count){
+    const plural=count===1?'image':'images';
+    return confirm(
+      'AO3 Skin Studio can host '+count+' '+plural+' for you using Catbox.moe so AO3 gets a direct image URL.\n\n'+
+      'Important: this uploads the file publicly to a third-party image host. Catbox says anonymous uploads can remain until two years of inactivity, and files are uploaded unchanged (including any EXIF/metadata).\n\n'+
+      'Upload now?'
+    );
+  }
+  function nativeUpload(name,dataUri){
+    if(!canNativeUpload())return Promise.reject(new Error('Built-in image hosting is not available in this app build.'));
+    if(!/^data:image\/(?:png|jpeg|jpg|gif);base64,/i.test(String(dataUri||''))){
+      return Promise.reject(new Error('Only local PNG, JPG/JPEG, and GIF images can be hosted for AO3.'));
+    }
+    const requestId='ao3-upload-'+Date.now()+'-'+(++uploadSeq);
+    return new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{
+        pending.delete(requestId);
+        reject(new Error('Image upload timed out.'));
+      },190000);
+      pending.set(requestId,{resolve,reject,timer});
+      window.chrome.webview.postMessage({
+        type:'ao3-host-image-upload',
+        requestId,
+        name:safeName(name,dataUri,'ao3-skin-image'),
+        dataUri
+      });
+    });
+  }
+
+  if(canNativeUpload()){
+    window.chrome.webview.addEventListener('message',event=>{
+      const msg=event.data||{};
+      if(msg.type!=='ao3-host-image-upload-result'||!msg.requestId)return;
+      const p=pending.get(msg.requestId);
+      if(!p)return;
+      clearTimeout(p.timer);
+      pending.delete(msg.requestId);
+      if(msg.ok&&directUrl(msg.url))p.resolve(String(msg.url));
+      else p.reject(new Error(msg.error||'Image host did not return a usable AO3 image URL.'));
+    });
+  }
+
+  function dispatch(el){
+    if(!el)return;
+    try{el.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}
+    try{el.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+  }
+  function setBusy(btn,busy,text){
+    if(!btn)return;
+    if(busy){
+      btn.dataset.oldText=btn.textContent;
+      btn.disabled=true;
+      btn.textContent=text||'Uploading…';
+    }else{
+      btn.disabled=false;
+      btn.textContent=btn.dataset.oldText||'Upload for AO3';
+      delete btn.dataset.oldText;
+    }
+  }
+  function successToast(label){
+    try{showToast(label+' uploaded for AO3')}catch(e){}
+  }
+  function failure(label,err){
+    alert(label+' could not be uploaded for AO3.\n\n'+(err?.message||err||'Unknown error')+'\n\nYou can still paste a direct image URL manually.');
+  }
+
+  function backgroundImageForCard(card){
+    const id=Number(card?.dataset?.id);
+    try{return Array.isArray(localImages)?localImages.find(x=>Number(x.id)===id):null}catch(e){return null}
+  }
+  async function uploadBackground(card,ask=true){
+    const img=backgroundImageForCard(card);
+    if(!img?.data)throw new Error('This image is not currently loaded as a local file. Re-select it first.');
+    if(ask&&!publicUploadConsent(1))return null;
+    const btn=card.querySelector('.ao3-host-btn-v64');
+    setBusy(btn,true);
+    try{
+      const url=await nativeUpload(img.name||'background'+extensionFromData(img.data),img.data);
+      img.url=url;
+      const field=card.querySelector('[data-field="url"]');
+      if(field){field.value=url;dispatch(field)}
+      btn?.classList.add('ready');
+      if(btn)btn.textContent='Hosted for AO3 ✓';
+      window.AO3V63?.refreshImages?.();
+      window.AO3V63?.rebuildCss?.();
+      successToast('Background image');
+      return url;
+    }finally{
+      if(btn&&!btn.classList.contains('ready'))setBusy(btn,false);
+      else if(btn)btn.disabled=false;
+    }
+  }
+
+  async function uploadHeader(ask=true){
+    const data=window.AO3HeaderLocalAsset?.get?.()||'';
+    if(!data)throw new Error('No local header image is loaded.');
+    if(ask&&!publicUploadConsent(1))return null;
+    const btn=q('headerHostUploadV64');
+    setBusy(btn,true);
+    try{
+      const file=q('headerImageFile')?.files?.[0];
+      const url=await nativeUpload(file?.name||'ao3-header'+extensionFromData(data),data);
+      const input=q('headerImageUrl');
+      if(input){input.value=url;dispatch(input)}
+      btn.classList.add('ready');
+      btn.textContent='Hosted for AO3 ✓';
+      window.AO3V63?.rebuildCss?.();
+      successToast('Header image');
+      return url;
+    }finally{
+      if(btn&&!btn.classList.contains('ready'))setBusy(btn,false);
+      else if(btn)btn.disabled=false;
+    }
+  }
+
+  async function uploadBorder(ask=true){
+    let data='';
+    let name='ao3-bottom-border';
+    try{
+      data=bottomBorderImage?.data||'';
+      name=bottomBorderImage?.name||name;
+    }catch(e){}
+    if(!data)throw new Error('No local bottom-border image is loaded.');
+    if(ask&&!publicUploadConsent(1))return null;
+    const btn=q('borderHostUploadV64');
+    setBusy(btn,true);
+    try{
+      const url=await nativeUpload(name+extensionFromData(data),data);
+      const input=q('bottomBorderUrl');
+      if(input){input.value=url;dispatch(input)}
+      btn.classList.add('ready');
+      btn.textContent='Hosted for AO3 ✓';
+      window.AO3V63?.rebuildCss?.();
+      successToast('Bottom border image');
+      return url;
+    }finally{
+      if(btn&&!btn.classList.contains('ready'))setBusy(btn,false);
+      else if(btn)btn.disabled=false;
+    }
+  }
+
+  function ensureBackgroundButtons(){
+    document.querySelectorAll('#imageList .image-card').forEach(card=>{
+      const img=backgroundImageForCard(card);
+      let actions=card.querySelector('.ao3-host-actions-v64');
+      if(!actions){
+        actions=document.createElement('div');
+        actions.className='ao3-host-actions-v64';
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='ao3-host-btn-v64';
+        btn.textContent='Upload for AO3';
+        btn.addEventListener('click',async()=>{
+          try{await uploadBackground(card,true)}catch(err){failure('Background image',err)}
+        });
+        actions.appendChild(btn);
+        card.querySelector('.image-card-controls')?.appendChild(actions);
+      }
+      const btn=actions.querySelector('.ao3-host-btn-v64');
+      if(btn){
+        const ready=directUrl(img?.url);
+        btn.classList.toggle('ready',ready);
+        btn.textContent=ready?'Hosted for AO3 ✓':'Upload for AO3';
+        btn.disabled=!img?.data&& !ready;
+        btn.title=img?.data?'Upload this local image and fill the AO3 URL automatically':'Re-select the local image to upload it';
+      }
+    });
+  }
+
+  function ensureHeaderButton(){
+    const url=q('headerImageUrl');
+    if(!url||q('headerHostUploadV64'))return;
+    const field=url.closest('.header-image-field')||url.parentElement;
+    const btn=document.createElement('button');
+    btn.id='headerHostUploadV64';
+    btn.type='button';
+    btn.className='ao3-host-btn-v64';
+    btn.style.marginTop='6px';
+    btn.textContent='Upload Header for AO3';
+    btn.addEventListener('click',async()=>{
+      try{await uploadHeader(true)}catch(err){failure('Header image',err)}
+    });
+    field?.appendChild(btn);
+  }
+
+  function ensureBorderButton(){
+    const url=q('bottomBorderUrl');
+    if(!url||q('borderHostUploadV64'))return;
+    const field=url.closest('.control')||url.parentElement;
+    const btn=document.createElement('button');
+    btn.id='borderHostUploadV64';
+    btn.type='button';
+    btn.className='ao3-host-btn-v64';
+    btn.style.marginTop='6px';
+    btn.textContent='Upload Border for AO3';
+    btn.addEventListener('click',async()=>{
+      try{await uploadBorder(true)}catch(err){failure('Bottom border image',err)}
+    });
+    field?.appendChild(btn);
+  }
+
+  function uploadableItems(){
+    const items=[];
+    try{
+      document.querySelectorAll('#imageList .image-card').forEach(card=>{
+        const img=backgroundImageForCard(card);
+        if(img?.data&&!directUrl(img.url))items.push({kind:'background',card});
+      });
+    }catch(e){}
+    try{
+      const hd=window.AO3HeaderLocalAsset?.get?.()||'';
+      if(q('useHeader')?.checked&&hd&&!directUrl(q('headerImageUrl')?.value))items.push({kind:'header'});
+    }catch(e){}
+    try{
+      const bd=bottomBorderImage?.data||'';
+      if(bd&&!directUrl(q('bottomBorderUrl')?.value))items.push({kind:'border'});
+    }catch(e){}
+    return items;
+  }
+
+  async function uploadAll(){
+    const items=uploadableItems();
+    if(!items.length){
+      try{showToast('All local images are already ready for AO3')}catch(e){}
+      return;
+    }
+    if(!publicUploadConsent(items.length))return;
+    const all=q('ao3UploadAllV64');
+    setBusy(all,true,'Uploading '+items.length+'…');
+    let done=0;
+    try{
+      for(const item of items){
+        try{
+          if(item.kind==='background')await uploadBackground(item.card,false);
+          if(item.kind==='header')await uploadHeader(false);
+          if(item.kind==='border')await uploadBorder(false);
+          done++;
+          all.textContent='Uploaded '+done+' / '+items.length;
+        }catch(err){
+          failure(item.kind==='background'?'Background image':item.kind==='header'?'Header image':'Bottom border image',err);
+        }
+      }
+    }finally{
+      setBusy(all,false);
+      refresh();
+    }
+  }
+
+  function ensureUploadAll(){
+    if(q('ao3UploadAllV64'))return;
+    const note=q('bgLocalNote');
+    const host=note?.parentElement||q('imageList')?.parentElement;
+    if(!host)return;
+    const wrap=document.createElement('div');
+    wrap.className='ao3-host-all-wrap-v64';
+    wrap.innerHTML='<button type="button" id="ao3UploadAllV64">Upload All Local Images for AO3</button><span class="ao3-host-all-note-v64">No separate image-host account required.</span>';
+    if(note)note.insertAdjacentElement('afterend',wrap);
+    else host.prepend(wrap);
+    q('ao3UploadAllV64').addEventListener('click',uploadAll);
+
+    const service=document.createElement('div');
+    service.className='ao3-host-service-note-v64';
+    service.textContent='Built-in hosting uses anonymous Catbox.moe uploads. The app fills the direct URL back into your skin automatically; manual URLs still work.';
+    wrap.insertAdjacentElement('afterend',service);
+  }
+
+  function refresh(){
+    ensureUploadAll();
+    ensureBackgroundButtons();
+    ensureHeaderButton();
+    ensureBorderButton();
+    const hb=q('headerHostUploadV64');
+    if(hb){
+      const ready=directUrl(q('headerImageUrl')?.value);
+      hb.classList.toggle('ready',ready);
+      hb.textContent=ready?'Hosted for AO3 ✓':'Upload Header for AO3';
+    }
+    const bb=q('borderHostUploadV64');
+    if(bb){
+      const ready=directUrl(q('bottomBorderUrl')?.value);
+      bb.classList.toggle('ready',ready);
+      bb.textContent=ready?'Hosted for AO3 ✓':'Upload Border for AO3';
+    }
+  }
+
+  try{
+    const prev=renderImageList;
+    renderImageList=function(){
+      const r=prev.apply(this,arguments);
+      requestAnimationFrame(refresh);
+      return r;
+    };
+  }catch(e){}
+
+  q('headerImageFile')?.addEventListener('change',()=>setTimeout(refresh,30));
+  q('headerImageUrl')?.addEventListener('input',refresh);
+  q('bottomBorderUrl')?.addEventListener('input',refresh);
+  q('imageList')?.addEventListener('input',refresh,true);
+  q('imageList')?.addEventListener('change',()=>setTimeout(refresh,30),true);
+
+  requestAnimationFrame(refresh);
+
+  window.AO3ImageHostingV64={
+    uploadAll,
+    refresh,
+    service:'Catbox.moe'
+  };
+})();
+</script>

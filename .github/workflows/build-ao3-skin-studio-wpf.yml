@@ -716,6 +716,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $v63 + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.64: built-in public image hosting for AO3.
+          $v64Path = 'apps/ao3-skin-studio/patches/0.1.64/builtin-image-hosting.html'
+          if (-not (Test-Path $v64Path)) { throw 'AO3 Skin Studio 0.1.64 image-hosting patch was not found.' }
+          $v64 = Get-Content $v64Path -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.64.' }
+          $studioText = $studioText.Replace('</body>', $v64 + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -779,6 +788,141 @@ jobs:
           $mainWindowCodeText = $mainWindowCodeText.Replace($loadedAnchor, $fitMethod + $loadedAnchor)
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.64: native Catbox upload bridge. WebView JavaScript sends local image data here;
+          # the WPF host performs the cross-origin upload and returns the direct public URL.
+          $mainWindowCodeText = Get-Content $mainWindowCode -Raw
+          $newline64 = if ($mainWindowCodeText.Contains("`r`n")) { "`r`n" } else { "`n" }
+
+          $imageHostFieldAnchor = '    private readonly UpdateService _updateService = new();'
+          $imageHostFieldReplacement = @(
+            '    private readonly UpdateService _updateService = new();'
+            '    private static readonly System.Net.Http.HttpClient ImageHostHttp = CreateImageHostHttpClient();'
+          ) -join $newline64
+          if (-not $mainWindowCodeText.Contains($imageHostFieldAnchor)) { throw 'MainWindow image-host field anchor was not found for 0.1.64.' }
+          $mainWindowCodeText = $mainWindowCodeText.Replace($imageHostFieldAnchor, $imageHostFieldReplacement)
+
+          $imageHostNavigateAnchor = @(
+            '            await WebViewHost.NavigateToLocalToolAsync(SkinView, "ao3-skin-studio.html", "skin-studio");'
+            '            StatusText.Text = "Ready";'
+          ) -join $newline64
+          $imageHostNavigateReplacement = @(
+            '            await WebViewHost.NavigateToLocalToolAsync(SkinView, "ao3-skin-studio.html", "skin-studio");'
+            '            if (SkinView.CoreWebView2 is not null)'
+            '            {'
+            '                SkinView.CoreWebView2.WebMessageReceived -= SkinView_WebMessageReceived;'
+            '                SkinView.CoreWebView2.WebMessageReceived += SkinView_WebMessageReceived;'
+            '            }'
+            '            StatusText.Text = "Ready";'
+          ) -join $newline64
+          if (-not $mainWindowCodeText.Contains($imageHostNavigateAnchor)) { throw 'MainWindow navigation anchor was not found for 0.1.64 image hosting.' }
+          $mainWindowCodeText = $mainWindowCodeText.Replace($imageHostNavigateAnchor, $imageHostNavigateReplacement)
+
+          $imageHostMethodAnchor = '    private async Task CheckForUpdatesAsync(bool showNoUpdateMessage)'
+          $imageHostMethods = @(
+            '    private static System.Net.Http.HttpClient CreateImageHostHttpClient()'
+            '    {'
+            '        var client = new System.Net.Http.HttpClient'
+            '        {'
+            '            Timeout = TimeSpan.FromMinutes(3)'
+            '        };'
+            '        client.DefaultRequestHeaders.UserAgent.ParseAdd("AO3-Skin-Studio/0.1.64");'
+            '        return client;'
+            '    }'
+            ''
+            '    private async void SkinView_WebMessageReceived(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)'
+            '    {'
+            '        string requestId = "";'
+            '        try'
+            '        {'
+            '            using var document = System.Text.Json.JsonDocument.Parse(e.WebMessageAsJson);'
+            '            var root = document.RootElement;'
+            '            if (!root.TryGetProperty("type", out var typeElement) || typeElement.GetString() != "ao3-host-image-upload")'
+            '                return;'
+            ''
+            '            requestId = root.TryGetProperty("requestId", out var requestElement) ? requestElement.GetString() ?? "" : "";'
+            '            var fileName = root.TryGetProperty("name", out var nameElement) ? nameElement.GetString() ?? "ao3-skin-image" : "ao3-skin-image";'
+            '            var dataUri = root.TryGetProperty("dataUri", out var dataElement) ? dataElement.GetString() ?? "" : "";'
+            ''
+            '            if (string.IsNullOrWhiteSpace(requestId))'
+            '                throw new InvalidOperationException("The image upload request did not include an ID.");'
+            '            if (string.IsNullOrWhiteSpace(dataUri) || !dataUri.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))'
+            '                throw new InvalidOperationException("Only local PNG, JPG/JPEG, and GIF images can be uploaded.");'
+            ''
+            '            var comma = dataUri.IndexOf('','');'
+            '            if (comma < 0)'
+            '                throw new InvalidOperationException("The local image data was incomplete.");'
+            ''
+            '            var metadata = dataUri[..comma];'
+            '            var mime = metadata[5..].Split('';'', 2)[0].ToLowerInvariant();'
+            '            var extension = mime switch'
+            '            {'
+            '                "image/png" => ".png",'
+            '                "image/jpeg" => ".jpg",'
+            '                "image/jpg" => ".jpg",'
+            '                "image/gif" => ".gif",'
+            '                _ => throw new InvalidOperationException("AO3 Skin Studio can host PNG, JPG/JPEG, and GIF images for AO3.")'
+            '            };'
+            ''
+            '            var bytes = Convert.FromBase64String(dataUri[(comma + 1)..]);'
+            '            if (bytes.Length == 0)'
+            '                throw new InvalidOperationException("The selected image was empty.");'
+            '            var byteLimit = mime == "image/gif" ? 20 * 1024 * 1024 : 50 * 1024 * 1024;'
+            '            if (bytes.Length > byteLimit)'
+            '                throw new InvalidOperationException(mime == "image/gif" ? "Catbox limits GIF uploads to 20 MB." : "AO3 Skin Studio limits built-in image uploads to 50 MB.");'
+            ''
+            '            var safeName = Path.GetFileName(fileName);'
+            '            if (string.IsNullOrWhiteSpace(safeName))'
+            '                safeName = "ao3-skin-image" + extension;'
+            '            if (!safeName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))'
+            '                safeName = Path.GetFileNameWithoutExtension(safeName) + extension;'
+            ''
+            '            using var form = new System.Net.Http.MultipartFormDataContent();'
+            '            form.Add(new System.Net.Http.StringContent("fileupload"), "reqtype");'
+            '            using var fileContent = new System.Net.Http.ByteArrayContent(bytes);'
+            '            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mime);'
+            '            form.Add(fileContent, "fileToUpload", safeName);'
+            ''
+            '            using var response = await ImageHostHttp.PostAsync("https://catbox.moe/user/api.php", form);'
+            '            var responseText = (await response.Content.ReadAsStringAsync()).Trim();'
+            '            if (!response.IsSuccessStatusCode)'
+            '                throw new InvalidOperationException($"Image hosting failed ({(int)response.StatusCode}): {responseText}");'
+            ''
+            '            if (!Uri.TryCreate(responseText, UriKind.Absolute, out var hostedUrl) ||'
+            '                hostedUrl.Scheme != Uri.UriSchemeHttps ||'
+            '                !hostedUrl.Host.Equals("files.catbox.moe", StringComparison.OrdinalIgnoreCase))'
+            '                throw new InvalidOperationException("The image host did not return a valid direct image URL.");'
+            ''
+            '            PostImageHostResult(requestId, true, hostedUrl.ToString(), null);'
+            '        }'
+            '        catch (Exception ex)'
+            '        {'
+            '            PostImageHostResult(requestId, false, null, ex.Message);'
+            '        }'
+            '    }'
+            ''
+            '    private void PostImageHostResult(string requestId, bool ok, string? url, string? error)'
+            '    {'
+            '        if (SkinView.CoreWebView2 is null)'
+            '            return;'
+            ''
+            '        var json = System.Text.Json.JsonSerializer.Serialize(new'
+            '        {'
+            '            type = "ao3-host-image-upload-result",'
+            '            requestId,'
+            '            ok,'
+            '            url,'
+            '            error'
+            '        });'
+            '        SkinView.CoreWebView2.PostWebMessageAsJson(json);'
+            '    }'
+            ''
+            ''
+          ) -join $newline64
+          if (-not $mainWindowCodeText.Contains($imageHostMethodAnchor)) { throw 'MainWindow update-method anchor was not found for 0.1.64 image hosting.' }
+          $mainWindowCodeText = $mainWindowCodeText.Replace($imageHostMethodAnchor, $imageHostMethods + $imageHostMethodAnchor)
+
+          [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
+
           $projectText = Get-Content $project -Raw
 
           # 0.1.14: embed the icon in AO3SkinStudio.exe and include the .ico in published updates.
@@ -798,26 +942,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.63</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.63.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.63.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.64</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.64.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.64.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.63" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Diagnose AO3 WebView host
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $root = Join-Path $env:RUNNER_TEMP 'ao3-skin-studio-src'
-          Write-Host '=== MAINWINDOW XAML ==='
-          Get-Content (Join-Path $root 'AO3SkinStudio/MainWindow.xaml') -Raw
-          Write-Host '=== MAINWINDOW CODE ==='
-          Get-Content (Join-Path $root 'AO3SkinStudio/MainWindow.xaml.cs') -Raw
+          "AO3_VERSION=0.1.64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -957,7 +1091,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Export correctness and performance pass. Fixes blank real-AO3 tag/stat text caused by the whole-skin text gradient overriding independent tag/metadata styles. Local preview images are now clearly marked Preview only until an AO3-safe direct public .jpg/.jpeg/.png/.gif URL is supplied, because AO3 strips embedded data-image URIs; Copy/Download warns before exporting local-only images instead of silently dropping them. Performance work coalesces live preview updates and image rendering, debounces persistence, caches generated CSS during edit bursts, deduplicates repeated CSS-output writes, and forces a fresh rebuild when editing settles or the user exports.'
+            notes = 'Adds built-in AO3 image hosting. Local PNG, JPG/JPEG, and GIF images can now be uploaded directly from AO3 Skin Studio to Catbox.moe with one built-in action; the returned direct public URL is filled into the correct background, separate-header, or bottom-border URL field automatically and is then included in exported AO3 CSS. Includes per-image Upload for AO3 buttons plus Upload All Local Images for AO3. Uploads require an explicit public-upload confirmation and remain optional; manual direct URLs still work. Keeps the 0.1.63 tag-visibility and performance fixes.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 
