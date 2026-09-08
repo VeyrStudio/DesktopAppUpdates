@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.63",
-  "payloadSha256": "f8753aae877150af172f099935174063e236032f32199067cf01ee70ff57a842",
-  "executableSha256": "883f950c54da69d5d4f6513b22693aab51c135f808ebe3a98c1cb54160073f1e",
+  "version": "0.1.64",
+  "payloadSha256": "6c761d02a94e56fc7e66f9e177fa5d88ed80267f6100dd9a34e3c2a54ab72f98",
+  "executableSha256": "d4717cf3dd69c3d599c66fe3f2822505fa8f631db68ba621c08d3cc80dcaa965",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-001.txt",
-      "sha256": "8114dcd8f2b2581a47a96b40bd9cdb90fd10f8bd731b54d1839ef333ec33edcf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.64-part-001.txt",
+      "sha256": "c6515900e1326711845a8fabe819f46868994cfc732e5b522eae14c5b0bf0f6c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-002.txt",
-      "sha256": "177d4f33f62ef8d8719d486f9b17e965a7ba32f83470baae528ddf8cea36b258"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.64-part-002.txt",
+      "sha256": "968418c0d46c3a823afb4c4f314050e048aadea84489542daba69222aa20c816"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-003.txt",
-      "sha256": "6c7b2ba41d6f0f7d0179e1a7fbddb89b2e64f4d00dc876d31572d82ce174c469"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.64-part-003.txt",
+      "sha256": "04c204f7936cc5183e73de5a10b571ee61f8d1a5b1f2d5eebca89e1bee3a4897"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-004.txt",
-      "sha256": "00de4320f156b5acc38a59e8eb2b47ecc1df45e6230bb2619e8a7d1574cd007d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.64-part-004.txt",
+      "sha256": "7022a0d6ad5e89eec3f72d3c27c947b5cf2f9d9963b0031ae146e9670e98a025"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-005.txt",
-      "sha256": "fba246c95e14220ecd683b5035baf335638a607093d0c6043f677c859d930c74"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.64-part-005.txt",
+      "sha256": "600bf2576cbddb6516881e92572d17ef2be25ad1fed44fee50c37753193b60c6"
     }
   ],
-  "notes": "Export correctness and performance pass. Fixes blank real-AO3 tag/stat text caused by the whole-skin text gradient overriding independent tag/metadata styles. Local preview images are now clearly marked Preview only until an AO3-safe direct public .jpg/.jpeg/.png/.gif URL is supplied, because AO3 strips embedded data-image URIs; Copy/Download warns before exporting local-only images instead of silently dropping them. Performance work coalesces live preview updates and image rendering, debounces persistence, caches generated CSS during edit bursts, deduplicates repeated CSS-output writes, and forces a fresh rebuild when editing settles or the user exports."
+  "notes": "Adds built-in AO3 image hosting. Local PNG, JPG/JPEG, and GIF images can now be uploaded directly from AO3 Skin Studio to Catbox.moe with one built-in action; the returned direct public URL is filled into the correct background, separate-header, or bottom-border URL field automatically and is then included in exported AO3 CSS. Includes per-image Upload for AO3 buttons plus Upload All Local Images for AO3. Uploads require an explicit public-upload confirmation and remain optional; manual direct URLs still work. Keeps the 0.1.63 tag-visibility and performance fixes."
 }
