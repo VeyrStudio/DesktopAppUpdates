@@ -3,12 +3,12 @@
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
   "version": "0.1.60",
-  "payloadSha256": "f1f2e60fd5635cbf4867800f9eed936ca49386aadaaa751d76b3ba5ccf59cfaa",
+  "payloadSha256": "9f180488cbdf52b5d99aa489b18bea8317449aec976a2b27bb4f235fb08356a4",
   "executableSha256": "8508cae6caf6b245471a967a30ea3d74be0b7912ac5f9916849f033cdbe51330",
   "payloadParts": [
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.60-part-001.txt",
-      "sha256": "4d157f3776a1f706c60315d73d81cfc6207d207672b548e8fc525c20cb5bf741"
+      "sha256": "ac339fc1cfcdd089dadffd037f37587f0344883d45cafe3ee601139cb415c3d7"
     },
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.60-part-002.txt",
@@ -24,7 +24,7 @@
     },
     {
       "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.60-part-005.txt",
-      "sha256": "e18d91c47459a40855e1b2c3c0e62ce1fb3ee1565c86dc268ae44155f2738d88"
+      "sha256": "955f2884303dc9db15215ffcde6a29faf4fecc6e254511c021e7bf7130aec783"
     }
   ],
   "notes": "Adds 20 new supernatural romance gradients to the Gradient Library: Demon x Human, Demon x Demon, Devil's Bargain, Hellbound Romance, Possession, Ritual Love, Siren Song, Siren x Sailor, Drowned Love, Sea Witch, Fallen Angel, Angel x Fallen Angel, Monster x Human, Cursed Lovers, Blood Pact, Temptation, Succubus, Incubus, Siren x Siren, and Demon Courtship. These are built-in 135-degree four-stop presets using the exact palettes shown in chat."
