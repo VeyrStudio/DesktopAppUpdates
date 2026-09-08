@@ -1,0 +1,54 @@
+<style id="ao3-shared-header-background-v57-styles">
+#mock.shared-site-background-v57 #ao3HeaderPreview,
+#mock.shared-site-background-v57 #ao3HeaderPreview .ao3-header-main-v54,
+#mock.shared-site-background-v57 #ao3HeaderPreview .ao3-primary-v54,
+#mock.shared-site-background-v57 #ao3HeaderPreview .ao3-user-links-v54{
+  background-color:transparent!important;
+  background-image:none!important;
+}
+</style>
+
+<script id="ao3-shared-header-background-v57-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  if(!mock||q('ao3SharedHeaderBackgroundSentinelV57'))return;
+
+  const sentinel=document.createElement('span');
+  sentinel.id='ao3SharedHeaderBackgroundSentinelV57';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  function sync(){
+    const separate=q('useHeader')?.checked===true;
+    const header=q('ao3HeaderPreview')||mock.querySelector('.ao3-header');
+    const region=q('mockPageRegion');
+    const bg=q('mockBgLayer');
+    if(!header||!region||!bg)return;
+
+    header.style.removeProperty('display');
+    mock.classList.toggle('shared-site-background-v57',!separate);
+    bg.classList.toggle('shared-site-background-layer-v57',!separate);
+
+    if(separate){
+      if(bg.parentElement!==region)region.insertBefore(bg,region.firstChild);
+    }else{
+      if(bg.parentElement!==mock || bg.nextElementSibling!==header)mock.insertBefore(bg,header);
+      header.style.removeProperty('background-color');
+      header.style.removeProperty('background-image');
+    }
+
+    try{if(typeof renderPreviewImages==='function')renderPreviewImages(q('bgFixed')?.checked===true)}catch(e){}
+  }
+
+  q('useHeader')?.addEventListener('change',()=>requestAnimationFrame(sync),true);
+  document.addEventListener('change',e=>{
+    if(e.target?.closest?.('.image-card select,.image-card input,.image-controls select,.image-controls input')){
+      requestAnimationFrame(sync);
+    }
+  },true);
+
+  window.AO3SharedHeaderBackgroundV57={sync};
+  setTimeout(sync,80);
+})();
+</script>

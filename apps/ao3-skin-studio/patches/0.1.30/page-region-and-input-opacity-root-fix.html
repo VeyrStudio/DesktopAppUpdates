@@ -7,6 +7,44 @@
   min-height:1px;
   background-color:var(--p-bg);
 }
+#mock{
+  position:relative;
+  isolation:isolate;
+}
+#mock.shared-site-background-v57{
+  background-color:var(--p-bg);
+}
+#mock.shared-site-background-v57 #mockPageRegion{
+  background-color:transparent!important;
+}
+#mock > #mockBgLayer.shared-site-background-layer-v57{
+  position:absolute!important;
+  inset:0!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:0!important;
+  width:auto!important;
+  height:auto!important;
+  z-index:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+#mock > #mockBgLayer.shared-site-background-layer-v57 .preview-image-layer{
+  position:absolute!important;
+  inset:0!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:0!important;
+  width:auto!important;
+  height:auto!important;
+}
+#mock.shared-site-background-v57 > #ao3HeaderPreview,
+#mock.shared-site-background-v57 > #mockPageRegion{
+  position:relative;
+  z-index:1;
+}
 #mockPageRegion > #mockBgLayer{
   position:absolute!important;
   inset:0!important;
@@ -67,10 +105,24 @@
     if(bottom) region.appendChild(bottom);
   }
 
-  /* 0.1.29 tries to offset the old layer with inline top values. The page-region
-     model supersedes that completely. Keep the layer pinned to this region. */
+  /* Default = one continuous site background behind header + page + footer.
+     "Use Separate Header Image" switches the main background back to the page
+     region so the header can have its own independent image. */
   function pinBackgroundToPageRegion(){
-    if(bgLayer.parentElement!==region) region.insertBefore(bgLayer,region.firstChild);
+    const separateHeader=q('useHeader')?.checked===true;
+    mock.classList.toggle('shared-site-background-v57',!separateHeader);
+    bgLayer.classList.toggle('shared-site-background-layer-v57',!separateHeader);
+
+    if(separateHeader){
+      if(bgLayer.parentElement!==region)region.insertBefore(bgLayer,region.firstChild);
+    }else{
+      const headerNow=q('ao3HeaderPreview')||mock.querySelector('.ao3-header');
+      if(bgLayer.parentElement!==mock || (headerNow && bgLayer.nextElementSibling!==headerNow)){
+        if(headerNow)mock.insertBefore(bgLayer,headerNow);
+        else mock.insertBefore(bgLayer,mock.firstChild);
+      }
+    }
+
     bgLayer.style.removeProperty('top');
     bgLayer.style.removeProperty('height');
     bgLayer.style.removeProperty('bottom');
@@ -88,6 +140,10 @@
 
   const regionObserver=new MutationObserver(()=>requestAnimationFrame(pinBackgroundToPageRegion));
   regionObserver.observe(region,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
+  q('useHeader')?.addEventListener('change',()=>requestAnimationFrame(()=>{
+    pinBackgroundToPageRegion();
+    try{if(typeof renderPreviewImages==='function')renderPreviewImages(q('bgFixed')?.checked===true)}catch(e){}
+  }),true);
   pinBackgroundToPageRegion();
 
   /* ---------- INPUT/TEXT-BOX OPACITY ----------
