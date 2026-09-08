@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.56",
-  "payloadSha256": "784d06153ff622fa9d0c90ddc892866355a6b9dd0103c34d6c914fb0393a3bea",
-  "executableSha256": "cbabe912dbb15db208e711f4f3e26bf911dcf663fbb24e3b741cec9e6a1ef1da",
+  "version": "0.1.57",
+  "payloadSha256": "64a7c637bba27bab15a74029de1c0cd7d7d71f6b8ad69c0abc39a5fe695a48b0",
+  "executableSha256": "f51df712d4d58deb8056297bc08406a6c518f5302c64491500f0c8cb92437140",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-001.txt",
-      "sha256": "7597450456ad2495e623d0778f8abaf18892f8d8a5a5df508d9f4b12fe4de613"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-001.txt",
+      "sha256": "4a370209b7878105dd3e233e10fed0cb29aec2cf7fb8f8361ab26f8aa1bc32c0"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-002.txt",
-      "sha256": "dea7e4bc6c830f2cd645331a2a839475c2a4188336fc0ddb374e9c41f4f642c5"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-002.txt",
+      "sha256": "570abbd9bb8ea8e9509114b3c937c9a87840669729308d371683e0a55003d501"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-003.txt",
-      "sha256": "33b4996d6dcaf7a321c279ca1884986e4ffa0648d5a6c02e1dcaed4836c4a227"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-003.txt",
+      "sha256": "45dec6005b720d9f23ae852080b34f5159dfaf2f4f1d4f57088fff54c9aecd16"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-004.txt",
-      "sha256": "bcc11baa538c7690c6da9a156c2752e49b852e8af0458ec8ebe98ab0dcf35486"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-004.txt",
+      "sha256": "e0ffdb701a3176ace2b711db446264cc99b609c92174b96fc22a20bb1672ffdc"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-005.txt",
-      "sha256": "b48efc1f42eb07a7e03138d547e3d37468e73284ef7425e56269c7f9af6511fc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-005.txt",
+      "sha256": "a3722e99f6d2e739a850397f95cd97b8a94d20085c6928d57a9b6026ad46016d"
     }
   ],
-  "notes": "Fixes the image-background regression and the header-toggle regression together. The AO3 preview header is now permanent and keeps the original ao3HeaderPreview identity expected by the live renderer, so normal update() calls no longer fail before local background images are drawn. Use Header is corrected to Use Separate Header Image: it only enables a different header image/GIF and never hides AO3 header/profile/navigation content, never emits CSS that hides #header, and no longer disables Fixed Background. The complete logged-in AO3 header stays outside the page background region. Results/Browse also migrates and removes the leftover legacy tag row so tags no longer render twice."
+  "notes": "Restores the intended two-mode header background behavior. With Use Separate Header Image OFF, the normal main background image is once again one continuous site background behind the AO3 header, navigation, page, and footer. With it ON, the main background is confined to the page while the header uses its own independent image/GIF. Header/profile/navigation content remains visible in both modes, Fixed Background remains available, and switching modes immediately re-renders local image layers without changing saved image settings."
 }
