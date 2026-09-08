@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.62",
-  "payloadSha256": "066ff1cf9acd2e46b78ea8fda1cb1bbb6e608d0569a10484da55f3201c433cab",
-  "executableSha256": "2deecc95beb2502565bb79c52f29414716764d38834c67bce82053bc8ea49733",
+  "version": "0.1.63",
+  "payloadSha256": "72e82aea675879533ce449ea8df7ad8224b91be7a86e9aa8d7deba7617dc3b49",
+  "executableSha256": "883f950c54da69d5d4f6513b22693aab51c135f808ebe3a98c1cb54160073f1e",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-001.txt",
-      "sha256": "f52126b3c74a30687f8aa5ad2cf8c82a2a0f131d76cefc267bbe9c5fff074e82"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-001.txt",
+      "sha256": "24b7b643e045617a34d1b2392a43b39fd3a4824ea99e4a297bb35fb9bebb36b6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-002.txt",
-      "sha256": "c5f23a85902c0e0772aee1da3b86835b06db9a70c30673f269c3a6cd7d106970"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-002.txt",
+      "sha256": "177d4f33f62ef8d8719d486f9b17e965a7ba32f83470baae528ddf8cea36b258"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-003.txt",
-      "sha256": "2eb54c611b302877774b3fb0994780cf870412ab9bb8f1a478ba0d41b39366f6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-003.txt",
+      "sha256": "6c7b2ba41d6f0f7d0179e1a7fbddb89b2e64f4d00dc876d31572d82ce174c469"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-004.txt",
-      "sha256": "e54753a2641375aa66f61935c9adf4f78e250bd9f0d5730db3c7f290bbe000fa"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-004.txt",
+      "sha256": "00de4320f156b5acc38a59e8eb2b47ecc1df45e6230bb2619e8a7d1574cd007d"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-005.txt",
-      "sha256": "01b9c386232ded9a7c72ea73140e6559f8d211abbfe9cb145b5e8a107d3569cc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.63-part-005.txt",
+      "sha256": "0046a7ba02ded14c9cdeaafbf6f83ce54056ef220b9ac2c6cd78fc1ce7b5d69f"
     }
   ],
-  "notes": "Major Studio workspace redesign. Skin documents now sit in compact tabs beneath a cleaner app header; the old second row of Editor/Starters/Randomizer/Color/Gradient tabs is replaced by real tool buttons. The editor uses a numbered left navigator with Background, Header, Title, Author, combined Tags & Metadata, Summary, Notes, Main Text, Chapter Titles, Interface/UI, Footer, and Skin-Wide sections. The live AO3 preview becomes the main canvas with a unified device/page toolbar, Fit to Screen, Refresh, and a Page Navigator. Existing controls, skin-tab persistence, AO3 preview structure, gradients, starters, randomizer, Color Studio, Gradient Library, import/export, and 0.1.61 AO3/updater fixes remain in place."
+  "notes": "Export correctness and performance pass. Fixes blank real-AO3 tag/stat text caused by the whole-skin text gradient overriding independent tag/metadata styles. Local preview images are now clearly marked Preview only until an AO3-safe direct public .jpg/.jpeg/.png/.gif URL is supplied, because AO3 strips embedded data-image URIs; Copy/Download warns before exporting local-only images instead of silently dropping them. Performance work coalesces live preview updates and image rendering, debounces persistence, caches generated CSS during edit bursts, deduplicates repeated CSS-output writes, and forces a fresh rebuild when editing settles or the user exports."
 }
