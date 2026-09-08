@@ -1,0 +1,789 @@
+<style id="ao3-studio-workspace-v62-styles">
+:root{
+  --studio-v62-bg:#07100f;
+  --studio-v62-panel:#0c1715;
+  --studio-v62-panel-2:#101d1a;
+  --studio-v62-line:#283a35;
+  --studio-v62-line-soft:#1c2b27;
+  --studio-v62-gold:#b58a4e;
+  --studio-v62-gold-soft:#d3b37b;
+  --studio-v62-cream:#eee2cf;
+  --studio-v62-muted:#938d83;
+  --studio-v62-red:#7e2c35;
+}
+
+body.studio-layout-v62{
+  background:var(--studio-v62-bg)!important;
+  overflow:hidden!important;
+}
+body.studio-layout-v62 .app{
+  min-height:0!important;
+  height:calc(100vh - 108px)!important;
+  overflow:hidden!important;
+}
+
+/* ----- compact app chrome + document tabs ----- */
+#studioChromeV62{
+  height:108px;
+  display:flex;
+  flex-direction:column;
+  border-bottom:1px solid var(--studio-v62-line);
+  background:
+    radial-gradient(circle at 22% 0%,rgba(181,138,78,.09),transparent 33%),
+    linear-gradient(180deg,#0d1b18 0%,#081210 100%);
+  box-shadow:0 8px 28px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+#studioChromeV62 .topbar{
+  position:static!important;
+  min-height:56px!important;
+  height:56px!important;
+  padding:7px 18px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(181,138,78,.16)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#studioChromeV62 .brand-mark{
+  border-color:#76572f!important;
+  background:linear-gradient(145deg,#2b2018,#4a281f)!important;
+  color:#e0bc7c!important;
+}
+#studioChromeV62 .brand h1{
+  color:var(--studio-v62-cream)!important;
+  font-family:Georgia,serif!important;
+  font-size:17px!important;
+  letter-spacing:.02em!important;
+}
+#studioChromeV62 .brand p{
+  color:#968a78!important;
+  font-size:8px!important;
+  letter-spacing:.11em!important;
+  text-transform:uppercase!important;
+}
+#studioChromeV62 .top-actions .btn{
+  min-height:30px!important;
+  border-color:#3d4b45!important;
+  background:#0d1715!important;
+  color:#c9c1b5!important;
+  border-radius:6px!important;
+}
+#studioChromeV62 .top-actions .btn:hover{
+  border-color:#7d6849!important;
+  color:#fff!important;
+}
+#studioChromeV62 .top-actions .btn.gold,
+#studioChromeV62 .top-actions .btn.primary{
+  border-color:#886943!important;
+  background:linear-gradient(180deg,#2a2119,#17130f)!important;
+  color:#e6c58c!important;
+}
+#skinDocumentTabs{
+  position:static!important;
+  top:auto!important;
+  z-index:20!important;
+  flex:1 1 auto!important;
+  min-height:50px!important;
+  height:50px!important;
+  padding:7px 10px 0!important;
+  gap:5px!important;
+  align-items:flex-end!important;
+  border:0!important;
+  background:#07100f!important;
+  box-shadow:none!important;
+}
+.skin-doc-tab{
+  min-width:118px!important;
+  height:34px!important;
+  border:1px solid #2d3b37!important;
+  border-bottom-color:#4b3d2c!important;
+  border-radius:7px 7px 0 0!important;
+  background:#0b1513!important;
+  color:#8f918b!important;
+}
+.skin-doc-tab.active{
+  border-color:#80633e!important;
+  border-bottom-color:#0f1c19!important;
+  background:#0f1c19!important;
+  color:#f0e4d2!important;
+  box-shadow:inset 0 2px 0 #b88c4d!important;
+}
+.skin-doc-tab-title{font-size:9px!important}
+#skinDocumentAdd{
+  width:36px!important;
+  height:34px!important;
+  border:1px solid #35443f!important;
+  border-bottom-color:#4b3d2c!important;
+  background:#0c1715!important;
+  color:#d8c7aa!important;
+  border-radius:7px 7px 0 0!important;
+}
+#skinTabsMenu,.skin-tabs-hint{display:none!important}
+#workspaceBrowserTabs{display:none!important}
+#workspaceBrowserHost{
+  top:108px!important;
+  z-index:4000!important;
+  background:#07100f!important;
+}
+
+/* ----- three-column designer workspace ----- */
+body.studio-layout-v62 .workspace{
+  display:grid!important;
+  grid-template-columns:174px minmax(350px,430px) minmax(0,1fr)!important;
+  gap:0!important;
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+  background:#07100f!important;
+}
+#studioSectionNavV62{
+  min-width:0;
+  height:100%;
+  overflow-y:auto;
+  padding:9px 7px 20px;
+  border-right:1px solid var(--studio-v62-line);
+  background:
+    linear-gradient(180deg,rgba(181,138,78,.045),transparent 32%),
+    #091310;
+  scrollbar-width:thin;
+}
+.studio-section-nav-title-v62{
+  padding:3px 9px 10px;
+  color:#766e63;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+.studio-section-btn-v62{
+  width:100%;
+  min-height:44px;
+  display:grid;
+  grid-template-columns:24px 20px minmax(0,1fr);
+  align-items:center;
+  gap:5px;
+  margin:0 0 4px;
+  padding:7px 8px;
+  border:1px solid transparent;
+  border-radius:6px;
+  background:transparent;
+  color:#c2bcb1;
+  text-align:left;
+  cursor:pointer;
+}
+.studio-section-btn-v62:hover{
+  border-color:#31443e;
+  background:#10201c;
+  color:#eee3d0;
+}
+.studio-section-btn-v62.active{
+  border-color:#9c6a52;
+  background:
+    linear-gradient(90deg,rgba(126,44,53,.72),rgba(71,33,34,.5)),
+    #171c19;
+  color:#fff1df;
+  box-shadow:inset 3px 0 0 #c78573,0 5px 16px rgba(0,0,0,.22);
+}
+.studio-section-num-v62{
+  color:#aaa094;
+  font:10px/1 Georgia,serif;
+}
+.studio-section-icon-v62{
+  color:#c8b18a;
+  font-size:13px;
+  text-align:center;
+}
+.studio-section-label-v62{
+  min-width:0;
+  font:900 9px/1.18 Georgia,serif;
+}
+
+body.studio-layout-v62 .sidebar.studio-editor-pane-v62{
+  width:auto!important;
+  min-width:0!important;
+  height:100%!important;
+  max-height:none!important;
+  position:relative!important;
+  top:auto!important;
+  overflow:hidden!important;
+  padding:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  border-right:1px solid var(--studio-v62-line)!important;
+  border-bottom:0!important;
+  background:#091310!important;
+  scrollbar-width:thin;
+}
+#studioEditorHeaderV62{
+  position:relative;
+  z-index:35;
+  margin:0;
+  padding:12px 14px 10px;
+  border-bottom:1px solid var(--studio-v62-line);
+  background:rgba(9,19,16,.97);
+  backdrop-filter:blur(10px);
+}
+#studioEditorHeaderV62 h2{
+  margin:0 0 3px;
+  color:var(--studio-v62-cream);
+  font:700 16px/1.15 Georgia,serif;
+}
+#studioEditorHeaderV62 p{
+  margin:0;
+  color:#8f897f;
+  font-size:8px;
+  line-height:1.4;
+}
+#studioEditorScrollV62{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:10px 9px 14px;
+  scrollbar-width:thin;
+}
+#editorSectionShell{
+  display:block!important;
+  grid-template-columns:1fr!important;
+  width:100%!important;
+  gap:0!important;
+}
+#editorSectionNav{display:none!important}
+#editorSectionContent{
+  width:100%!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.editor-section-panel{padding:0!important}
+.editor-section-panel > details.section,
+#stableTextEditor,
+.taxonomy-hub-v51,
+.editor-native-card,
+#skinWideControlsPanelV55{
+  border-color:#293b35!important;
+  background:#0d1815!important;
+  box-shadow:none!important;
+}
+
+#studioUtilityBarV62{
+  position:relative;
+  z-index:40;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  margin:0;
+  padding:9px;
+  border-top:1px solid var(--studio-v62-line);
+  background:rgba(7,16,15,.98);
+  backdrop-filter:blur(10px);
+}
+.studio-utility-btn-v62{
+  min-height:32px;
+  padding:6px 7px;
+  border:1px solid #334740;
+  border-radius:6px;
+  background:#0f1c19;
+  color:#c7c0b4;
+  font-size:7.5px;
+  font-weight:900;
+  cursor:pointer;
+}
+.studio-utility-btn-v62:hover{border-color:#846b48;color:#f4e5cf;background:#17241f}
+.studio-utility-btn-v62.primary{
+  border-color:#9f605a;
+  background:linear-gradient(180deg,#6f3036,#482126);
+  color:#fff0e4;
+}
+
+/* ----- preview becomes the main canvas ----- */
+body.studio-layout-v62 .preview-area{
+  min-width:0!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  padding:0!important;
+  background:#06100e!important;
+}
+#previewToolbarV62{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:52px;
+  padding:8px 10px;
+  border-bottom:1px solid var(--studio-v62-line);
+  background:#0b1714;
+}
+.preview-title-v62{
+  flex:0 0 auto;
+  min-width:120px;
+}
+.preview-title-v62 strong{
+  display:block;
+  color:#eee2cf;
+  font:700 13px/1.1 Georgia,serif;
+}
+.preview-title-v62 span{
+  display:block;
+  margin-top:3px;
+  color:#756f66;
+  font-size:7px;
+}
+#previewToolbarV62 .device-toolbar,
+#previewToolbarV62 .preview-page-toolbar{
+  width:auto!important;
+  display:flex!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  gap:4px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#previewToolbarV62 .device-note,
+#previewToolbarV62 .preview-page-note{display:none!important}
+#previewToolbarV62 .device-btn,
+#previewToolbarV62 .preview-page-btn,
+.preview-tool-btn-v62{
+  min-height:30px!important;
+  padding:6px 9px!important;
+  border:1px solid #32443f!important;
+  border-radius:6px!important;
+  background:#0f1b18!important;
+  color:#a9a398!important;
+  font-size:7.5px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+#previewToolbarV62 .device-btn:hover,
+#previewToolbarV62 .preview-page-btn:hover,
+.preview-tool-btn-v62:hover{border-color:#7a674b!important;color:#eee0ca!important}
+#previewToolbarV62 .device-btn.active,
+#previewToolbarV62 .preview-page-btn.active{
+  border-color:#b28b50!important;
+  background:#2a241b!important;
+  color:#f1dbb5!important;
+  box-shadow:inset 0 -2px 0 #c69a56!important;
+}
+.preview-toolbar-spacer-v62{flex:1 1 auto}
+#previewBodyV62{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 148px;
+  overflow:hidden;
+}
+#previewBodyV62 > .preview-shell{
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  overflow:auto!important;
+  padding:10px!important;
+  align-items:flex-start!important;
+  background:#07110f!important;
+}
+#previewBodyV62 .browser{
+  margin:0 auto!important;
+  max-width:100%!important;
+}
+#previewBodyV62 .browser.preview-fit-v62{
+  width:100%!important;
+  max-width:none!important;
+}
+#pageNavigatorV62{
+  min-width:0;
+  height:100%;
+  overflow-y:auto;
+  padding:10px 9px 18px;
+  border-left:1px solid var(--studio-v62-line);
+  background:#091310;
+  scrollbar-width:thin;
+}
+.page-nav-title-v62{
+  margin:0 0 3px;
+  color:#e7d9c2;
+  font:700 12px/1.2 Georgia,serif;
+}
+.page-nav-sub-v62{
+  margin:0 0 10px;
+  color:#746e65;
+  font-size:7px;
+  line-height:1.4;
+}
+.page-mini-v62{
+  height:132px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin-bottom:10px;
+  padding:7px;
+  border:1px solid #394841;
+  border-radius:6px;
+  background:#07100e;
+  overflow:hidden;
+}
+.page-mini-v62 span{
+  display:block;
+  border:1px solid rgba(181,138,78,.16);
+  background:#10211c;
+  border-radius:2px;
+}
+.page-mini-v62 span:nth-child(1){height:24px;background:#241c18}
+.page-mini-v62 span:nth-child(2){height:12px}
+.page-mini-v62 span:nth-child(3){height:31px}
+.page-mini-v62 span:nth-child(4){height:18px}
+.page-mini-v62 span:nth-child(5){height:26px}
+.page-nav-list-v62{display:flex;flex-direction:column;gap:2px}
+.page-nav-btn-v62{
+  position:relative;
+  width:100%;
+  min-height:27px;
+  padding:5px 6px 5px 17px;
+  border:0;
+  border-radius:5px;
+  background:transparent;
+  color:#aaa399;
+  text-align:left;
+  font:8px/1.2 Georgia,serif;
+  cursor:pointer;
+}
+.page-nav-btn-v62::before{
+  content:"";
+  position:absolute;
+  left:5px;
+  top:50%;
+  width:6px;
+  height:6px;
+  margin-top:-3px;
+  border-radius:50%;
+  background:#506159;
+  box-shadow:0 0 0 1px #172520;
+}
+.page-nav-btn-v62:hover,.page-nav-btn-v62.active{background:#17241f;color:#eee0ca}
+.page-nav-btn-v62.active::before{background:#c08b70}
+
+body.studio-layout-v62 .code-drawer{
+  flex:0 0 auto!important;
+  max-height:190px!important;
+  overflow:auto!important;
+  border-top-color:var(--studio-v62-line)!important;
+  background:#07100f!important;
+}
+
+@media(max-width:1280px){
+  body.studio-layout-v62 .workspace{grid-template-columns:150px minmax(330px,390px) minmax(0,1fr)!important}
+  #previewBodyV62{grid-template-columns:minmax(0,1fr)!important}
+  #pageNavigatorV62{display:none!important}
+}
+@media(max-width:980px){
+  body.studio-layout-v62{overflow:auto!important}
+  body.studio-layout-v62 .app{height:auto!important;overflow:visible!important}
+  body.studio-layout-v62 .workspace{
+    grid-template-columns:132px minmax(0,1fr)!important;
+    height:auto!important;
+    overflow:visible!important;
+  }
+  body.studio-layout-v62 .preview-area{grid-column:1/-1;height:780px!important;border-top:1px solid var(--studio-v62-line)}
+  body.studio-layout-v62 .sidebar.studio-editor-pane-v62{height:760px!important}
+}
+</style>
+
+<script id="ao3-studio-workspace-v62-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('studioWorkspaceSentinelV62'))return;
+
+  let tries=0;
+  function init(){
+    const workspace=document.querySelector('.workspace');
+    const sidebar=document.querySelector('.sidebar');
+    const preview=document.querySelector('.preview-area');
+    const previewShell=document.querySelector('.preview-shell');
+    const topbar=document.querySelector('.topbar');
+    const skinTabs=q('skinDocumentTabs');
+    const editorShell=q('editorSectionShell');
+    if(!workspace||!sidebar||!preview||!previewShell||!topbar||!skinTabs||!editorShell){
+      if(tries++<30)setTimeout(init,120);
+      return;
+    }
+
+    const sentinel=document.createElement('span');
+    sentinel.id='studioWorkspaceSentinelV62';
+    sentinel.hidden=true;
+    document.body.appendChild(sentinel);
+    document.body.classList.add('studio-layout-v62');
+
+    /* Compact branded chrome, with real skin documents directly underneath. */
+    let chrome=q('studioChromeV62');
+    if(!chrome){
+      chrome=document.createElement('div');
+      chrome.id='studioChromeV62';
+      document.body.insertBefore(chrome,document.body.firstChild);
+      chrome.append(topbar,skinTabs);
+      const brandText=topbar.querySelector('.brand p');
+      if(brandText)brandText.textContent='Your fics. Your aesthetic.';
+    }
+
+    /* The old second browser-tab row is replaced by actual tool buttons. */
+    const oldWorkspaceTabs=q('workspaceBrowserTabs');
+    if(oldWorkspaceTabs)oldWorkspaceTabs.setAttribute('aria-hidden','true');
+
+    const sections=[
+      {id:'background',label:'Background',icon:'▧',desc:'Page background, images, overlays, and the overall canvas.'},
+      {id:'header',label:'Header',icon:'▣',desc:'Header image, AO3 navigation area, sizing, and branding controls.'},
+      {id:'title',label:'Title',icon:'T',desc:'Work-title typography, color, gradients, spacing, and glow.'},
+      {id:'author',label:'Author',icon:'●',desc:'Author / byline typography and styling.'},
+      {id:'tagsmeta',label:'Tags & Metadata',icon:'◆',desc:'Rating, warnings, categories, fandoms, relationships, tags, series, stats, and metadata together.'},
+      {id:'summary',label:'Summary',icon:'▤',desc:'Summary heading and summary text styling.'},
+      {id:'notes',label:'Notes',icon:'▥',desc:'Beginning notes, end notes, and their text styling.'},
+      {id:'main',label:'Main Text',icon:'¶',desc:'The actual chapter / work text.'},
+      {id:'chapter',label:'Chapter Titles',icon:'≡',desc:'Chapter headings independently from work titles.'},
+      {id:'interface',label:'Interface / UI',icon:'⌘',desc:'AO3 interface links, actions, navigation, buttons, and UI text.'},
+      {id:'footer',label:'Footer',icon:'▱',desc:'Footer links and the bottom edge of the skin.'},
+      {id:'skinwide',label:'Skin-Wide',icon:'✦',desc:'Global overrides that sit above individual styling without erasing it.'}
+    ];
+
+    let nav=q('studioSectionNavV62');
+    if(!nav){
+      nav=document.createElement('nav');
+      nav.id='studioSectionNavV62';
+      nav.setAttribute('aria-label','Skin editor sections');
+      nav.innerHTML='<div class="studio-section-nav-title-v62">Skin editor</div>';
+      sections.forEach((s,i)=>{
+        const b=document.createElement('button');
+        b.type='button';
+        b.className='studio-section-btn-v62'+(i===0?' active':'');
+        b.dataset.studioSection=s.id;
+        b.innerHTML='<span class="studio-section-num-v62">'+(i+1)+'</span><span class="studio-section-icon-v62">'+s.icon+'</span><span class="studio-section-label-v62">'+s.label+'</span>';
+        nav.appendChild(b);
+      });
+      workspace.insertBefore(nav,sidebar);
+    }
+
+    sidebar.classList.add('studio-editor-pane-v62');
+    let editorHeader=q('studioEditorHeaderV62');
+    if(!editorHeader){
+      editorHeader=document.createElement('div');
+      editorHeader.id='studioEditorHeaderV62';
+      editorHeader.innerHTML='<h2>Background</h2><p>Page background, images, overlays, and the overall canvas.</p>';
+      sidebar.insertBefore(editorHeader,sidebar.firstChild);
+    }
+    let editorScroll=q('studioEditorScrollV62');
+    if(!editorScroll){
+      editorScroll=document.createElement('div');
+      editorScroll.id='studioEditorScrollV62';
+      editorHeader.insertAdjacentElement('afterend',editorScroll);
+      editorScroll.appendChild(editorShell);
+    }
+
+    function showOldPanel(id){
+      try{window.AO3WorkspaceTabs?.show?.('editor')}catch(e){}
+      try{window.AO3EditorSectionTabs?.show?.(id)}catch(e){}
+    }
+    function clickTextGroup(id){
+      showOldPanel('text');
+      const btn=document.querySelector('.text-style-subtab[data-text-group="'+id+'"], [data-stable-text-group="'+id+'"], [data-group="'+id+'"]');
+      if(btn)btn.click();
+      const group=q('textStyleGroup_'+id);
+      if(group){
+        group.classList.add('active','stable-active');
+        setTimeout(()=>scrollEditorTo(group),30);
+      }
+    }
+    function scrollEditorTo(el){
+      if(!el)return;
+      const host=q('studioEditorScrollV62')||sidebar;
+      const top=el.getBoundingClientRect().top-host.getBoundingClientRect().top+host.scrollTop-10;
+      host.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+    }
+    function detailBySummary(root,re){
+      return Array.from((root||document).querySelectorAll('details.section')).find(d=>re.test((d.querySelector(':scope > summary')?.textContent||'').trim()));
+    }
+
+    function activate(id){
+      const item=sections.find(s=>s.id===id)||sections[0];
+      nav.querySelectorAll('.studio-section-btn-v62').forEach(b=>b.classList.toggle('active',b.dataset.studioSection===item.id));
+      editorHeader.querySelector('h2').textContent=item.label;
+      editorHeader.querySelector('p').textContent=item.desc;
+
+      if(id==='background'){
+        showOldPanel('background');
+        const panel=q('editorSectionPanel_background');
+        const d=detailBySummary(panel,/background/i); if(d){d.open=true;scrollEditorTo(d)} else scrollEditorTo(panel);
+      }else if(id==='header'){
+        showOldPanel('background');
+        const panel=q('editorSectionPanel_background');
+        const d=detailBySummary(panel,/header/i); if(d){d.open=true;scrollEditorTo(d)} else scrollEditorTo(panel);
+      }else if(id==='title'||id==='author'||id==='summary'||id==='notes'||id==='main'||id==='interface'){
+        clickTextGroup(id);
+      }else if(id==='tagsmeta'){
+        showOldPanel('text');
+        const tags=q('taxonomyTagsHubV51');
+        const stats=q('taxonomyStatsHubV51');
+        if(tags)tags.open=true;
+        if(stats)stats.open=true;
+        scrollEditorTo(tags||stats||q('stableTextEditor'));
+      }else if(id==='chapter'){
+        showOldPanel('text');
+        const card=q('chapterTitlesCardV51')||q('textStyleGroup_chapterTitles');
+        scrollEditorTo(card||q('stableTextEditor'));
+      }else if(id==='footer'){
+        clickTextGroup('interface');
+        const footerDetail=detailBySummary(sidebar,/footer/i);
+        if(footerDetail){footerDetail.open=true;scrollEditorTo(footerDetail)}
+      }else if(id==='skinwide'){
+        showOldPanel('text');
+        const global=q('skinWideControlsPanelV55')||q('globalStyleCardV53');
+        scrollEditorTo(global||q('stableTextEditor'));
+      }
+      try{localStorage.setItem('ao3SkinStudioSectionV62',item.id)}catch(e){}
+    }
+
+    nav.addEventListener('click',e=>{
+      const b=e.target.closest('.studio-section-btn-v62');
+      if(b)activate(b.dataset.studioSection);
+    });
+
+    /* Tool strip replaces the old Editor/Starters/Randomizer/Color/Gradient tab row. */
+    let tools=q('studioUtilityBarV62');
+    if(!tools){
+      tools=document.createElement('div');
+      tools.id='studioUtilityBarV62';
+      tools.innerHTML=
+        '<button type="button" class="studio-utility-btn-v62" data-tool-v62="randomizer">Randomize</button>'+
+        '<button type="button" class="studio-utility-btn-v62" data-tool-v62="starters">Starters</button>'+
+        '<button type="button" class="studio-utility-btn-v62" data-tool-v62="gradient">Gradient Library</button>'+
+        '<button type="button" class="studio-utility-btn-v62" data-tool-v62="color">Color Studio</button>'+
+        '<button type="button" class="studio-utility-btn-v62" data-tool-v62="import">Import CSS</button>'+
+        '<button type="button" class="studio-utility-btn-v62 primary" data-tool-v62="save">Save Skin</button>';
+      sidebar.appendChild(tools);
+      tools.addEventListener('click',e=>{
+        const cmd=e.target.closest('[data-tool-v62]')?.dataset.toolV62;
+        if(!cmd)return;
+        if(['starters','randomizer','color','gradient'].includes(cmd)){
+          window.AO3WorkspaceTabs?.show?.(cmd);
+          if(cmd==='gradient')setTimeout(()=>q('gradientLibraryCard')?.scrollIntoView?.({block:'start'}),60);
+          return;
+        }
+        if(cmd==='import'){
+          showOldPanel('export');
+          setTimeout(()=>{const t=q('cssImportEditText');scrollEditorTo(t);t?.focus?.()},50);
+          return;
+        }
+        if(cmd==='save'){
+          try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
+          try{showToast('Skin saved')}catch(e){}
+        }
+      });
+    }
+
+    /* Move existing preview controls into a single proper toolbar. */
+    let previewToolbar=q('previewToolbarV62');
+    if(!previewToolbar){
+      previewToolbar=document.createElement('div');
+      previewToolbar.id='previewToolbarV62';
+      previewToolbar.innerHTML='<div class="preview-title-v62"><strong>Full Skin Preview</strong><span>Live AO3 preview</span></div>';
+      preview.insertBefore(previewToolbar,preview.firstChild);
+      const device=document.querySelector('.device-toolbar');
+      const page=document.querySelector('.preview-page-toolbar');
+      if(device)previewToolbar.appendChild(device);
+      if(page)previewToolbar.appendChild(page);
+      const spacer=document.createElement('span');spacer.className='preview-toolbar-spacer-v62';previewToolbar.appendChild(spacer);
+      const fit=document.createElement('button');fit.type='button';fit.className='preview-tool-btn-v62';fit.textContent='Fit to Screen';fit.dataset.previewTool='fit';previewToolbar.appendChild(fit);
+      const refresh=document.createElement('button');refresh.type='button';refresh.className='preview-tool-btn-v62';refresh.textContent='Refresh';refresh.dataset.previewTool='refresh';previewToolbar.appendChild(refresh);
+      previewToolbar.addEventListener('click',e=>{
+        const cmd=e.target.closest('[data-preview-tool]')?.dataset.previewTool;
+        const browser=document.querySelector('.browser');
+        if(cmd==='fit'&&browser){
+          browser.classList.toggle('preview-fit-v62');
+          e.target.textContent=browser.classList.contains('preview-fit-v62')?'Actual Size':'Fit to Screen';
+        }
+        if(cmd==='refresh'){
+          try{if(typeof update==='function')update()}catch(err){}
+          try{window.AO3TaxonomyStatsV51?.refresh?.()}catch(err){}
+          try{window.AO3SeriesGlobalV53?.refresh?.()}catch(err){}
+          try{showToast('Preview refreshed')}catch(err){}
+        }
+      });
+    }
+
+    /* Preview body + page navigator, without changing the AO3 mock itself. */
+    let previewBody=q('previewBodyV62');
+    if(!previewBody){
+      previewBody=document.createElement('div');
+      previewBody.id='previewBodyV62';
+      preview.insertBefore(previewBody,document.querySelector('.code-drawer'));
+      previewBody.appendChild(previewShell);
+    }
+    let pageNav=q('pageNavigatorV62');
+    if(!pageNav){
+      pageNav=document.createElement('aside');
+      pageNav.id='pageNavigatorV62';
+      pageNav.innerHTML=
+        '<div class="page-nav-title-v62">Page Navigator</div>'+
+        '<div class="page-nav-sub-v62">Jump through the live AO3 page.</div>'+
+        '<div class="page-mini-v62" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>'+
+        '<div class="page-nav-list-v62">'+
+          '<button type="button" class="page-nav-btn-v62 active" data-page-jump="header">Header</button>'+
+          '<button type="button" class="page-nav-btn-v62" data-page-jump="summary">Summary</button>'+
+          '<button type="button" class="page-nav-btn-v62" data-page-jump="tags">Tags & Metadata</button>'+
+          '<button type="button" class="page-nav-btn-v62" data-page-jump="notes">Notes</button>'+
+          '<button type="button" class="page-nav-btn-v62" data-page-jump="chapter">Chapter Text</button>'+
+          '<button type="button" class="page-nav-btn-v62" data-page-jump="comments">Comments</button>'+
+          '<button type="button" class="page-nav-btn-v62" data-page-jump="footer">Footer</button>'+
+        '</div>';
+      previewBody.appendChild(pageNav);
+    }
+
+    const jumpSelectors={
+      header:['#ao3HeaderPreview','.ao3-header'],
+      summary:['.preview-fic-summary','.preview-result-card .summary','.summary'],
+      tags:['.preview-tag-lines','.preview-required-tags','.preview-fic-meta'],
+      notes:['.notes','.preview-fic-end','.preview-kudos-v51'],
+      chapter:['.preview-fic-chapter','.chapter','.userstuff'],
+      comments:['.preview-comment-form-v51','.comments','.comment'],
+      footer:['.ao3-footer','#footer']
+    };
+    function jumpPreview(key){
+      const browser=document.querySelector('.browser');
+      const mock=q('mock');
+      if(!browser||!mock)return;
+      const list=jumpSelectors[key]||[];
+      let target=null;
+      for(const sel of list){target=mock.querySelector(sel);if(target)break;}
+      if(target){
+        const br=browser.getBoundingClientRect();
+        const tr=target.getBoundingClientRect();
+        browser.scrollTo({top:Math.max(0,browser.scrollTop+(tr.top-br.top)-55),behavior:'smooth'});
+      }
+      pageNav.querySelectorAll('.page-nav-btn-v62').forEach(b=>b.classList.toggle('active',b.dataset.pageJump===key));
+    }
+    pageNav.addEventListener('click',e=>{
+      const b=e.target.closest('[data-page-jump]');
+      if(b)jumpPreview(b.dataset.pageJump);
+    });
+
+    /* Keep future re-renders from putting the preview controls back in the canvas. */
+    const observer=new MutationObserver(()=>{
+      const device=document.querySelector('.preview-shell > .device-toolbar');
+      const page=document.querySelector('.preview-shell > .preview-page-toolbar');
+      if(device)previewToolbar.insertBefore(device,previewToolbar.querySelector('.preview-toolbar-spacer-v62'));
+      if(page)previewToolbar.insertBefore(page,previewToolbar.querySelector('.preview-toolbar-spacer-v62'));
+    });
+    observer.observe(previewShell,{childList:true,subtree:false});
+
+    const saved=localStorage.getItem('ao3SkinStudioSectionV62');
+    activate(sections.some(s=>s.id===saved)?saved:'background');
+
+    window.AO3StudioWorkspaceV62={activate,jumpPreview};
+  }
+
+  init();
+})();
+</script>
