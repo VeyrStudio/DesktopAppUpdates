@@ -725,6 +725,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $v64 + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.66: major content-container background images with cycling result cards.
+          $v66Path = 'apps/ao3-skin-studio/patches/0.1.66/container-background-images.html'
+          if (-not (Test-Path $v66Path)) { throw 'AO3 Skin Studio 0.1.66 container-background patch was not found.' }
+          $v66 = Get-Content $v66Path -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.66.' }
+          $studioText = $studioText.Replace('</body>', $v66 + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -788,8 +797,8 @@ jobs:
           $mainWindowCodeText = $mainWindowCodeText.Replace($loadedAnchor, $fitMethod + $loadedAnchor)
           [IO.File]::WriteAllText($mainWindowCode, $mainWindowCodeText, [Text.UTF8Encoding]::new($false))
 
-          # 0.1.64: native Catbox upload bridge. WebView JavaScript sends local image data here;
-          # the WPF host performs the cross-origin upload and returns the direct public URL.
+          # 0.1.66: native GitHub image-repository bridge. WebView JavaScript sends local image data here;
+          # the WPF host commits it to VeyrStudio/Archive-Of-Our-Own-Images and returns the raw public URL.
           $mainWindowCodeText = Get-Content $mainWindowCode -Raw
           $newline64 = if ($mainWindowCodeText.Contains("`r`n")) { "`r`n" } else { "`n" }
 
@@ -829,6 +838,114 @@ jobs:
             '        return client;'
             '    }'
             ''
+            '    private static string? FindImageHostGit()'
+            '    {'
+            '        var candidates = new System.Collections.Generic.List<string>();'
+            '        var pathValue = Environment.GetEnvironmentVariable("PATH") ?? "";'
+            '        foreach (var part in pathValue.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))'
+            '        {'
+            '            try { candidates.Add(Path.Combine(part.Trim(), "git.exe")); } catch { }'
+            '        }'
+            '        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);'
+            '        if (!string.IsNullOrWhiteSpace(programFiles)) candidates.Add(Path.Combine(programFiles, "Git", "cmd", "git.exe"));'
+            '        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);'
+            '        if (!string.IsNullOrWhiteSpace(local))'
+            '        {'
+            '            var desktopRoot = Path.Combine(local, "GitHubDesktop");'
+            '            if (Directory.Exists(desktopRoot))'
+            '            {'
+            '                try'
+            '                {'
+            '                    var dirs = Directory.GetDirectories(desktopRoot, "app-*");'
+            '                    Array.Sort(dirs, StringComparer.OrdinalIgnoreCase);'
+            '                    Array.Reverse(dirs);'
+            '                    foreach (var appDir in dirs)'
+            '                        candidates.Add(Path.Combine(appDir, "resources", "app", "git", "cmd", "git.exe"));'
+            '                }'
+            '                catch { }'
+            '            }'
+            '        }'
+            '        foreach (var candidate in candidates)'
+            '            if (File.Exists(candidate)) return candidate;'
+            '        return null;'
+            '    }'
+            ''
+            '    private static async Task<string> RunImageHostGitAsync(string git, string workingDirectory, params string[] args)'
+            '    {'
+            '        var psi = new System.Diagnostics.ProcessStartInfo'
+            '        {'
+            '            FileName = git,'
+            '            WorkingDirectory = workingDirectory,'
+            '            UseShellExecute = false,'
+            '            RedirectStandardOutput = true,'
+            '            RedirectStandardError = true,'
+            '            CreateNoWindow = true'
+            '        };'
+            '        foreach (var arg in args) psi.ArgumentList.Add(arg);'
+            '        using var process = System.Diagnostics.Process.Start(psi) ?? throw new InvalidOperationException("Could not start Git.");'
+            '        var stdoutTask = process.StandardOutput.ReadToEndAsync();'
+            '        var stderrTask = process.StandardError.ReadToEndAsync();'
+            '        using var timeout = new System.Threading.CancellationTokenSource(TimeSpan.FromMinutes(2));'
+            '        try { await process.WaitForExitAsync(timeout.Token); }'
+            '        catch (OperationCanceledException)'
+            '        {'
+            '            try { process.Kill(true); } catch { }'
+            '            throw new InvalidOperationException("Git timed out. If GitHub asked you to sign in, finish the sign-in and try Upload for AO3 again.");'
+            '        }'
+            '        var stdout = await stdoutTask;'
+            '        var stderr = await stderrTask;'
+            '        if (process.ExitCode != 0)'
+            '            throw new InvalidOperationException(string.IsNullOrWhiteSpace(stderr) ? "Git failed to upload the image." : stderr.Trim());'
+            '        return stdout.Trim();'
+            '    }'
+            ''
+            '    private static string CleanHostedImageName(string fileName, string extension)'
+            '    {'
+            '        var stem = Path.GetFileNameWithoutExtension(fileName ?? "ao3-skin-image");'
+            '        stem = System.Text.RegularExpressions.Regex.Replace(stem, "[^A-Za-z0-9_-]+", "-").Trim(''-'', ''_'');'
+            '        if (string.IsNullOrWhiteSpace(stem)) stem = "ao3-skin-image";'
+            '        if (stem.Length > 70) stem = stem[..70];'
+            '        return $"{DateTime.UtcNow:yyyyMMdd-HHmmssfff}-{stem}{extension}".ToLowerInvariant();'
+            '    }'
+            ''
+            '    private static async Task<string> UploadImageToGitHubAsync(byte[] bytes, string fileName, string extension, string requestedFolder)'
+            '    {'
+            '        var git = FindImageHostGit();'
+            '        if (git is null)'
+            '            throw new InvalidOperationException("Git was not found. Install Git or GitHub Desktop, sign in to VeyrStudio, then try Upload for AO3 again.");'
+            '        var allowed = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase)'
+            '        {'
+            '            "backgrounds", "headers", "borders", "results", "metadata", "summaries", "notes", "misc"'
+            '        };'
+            '        var folder = allowed.Contains(requestedFolder ?? "") ? requestedFolder.ToLowerInvariant() : "misc";'
+            '        var cacheRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AO3SkinStudio", "ImageHost");'
+            '        var repoPath = Path.Combine(cacheRoot, "Archive-Of-Our-Own-Images");'
+            '        Directory.CreateDirectory(cacheRoot);'
+            '        if (!Directory.Exists(Path.Combine(repoPath, ".git")))'
+            '        {'
+            '            if (Directory.Exists(repoPath)) Directory.Delete(repoPath, true);'
+            '            await RunImageHostGitAsync(git, cacheRoot, "clone", "https://github.com/VeyrStudio/Archive-Of-Our-Own-Images.git", repoPath);'
+            '        }'
+            '        await RunImageHostGitAsync(git, repoPath, "fetch", "origin", "main");'
+            '        await RunImageHostGitAsync(git, repoPath, "checkout", "-B", "main", "origin/main");'
+            '        await RunImageHostGitAsync(git, repoPath, "config", "user.name", "AO3 Skin Studio");'
+            '        await RunImageHostGitAsync(git, repoPath, "config", "user.email", "actions@users.noreply.github.com");'
+            '        var cleanName = CleanHostedImageName(fileName, extension);'
+            '        var dir = Path.Combine(repoPath, folder);'
+            '        Directory.CreateDirectory(dir);'
+            '        var fullPath = Path.Combine(dir, cleanName);'
+            '        await File.WriteAllBytesAsync(fullPath, bytes);'
+            '        var relative = folder + "/" + cleanName;'
+            '        await RunImageHostGitAsync(git, repoPath, "add", "--", relative);'
+            '        await RunImageHostGitAsync(git, repoPath, "commit", "-m", "Add AO3 skin image " + cleanName, "--", relative);'
+            '        try { await RunImageHostGitAsync(git, repoPath, "push", "origin", "main"); }'
+            '        catch (Exception ex)'
+            '        {'
+            '            throw new InvalidOperationException("GitHub could not accept the image. Make sure Git/GitHub Desktop is signed in to VeyrStudio and has access to Archive-Of-Our-Own-Images. " + ex.Message);'
+            '        }'
+            '        return "https://raw.githubusercontent.com/VeyrStudio/Archive-Of-Our-Own-Images/main/" + relative;'
+            '    }'
+            ''
             '    private async void SkinView_WebMessageReceived(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)'
             '    {'
             '        string requestId = "";'
@@ -841,6 +958,7 @@ jobs:
             ''
             '            requestId = root.TryGetProperty("requestId", out var requestElement) ? requestElement.GetString() ?? "" : "";'
             '            var fileName = root.TryGetProperty("name", out var nameElement) ? nameElement.GetString() ?? "ao3-skin-image" : "ao3-skin-image";'
+            '            var folder = root.TryGetProperty("folder", out var folderElement) ? folderElement.GetString() ?? "backgrounds" : "backgrounds";'
             '            var dataUri = root.TryGetProperty("dataUri", out var dataElement) ? dataElement.GetString() ?? "" : "";'
             ''
             '            if (string.IsNullOrWhiteSpace(requestId))'
@@ -868,7 +986,7 @@ jobs:
             '                throw new InvalidOperationException("The selected image was empty.");'
             '            var byteLimit = mime == "image/gif" ? 20 * 1024 * 1024 : 50 * 1024 * 1024;'
             '            if (bytes.Length > byteLimit)'
-            '                throw new InvalidOperationException(mime == "image/gif" ? "Catbox limits GIF uploads to 20 MB." : "AO3 Skin Studio limits built-in image uploads to 50 MB.");'
+            '                throw new InvalidOperationException(mime == "image/gif" ? "AO3 Skin Studio limits built-in GIF uploads to 20 MB." : "AO3 Skin Studio limits built-in image uploads to 50 MB.");'
             ''
             '            var safeName = Path.GetFileName(fileName);'
             '            if (string.IsNullOrWhiteSpace(safeName))'
@@ -876,23 +994,8 @@ jobs:
             '            if (!safeName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))'
             '                safeName = Path.GetFileNameWithoutExtension(safeName) + extension;'
             ''
-            '            using var form = new System.Net.Http.MultipartFormDataContent();'
-            '            form.Add(new System.Net.Http.StringContent("fileupload"), "reqtype");'
-            '            using var fileContent = new System.Net.Http.ByteArrayContent(bytes);'
-            '            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mime);'
-            '            form.Add(fileContent, "fileToUpload", safeName);'
-            ''
-            '            using var response = await ImageHostHttp.PostAsync("https://catbox.moe/user/api.php", form);'
-            '            var responseText = (await response.Content.ReadAsStringAsync()).Trim();'
-            '            if (!response.IsSuccessStatusCode)'
-            '                throw new InvalidOperationException($"Image hosting failed ({(int)response.StatusCode}): {responseText}");'
-            ''
-            '            if (!Uri.TryCreate(responseText, UriKind.Absolute, out var hostedUrl) ||'
-            '                hostedUrl.Scheme != Uri.UriSchemeHttps ||'
-            '                !hostedUrl.Host.Equals("files.catbox.moe", StringComparison.OrdinalIgnoreCase))'
-            '                throw new InvalidOperationException("The image host did not return a valid direct image URL.");'
-            ''
-            '            PostImageHostResult(requestId, true, hostedUrl.ToString(), null);'
+            '            var hostedUrl = await UploadImageToGitHubAsync(bytes, safeName, extension, folder);'
+            '            PostImageHostResult(requestId, true, hostedUrl, null);'
             '        }'
             '        catch (Exception ex)'
             '        {'
@@ -942,16 +1045,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.65</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.65.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.65.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.66</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.66.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.66.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.65" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.66" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -1091,7 +1194,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Repairs real-AO3 tag and metadata text plus the Studio performance regression. Required-tag icon containers are no longer treated like normal tag pills. Tag/stat box export no longer clears text-gradient background images, and final AO3 selectors reset transparent skin-wide text on real work metadata containers before reapplying each individual solid or gradient text style, including linked stats and Series. Performance changes remove the deep taxonomy MutationObserver, throttle taxonomy restyling and core preview/image rebuilds, defer full CSS generation and multi-skin serialization until editing pauses, and stop the image-host panel from rescanning on unrelated sliders. Built-in AO3 image hosting remains available.'
+            notes = 'Adds major content-container background images and replaces the incompatible Catbox uploader with the dedicated public GitHub image repository. Results can cycle through 1-6 background images sequentially; Tags & Metadata, Summary, and Notes each support one whole-box background image with fit, position, repeat, overlay, and corner controls. Upload for AO3 now commits local images to VeyrStudio/Archive-Of-Our-Own-Images and fills AO3-safe raw.githubusercontent.com URLs automatically. Keeps the 0.1.65 real-AO3 metadata-text and performance repairs.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

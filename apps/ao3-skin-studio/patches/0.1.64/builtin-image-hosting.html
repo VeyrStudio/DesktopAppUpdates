@@ -61,8 +61,15 @@
   function canNativeUpload(){
     return !!(window.chrome&&window.chrome.webview&&typeof window.chrome.webview.postMessage==='function');
   }
+  const AO3_TLDS_V66=new Set(('ac ad ae aero af ag ai al am an ao aq ar arpa as asia at au aw ax az ba bb bd be bf bg bh bi biz bj bm bn bo br bs bt bv bw by bz ca cat cc cd cf cg ch ci ck cl cm cn co com coop cr cu cv cx cy cz de dj dk dm do dz ec edu ee eg er es et eu fi fj fk fm fo fr ga gb gd ge gf gg gh gi gl gm gn gov gp gq gr gs gt gu gw gy hk hm hn hr ht hu id ie il im in info int io iq ir is it je jm jo jobs jp ke kg kh ki km kn kp kr kw ky kz la lb lc li lk lr ls lt lu lv ly ma mc md me mg mh mil mk ml mm mn mo mobi mp mq mr ms mt mu museum mv mw mx my mz na name nc ne net nf ng ni nl no np nr nu nz om org pa pe pf pg ph pk pl pm pn pr pro ps pt pw py qa re ro rs ru rw sa sb sc sd se sg sh si sj sk sl sm sn so sr st su sv sy sz tc td tel tf tg th tj tk tl tm tn to tp tr travel tt tv tw tz ua ug uk us uy uz va vc ve vg vi vn vu wf ws xn xxx ye yt za zm zw').split(' '));
   function directUrl(v){
-    return /^https?:\/\/[^\s"']+\.(?:png|jpe?g|gif)$/i.test(String(v||'').trim());
+    try{
+      const u=new URL(String(v||'').trim());
+      if(u.protocol!=='https:'&&u.protocol!=='http:')return false;
+      if(!/\.(?:png|jpe?g|gif)$/i.test(u.pathname))return false;
+      const tld=(u.hostname.split('.').pop()||'').toLowerCase();
+      return AO3_TLDS_V66.has(tld);
+    }catch(e){return false}
   }
   function extensionFromData(data){
     const m=String(data||'').match(/^data:image\/(png|jpeg|jpg|gif);base64,/i);
@@ -79,12 +86,12 @@
   function publicUploadConsent(count){
     const plural=count===1?'image':'images';
     return confirm(
-      'AO3 Skin Studio can host '+count+' '+plural+' for you using Catbox.moe so AO3 gets a direct image URL.\n\n'+
-      'Important: this uploads the file publicly to a third-party image host. Catbox says anonymous uploads can remain until two years of inactivity, and files are uploaded unchanged (including any EXIF/metadata).\n\n'+
+      'AO3 Skin Studio can put '+count+' '+plural+' in your public VeyrStudio/Archive-Of-Our-Own-Images GitHub repository so AO3 gets a direct image URL.\n\n'+
+      'Important: the image will be public. The app uses your local Git/GitHub authentication to commit it to that repository.\n\n'+
       'Upload now?'
     );
   }
-  function nativeUpload(name,dataUri){
+  function nativeUpload(name,dataUri,folder){
     if(!canNativeUpload())return Promise.reject(new Error('Built-in image hosting is not available in this app build.'));
     if(!/^data:image\/(?:png|jpeg|jpg|gif);base64,/i.test(String(dataUri||''))){
       return Promise.reject(new Error('Only local PNG, JPG/JPEG, and GIF images can be hosted for AO3.'));
@@ -100,6 +107,7 @@
         type:'ao3-host-image-upload',
         requestId,
         name:safeName(name,dataUri,'ao3-skin-image'),
+        folder:String(folder||'backgrounds'),
         dataUri
       });
     });
@@ -153,7 +161,7 @@
     const btn=card.querySelector('.ao3-host-btn-v64');
     setBusy(btn,true);
     try{
-      const url=await nativeUpload(img.name||'background'+extensionFromData(img.data),img.data);
+      const url=await nativeUpload(img.name||'background'+extensionFromData(img.data),img.data,'backgrounds');
       img.url=url;
       const field=card.querySelector('[data-field="url"]');
       if(field){field.value=url;dispatch(field)}
@@ -177,7 +185,7 @@
     setBusy(btn,true);
     try{
       const file=q('headerImageFile')?.files?.[0];
-      const url=await nativeUpload(file?.name||'ao3-header'+extensionFromData(data),data);
+      const url=await nativeUpload(file?.name||'ao3-header'+extensionFromData(data),data,'headers');
       const input=q('headerImageUrl');
       if(input){input.value=url;dispatch(input)}
       btn.classList.add('ready');
@@ -203,7 +211,7 @@
     const btn=q('borderHostUploadV64');
     setBusy(btn,true);
     try{
-      const url=await nativeUpload(name+extensionFromData(data),data);
+      const url=await nativeUpload(name,data,'borders');
       const input=q('bottomBorderUrl');
       if(input){input.value=url;dispatch(input)}
       btn.classList.add('ready');
@@ -338,7 +346,7 @@
 
     const service=document.createElement('div');
     service.className='ao3-host-service-note-v64';
-    service.textContent='Built-in hosting uses anonymous Catbox.moe uploads. The app fills the direct URL back into your skin automatically; manual URLs still work.';
+    service.textContent='Built-in hosting uses your public VeyrStudio/Archive-Of-Our-Own-Images GitHub repository. The app commits the image and fills its raw GitHub URL back into the skin automatically; manual URLs still work.';
     wrap.insertAdjacentElement('afterend',service);
   }
 
@@ -390,7 +398,9 @@
   window.AO3ImageHostingV64={
     uploadAll,
     refresh,
-    service:'Catbox.moe'
+    uploadData:(name,dataUri,folder)=>nativeUpload(name,dataUri,folder||'backgrounds'),
+    directUrl,
+    service:'GitHub / VeyrStudio/Archive-Of-Our-Own-Images'
   };
 })();
 </script>

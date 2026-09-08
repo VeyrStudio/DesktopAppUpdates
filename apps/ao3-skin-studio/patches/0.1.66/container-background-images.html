@@ -1,0 +1,334 @@
+<!-- AO3 Skin Studio 0.1.66: major content-container background images -->
+<style id="ao3-v66-container-background-style">
+#containerBackgroundsV66{margin-top:10px}
+#containerBackgroundsV66 .v66-note{color:#928779;font-size:8px;line-height:1.45;margin:0 0 8px}
+.v66-bg-grid{display:grid;gap:8px}
+.v66-bg-card{border:1px solid #33473f;border-radius:7px;background:#0a1412;padding:9px}
+.v66-bg-card h4{margin:0 0 4px;color:#e8dac1;font:700 12px/1.2 Georgia,serif}
+.v66-bg-card .v66-sub{margin:0 0 7px;color:#81796d;font-size:7px;line-height:1.4}
+.v66-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.v66-row.single{grid-template-columns:1fr}
+.v66-row label{display:flex;flex-direction:column;gap:3px;color:#aaa093;font-size:7px}
+.v66-inline{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.v66-inline label{display:flex;align-items:center;gap:4px;color:#b7aa99;font-size:8px}
+.v66-bg-card input[type="text"],.v66-bg-card input[type="url"],.v66-bg-card select,.v66-bg-card input[type="number"]{width:100%;min-width:0;box-sizing:border-box}
+.v66-file-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:end}
+.v66-upload{min-height:28px;padding:5px 8px;border:1px solid #715a3d;border-radius:6px;background:#18140f;color:#e4c28d;font-size:8px;font-weight:900;cursor:pointer}
+.v66-upload.ready{border-color:#3f7058;background:#102019;color:#a9d8bc}
+.v66-upload:disabled{opacity:.45;cursor:wait}
+.v66-results-slots{display:grid;gap:6px;margin-top:7px}
+.v66-result-slot{display:grid;grid-template-columns:auto minmax(90px,.8fr) minmax(0,1.2fr) auto;gap:5px;align-items:center;border-top:1px solid rgba(118,98,69,.22);padding-top:6px}
+.v66-result-slot:first-child{border-top:0;padding-top:0}
+.v66-slot-num{width:20px;height:20px;display:grid;place-items:center;border:1px solid #4c5d55;border-radius:50%;color:#d6c8b0;font:700 8px Georgia,serif}
+.v66-result-slot input[type="file"]{min-width:0;font-size:7px}
+.v66-result-slot input[type="url"]{min-width:0}
+.v66-host-all{margin-top:8px}
+@media(max-width:700px){
+  .v66-row{grid-template-columns:1fr}
+  .v66-result-slot{grid-template-columns:auto 1fr}
+  .v66-result-slot input[type="url"],.v66-result-slot .v66-upload{grid-column:2}
+}
+</style>
+
+<script id="ao3-v66-container-background-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('ao3V66Sentinel'))return;
+  const sent=document.createElement('span');
+  sent.id='ao3V66Sentinel';sent.hidden=true;document.body.appendChild(sent);
+
+  const localData=Object.create(null);
+  let previewTimer=0;
+
+  const configs={
+    metadata:{label:'Tags & Metadata box',folder:'metadata',selector:'.work.meta.group, dl.work.meta.group',preview:['.preview-fic-meta','.work.meta.group','dl.work.meta.group']},
+    summary:{label:'Summary box',folder:'summaries',selector:'.preface .summary, #workskin .summary',preview:['.preview-fic-summary','.preface .summary','#workskin .summary']},
+    notes:{label:'Notes box',folder:'notes',selector:'.preface .notes, .afterword .notes, .end.notes, .notes .userstuff',preview:['.preface .notes','.afterword .notes','.end.notes','.notes .userstuff']}
+  };
+
+  function safeDirect(v){
+    if(window.AO3ImageHostingV64?.directUrl)return window.AO3ImageHostingV64.directUrl(v);
+    return /^https?:\/\/[^\s"']+\.(?:png|jpe?g|gif)$/i.test(String(v||'').trim());
+  }
+  function dispatch(el){
+    try{el?.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}
+    try{el?.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}
+  }
+  function readFile(file,key){
+    if(!file){delete localData[key];schedulePreview();return}
+    if(!/^image\/(png|jpeg|gif)$/i.test(file.type||'')){
+      alert('AO3 container backgrounds support PNG, JPG/JPEG, and GIF images.');
+      return;
+    }
+    const reader=new FileReader();
+    reader.onload=()=>{localData[key]=String(reader.result||'');schedulePreview();};
+    reader.readAsDataURL(file);
+  }
+  function rgba(hex,a){
+    const h=String(hex||'#000000').replace('#','').trim();
+    const full=h.length===3?h.split('').map(x=>x+x).join(''):h.padEnd(6,'0').slice(0,6);
+    const n=parseInt(full,16);
+    const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+    return 'rgba('+r+','+g+','+b+','+Math.max(0,Math.min(1,Number(a)||0))+')';
+  }
+  function bgImage(url,color,opacity){
+    if(!url)return '';
+    const op=Math.max(0,Math.min(1,Number(opacity)||0));
+    if(op<=0)return 'url("'+url.replace(/"/g,'')+'")';
+    const c=rgba(color,op);
+    return 'linear-gradient('+c+','+c+'), url("'+url.replace(/"/g,'')+'")';
+  }
+  function setting(prefix,name,def){
+    const el=q(prefix+'_'+name+'_v66');
+    if(!el)return def;
+    if(el.type==='checkbox')return !!el.checked;
+    return el.value===''?def:el.value;
+  }
+  function sourceFor(prefix){
+    return localData[prefix]||String(setting(prefix,'url','')||'').trim();
+  }
+  function setPreviewProps(el,src,prefix){
+    if(!el)return;
+    const enabled=setting(prefix,'enabled',false);
+    if(!enabled||!src){
+      if(el.dataset.v66ContainerBg==='1'){
+        ['background-image','background-size','background-position','background-repeat','border-radius'].forEach(p=>el.style.removeProperty(p));
+        delete el.dataset.v66ContainerBg;
+      }
+      return;
+    }
+    el.dataset.v66ContainerBg='1';
+    el.style.setProperty('background-image',bgImage(src,setting(prefix,'overlayColor','#000000'),setting(prefix,'overlayOpacity','0.25')),'important');
+    el.style.setProperty('background-size',setting(prefix,'fit','cover'),'important');
+    el.style.setProperty('background-position',setting(prefix,'position','center center'),'important');
+    el.style.setProperty('background-repeat',setting(prefix,'repeat','no-repeat'),'important');
+    el.style.setProperty('border-radius',Number(setting(prefix,'radius','8'))+'px','important');
+  }
+  function uniqueNodes(selectors){
+    const out=[],seen=new Set();
+    selectors.forEach(sel=>document.querySelectorAll('#mock '+sel).forEach(el=>{if(!seen.has(el)){seen.add(el);out.push(el)}}));
+    return out;
+  }
+  function resultCards(){return uniqueNodes(['.preview-result-card','li.blurb.work','.blurb.work'])}
+  function activeResultPrefixes(useLocal){
+    const arr=[];
+    for(let i=1;i<=6;i++){
+      const p='results'+i;
+      if(!setting(p,'enabled',false))continue;
+      const src=useLocal?sourceFor(p):String(setting(p,'url','')||'').trim();
+      if(src)arr.push({prefix:p,src});
+    }
+    return arr;
+  }
+  function applyPreview(){
+    Object.entries(configs).forEach(([key,cfg])=>{
+      const src=sourceFor(key);
+      uniqueNodes(cfg.preview).forEach(el=>setPreviewProps(el,src,key));
+    });
+    const cards=resultCards();
+    const active=activeResultPrefixes(true);
+    cards.forEach((card,i)=>{
+      if(!active.length){
+        if(card.dataset.v66ContainerBg==='1'){
+          ['background-image','background-size','background-position','background-repeat','border-radius'].forEach(p=>card.style.removeProperty(p));
+          delete card.dataset.v66ContainerBg;
+        }
+        return;
+      }
+      const item=active[i%active.length];
+      card.dataset.v66ContainerBg='1';
+      card.style.setProperty('background-image',bgImage(item.src,setting('resultsShared','overlayColor','#000000'),setting('resultsShared','overlayOpacity','0.25')),'important');
+      card.style.setProperty('background-size',setting('resultsShared','fit','cover'),'important');
+      card.style.setProperty('background-position',setting('resultsShared','position','center center'),'important');
+      card.style.setProperty('background-repeat',setting('resultsShared','repeat','no-repeat'),'important');
+      card.style.setProperty('border-radius',Number(setting('resultsShared','radius','8'))+'px','important');
+    });
+  }
+  function schedulePreview(delay){
+    clearTimeout(previewTimer);
+    previewTimer=setTimeout(applyPreview,delay==null?80:delay);
+  }
+  function cssProps(url,prefix){
+    return '  background-image: '+bgImage(url,setting(prefix,'overlayColor','#000000'),setting(prefix,'overlayOpacity','0.25'))+' !important;\n'+
+      '  background-size: '+setting(prefix,'fit','cover')+' !important;\n'+
+      '  background-position: '+setting(prefix,'position','center center')+' !important;\n'+
+      '  background-repeat: '+setting(prefix,'repeat','no-repeat')+' !important;\n'+
+      '  border-radius: '+Number(setting(prefix,'radius','8'))+'px !important;\n';
+  }
+  function containerCss(){
+    let css='\n\n/* 0.1.66 — MAJOR CONTENT CONTAINER BACKGROUNDS */\n';
+    Object.entries(configs).forEach(([key,cfg])=>{
+      if(!setting(key,'enabled',false))return;
+      const url=String(setting(key,'url','')||'').trim();
+      if(!safeDirect(url))return;
+      css+=cfg.selector+' {\n'+cssProps(url,key)+'}\n';
+    });
+    const active=activeResultPrefixes(false).filter(x=>safeDirect(x.src));
+    if(active.length===1){
+      css+='ol.work.index.group > li.blurb, .works-index li.blurb.work, li.blurb.work {\n'+cssProps(active[0].src,'resultsShared')+'}\n';
+    }else if(active.length>1){
+      active.forEach((item,index)=>{
+        const n=active.length,k=index+1;
+        css+='ol.work.index.group > li.blurb:nth-of-type('+n+'n+'+k+'), .works-index li.blurb.work:nth-of-type('+n+'n+'+k+') {\n'+cssProps(item.src,'resultsShared')+'}\n';
+      });
+    }
+    return css;
+  }
+
+  function simpleSettings(prefix){
+    return '<div class="v66-row">'+
+      '<label>Fit<select id="'+prefix+'_fit_v66"><option value="cover">Cover</option><option value="contain">Contain</option><option value="auto">Original</option></select></label>'+
+      '<label>Position<select id="'+prefix+'_position_v66"><option value="center center">Center</option><option value="center top">Top</option><option value="center bottom">Bottom</option><option value="left center">Left</option><option value="right center">Right</option></select></label>'+
+      '<label>Repeat<select id="'+prefix+'_repeat_v66"><option value="no-repeat">No repeat</option><option value="repeat">Repeat</option><option value="repeat-x">Repeat X</option><option value="repeat-y">Repeat Y</option></select></label>'+
+      '<label>Corner radius<input id="'+prefix+'_radius_v66" type="number" min="0" max="80" value="8"></label>'+
+      '<label>Overlay color<input id="'+prefix+'_overlayColor_v66" type="color" value="#000000"></label>'+
+      '<label>Overlay opacity<input id="'+prefix+'_overlayOpacity_v66" type="range" min="0" max="0.9" step="0.05" value="0.25"></label>'+
+    '</div>';
+  }
+  function singleCard(key,cfg){
+    return '<div class="v66-bg-card" data-v66-card="'+key+'">'+
+      '<h4>'+cfg.label+'</h4>'+
+      '<p class="v66-sub">One image behind the entire '+cfg.label.toLowerCase()+'. Existing text and styling stays on top.</p>'+
+      '<div class="v66-inline"><label><input id="'+key+'_enabled_v66" type="checkbox"> Enable background image</label></div>'+
+      '<div class="v66-file-row"><label>Local image<input id="'+key+'_file_v66" type="file" accept="image/png,image/jpeg,image/gif"></label><button class="v66-upload" type="button" data-v66-upload="'+key+'">Upload for AO3</button></div>'+
+      '<div class="v66-row single"><label>AO3 image URL<input id="'+key+'_url_v66" type="url" placeholder="https://raw.githubusercontent.com/.../image.png"></label></div>'+
+      simpleSettings(key)+
+    '</div>';
+  }
+  function resultsCard(){
+    let slots='';
+    for(let i=1;i<=6;i++){
+      const p='results'+i;
+      slots+='<div class="v66-result-slot" data-v66-result-slot="'+i+'">'+
+        '<span class="v66-slot-num">'+i+'</span>'+
+        '<label><input id="'+p+'_enabled_v66" type="checkbox" '+(i===1?'checked':'')+'> Use</label>'+
+        '<input id="'+p+'_file_v66" type="file" accept="image/png,image/jpeg,image/gif" title="Local result background '+i+'">'+
+        '<button class="v66-upload" type="button" data-v66-upload="'+p+'">Upload</button>'+
+        '<input id="'+p+'_url_v66" type="url" placeholder="Direct AO3-safe image URL" style="grid-column:2/-1">'+
+      '</div>';
+    }
+    return '<div class="v66-bg-card" data-v66-card="results">'+
+      '<h4>Results work-card backgrounds</h4>'+
+      '<p class="v66-sub">Use 1–6 images. Filled enabled slots cycle sequentially: 1, 2, 3, 1, 2, 3…</p>'+
+      '<div class="v66-results-slots">'+slots+'</div>'+
+      '<h4 style="margin-top:9px">Shared result-image settings</h4>'+
+      simpleSettings('resultsShared')+
+    '</div>';
+  }
+
+  function buildUi(){
+    if(q('containerBackgroundsV66'))return;
+    const host=q('editorSectionPanel_background')||document.querySelector('.sidebar')||document.body;
+    const details=document.createElement('details');
+    details.id='containerBackgroundsV66';
+    details.className='section';
+    details.open=true;
+    details.innerHTML='<summary>Major Content Background Images</summary>'+
+      '<div style="padding-top:8px">'+
+      '<p class="v66-note">Give whole AO3 content boxes their own images. These are separate from the page background and individual tag-pill colors.</p>'+
+      '<div class="v66-bg-grid">'+resultsCard()+singleCard('metadata',configs.metadata)+singleCard('summary',configs.summary)+singleCard('notes',configs.notes)+'</div>'+
+      '<button id="v66UploadAllContainers" class="v66-upload v66-host-all" type="button">Upload all local container images for AO3</button>'+
+      '</div>';
+    host.appendChild(details);
+
+    details.querySelectorAll('input[type="file"]').forEach(inp=>{
+      inp.addEventListener('change',()=>readFile(inp.files?.[0],inp.id.replace('_file_v66','')));
+    });
+    details.addEventListener('input',()=>schedulePreview(90));
+    details.addEventListener('change',()=>schedulePreview(50));
+    details.addEventListener('click',async e=>{
+      const btn=e.target.closest('[data-v66-upload]');
+      if(!btn)return;
+      const key=btn.dataset.v66Upload;
+      try{await uploadKey(key,btn,true)}catch(err){alert('Image could not be uploaded for AO3.\n\n'+(err?.message||err))}
+    });
+    q('v66UploadAllContainers')?.addEventListener('click',uploadAllLocal);
+  }
+
+  function folderForKey(key){
+    if(key.startsWith('results'))return 'results';
+    return configs[key]?.folder||'backgrounds';
+  }
+  function labelForKey(key){
+    if(key.startsWith('results'))return 'Result background '+key.replace('results','');
+    return configs[key]?.label||'Container background';
+  }
+  async function uploadKey(key,btn,ask){
+    const data=localData[key];
+    if(!data)throw new Error('Choose a local image first.');
+    if(!window.AO3ImageHostingV64?.uploadData)throw new Error('The GitHub image-host bridge is not available in this build.');
+    if(ask&&!confirm('Upload this image publicly to VeyrStudio/Archive-Of-Our-Own-Images for AO3?'))return null;
+    const file=q(key+'_file_v66')?.files?.[0];
+    const old=btn?.textContent;
+    if(btn){btn.disabled=true;btn.textContent='Uploading…'}
+    try{
+      const url=await window.AO3ImageHostingV64.uploadData(file?.name||labelForKey(key),data,folderForKey(key));
+      const field=q(key+'_url_v66');
+      if(field){field.value=url;dispatch(field)}
+      if(btn){btn.classList.add('ready');btn.textContent='Hosted ✓'}
+      schedulePreview(10);
+      try{window.AO3V63?.rebuildCss?.()}catch(e){}
+      return url;
+    }finally{
+      if(btn){btn.disabled=false;if(!btn.classList.contains('ready'))btn.textContent=old||'Upload'}
+    }
+  }
+  async function uploadAllLocal(){
+    const keys=['results1','results2','results3','results4','results5','results6','metadata','summary','notes'].filter(k=>localData[k]&&!safeDirect(q(k+'_url_v66')?.value));
+    if(!keys.length){try{showToast('All local container images are already ready for AO3')}catch(e){}return}
+    if(!confirm('Upload '+keys.length+' local container image'+(keys.length===1?'':'s')+' publicly to your AO3 image GitHub repository?'))return;
+    const all=q('v66UploadAllContainers');all.disabled=true;
+    try{
+      let done=0;
+      for(const key of keys){
+        const btn=document.querySelector('[data-v66-upload="'+key+'"]');
+        await uploadKey(key,btn,false);
+        done++;all.textContent='Uploaded '+done+' / '+keys.length;
+      }
+    }catch(err){alert('Container image upload stopped.\n\n'+(err?.message||err))}
+    finally{all.disabled=false;all.textContent='Upload all local container images for AO3'}
+  }
+  function exportProblems(){
+    const probs=[];
+    ['metadata','summary','notes'].forEach(k=>{
+      if(setting(k,'enabled',false)&&localData[k]&&!safeDirect(q(k+'_url_v66')?.value))probs.push(labelForKey(k));
+    });
+    for(let i=1;i<=6;i++){
+      const k='results'+i;
+      if(setting(k,'enabled',false)&&localData[k]&&!safeDirect(q(k+'_url_v66')?.value))probs.push(labelForKey(k));
+    }
+    return probs;
+  }
+
+  buildUi();
+
+  try{
+    const prevBuild=buildCss;
+    buildCss=function(){return prevBuild.apply(this,arguments)+containerCss()};
+  }catch(e){}
+
+  window.addEventListener('click',e=>{
+    const b=e.target?.closest?.('#copyBtn,#downloadBtn,[data-export-css-v63]');
+    if(!b)return;
+    const probs=exportProblems();
+    if(probs.length){
+      const ok=confirm('These container images are still local-only and need Upload for AO3 first:\n• '+probs.join('\n• ')+'\n\nContinue exporting without them?');
+      if(!ok){e.preventDefault();e.stopImmediatePropagation();return}
+    }
+    try{
+      const base=window.AO3V63?.rebuildCss?.();
+      const output=q('cssOutput');
+      if(output&&typeof base==='string')output.value=base+containerCss();
+    }catch(err){}
+  },true);
+
+  const mock=q('mock');
+  if(mock){
+    const obs=new MutationObserver(()=>schedulePreview(100));
+    obs.observe(mock,{childList:true,subtree:false});
+  }
+  requestAnimationFrame(()=>schedulePreview(20));
+
+  window.AO3ContainerBackgroundsV66={refresh:applyPreview,css:containerCss,uploadAll:uploadAllLocal};
+})();
+</script>
