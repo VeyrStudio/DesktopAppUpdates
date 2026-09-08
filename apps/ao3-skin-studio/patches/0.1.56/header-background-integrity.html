@@ -1,0 +1,133 @@
+<style id="ao3-header-background-integrity-v56-styles">
+#mock #ao3HeaderPreview{
+  display:block!important;
+}
+</style>
+
+<script id="ao3-header-background-integrity-v56-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  const mock=q('mock');
+  if(!mock||q('ao3HeaderBackgroundIntegritySentinelV56'))return;
+
+  const sentinel=document.createElement('span');
+  sentinel.id='ao3HeaderBackgroundIntegritySentinelV56';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  function repairHeader(){
+    let header=q('ao3HeaderPreview') || q('ao3PreviewHeaderV54') || mock.querySelector('.ao3-header');
+    if(!header){
+      try{header=window.AO3PreviewRepairV54?.ensureHeader?.()}catch(e){}
+    }
+    if(!header)return null;
+
+    header.id='ao3HeaderPreview';
+    header.style.removeProperty('display');
+
+    const region=q('mockPageRegion');
+    if(region && (header.parentElement!==mock || header.nextElementSibling!==region)){
+      mock.insertBefore(header,region);
+    }
+
+    if(!header.querySelector('#headerImageStack')){
+      const stack=document.createElement('div');
+      stack.id='headerImageStack';
+      stack.className='header-image-stack';
+      header.insertBefore(stack,header.firstChild);
+    }
+    return header;
+  }
+
+  function repairToggleMeaning(){
+    const use=q('useHeader');
+    if(!use)return;
+    const row=use.closest('.header-enable-row');
+    const label=row?.querySelector('span');
+    if(label)label.textContent='Use Separate Header Image';
+    const help=row?.parentElement?.querySelector('.header-enable-help');
+    if(help)help.textContent='The AO3 header is always present. Turn this on only when you want a different image / GIF in the header area.';
+
+    const fixed=q('bgFixed');
+    if(fixed){
+      fixed.disabled=false;
+      fixed.setAttribute('aria-disabled','false');
+      fixed.title='';
+      const control=fixed.closest('.control')||fixed.parentElement;
+      control?.classList.remove('fixed-background-header-locked');
+      control?.querySelector('.fixed-background-header-note')?.remove();
+    }
+  }
+
+  function removeLegacyTagDuplicates(){
+    mock.querySelectorAll('.preview-result-card').forEach(card=>{
+      const stream=card.querySelector(':scope > .preview-tag-lines .preview-tag-stream-v54');
+      const legacy=card.querySelector(':scope > .tags:not(.preview-tag-lines)');
+      if(!legacy)return;
+
+      if(stream){
+        const existing=new Set([...stream.querySelectorAll('.taxonomy-pill-text-v51')].map(x=>(x.textContent||'').trim()));
+        [...legacy.querySelectorAll('a.tag,.tag')].forEach(tag=>{
+          const text=(tag.textContent||'').trim();
+          if(!text||existing.has(text))return;
+          const a=document.createElement('a');
+          a.href='#';
+          a.className='taxonomy-pill-v51 preview-tag-pill-v51';
+          a.dataset.taxonomyGroup='tags';
+          const span=document.createElement('span');
+          span.className='taxonomy-pill-text-v51 preview-additional-tag';
+          span.textContent=text;
+          a.appendChild(span);
+          stream.appendChild(a);
+          existing.add(text);
+        });
+      }
+      legacy.remove();
+    });
+  }
+
+  function refreshPreviewImages(){
+    const header=repairHeader();
+    if(!header)return;
+    try{
+      if(typeof renderPreviewImages==='function'){
+        renderPreviewImages(q('bgFixed')?.checked===true);
+      }
+    }catch(e){}
+  }
+
+  let frame=0;
+  function refresh(){
+    if(frame)return;
+    frame=requestAnimationFrame(()=>{
+      frame=0;
+      repairHeader();
+      repairToggleMeaning();
+      removeLegacyTagDuplicates();
+      refreshPreviewImages();
+      try{window.AO3TaxonomyStatsV51?.apply?.()}catch(e){}
+      try{window.AO3SeriesGlobalV53?.refresh?.()}catch(e){}
+    });
+  }
+
+  q('useHeader')?.addEventListener('change',()=>setTimeout(refresh,0),true);
+  q('bgFile')?.addEventListener('change',()=>setTimeout(refresh,30),true);
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]'))setTimeout(refresh,0);
+  },true);
+
+  const main=mock.querySelector('.ao3-main');
+  if(main){
+    const obs=new MutationObserver(refresh);
+    obs.observe(main,{childList:true});
+  }
+
+  window.AO3HeaderBackgroundIntegrityV56={refresh};
+  setTimeout(()=>{
+    repairHeader();
+    repairToggleMeaning();
+    try{if(typeof update==='function')update()}catch(e){}
+    refresh();
+  },80);
+})();
+</script>

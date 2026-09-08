@@ -29,33 +29,17 @@
 
   /* HEADER + FIXED BACKGROUND SAFETY */
   function syncFixedBackgroundLock(){
-    if(!useHeader || !bgFixed) return;
-    const on=useHeader.checked===true;
-    if(on && bgFixed.checked){
-      bgFixed.checked=false;
-      bgFixed.dispatchEvent(new Event('input',{bubbles:true}));
-      bgFixed.dispatchEvent(new Event('change',{bubbles:true}));
-    }
-    bgFixed.disabled=on;
-    bgFixed.setAttribute('aria-disabled',on?'true':'false');
-    bgFixed.title=on
-      ? 'Fixed Background is disabled while Use Header is on so the page background stays below the header.'
-      : '';
-
+    if(!bgFixed)return;
+    /* Page backgrounds are already confined to #mockPageRegion, so a separate
+       header image has no reason to disable Fixed Background. */
+    bgFixed.disabled=false;
+    bgFixed.setAttribute('aria-disabled','false');
+    bgFixed.title='';
     const control=bgFixed.closest('.control') || bgFixed.parentElement;
     if(control){
-      control.classList.toggle('fixed-background-header-locked',on);
-      let note=control.querySelector('.fixed-background-header-note');
-      if(on && !note){
-        note=document.createElement('div');
-        note.className='fixed-background-header-note';
-        note.textContent='Disabled while Use Header is on so the background cannot slide behind the header.';
-        control.appendChild(note);
-      }else if(!on && note){
-        note.remove();
-      }
+      control.classList.remove('fixed-background-header-locked');
+      control.querySelector('.fixed-background-header-note')?.remove();
     }
-    try{ if(typeof save==='function') save(); }catch(e){}
   }
 
   useHeader?.addEventListener('change',()=>setTimeout(syncFixedBackgroundLock,0));

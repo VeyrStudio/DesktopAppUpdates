@@ -625,6 +625,15 @@ jobs:
           $studioText = $studioText.Replace('</body>', $skinWideCoveragePatch + "`r`n</body>")
           [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
 
+          # 0.1.56: permanent AO3 header + background-image rendering repair + duplicate-tag cleanup.
+          $headerBackgroundRepairPath = 'apps/ao3-skin-studio/patches/0.1.56/header-background-integrity.html'
+          if (-not (Test-Path $headerBackgroundRepairPath)) { throw 'AO3 Skin Studio 0.1.56 header/background integrity patch was not found.' }
+          $headerBackgroundRepair = Get-Content $headerBackgroundRepairPath -Raw
+          $studioText = Get-Content $studioHtml -Raw
+          if (-not $studioText.Contains('</body>')) { throw 'AO3 Skin Studio body closing tag was not found for 0.1.56.' }
+          $studioText = $studioText.Replace('</body>', $headerBackgroundRepair + "`r`n</body>")
+          [IO.File]::WriteAllText($studioHtml, $studioText, [Text.UTF8Encoding]::new($false))
+
           # 0.1.14: install and embed the AO3 Skin Studio app icon.
           $iconSource = 'apps/ao3-skin-studio/assets/AO3-Skin-Studio-Icon.ico'
           if (-not (Test-Path $iconSource)) { throw 'AO3 Skin Studio icon asset was not found.' }
@@ -707,16 +716,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.55</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.55.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.55.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.56</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.56.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.56.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.55" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.56" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -856,7 +865,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Moves Whole Skin / Global Style into its own dedicated tall Skin-Wide Controls rectangle, separate from individual Text, Tags, and Stats controls. Global font and all-text solid/gradient overrides now export through an explicit registry of real AO3 selectors rather than depending on the mock preview. Coverage includes the AO3 logo/header, primary and secondary navigation, logged-in user/profile menus, dropdowns, search, Dashboard/Subscriptions/Bookmarks/History-style header links, work titles/bylines, fandoms/tags/Series/metadata/stats, chapter and fic text, comments, kudos, actions/navigation, forms, and footer. Existing per-element settings remain preserved underneath the reversible global overrides.'
+            notes = 'Fixes the image-background regression and the header-toggle regression together. The AO3 preview header is now permanent and keeps the original ao3HeaderPreview identity expected by the live renderer, so normal update() calls no longer fail before local background images are drawn. Use Header is corrected to Use Separate Header Image: it only enables a different header image/GIF and never hides AO3 header/profile/navigation content, never emits CSS that hides #header, and no longer disables Fixed Background. The complete logged-in AO3 header stays outside the page background region. Results/Browse also migrates and removes the leftover legacy tag row so tags no longer render twice.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

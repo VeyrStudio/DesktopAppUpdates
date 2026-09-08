@@ -854,11 +854,15 @@
 
   function decorateResultCard(card,index){
     const title=(card.querySelector(':scope > h4 > a')?.textContent||'').trim();
+    const legacyTags=card.querySelector(':scope > .tags:not(.preview-tag-lines)');
+    const legacyAdditional=legacyTags
+      ? [...legacyTags.querySelectorAll('a.tag,.tag')].map(x=>(x.textContent||'').trim()).filter(Boolean)
+      : [];
     const info=workMap[title]||{
       fandom:'Original Work',
       relationship:'Character A/Character B',
       characters:['Character A','Character B'],
-      tags:['Slow Burn']
+      tags:legacyAdditional.length?legacyAdditional:['Slow Burn']
     };
     const rating=textOf(card,'.preview-required-tags .rating .text','Mature');
     const warning=textOf(card,'.preview-required-tags .warnings .text','No Archive Warnings Apply');
@@ -890,6 +894,10 @@
       .forEach(x=>stream.appendChild(x));
 
     wrap.append(fandomRow,stream);
+
+    /* The old generic .tags row is source data only; once migrated it must not
+       render underneath the semantic AO3 tag stream. */
+    if(legacyTags && legacyTags!==wrap)legacyTags.remove();
 
     const oldStats=card.querySelector(':scope > .stats');
     const raw=oldStats?.textContent||'';

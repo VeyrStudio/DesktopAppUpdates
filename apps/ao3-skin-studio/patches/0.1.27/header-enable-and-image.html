@@ -87,8 +87,8 @@
   const card=document.createElement('div');
   card.className='header-enable-card';
   card.innerHTML=
-    '<label class="header-enable-row"><input type="checkbox" id="useHeader"> <span>Use Header</span></label>'+
-    '<div class="header-enable-help">Off = background only. Turn this on to use a separate header area and header image / GIF.</div>'+
+    '<label class="header-enable-row"><input type="checkbox" id="useHeader"> <span>Use Separate Header Image</span></label>'+
+    '<div class="header-enable-help">The AO3 header is always present. Turn this on only when you want a different image / GIF in the header area.</div>'+
     '<div id="headerImageControls" hidden>'+
       '<div class="header-image-grid">'+
         '<div class="header-image-field"><label>Header Image / GIF</label><input type="file" id="headerImageFile" accept="image/*,.gif"></div>'+
@@ -162,19 +162,19 @@
     updateTabName(enabled);
 
     if(originalHeaderBox){
-      originalHeaderBox.style.display=enabled?'block':'none';
-      if(q('headerResizable') && !enabled) q('headerResizable').checked=false;
+      /* Header layout/resize controls are independent from the separate-image toggle. */
+      originalHeaderBox.style.display='block';
     }
 
     const header=getHeader();
     if(!header) return;
 
-    header.style.display=enabled?'':'none';
+    /* The AO3 header itself is permanent. This toggle only controls its image overlay. */
+    header.style.display='';
     if(!enabled){
-      header.style.backgroundImage='';
       const old=header.querySelector(':scope > .header-image-opacity-overlay');
       if(old) old.remove();
-      try{if(typeof update==='function')update()}catch(e){}
+      try{if(typeof applyGradientPreview==='function')applyGradientPreview()}catch(e){}
       try{if(typeof save==='function')save()}catch(e){}
       return;
     }
@@ -227,16 +227,14 @@
     applyHeaderImage();
   });
 
-  /* Add true header enable/disable and header-image CSS to export. */
+  /* Export only the optional separate header image. Never hide AO3's real header. */
   try{
     const previousBuildCss=buildCss;
     buildCss=function(){
       let css=previousBuildCss();
       const enabled=q('useHeader')?.checked===true;
-      let extra='\n\n/* HEADER ENABLE + IMAGE */\n';
-      if(!enabled){
-        extra+='#header { display: none !important; }\n';
-      }else{
+      let extra='\n\n/* OPTIONAL SEPARATE HEADER IMAGE */\n';
+      if(enabled){
         const url=q('headerImageUrl')?.value.trim()||'';
         if(url){
           const pos=q('headerImagePosition')?.value||'center center';
