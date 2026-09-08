@@ -395,6 +395,54 @@
     ['builtin-vampire-x-werewolf','Vampire x Werewolf','Fantasy',['#12070F','#7A1028','#8A5A2B','#E5C98B']],
     ['builtin-alpha-x-alpha','Alpha x Alpha','Romantic',['#161A24','#3C4A63','#6E2235','#C89B5A']]
   ].forEach(function(p){builtins.push(romanticPresetV59(p[0],p[1],p[2],p[3]));});
+  function supernaturalPresetV60(id,name,category,colors){
+    return {
+      id:id,
+      name:name,
+      category:category,
+      config:normalizeConfig({
+        enabled:true,
+        type:'linear',
+        angle:'135deg',
+        custom:'',
+        stops:[
+          {color:colors[0],pos:0,opacity:100},
+          {color:colors[1],pos:32,opacity:100},
+          {color:colors[2],pos:68,opacity:100},
+          {color:colors[3],pos:100,opacity:100}
+        ],
+        radialShape:'ellipse',
+        radialSize:'farthest-corner',
+        centerX:50,centerY:50,
+        conicStart:0,conicX:50,conicY:50,
+        repeating:false,repeatSize:35
+      }),
+      builtin:true
+    };
+  }
+
+  [
+    ['builtin-demon-x-human','Demon x Human','Fantasy',['#090507','#7D1128','#5C2A63','#E6B7B2']],
+    ['builtin-demon-x-demon','Demon x Demon','Dark',['#080404','#6F0D1B','#A14A24','#D6A24A']],
+    ['builtin-devils-bargain',"Devil's Bargain",'Dark',['#0A0A0D','#7A1028','#5F233F','#C49A4A']],
+    ['builtin-hellbound-romance','Hellbound Romance','Dark',['#050505','#8A0F1F','#69406D','#C9898E']],
+    ['builtin-possession','Possession','Dark',['#090B14','#28306D','#7047A9','#D9D4F2']],
+    ['builtin-ritual-love','Ritual Love','Dark',['#141012','#8B1E3F','#61315D','#F0E6D6']],
+    ['builtin-siren-song','Siren Song','Fantasy',['#081A2F','#136F8A','#6B4CA5','#AEE9E1']],
+    ['builtin-siren-x-sailor','Siren x Sailor','Fantasy',['#0A1F3C','#1E6F74','#8B5E83','#E8E2D8']],
+    ['builtin-drowned-love','Drowned Love','Fantasy',['#06141F','#1F6F78','#7C6DA8','#D7E2E8']],
+    ['builtin-sea-witch','Sea Witch','Fantasy',['#051016','#28503E','#69408B','#7EE3E1']],
+    ['builtin-fallen-angel','Fallen Angel','Celestial',['#1A1C24','#415A77','#6D4BA0','#D1B46A']],
+    ['builtin-angel-x-fallen-angel','Angel x Fallen Angel','Celestial',['#F5F2E8','#7BA7D9','#7756A6','#B8893C']],
+    ['builtin-monster-x-human','Monster x Human','Fantasy',['#0A0E0A','#2F4A34','#8C633A','#E0C2A8']],
+    ['builtin-cursed-lovers','Cursed Lovers','Dark',['#0A0A0F','#7C1F36','#5F3B78','#D8A8B8']],
+    ['builtin-blood-pact','Blood Pact','Dark',['#050505','#8B0000','#5E1F2F','#E8DDCF']],
+    ['builtin-temptation','Temptation','Romantic',['#0B090A','#8F1D2C','#6A3D6E','#D9A77A']],
+    ['builtin-succubus','Succubus','Dark',['#190B1F','#A10F5A','#B24C73','#F0B38A']],
+    ['builtin-incubus','Incubus','Dark',['#0A070A','#6E1835','#7B556D','#D3A05F']],
+    ['builtin-siren-x-siren','Siren x Siren','Fantasy',['#071827','#168C8A','#6E5AAE','#C7F3EE']],
+    ['builtin-demon-courtship','Demon Courtship','Dark',['#090303','#9A1126','#5C295F','#B98A3D']]
+  ].forEach(function(p){builtins.push(supernaturalPresetV60(p[0],p[1],p[2],p[3]));});
   let seq=1;
   palettes.forEach(function(pal){
     angles.forEach(function(a,idx){
