@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.61",
-  "payloadSha256": "1fc640a5ed4e7499cbf8d9b924fc964b7611bd7ec59f68b298a1b83b0de163ba",
-  "executableSha256": "e3747cc50c29ccf799e19812730c5e1f616c7aef23fcd8e32d56f93306ae4bb7",
+  "version": "0.1.62",
+  "payloadSha256": "066ff1cf9acd2e46b78ea8fda1cb1bbb6e608d0569a10484da55f3201c433cab",
+  "executableSha256": "2deecc95beb2502565bb79c52f29414716764d38834c67bce82053bc8ea49733",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.61-part-001.txt",
-      "sha256": "c41575a0952a8624236f42c6e72679748dd31ae932d8f4548ce26dde3883d054"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-001.txt",
+      "sha256": "f52126b3c74a30687f8aa5ad2cf8c82a2a0f131d76cefc267bbe9c5fff074e82"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.61-part-002.txt",
-      "sha256": "68992a03eed9d21d0f3c144fcf81afa411e5b1fb4e62d6ba83ff6c233f889486"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-002.txt",
+      "sha256": "c5f23a85902c0e0772aee1da3b86835b06db9a70c30673f269c3a6cd7d106970"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.61-part-003.txt",
-      "sha256": "1ded166cdcb543a87002fa9b0650872a0c6e3ece5e12e8d42a945767d8f9dca6"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-003.txt",
+      "sha256": "2eb54c611b302877774b3fb0994780cf870412ab9bb8f1a478ba0d41b39366f6"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.61-part-004.txt",
-      "sha256": "fae1a90035cd94cbb8f4822e157f04437038ce2ccc7d3d3c8000e83faf42d33f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-004.txt",
+      "sha256": "e54753a2641375aa66f61935c9adf4f78e250bd9f0d5730db3c7f290bbe000fa"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.61-part-005.txt",
-      "sha256": "c1c710a5e4251bfd3122d5106d2761c8247239b883815ce7863aec0173208b97"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.62-part-005.txt",
+      "sha256": "01b9c386232ded9a7c72ea73140e6559f8d211abbfe9cb145b5e8a107d3569cc"
     }
   ],
-  "notes": "Fixes two reliability problems: AO3 export now rewrites the required Multi category icon into literal-color background-image rules that avoid the rejected background shorthand/CSS-variable syntax, and the desktop updater now cache-busts both manifest and payload requests so newly published versions are not hidden by stale raw.githubusercontent.com CDN responses. Update HTTP failures now surface as failures instead of being reported as Up to date."
+  "notes": "Major Studio workspace redesign. Skin documents now sit in compact tabs beneath a cleaner app header; the old second row of Editor/Starters/Randomizer/Color/Gradient tabs is replaced by real tool buttons. The editor uses a numbered left navigator with Background, Header, Title, Author, combined Tags & Metadata, Summary, Notes, Main Text, Chapter Titles, Interface/UI, Footer, and Skin-Wide sections. The live AO3 preview becomes the main canvas with a unified device/page toolbar, Fit to Screen, Refresh, and a Page Navigator. Existing controls, skin-tab persistence, AO3 preview structure, gradients, starters, randomizer, Color Studio, Gradient Library, import/export, and 0.1.61 AO3/updater fixes remain in place."
 }
