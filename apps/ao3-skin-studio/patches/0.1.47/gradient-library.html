@@ -325,6 +325,29 @@
     config:makeCfg(['#FFFDF7','#F4E8C8','#D9B967','#A77A2C'],135,'linear'),
     builtin:true
   });
+  builtins.push({
+    id:'builtin-enemies-to-lovers',
+    name:'Enemies to Lovers',
+    category:'Romantic',
+    config:normalizeConfig({
+      enabled:true,
+      type:'linear',
+      angle:'135deg',
+      custom:'',
+      stops:[
+        {color:'#1A0F14',pos:0,opacity:100},
+        {color:'#7A1F2F',pos:35,opacity:100},
+        {color:'#59305F',pos:68,opacity:100},
+        {color:'#D58B72',pos:100,opacity:100}
+      ],
+      radialShape:'ellipse',
+      radialSize:'farthest-corner',
+      centerX:50,centerY:50,
+      conicStart:0,conicX:50,conicY:50,
+      repeating:false,repeatSize:35
+    }),
+    builtin:true
+  });
   let seq=1;
   palettes.forEach(function(pal){
     angles.forEach(function(a,idx){
