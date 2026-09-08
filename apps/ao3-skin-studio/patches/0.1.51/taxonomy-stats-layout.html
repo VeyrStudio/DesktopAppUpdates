@@ -373,25 +373,25 @@
   const TAGS=[
     {id:'rating',label:'Rating',short:'Rating',source:'tags',semantic:'preview-rating-tag',
       textKey:'ratingText',bgKey:'ratingBackground',
-      export:'dd.rating.tags a.tag, .blurb .rating, .blurb ul.required-tags .rating'},
+      export:'dd.rating.tags a.tag'},
     {id:'warnings',label:'Archive Warnings',short:'Warnings',source:'warnings',semantic:'preview-warning-tag',
       textKey:'warningsText',bgKey:'warningsBackground',
-      export:'dd.warning.tags a.tag, li.warnings a.tag, .blurb ul.required-tags .warnings'},
+      export:'dd.warning.tags a.tag, ul.tags.commas li.warnings a.tag, li.warnings a.tag'},
     {id:'categories',label:'Categories',short:'Categories',source:'categories',semantic:'preview-category-tag',
       textKey:'categoriesText',bgKey:'categoriesBackground',
-      export:'dd.category.tags a.tag, li.category a.tag, .blurb ul.required-tags .category'},
+      export:'dd.category.tags a.tag, ul.tags.commas li.category a.tag, li.category a.tag'},
     {id:'fandoms',label:'Fandoms',short:'Fandoms',source:'tags',semantic:'preview-fandom-tag',
       textKey:'fandomsText',bgKey:'fandomsBackground',
-      export:'dd.fandom.tags a.tag, .blurb .fandoms a.tag, li.fandoms a.tag'},
+      export:'dd.fandom.tags a.tag, h5.fandoms.heading a.tag, .blurb .fandoms a.tag, li.fandoms a.tag'},
     {id:'relationships',label:'Relationships',short:'Relationships',source:'relationships',semantic:'preview-relationship-tag',
       textKey:'relationshipsText',bgKey:'relationshipsBackground',
-      export:'dd.relationship.tags a.tag, li.relationships a.tag'},
+      export:'dd.relationship.tags a.tag, ul.tags.commas li.relationships a.tag, li.relationships a.tag'},
     {id:'characters',label:'Characters',short:'Characters',source:'tags',semantic:'preview-character-tag',
       textKey:'charactersText',bgKey:'charactersBackground',
-      export:'dd.character.tags a.tag, li.characters a.tag'},
+      export:'dd.character.tags a.tag, ul.tags.commas li.characters a.tag, li.characters a.tag'},
     {id:'tags',label:'Additional Tags',short:'Additional Tags',source:'tags',semantic:'preview-additional-tag',
       textKey:'tagsText',bgKey:'tagsBackground',
-      export:'dd.freeform.tags a.tag, li.freeforms a.tag'}
+      export:'dd.freeform.tags a.tag, ul.tags.commas li.freeforms a.tag, li.freeforms a.tag'}
   ];
 
   const STATS=[
@@ -1049,17 +1049,16 @@
   let styleApplyFrameV54=0;
   let stateSnapshotTimerV54=0;
   function scheduleStyleApplyV54(saveState){
-    if(!styleApplyFrameV54){
-      styleApplyFrameV54=requestAnimationFrame(()=>{
-        styleApplyFrameV54=0;
-        applyAllStyles();
-      });
-    }
+    clearTimeout(styleApplyFrameV54);
+    styleApplyFrameV54=setTimeout(()=>{
+      styleApplyFrameV54=0;
+      applyAllStyles();
+    },48);
     if(saveState){
       clearTimeout(stateSnapshotTimerV54);
       stateSnapshotTimerV54=setTimeout(()=>{
         try{window.AO3SkinDocuments?.snapshot?.()}catch(e){}
-      },220);
+      },900);
     }
   }
   styleEventsRoot.addEventListener('input',()=>scheduleStyleApplyV54(true),true);
@@ -1087,7 +1086,7 @@
       if(status&&opt&&gradients[currentGradientTarget]){
         status.textContent=opt.textContent+': '+(gradients[currentGradientTarget].enabled?'gradient ON':'gradient off');
       }
-      setTimeout(applyAllStyles,0);
+      scheduleStyleApplyV54(false);
       return out;
     };
   }catch(e){}
@@ -1329,7 +1328,7 @@
       '  border:'+b.bw+'px solid '+b.border+' !important;\n'+
       '  border-radius:'+b.radius+'px !important;\n'+
       '  text-decoration:none !important;\n'+
-      '  background:transparent !important;\n'+
+      '  background-color:transparent !important;\n'+
       '  '+decl(v).replace(/\n/g,'\n  ')+'\n'+
       '}\n'+
       beforeSel+' {\n'+
@@ -1369,13 +1368,8 @@
     };
   }catch(e){}
 
-  /* Keep preview decoration stable without the old semantic mutation loop. */
-  const obs=new MutationObserver(records=>{
-    if(decorating)return;
-    const relevant=records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1));
-    if(relevant)requestAnimationFrame(decoratePreview);
-  });
-  obs.observe(mock,{childList:true,subtree:true});
+  /* 0.1.65: no deep MutationObserver here. 0.1.54 already watches the
+     page-swap container shallowly and calls this module's public refresh hook. */
 
   document.addEventListener('click',e=>{
     const b=e.target.closest?.('.preview-page-btn,[data-page],.device-btn,[data-device]');

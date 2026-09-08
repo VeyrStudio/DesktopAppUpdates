@@ -201,10 +201,10 @@
     saveDocuments();
   }
 
-  function scheduleSnapshot(){
+  function scheduleSnapshot(delay){
     if(applying || bootstrapping) return;
     clearTimeout(snapshotTimer);
-    snapshotTimer=setTimeout(snapshotActive,180);
+    snapshotTimer=setTimeout(snapshotActive,Math.max(250,Number(delay)||850));
   }
 
   function dispatch(el){
@@ -486,11 +486,14 @@
   /* Keep each open document continuously snapshotted while you edit. */
   document.addEventListener('input',e=>{
     if(e.target.closest('#skinDocumentTabs')||e.target.closest('#skinTabsMenuPop'))return;
-    scheduleSnapshot();
+    /* Range/color drags can fire dozens of times a second. Keep state safe,
+       but wait until the user has actually paused before serializing everything. */
+    const draggy=e.target?.type==='range'||e.target?.type==='color';
+    scheduleSnapshot(draggy?1300:850);
   },true);
   document.addEventListener('change',e=>{
     if(e.target.closest('#skinDocumentTabs')||e.target.closest('#skinTabsMenuPop'))return;
-    scheduleSnapshot();
+    scheduleSnapshot(320);
   },true);
 
   /* Loading a Starter becomes a NEW skin tab instead of overwriting the old tab. */

@@ -136,22 +136,54 @@
      controls, leaving a transparent text fill after the tag box removed the
      background image. Re-apply each independent control last. */
   const independentTextDefs=[
-    ['rating','ratingText','dd.rating.tags a.tag'],
-    ['warnings','warningsText','dd.warning.tags a.tag, li.warnings a.tag'],
-    ['categories','categoriesText','dd.category.tags a.tag, li.category a.tag'],
-    ['fandoms','fandomsText','dd.fandom.tags a.tag, .blurb .fandoms a.tag, li.fandoms a.tag'],
-    ['relationships','relationshipsText','dd.relationship.tags a.tag, li.relationships a.tag'],
-    ['characters','charactersText','dd.character.tags a.tag, li.characters a.tag'],
-    ['tags','tagsText','dd.freeform.tags a.tag, li.freeforms a.tag'],
-    ['language','languageText','dd.language, dl.stats dd.language, .stats .language'],
-    ['words','wordsText','dl.stats dd.words, .stats .words'],
-    ['chapters','chaptersText','dl.stats dd.chapters, .stats .chapters'],
-    ['completion','completionText','.stats .status, .completion'],
-    ['comments','commentsText','dl.stats dd.comments, .stats .comments'],
-    ['kudos','kudosText','dl.stats dd.kudos, .stats .kudos'],
-    ['bookmarks','bookmarksText','dl.stats dd.bookmarks, .stats .bookmarks'],
-    ['hits','hitsText','dl.stats dd.hits, .stats .hits'],
-    ['series','seriesText','dd.series a, dd.series.tags a.tag, .blurb .series a, li.series a.tag']
+    ['rating','ratingText',
+      'dd.rating.tags',
+      'dd.rating.tags a, dd.rating.tags a.tag'],
+    ['warnings','warningsText',
+      'dd.warning.tags, ul.tags.commas li.warnings, li.warnings',
+      'dd.warning.tags a, dd.warning.tags a.tag, ul.tags.commas li.warnings a, li.warnings a.tag'],
+    ['categories','categoriesText',
+      'dd.category.tags, ul.tags.commas li.category, li.category',
+      'dd.category.tags a, dd.category.tags a.tag, ul.tags.commas li.category a, li.category a.tag'],
+    ['fandoms','fandomsText',
+      'dd.fandom.tags, h5.fandoms.heading, .blurb .fandoms, li.fandoms',
+      'dd.fandom.tags a, dd.fandom.tags a.tag, h5.fandoms.heading a, h5.fandoms.heading a.tag, .blurb .fandoms a, li.fandoms a.tag'],
+    ['relationships','relationshipsText',
+      'dd.relationship.tags, ul.tags.commas li.relationships, li.relationships',
+      'dd.relationship.tags a, dd.relationship.tags a.tag, ul.tags.commas li.relationships a, li.relationships a.tag'],
+    ['characters','charactersText',
+      'dd.character.tags, ul.tags.commas li.characters, li.characters',
+      'dd.character.tags a, dd.character.tags a.tag, ul.tags.commas li.characters a, li.characters a.tag'],
+    ['tags','tagsText',
+      'dd.freeform.tags, ul.tags.commas li.freeforms, li.freeforms',
+      'dd.freeform.tags a, dd.freeform.tags a.tag, ul.tags.commas li.freeforms a, li.freeforms a.tag'],
+    ['language','languageText',
+      'dd.language, dl.stats dd.language, .stats .language',
+      'dd.language, dd.language a, dl.stats dd.language, dl.stats dd.language a, .stats .language, .stats .language a'],
+    ['words','wordsText',
+      'dl.stats dd.words, .stats .words',
+      'dl.stats dd.words, dl.stats dd.words a, .stats .words, .stats .words a'],
+    ['chapters','chaptersText',
+      'dl.stats dd.chapters, .stats .chapters',
+      'dl.stats dd.chapters, dl.stats dd.chapters a, .stats .chapters, .stats .chapters a'],
+    ['completion','completionText',
+      '.stats .status, .completion',
+      '.stats .status, .stats .status a, .completion, .completion a'],
+    ['comments','commentsText',
+      'dl.stats dd.comments, .stats .comments',
+      'dl.stats dd.comments, dl.stats dd.comments a, .stats .comments, .stats .comments a'],
+    ['kudos','kudosText',
+      'dl.stats dd.kudos, .stats .kudos',
+      'dl.stats dd.kudos, dl.stats dd.kudos a, .stats .kudos, .stats .kudos a'],
+    ['bookmarks','bookmarksText',
+      'dl.stats dd.bookmarks, .stats .bookmarks',
+      'dl.stats dd.bookmarks, dl.stats dd.bookmarks a, .stats .bookmarks, .stats .bookmarks a'],
+    ['hits','hitsText',
+      'dl.stats dd.hits, .stats .hits',
+      'dl.stats dd.hits, dl.stats dd.hits a, .stats .hits, .stats .hits a'],
+    ['series','seriesText',
+      'dd.series, dd.series.tags, .blurb .series, li.series',
+      'dd.series a, dd.series.tags a, dd.series.tags a.tag, .blurb .series a, li.series a.tag']
   ];
   function gradientForV63(key){
     try{
@@ -163,13 +195,25 @@
     return q('textStyle_'+id+'_color')?.value||'#D7CDD5';
   }
   function independentTextCssV63(){
-    let css='\n\n/* 0.1.63 — INDIVIDUAL TAG + METADATA TEXT WINS OVER SKIN-WIDE TEXT */\n';
-    independentTextDefs.forEach(([id,key,sel])=>{
+    let css='\n\n/* 0.1.65 — REAL AO3 TAG + METADATA TEXT RESTORE */\n';
+    independentTextDefs.forEach(([id,key,containerSel,textSel])=>{
       const g=gradientForV63(key);
       const color=textColorV63(id);
-      css+=sel+' {\n';
+
+      /* Reset the parent container so the skin-wide gradient cannot leave
+         inherited transparent text behind or paint over the box layer. */
+      css+=containerSel+' {\n'+
+        '  color:'+color+' !important;\n'+
+        '  -webkit-text-fill-color:'+color+' !important;\n'+
+        '  background-image:none !important;\n'+
+        '  background-clip:border-box !important;\n'+
+        '  -webkit-background-clip:border-box !important;\n'+
+      '}\n';
+
+      css+=textSel+' {\n';
       if(g){
         css+='  background-image:'+g+' !important;\n'+
+             '  background-color:transparent !important;\n'+
              '  background-clip:text !important;\n'+
              '  -webkit-background-clip:text !important;\n'+
              '  color:transparent !important;\n'+
@@ -235,17 +279,17 @@
     function scheduleBuild(delay){
       dirty=true;
       clearTimeout(timer);
-      timer=setTimeout(reallyBuild,delay==null?170:delay);
+      timer=setTimeout(reallyBuild,delay==null?650:delay);
     }
     cache=reallyBuild();
     buildCss=function(){
       if(!cache)return reallyBuild();
-      if(dirty&&!timer)scheduleBuild(170);
+      if(dirty&&!timer)scheduleBuild(650);
       return cache;
     };
     buildNowV63=reallyBuild;
-    window.addEventListener('input',()=>scheduleBuild(190),true);
-    window.addEventListener('change',()=>scheduleBuild(90),true);
+    window.addEventListener('input',()=>scheduleBuild(750),true);
+    window.addEventListener('change',()=>scheduleBuild(260),true);
   }catch(e){}
 
   try{
@@ -261,7 +305,7 @@
     save=function(){
       pending=true;
       clearTimeout(timer);
-      timer=setTimeout(reallySave,260);
+      timer=setTimeout(reallySave,950);
     };
     flushSaveV63=reallySave;
   }catch(e){}
@@ -273,11 +317,11 @@
     update=function(){
       args=arguments;
       if(frame)return;
-      frame=requestAnimationFrame(()=>{
+      frame=setTimeout(()=>{
         frame=0;
         const a=args;args=null;
         try{heavyUpdateV63.apply(this,a||[])}catch(e){console.error(e)}
-      });
+      },48);
     };
   }catch(e){}
 
@@ -288,11 +332,11 @@
     renderPreviewImages=function(){
       lastArgs=arguments;
       if(frame)return;
-      frame=requestAnimationFrame(()=>{
+      frame=setTimeout(()=>{
         frame=0;
         const a=lastArgs;lastArgs=null;
         try{heavyImagesV63.apply(this,a||[])}catch(e){}
-      });
+      },90);
     };
   }catch(e){}
 

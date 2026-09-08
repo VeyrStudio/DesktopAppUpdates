@@ -942,16 +942,16 @@ jobs:
           if (-not $projectText.Contains($projectEndAnchor)) { throw 'AO3 project closing tag was not found for app icon.' }
           $projectText = $projectText.Replace($projectEndAnchor, $iconItemGroup + $projectEndAnchor)
 
-          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.64</Version>')
-          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.64.0</AssemblyVersion>')
-          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.64.0</FileVersion>')
+          $projectText = $projectText.Replace('<Version>0.1.0</Version>', '<Version>0.1.65</Version>')
+          $projectText = $projectText.Replace('<AssemblyVersion>0.1.0.0</AssemblyVersion>', '<AssemblyVersion>0.1.65.0</AssemblyVersion>')
+          $projectText = $projectText.Replace('<FileVersion>0.1.0.0</FileVersion>', '<FileVersion>0.1.65.0</FileVersion>')
           [IO.File]::WriteAllText($project, $projectText, [Text.UTF8Encoding]::new($false))
 
           # The app uses System.IO types throughout its settings, WebView, and updater services.
           Set-Content -Path (Join-Path $srcRoot 'AO3SkinStudio/GlobalUsings.cs') -Value "global using System.IO;" -Encoding utf8
 
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "AO3_VERSION=0.1.64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "AO3_VERSION=0.1.65" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Publish Windows app
         shell: pwsh
@@ -1091,7 +1091,7 @@ jobs:
             payloadSha256 = $payloadSha
             executableSha256 = $exeSha
             payloadParts = $parts
-            notes = 'Adds built-in AO3 image hosting. Local PNG, JPG/JPEG, and GIF images can now be uploaded directly from AO3 Skin Studio to Catbox.moe with one built-in action; the returned direct public URL is filled into the correct background, separate-header, or bottom-border URL field automatically and is then included in exported AO3 CSS. Includes per-image Upload for AO3 buttons plus Upload All Local Images for AO3. Uploads require an explicit public-upload confirmation and remain optional; manual direct URLs still work. Keeps the 0.1.63 tag-visibility and performance fixes.'
+            notes = 'Repairs real-AO3 tag and metadata text plus the Studio performance regression. Required-tag icon containers are no longer treated like normal tag pills. Tag/stat box export no longer clears text-gradient background images, and final AO3 selectors reset transparent skin-wide text on real work metadata containers before reapplying each individual solid or gradient text style, including linked stats and Series. Performance changes remove the deep taxonomy MutationObserver, throttle taxonomy restyling and core preview/image rebuilds, defer full CSS generation and multi-skin serialization until editing pauses, and stop the image-host panel from rescanning on unrelated sliders. Built-in AO3 image hosting remains available.'
           }
           $manifest | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $channel 'manifest.json') -Encoding utf8
 

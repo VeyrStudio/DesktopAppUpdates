@@ -370,11 +370,20 @@
     };
   }catch(e){}
 
-  q('headerImageFile')?.addEventListener('change',()=>setTimeout(refresh,30));
-  q('headerImageUrl')?.addEventListener('input',refresh);
-  q('bottomBorderUrl')?.addEventListener('input',refresh);
-  q('imageList')?.addEventListener('input',refresh,true);
-  q('imageList')?.addEventListener('change',()=>setTimeout(refresh,30),true);
+  let hostRefreshTimerV65=0;
+  function scheduleHostRefreshV65(delay){
+    clearTimeout(hostRefreshTimerV65);
+    hostRefreshTimerV65=setTimeout(refresh,Math.max(20,Number(delay)||90));
+  }
+  q('headerImageFile')?.addEventListener('change',()=>scheduleHostRefreshV65(80));
+  q('headerImageUrl')?.addEventListener('input',()=>scheduleHostRefreshV65(120));
+  q('bottomBorderUrl')?.addEventListener('input',()=>scheduleHostRefreshV65(120));
+  q('imageList')?.addEventListener('input',e=>{
+    if(e.target?.matches?.('[data-field="url"]'))scheduleHostRefreshV65(120);
+  },true);
+  q('imageList')?.addEventListener('change',e=>{
+    if(e.target?.matches?.('[data-field="url"],input[type="file"]'))scheduleHostRefreshV65(70);
+  },true);
 
   requestAnimationFrame(refresh);
 
