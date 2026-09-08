@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.55",
-  "payloadSha256": "e013dad9cd9ccd86570fd8495295be4d760e68087c912e6d58911e380af8f280",
-  "executableSha256": "c7d1a3256715f284c1caa686edb4dd460dcb3b8df35357b3c3d7be2d2f893d30",
+  "version": "0.1.56",
+  "payloadSha256": "784d06153ff622fa9d0c90ddc892866355a6b9dd0103c34d6c914fb0393a3bea",
+  "executableSha256": "cbabe912dbb15db208e711f4f3e26bf911dcf663fbb24e3b741cec9e6a1ef1da",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-001.txt",
-      "sha256": "a5b0f40e1d18d961d0fe136682e283cdff8291df3df177b76b27c38e73e2ae59"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-001.txt",
+      "sha256": "7597450456ad2495e623d0778f8abaf18892f8d8a5a5df508d9f4b12fe4de613"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-002.txt",
-      "sha256": "eb773f9389f1bcbfef33e06ddb0a0fcc87269d73bf9858d68611c0bc638b967f"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-002.txt",
+      "sha256": "dea7e4bc6c830f2cd645331a2a839475c2a4188336fc0ddb374e9c41f4f642c5"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-003.txt",
-      "sha256": "457c8cc8e86e9c5ba478c835b544b4a58fc5c2a74e6ea56580539bae2b5a72bf"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-003.txt",
+      "sha256": "33b4996d6dcaf7a321c279ca1884986e4ffa0648d5a6c02e1dcaed4836c4a227"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-004.txt",
-      "sha256": "a4b03e8e88880084875b7b6d3b7f8eced2e36d22067fe7652c6bbaeb3245d6dc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-004.txt",
+      "sha256": "bcc11baa538c7690c6da9a156c2752e49b852e8af0458ec8ebe98ab0dcf35486"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.55-part-005.txt",
-      "sha256": "437415c0fa9d30f800611b7d65ce2aff5e163d0836ec38824d98499faf4321fe"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.56-part-005.txt",
+      "sha256": "b48efc1f42eb07a7e03138d547e3d37468e73284ef7425e56269c7f9af6511fc"
     }
   ],
-  "notes": "Moves Whole Skin / Global Style into its own dedicated tall Skin-Wide Controls rectangle, separate from individual Text, Tags, and Stats controls. Global font and all-text solid/gradient overrides now export through an explicit registry of real AO3 selectors rather than depending on the mock preview. Coverage includes the AO3 logo/header, primary and secondary navigation, logged-in user/profile menus, dropdowns, search, Dashboard/Subscriptions/Bookmarks/History-style header links, work titles/bylines, fandoms/tags/Series/metadata/stats, chapter and fic text, comments, kudos, actions/navigation, forms, and footer. Existing per-element settings remain preserved underneath the reversible global overrides."
+  "notes": "Fixes the image-background regression and the header-toggle regression together. The AO3 preview header is now permanent and keeps the original ao3HeaderPreview identity expected by the live renderer, so normal update() calls no longer fail before local background images are drawn. Use Header is corrected to Use Separate Header Image: it only enables a different header image/GIF and never hides AO3 header/profile/navigation content, never emits CSS that hides #header, and no longer disables Fixed Background. The complete logged-in AO3 header stays outside the page background region. Results/Browse also migrates and removes the leftover legacy tag row so tags no longer render twice."
 }
