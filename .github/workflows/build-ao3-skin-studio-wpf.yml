@@ -809,6 +809,16 @@ jobs:
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "AO3_VERSION=0.1.63" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Diagnose AO3 WebView host
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'ao3-skin-studio-src'
+          Write-Host '=== MAINWINDOW XAML ==='
+          Get-Content (Join-Path $root 'AO3SkinStudio/MainWindow.xaml') -Raw
+          Write-Host '=== MAINWINDOW CODE ==='
+          Get-Content (Join-Path $root 'AO3SkinStudio/MainWindow.xaml.cs') -Raw
+
       - name: Publish Windows app
         shell: pwsh
         run: |
