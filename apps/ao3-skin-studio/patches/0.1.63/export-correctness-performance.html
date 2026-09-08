@@ -1,0 +1,332 @@
+<style id="ao3-v63-export-performance-styles">
+.image-ao3-status-v63{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:2px;
+  padding:7px 8px;
+  border:1px solid #4b3a31;
+  border-radius:7px;
+  background:#120f0e;
+  color:#b9aea0;
+  font-size:8px;
+  line-height:1.4;
+}
+.image-ao3-status-v63.ready{
+  border-color:#355a49;
+  background:#0d1713;
+  color:#a9d2bc;
+}
+.image-ao3-status-v63.missing{
+  border-color:#704b38;
+  background:#1a110e;
+  color:#e0b894;
+}
+.image-ao3-dot-v63{
+  flex:0 0 auto;
+  width:7px;height:7px;border-radius:50%;
+  background:#9b6b48;
+}
+.image-ao3-status-v63.ready .image-ao3-dot-v63{background:#69b889}
+#bgLocalNote.ao3-image-note-v63,
+#bottomBorderAo3NoteV63{
+  border-color:#5a4635!important;
+  background:#15110e!important;
+  color:#c6b39b!important;
+}
+</style>
+
+<script id="ao3-v63-export-performance-script">
+(function(){
+  const q=id=>document.getElementById(id);
+  if(q('ao3V63Sentinel'))return;
+  const sentinel=document.createElement('span');
+  sentinel.id='ao3V63Sentinel';
+  sentinel.hidden=true;
+  document.body.appendChild(sentinel);
+
+  /* AO3 skins require externally reachable image URLs. data: URIs are
+     scrubbed by AO3, so local preview files cannot honestly be embedded.
+     0.1.63 makes that impossible to miss instead of silently dropping them. */
+  function ao3SafeImageUrl(value){
+    const u=String(value||'').trim();
+    return /^https?:\/\/[^\s"']+\.(?:png|jpe?g|gif)$/i.test(u);
+  }
+  function imageByCard(card){
+    try{
+      const id=Number(card.dataset.id);
+      return Array.isArray(localImages)?localImages.find(x=>Number(x.id)===id):null;
+    }catch(e){return null}
+  }
+  function setImageCardStatus(card,img){
+    if(!card||!img)return;
+    const label=Array.from(card.querySelectorAll('.image-mini-control label')).find(x=>/AO3 IMAGE URL/i.test(x.textContent||''));
+    if(label)label.textContent='AO3 IMAGE URL — REQUIRED FOR AO3';
+    let status=card.querySelector('.image-ao3-status-v63');
+    if(!status){
+      status=document.createElement('div');
+      status.className='image-ao3-status-v63';
+      status.innerHTML='<span class="image-ao3-dot-v63"></span><span class="image-ao3-status-text-v63"></span>';
+      card.querySelector('.image-card-controls')?.appendChild(status);
+    }
+    const text=status?.querySelector('.image-ao3-status-text-v63');
+    const url=String(img.url||'').trim();
+    const ready=ao3SafeImageUrl(url);
+    status?.classList.toggle('ready',ready);
+    status?.classList.toggle('missing',!ready);
+    if(text){
+      if(ready)text.textContent='Ready for AO3 — this direct image URL will be written into the exported CSS.';
+      else if(url)text.textContent='This URL is not AO3-safe yet. Use a direct URL ending in .jpg, .jpeg, .png, or .gif.';
+      else if(img.data)text.textContent='Preview only — AO3 cannot read this local file or an embedded data: image. Add a direct image URL before exporting.';
+      else text.textContent='Add a direct image URL ending in .jpg, .jpeg, .png, or .gif for AO3.';
+    }
+  }
+  function decorateImageReadiness(){
+    const note=q('bgLocalNote');
+    if(note){
+      note.classList.add('ao3-image-note-v63');
+      note.textContent='Local images are for the Studio preview. AO3 strips embedded data: images, so each image needs a direct public .jpg, .jpeg, .png, or .gif URL before it can appear in the exported site skin.';
+    }
+    document.querySelectorAll('#imageList .image-card').forEach(card=>setImageCardStatus(card,imageByCard(card)));
+
+    const borderHelp=q('bottomBorderUrl')?.closest('.control')?.previousElementSibling?.querySelector('.help');
+    if(borderHelp){
+      borderHelp.id='bottomBorderAo3NoteV63';
+      borderHelp.textContent='Local border images are preview-only. AO3 needs the direct public image URL below; embedded data: images are stripped.';
+    }
+  }
+  try{
+    const oldRenderImageList=renderImageList;
+    renderImageList=function(){
+      const r=oldRenderImageList.apply(this,arguments);
+      requestAnimationFrame(decorateImageReadiness);
+      return r;
+    };
+  }catch(e){}
+  q('imageList')?.addEventListener('input',e=>{
+    if(e.target?.matches?.('[data-field="url"]'))requestAnimationFrame(decorateImageReadiness);
+  },true);
+  q('imageList')?.addEventListener('change',()=>requestAnimationFrame(decorateImageReadiness),true);
+  decorateImageReadiness();
+
+  function exportImageProblems(){
+    const problems=[];
+    try{
+      (Array.isArray(localImages)?localImages:[]).forEach((img,i)=>{
+        if(!img?.data&&!img?.url)return;
+        if(!ao3SafeImageUrl(img.url))problems.push('Image '+(i+1)+' ('+(img.name||'unnamed')+')');
+      });
+    }catch(e){}
+    try{
+      const borderLocal=!!bottomBorderImage?.data;
+      const borderUrl=q('bottomBorderUrl')?.value||'';
+      if(borderLocal&&!ao3SafeImageUrl(borderUrl))problems.push('Bottom border image');
+    }catch(e){}
+    try{
+      const separate=q('useHeader')?.checked===true;
+      const headerLocal=window.AO3HeaderLocalAsset?.get?.();
+      const headerUrl=q('headerImageUrl')?.value||'';
+      if(separate&&headerLocal&&!ao3SafeImageUrl(headerUrl))problems.push('Separate header image');
+    }catch(e){}
+    return problems;
+  }
+
+  /* Whole-skin text gradients used to win over the individual tag/stat
+     controls, leaving a transparent text fill after the tag box removed the
+     background image. Re-apply each independent control last. */
+  const independentTextDefs=[
+    ['rating','ratingText','dd.rating.tags a.tag'],
+    ['warnings','warningsText','dd.warning.tags a.tag, li.warnings a.tag'],
+    ['categories','categoriesText','dd.category.tags a.tag, li.category a.tag'],
+    ['fandoms','fandomsText','dd.fandom.tags a.tag, .blurb .fandoms a.tag, li.fandoms a.tag'],
+    ['relationships','relationshipsText','dd.relationship.tags a.tag, li.relationships a.tag'],
+    ['characters','charactersText','dd.character.tags a.tag, li.characters a.tag'],
+    ['tags','tagsText','dd.freeform.tags a.tag, li.freeforms a.tag'],
+    ['language','languageText','dd.language, dl.stats dd.language, .stats .language'],
+    ['words','wordsText','dl.stats dd.words, .stats .words'],
+    ['chapters','chaptersText','dl.stats dd.chapters, .stats .chapters'],
+    ['completion','completionText','.stats .status, .completion'],
+    ['comments','commentsText','dl.stats dd.comments, .stats .comments'],
+    ['kudos','kudosText','dl.stats dd.kudos, .stats .kudos'],
+    ['bookmarks','bookmarksText','dl.stats dd.bookmarks, .stats .bookmarks'],
+    ['hits','hitsText','dl.stats dd.hits, .stats .hits'],
+    ['series','seriesText','dd.series a, dd.series.tags a.tag, .blurb .series a, li.series a.tag']
+  ];
+  function gradientForV63(key){
+    try{
+      if(typeof gradients==='undefined'||!gradients[key]?.enabled)return '';
+      return typeof gradientCssFor==='function'?(gradientCssFor(key)||''):'';
+    }catch(e){return ''}
+  }
+  function textColorV63(id){
+    return q('textStyle_'+id+'_color')?.value||'#D7CDD5';
+  }
+  function independentTextCssV63(){
+    let css='\n\n/* 0.1.63 — INDIVIDUAL TAG + METADATA TEXT WINS OVER SKIN-WIDE TEXT */\n';
+    independentTextDefs.forEach(([id,key,sel])=>{
+      const g=gradientForV63(key);
+      const color=textColorV63(id);
+      css+=sel+' {\n';
+      if(g){
+        css+='  background-image:'+g+' !important;\n'+
+             '  background-clip:text !important;\n'+
+             '  -webkit-background-clip:text !important;\n'+
+             '  color:transparent !important;\n'+
+             '  -webkit-text-fill-color:transparent !important;\n';
+      }else{
+        css+='  background-image:none !important;\n'+
+             '  color:'+color+' !important;\n'+
+             '  -webkit-text-fill-color:'+color+' !important;\n';
+      }
+      css+='}\n';
+    });
+    return css;
+  }
+
+  try{
+    const correctBuildV63=buildCss;
+    buildCss=function(){
+      return correctBuildV63.apply(this,arguments)+independentTextCssV63();
+    };
+  }catch(e){}
+
+  /* Performance pass: many historical listeners can stay for compatibility,
+     but their shared expensive work is now coalesced. */
+  let buildNowV63=null;
+  let flushSaveV63=null;
+
+  try{
+    const output=q('cssOutput');
+    const desc=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value');
+    if(output&&desc?.get&&desc?.set){
+      let last=desc.get.call(output);
+      Object.defineProperty(output,'value',{
+        configurable:true,
+        get(){return desc.get.call(this)},
+        set(v){
+          const next=String(v==null?'':v);
+          if(next===last)return;
+          last=next;
+          desc.set.call(this,next);
+        }
+      });
+    }
+  }catch(e){}
+
+  try{
+    const heavyBuildV63=buildCss;
+    const output=q('cssOutput');
+    let cache='';
+    let dirty=true;
+    let timer=0;
+    let building=false;
+    function reallyBuild(){
+      clearTimeout(timer);timer=0;
+      if(building)return cache;
+      building=true;
+      try{
+        cache=heavyBuildV63();
+        dirty=false;
+        if(output)output.value=cache;
+      }finally{building=false}
+      return cache;
+    }
+    function scheduleBuild(delay){
+      dirty=true;
+      clearTimeout(timer);
+      timer=setTimeout(reallyBuild,delay==null?170:delay);
+    }
+    cache=reallyBuild();
+    buildCss=function(){
+      if(!cache)return reallyBuild();
+      if(dirty&&!timer)scheduleBuild(170);
+      return cache;
+    };
+    buildNowV63=reallyBuild;
+    window.addEventListener('input',()=>scheduleBuild(190),true);
+    window.addEventListener('change',()=>scheduleBuild(90),true);
+  }catch(e){}
+
+  try{
+    const heavySaveV63=save;
+    let timer=0;
+    let pending=false;
+    function reallySave(){
+      clearTimeout(timer);timer=0;
+      if(!pending)return;
+      pending=false;
+      try{heavySaveV63()}catch(e){}
+    }
+    save=function(){
+      pending=true;
+      clearTimeout(timer);
+      timer=setTimeout(reallySave,260);
+    };
+    flushSaveV63=reallySave;
+  }catch(e){}
+
+  try{
+    const heavyUpdateV63=update;
+    let frame=0;
+    let args=null;
+    update=function(){
+      args=arguments;
+      if(frame)return;
+      frame=requestAnimationFrame(()=>{
+        frame=0;
+        const a=args;args=null;
+        try{heavyUpdateV63.apply(this,a||[])}catch(e){console.error(e)}
+      });
+    };
+  }catch(e){}
+
+  try{
+    const heavyImagesV63=renderPreviewImages;
+    let frame=0;
+    let lastArgs=null;
+    renderPreviewImages=function(){
+      lastArgs=arguments;
+      if(frame)return;
+      frame=requestAnimationFrame(()=>{
+        frame=0;
+        const a=lastArgs;lastArgs=null;
+        try{heavyImagesV63.apply(this,a||[])}catch(e){}
+      });
+    };
+  }catch(e){}
+
+  /* Export is always forced fresh, and local-only image omissions are explicit. */
+  window.addEventListener('click',e=>{
+    const b=e.target?.closest?.('#copyBtn,#downloadBtn,[data-export-css-v63]');
+    if(!b)return;
+    const problems=exportImageProblems();
+    if(problems.length){
+      const ok=confirm(
+        'AO3 cannot embed local image files in a skin, and it strips data: image URIs.\n\n'+
+        'These images still need direct public .jpg/.jpeg/.png/.gif URLs:\n• '+problems.join('\n• ')+'\n\n'+
+        'Continue exporting without those images?'
+      );
+      if(!ok){e.preventDefault();e.stopImmediatePropagation();return;}
+    }
+    try{buildNowV63?.()}catch(err){}
+    try{flushSaveV63?.()}catch(err){}
+  },true);
+
+  window.addEventListener('beforeunload',()=>{
+    try{buildNowV63?.()}catch(e){}
+    try{flushSaveV63?.()}catch(e){}
+  },true);
+
+  requestAnimationFrame(()=>{
+    decorateImageReadiness();
+    try{buildNowV63?.()}catch(e){}
+  });
+
+  window.AO3V63={
+    refreshImages:decorateImageReadiness,
+    rebuildCss:()=>buildNowV63?.(),
+    imageProblems:exportImageProblems
+  };
+})();
+</script>
