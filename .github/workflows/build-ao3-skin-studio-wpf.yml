@@ -736,6 +736,20 @@ jobs:
           "AO3_PROJECT=$project" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "AO3_VERSION=0.1.60" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Diagnose updater source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'ao3-skin-studio-src'
+          Write-Host '=== AO3 UPDATER SOURCE DIAGNOSTIC ==='
+          Get-ChildItem $root -Recurse -Filter '*.cs' | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            if ($text -match 'manifest\.json|raw\.githubusercontent|HttpClient|UpdateService|CheckForUpdate|ApplyUpdate|AutoUpdate') {
+              Write-Host ('--- FILE: ' + $_.FullName)
+              Write-Host $text
+            }
+          }
+
       - name: Publish Windows app
         shell: pwsh
         run: |
