@@ -2,30 +2,30 @@
   "schemaVersion": 1,
   "appId": "ao3-skin-studio-wpf",
   "appName": "AO3 Skin Studio",
-  "version": "0.1.57",
-  "payloadSha256": "64a7c637bba27bab15a74029de1c0cd7d7d71f6b8ad69c0abc39a5fe695a48b0",
-  "executableSha256": "f51df712d4d58deb8056297bc08406a6c518f5302c64491500f0c8cb92437140",
+  "version": "0.1.58",
+  "payloadSha256": "5ec89343a5efe40a90291e063553f9a89455fccafdb815171c6657a3d76c7313",
+  "executableSha256": "2f9f286b18c1cdbac77de8557b9a1541bebde61135844c7f70073c3a78fed1a1",
   "payloadParts": [
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-001.txt",
-      "sha256": "4a370209b7878105dd3e233e10fed0cb29aec2cf7fb8f8361ab26f8aa1bc32c0"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-001.txt",
+      "sha256": "acfb4f4c8bca548132fff76234be19b669cbbf1436b214e3d6a5576d98b79152"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-002.txt",
-      "sha256": "570abbd9bb8ea8e9509114b3c937c9a87840669729308d371683e0a55003d501"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-002.txt",
+      "sha256": "b5117cf1d1dbb6dec1cb102d75d20e975945c25ad5690143699de829cf09966c"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-003.txt",
-      "sha256": "45dec6005b720d9f23ae852080b34f5159dfaf2f4f1d4f57088fff54c9aecd16"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-003.txt",
+      "sha256": "2c21bc01f271456dbb35d73b023674f1b5402a54c2bea0a8c240f853e1056830"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-004.txt",
-      "sha256": "e0ffdb701a3176ace2b711db446264cc99b609c92174b96fc22a20bb1672ffdc"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-004.txt",
+      "sha256": "899b9e9200ae4b0ddbd9a8da13c36bfb066d668923601926d792621fcafca98d"
     },
     {
-      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.57-part-005.txt",
-      "sha256": "a3722e99f6d2e739a850397f95cd97b8a94d20085c6928d57a9b6026ad46016d"
+      "url": "https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/ao3-skin-studio/payload-0.1.58-part-005.txt",
+      "sha256": "330e3bda33a71b2e2aa645b173cbf1d0957f4900ec3e82cdadd01b1a2db33726"
     }
   ],
-  "notes": "Restores the intended two-mode header background behavior. With Use Separate Header Image OFF, the normal main background image is once again one continuous site background behind the AO3 header, navigation, page, and footer. With it ON, the main background is confined to the page while the header uses its own independent image/GIF. Header/profile/navigation content remains visible in both modes, Fixed Background remains available, and switching modes immediately re-renders local image layers without changing saved image settings."
+  "notes": "Adds the Enemies to Lovers built-in gradient preset to the Gradient Library under Romantic. It uses the exact 135-degree four-stop palette #1A0F14 at 0%, #7A1F2F at 35%, #59305F at 68%, and #D58B72 at 100%, so it can be applied to any supported gradient target just like the existing built-in presets."
 }
