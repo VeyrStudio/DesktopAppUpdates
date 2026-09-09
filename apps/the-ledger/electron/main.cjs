@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 const { Readable, Transform } = require("node:stream");
 const { pipeline } = require("node:stream/promises");
 const { spawn } = require("node:child_process");
-const { processLecture, enginePaths } = require("./processor.cjs");
+const { processLecture, processLiveChunk, enginePaths } = require("./processor.cjs");
 
 const APP_DATA_ROOT = path.join(app.getPath("appData"), "VeyrStudio", "TheLedger");
 app.setPath("userData", APP_DATA_ROOT);
@@ -25,6 +25,7 @@ let stagedUpdatePath = null;
 let applyingUpdate = false;
 let allowWindowClose = false;
 let quittingForUpdate = false;
+let transcriptionQueue = Promise.resolve();
 
 function emptyState() {
   return {
@@ -39,6 +40,7 @@ function emptyState() {
       transcriptionMode: "balanced",
       localOnly: true,
       autoUpdate: true,
+      liveTranscription: true,
       hideLiveTranscript: false,
       reduceMotion: false,
       microphoneId: "default"
@@ -67,6 +69,12 @@ async function writeJsonAtomic(file, value) {
   const temp = `${file}.${process.pid}.tmp`;
   await fsp.writeFile(temp, JSON.stringify(value, null, 2), "utf8");
   await fsp.rename(temp, file);
+}
+
+function enqueueTranscription(task) {
+  const pending = transcriptionQueue.then(task, task);
+  transcriptionQueue = pending.catch(() => {});
+  return pending;
 }
 
 async function loadState() {
@@ -263,10 +271,20 @@ ipcMain.handle("ledger:close-after-recording", () => {
 
 ipcMain.handle("ledger:process-lecture", async (event, { lectureId, audioPath }) => {
   try {
-    const result = await processLecture(audioPath, (detail) => event.sender.send("ledger:processing-progress", { lectureId, ...detail }));
+    const result = await enqueueTranscription(() => processLecture(audioPath, (detail) => event.sender.send("ledger:processing-progress", { lectureId, ...detail })));
     return result;
   } catch (error) {
     return { ok: false, message: error.message };
+  }
+});
+
+ipcMain.handle("ledger:transcribe-live-chunk", async (_event, { lectureId, sequence, offsetSeconds, mimeType, bytes }) => {
+  try {
+    if (!lectureId || !Number.isInteger(sequence) || sequence < 0) throw new Error("The live transcript section is invalid.");
+    const result = await enqueueTranscription(() => processLiveChunk(bytes, mimeType));
+    return { ...result, lectureId, sequence, offsetSeconds: Number(offsetSeconds || 0) };
+  } catch (error) {
+    return { ok: false, message: error.message, lectureId, sequence };
   }
 });
 

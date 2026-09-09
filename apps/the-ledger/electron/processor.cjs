@@ -117,7 +117,7 @@ function extractReview(text) {
   };
 }
 
-async function processLecture(audioPath, onProgress = () => {}) {
+async function processLecture(audioPath, onProgress = () => {}, options = {}) {
   const engines = enginePaths();
   if (!engines.whisper || !engines.model) {
     return { ok: false, unavailable: true, message: "The local transcription engine is not installed in this build." };
@@ -135,6 +135,9 @@ async function processLecture(audioPath, onProgress = () => {}) {
     onProgress({ stage: "transcription", message: "Creating local transcript" });
     await run(engines.whisper, ["-m", engines.model, "-f", wavPath, "-l", "en", "-oj", "-of", outputPrefix, "-sns"]);
     const parsed = parseWhisperJson(JSON.parse(await fsp.readFile(`${outputPrefix}.json`, "utf8")));
+    if (!parsed.quality.reliable && options.allowEmpty && parsed.quality.wordCount === 0) {
+      return { ok: true, originalTranscript: "", cleanedTranscript: "", transcriptSegments: [], review: extractReview("") };
+    }
     if (!parsed.quality.reliable) {
       return {
         ok: false,
@@ -154,4 +157,19 @@ async function processLecture(audioPath, onProgress = () => {}) {
   }
 }
 
-module.exports = { processLecture, enginePaths, parseWhisperJson, extractReview, cleanWhisperText, assessTranscriptQuality };
+async function processLiveChunk(bytes, mimeType = "audio/webm") {
+  const buffer = Buffer.from(bytes || []);
+  if (!buffer.length) return { ok: true, originalTranscript: "", cleanedTranscript: "", transcriptSegments: [], review: extractReview("") };
+  if (buffer.length > 20 * 1024 * 1024) throw new Error("The live transcript section is unexpectedly large.");
+  const workDir = await fsp.mkdtemp(path.join(os.tmpdir(), "the-ledger-live-"));
+  const extension = String(mimeType).includes("ogg") ? "ogg" : "webm";
+  const chunkPath = path.join(workDir, `section.${extension}`);
+  try {
+    await fsp.writeFile(chunkPath, buffer);
+    return await processLecture(chunkPath, () => {}, { allowEmpty: true });
+  } finally {
+    await fsp.rm(workDir, { recursive: true, force: true });
+  }
+}
+
+module.exports = { processLecture, processLiveChunk, enginePaths, parseWhisperJson, extractReview, cleanWhisperText, assessTranscriptQuality };

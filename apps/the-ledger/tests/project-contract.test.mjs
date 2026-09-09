@@ -125,3 +125,23 @@ test("already-saved caption loops are cleaned on startup and persisted", async (
   assert.match(core, /transcriptSegments/);
   assert.match(core, /summary/);
 });
+
+test("live transcription uses independent rolling sections and remains local", async () => {
+  const [renderer, preload, main, processor, core] = await Promise.all([
+    readFile(new URL("../src/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../electron/preload.cjs", import.meta.url), "utf8"),
+    readFile(new URL("../electron/main.cjs", import.meta.url), "utf8"),
+    readFile(new URL("../electron/processor.cjs", import.meta.url), "utf8"),
+    readFile(new URL("../core/ledger-core.mjs", import.meta.url), "utf8")
+  ]);
+  assert.match(renderer, /LIVE_TRANSCRIPTION_SLICE_MS\s*=\s*15000/);
+  assert.match(renderer, /new MediaRecorder\(current\.stream/);
+  assert.match(renderer, /Live text • provisional/);
+  assert.match(renderer, /mergeLiveTranscriptSegments/);
+  assert.match(renderer, /liveTranscription", "Live transcription"/);
+  assert.match(preload, /ledger:transcribe-live-chunk/);
+  assert.match(main, /enqueueTranscription/);
+  assert.match(main, /ledger:transcribe-live-chunk/);
+  assert.match(processor, /processLiveChunk/);
+  assert.match(core, /liveTranscription: true/);
+});

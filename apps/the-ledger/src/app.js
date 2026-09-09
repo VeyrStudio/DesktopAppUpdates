@@ -13,12 +13,14 @@ import {
   removeLecture,
   applySpeakerMarks,
   setSegmentSpeaker,
-  cleanSavedTranscriptCaptions
+  cleanSavedTranscriptCaptions,
+  mergeLiveTranscriptSegments
 } from "../core/ledger-core.mjs";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const COLORS = ["#6f3d60", "#57725e", "#506984", "#8d4d42", "#7b6540", "#5d5680"];
 const SPEAKER_ROLES = ["Professor", "Me", "Student", "Guest Speaker"];
+const LIVE_TRANSCRIPTION_SLICE_MS = 15000;
 
 const appRoot = document.querySelector("#app");
 const viewRoot = document.querySelector("#view");
@@ -105,6 +107,7 @@ function browserFallback() {
     startRecording: async (metadata) => ({ ok: true, sessionId: uid("session"), path: `preview/${metadata.lectureId}.webm` }),
     appendRecording: async () => ({ ok: true }),
     finishRecording: async () => ({ ok: true, path: "preview/lecture.webm" }),
+    transcribeLiveChunk: async () => ({ ok: false, unavailable: true, message: "Live transcription is not part of the browser preview." }),
     processLecture: async () => ({ ok: false, unavailable: true, message: "Local engine is not part of the browser preview." }),
     deleteLectureFiles: async () => ({ ok: true }),
     checkForUpdates: async () => ({ ok: true, currentVersion: "0.1.0", manifest: { version: "0.1.0" } }),
@@ -349,8 +352,8 @@ function renderNotebook() {
   const currentSpeaker = [...(lecture.speakerMarks || [])].sort((a, b) => a.seconds - b.seconds).at(-1)?.speaker;
   viewRoot.innerHTML = `<div class="notebook-layout">
     <section class="card notebook-page">
-      <div class="notebook-header"><div><span class="eyebrow">${escapeHtml(classItem?.code || "LECTURE")}</span><h2>${escapeHtml(lecture.title)}</h2></div>${recording ? `<span id="active-indicator" class="active-indicator">Active</span>` : `<span class="status-pill ${lecture.status === "recovered" ? "error" : ""}">${escapeHtml(statusText(lecture.status))}</span>`}</div>
-      <div class="transcript-area" id="transcript-area">${segments.length ? segments.map(transcriptSegment).join("") : `<div class="empty-state"><div class="book-mark">▧</div><h2>${recording ? "Listening" : "No transcript yet"}</h2><p>${recording ? "The original audio is being saved safely. Live text will appear when the local transcription engine is available." : "Import or process audio to create a transcript. Your original recording remains available."}</p></div>`}</div>
+      <div class="notebook-header"><div><span class="eyebrow">${escapeHtml(classItem?.code || "LECTURE")}</span><h2>${escapeHtml(lecture.title)}</h2></div>${recording ? `<div class="active-status-group"><span id="active-indicator" class="active-indicator">Active</span>${state.settings.liveTranscription ? `<span id="live-transcript-status" class="live-transcript-badge">${state.settings.hideLiveTranscript ? "Live text hidden" : "Live text • provisional"}</span>` : ""}</div>` : `<span class="status-pill ${lecture.status === "recovered" ? "error" : ""}">${escapeHtml(statusText(lecture.status))}</span>`}</div>
+      <div class="transcript-area" id="transcript-area">${transcriptAreaMarkup(lecture, segments)}</div>
     </section>
     <section class="card notes-panel">
       <div class="card-header"><h2>Your Notes</h2><span class="status-pill">Autosaved</span></div>
@@ -372,9 +375,7 @@ function renderNotebook() {
     viewRoot.classList.add("speaker-edit-mode");
     document.querySelector("[data-speaker-segment]")?.focus();
   });
-  document.querySelectorAll("[data-speaker-segment]").forEach((button) => button.addEventListener("click", () => {
-    showEditSpeakerModal(lecture, segments, Number(button.dataset.speakerSegment));
-  }));
+  bindTranscriptSpeakerButtons(lecture, segments);
   document.querySelector("#notebook-back").addEventListener("click", () => { selectedLectureId = null; renderNotebook(); });
   document.querySelector("#export-lecture").addEventListener("click", () => exportLecture(lecture));
   document.querySelector("#delete-lecture")?.addEventListener("click", () => confirmDeleteLecture(lecture));
@@ -439,13 +440,14 @@ async function startLecture(classId) {
       }).catch((error) => recordingError(error.message));
     });
     mediaRecorder.addEventListener("error", (event) => recordingError(event.error?.message || "The microphone stopped unexpectedly."));
-    recording = { mediaRecorder, stream, sessionId: session.sessionId, writeChain, startedAt: Date.now(), pausedAt: null, totalPaused: 0 };
+    recording = { lectureId: lecture.id, mediaRecorder, stream, sessionId: session.sessionId, writeChain, startedAt: Date.now(), pausedAt: null, totalPaused: 0, live: null };
     Object.defineProperty(recording, "writeChain", { get: () => writeChain, set: (value) => { writeChain = value; } });
     lecture.status = "active";
     lecture.audioPath = session.path;
     elapsedSeconds = 0;
     await api.setPreventSleep(true);
     mediaRecorder.start(2000);
+    startLiveTranscription(recording);
     startClock();
     await persist();
     renderNotebook();
@@ -480,15 +482,122 @@ function pauseOrResumeRecording() {
   const button = document.querySelector("#pause-recording");
   if (recording.mediaRecorder.state === "recording") {
     recording.mediaRecorder.pause();
+    pauseLiveTranscription(recording);
     clearInterval(recordingClock);
     button.textContent = "Resume";
     document.querySelector("#active-indicator").textContent = "Paused";
   } else if (recording.mediaRecorder.state === "paused") {
     recording.mediaRecorder.resume();
+    resumeLiveTranscription(recording);
     startClock();
     button.textContent = "Pause";
     document.querySelector("#active-indicator").textContent = "Active";
   }
+}
+
+function startLiveTranscription(current) {
+  if (!state.settings.liveTranscription || !current?.stream || typeof api.transcribeLiveChunk !== "function") return;
+  try {
+    const mimeType = current.mediaRecorder.mimeType || "";
+    const recorder = mimeType ? new MediaRecorder(current.stream, { mimeType }) : new MediaRecorder(current.stream);
+    const live = { recorder, parts: [], offsetSeconds: 0, sequence: 0, timer: null, chain: Promise.resolve(), paused: false, stopped: false };
+    current.live = live;
+    recorder.addEventListener("dataavailable", (event) => { if (event.data.size) live.parts.push(event.data); });
+    recorder.addEventListener("error", () => setLiveTranscriptStatus("Live text delayed", true));
+    recorder.addEventListener("stop", () => {
+      window.clearTimeout(live.timer);
+      live.timer = null;
+      const parts = live.parts;
+      const offsetSeconds = live.offsetSeconds;
+      const sequence = live.sequence;
+      live.parts = [];
+      live.sequence += 1;
+      if (parts.length && elapsedSeconds - offsetSeconds >= 2) queueLiveTranscriptSection(current, parts, sequence, offsetSeconds, recorder.mimeType);
+      if (!live.stopped && !live.paused && recording === current) window.setTimeout(() => startLiveTranscriptSlice(current), 0);
+    });
+    startLiveTranscriptSlice(current);
+  } catch {
+    current.live = null;
+    setLiveTranscriptStatus("Live text unavailable", true);
+  }
+}
+
+function startLiveTranscriptSlice(current) {
+  const live = current?.live;
+  if (!live || live.stopped || live.paused || live.recorder.state !== "inactive") return;
+  live.parts = [];
+  live.offsetSeconds = elapsedSeconds;
+  try {
+    live.recorder.start();
+    live.timer = window.setTimeout(() => {
+      if (live.recorder.state === "recording") live.recorder.stop();
+    }, LIVE_TRANSCRIPTION_SLICE_MS);
+  } catch {
+    live.stopped = true;
+    setLiveTranscriptStatus("Live text unavailable", true);
+  }
+}
+
+function queueLiveTranscriptSection(current, parts, sequence, offsetSeconds, mimeType) {
+  const live = current.live;
+  const blob = new Blob(parts, { type: mimeType || "audio/webm" });
+  live.chain = live.chain.then(async () => {
+    if (live.stopped || recording !== current) return;
+    setLiveTranscriptStatus("Transcribing latest section…");
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const result = await api.transcribeLiveChunk(current.lectureId, sequence, offsetSeconds, blob.type, bytes);
+    if (live.stopped || recording !== current) return;
+    if (!result.ok) {
+      setLiveTranscriptStatus("Live text delayed", true);
+      return;
+    }
+    const lecture = lectureById(current.lectureId);
+    if (!lecture || !result.transcriptSegments?.length) {
+      setLiveTranscriptStatus("Listening • provisional");
+      return;
+    }
+    lecture.transcriptSegments = applySpeakerMarks(
+      mergeLiveTranscriptSegments(lecture.transcriptSegments, result.transcriptSegments, sequence, offsetSeconds),
+      lecture.speakerMarks
+    );
+    const liveText = lecture.transcriptSegments.map((segment) => segment.text).join(" ").replace(/\s+/g, " ").trim();
+    lecture.originalTranscript = liveText;
+    lecture.cleanedTranscript = liveText;
+    lecture.liveTranscriptProvisional = true;
+    await persist();
+    refreshLiveTranscript(lecture);
+    setLiveTranscriptStatus("Live text • provisional");
+  }).catch(() => setLiveTranscriptStatus("Live text delayed", true));
+}
+
+function pauseLiveTranscription(current) {
+  const live = current?.live;
+  if (!live || live.stopped) return;
+  live.paused = true;
+  window.clearTimeout(live.timer);
+  if (live.recorder.state === "recording") live.recorder.stop();
+}
+
+function resumeLiveTranscription(current) {
+  const live = current?.live;
+  if (!live || live.stopped) return;
+  live.paused = false;
+  startLiveTranscriptSlice(current);
+}
+
+function stopLiveTranscription(current) {
+  const live = current?.live;
+  if (!live || live.stopped) return;
+  live.stopped = true;
+  window.clearTimeout(live.timer);
+  if (live.recorder.state === "recording") live.recorder.stop();
+}
+
+function setLiveTranscriptStatus(message, error = false) {
+  const element = document.querySelector("#live-transcript-status");
+  if (!element) return;
+  element.textContent = message;
+  element.classList.toggle("error", error);
 }
 
 async function finishLecture(closeAfter = false) {
@@ -496,6 +605,7 @@ async function finishLecture(closeAfter = false) {
   const lecture = lectureById(selectedLectureId);
   const current = recording;
   clearInterval(recordingClock);
+  stopLiveTranscription(current);
   try {
     await new Promise((resolve) => {
       current.mediaRecorder.addEventListener("stop", resolve, { once: true });
@@ -522,6 +632,7 @@ async function finishLecture(closeAfter = false) {
 
 function recordingError(message) {
   clearInterval(recordingClock);
+  stopLiveTranscription(recording);
   const lecture = lectureById(selectedLectureId);
   if (lecture) lecture.status = "audio-error";
   document.querySelector("#active-indicator")?.classList.add("error");
@@ -571,6 +682,7 @@ async function processSavedLecture(lecture, { force = false } = {}) {
   lecture.cleanedTranscript = result.cleanedTranscript;
   lecture.transcriptSegments = applySpeakerMarks(result.transcriptSegments, lecture.speakerMarks);
   lecture.review = result.review;
+  lecture.liveTranscriptProvisional = false;
   lecture.status = "ready";
   lecture.processingMessage = "";
   addNotification("Lecture ready", lecture.title, "success");
@@ -725,6 +837,7 @@ function settingsContent() {
   const s = state.settings;
   if (settingsTab === "audio") return `<span class="eyebrow">AUDIO & TRANSCRIPTION</span><h2>Lecture Audio</h2>
     ${settingSelect("microphoneId", "Microphone", "Choose the input used for lecture capture.", [["default", "System Default"]])}
+    ${settingToggle("liveTranscription", "Live transcription", "Show provisional local text throughout the lecture, usually about 15 seconds behind.")}
     ${settingToggle("hideLiveTranscript", "Hide live transcript", "Keep the Notebook visually quiet while audio continues safely.")}
     ${settingSelect("transcriptionMode", "Local model", "Choose the balance between speed and accuracy.", [["fast","Fast"],["balanced","Balanced (Recommended)"],["accurate","Highest Accuracy"]])}
     <div class="setting-row"><div><h3>Microphone test</h3><p>Confirm that The Ledger can hear the selected input before class.</p></div><button id="test-microphone" class="secondary-button">Run Test</button></div>`;
@@ -940,6 +1053,31 @@ function bindGoButtons() {
 
 function classById(id) { return state.classes.find((item) => item.id === id); }
 function lectureById(id) { return state.lectures.find((item) => item.id === id); }
+
+function transcriptAreaMarkup(lecture, segments) {
+  if (recording && state.settings.liveTranscription && state.settings.hideLiveTranscript) {
+    return `<div class="empty-state"><div class="book-mark">▧</div><h2>Lecture active</h2><p>Live text is hidden. The transcript will appear after you finish.</p></div>`;
+  }
+  if (segments.length) return segments.map(transcriptSegment).join("");
+  return `<div class="empty-state"><div class="book-mark">▧</div><h2>${recording ? "Listening" : "No transcript yet"}</h2><p>${recording ? (state.settings.liveTranscription ? "The lecture is being saved safely. Provisional text will appear here shortly." : "The lecture is being saved safely. The transcript will appear after you finish.") : "Import or process a lecture to create a transcript."}</p></div>`;
+}
+
+function refreshLiveTranscript(lecture) {
+  if (selectedLectureId !== lecture.id || currentView !== "notebook" || state.settings.hideLiveTranscript) return;
+  const area = document.querySelector("#transcript-area");
+  if (!area) return;
+  const shouldFollow = area.scrollHeight - area.scrollTop - area.clientHeight < 80;
+  const segments = lecture.transcriptSegments || [];
+  area.innerHTML = transcriptAreaMarkup(lecture, segments);
+  bindTranscriptSpeakerButtons(lecture, segments);
+  if (shouldFollow) area.scrollTop = area.scrollHeight;
+}
+
+function bindTranscriptSpeakerButtons(lecture, segments) {
+  document.querySelectorAll("[data-speaker-segment]").forEach((button) => button.addEventListener("click", () => {
+    showEditSpeakerModal(lecture, segments, Number(button.dataset.speakerSegment));
+  }));
+}
 
 function transcriptToSegments(text) {
   if (!text) return [];

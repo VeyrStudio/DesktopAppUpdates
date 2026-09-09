@@ -180,6 +180,18 @@ export function setSegmentSpeaker(segments, segmentIndex, speaker) {
   return (segments || []).map((segment, index) => index === segmentIndex ? { ...segment, speaker } : { ...segment });
 }
 
+export function mergeLiveTranscriptSegments(existing, incoming, sequence, offsetSeconds = 0) {
+  const prior = (existing || []).filter((segment) => segment.liveSequence !== sequence);
+  const next = (incoming || []).map((segment) => ({
+    ...segment,
+    start: Number(segment.start || 0) + Number(offsetSeconds || 0),
+    end: Number(segment.end ?? segment.start ?? 0) + Number(offsetSeconds || 0),
+    liveSequence: sequence,
+    provisional: true
+  }));
+  return [...prior, ...next].sort((a, b) => Number(a.start || 0) - Number(b.start || 0));
+}
+
 export function blankState() {
   return {
     schemaVersion: 1,
@@ -193,6 +205,7 @@ export function blankState() {
       transcriptionMode: "balanced",
       localOnly: true,
       autoUpdate: true,
+      liveTranscription: true,
       hideLiveTranscript: false,
       reduceMotion: false,
       microphoneId: "default"

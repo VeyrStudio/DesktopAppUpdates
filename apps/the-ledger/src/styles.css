@@ -289,10 +289,13 @@ button { color: inherit; }
 .notebook-page { display: grid; grid-template-rows: auto minmax(250px,1fr); }
 .notebook-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; gap: 12px; align-items: start; }
 .notebook-header h2 { margin: 4px 0 0; font-size: 25px; }
+.active-status-group { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; }
 .active-indicator { display: inline-flex; align-items: center; gap: 8px; color: #c9d7c9; border: 1px solid #526b56; padding: 6px 10px; border-radius: 20px; font-size: 12px; }
 .active-indicator::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #709277; box-shadow: 0 0 9px #709277; }
 .active-indicator.error { color: #ffd4d8; border-color: var(--burgundy); }
 .active-indicator.error::before { background: #bd4c59; box-shadow: 0 0 9px #bd4c59; }
+.live-transcript-badge { color: #d5bd8a; border: 1px solid rgba(181,138,72,.45); padding: 6px 10px; border-radius: 20px; font-size: 12px; white-space: nowrap; }
+.live-transcript-badge.error { color: #ffd4d8; border-color: var(--burgundy); }
 .transcript-area { padding: 20px 23px; overflow: auto; font-size: var(--transcript-size); line-height: 1.65; color: #dfd7c8; }
 .transcript-line { display: grid; grid-template-columns: 70px minmax(0,1fr); gap: 13px; margin-bottom: 15px; }
 .timestamp { color: var(--gold); font-family: ui-monospace, monospace; font-size: .78em; cursor: pointer; padding-top: .3em; }

@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("ledgerAPI", {
   startRecording: (metadata) => ipcRenderer.invoke("ledger:recording-start", metadata),
   appendRecording: (sessionId, bytes) => ipcRenderer.invoke("ledger:recording-append", { sessionId, bytes }),
   finishRecording: (sessionId) => ipcRenderer.invoke("ledger:recording-finish", { sessionId }),
+  transcribeLiveChunk: (lectureId, sequence, offsetSeconds, mimeType, bytes) => ipcRenderer.invoke("ledger:transcribe-live-chunk", { lectureId, sequence, offsetSeconds, mimeType, bytes }),
   processLecture: (lectureId, audioPath) => ipcRenderer.invoke("ledger:process-lecture", { lectureId, audioPath }),
   deleteLectureFiles: (lectureId, audioPath) => ipcRenderer.invoke("ledger:delete-lecture-files", { lectureId, audioPath }),
   checkForUpdates: (force = false) => ipcRenderer.invoke("ledger:check-update", { force }),

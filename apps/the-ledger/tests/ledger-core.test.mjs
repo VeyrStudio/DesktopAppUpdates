@@ -14,6 +14,7 @@ import {
   setSegmentSpeaker,
   cleanTranscriptCaptions,
   cleanSavedTranscriptCaptions,
+  mergeLiveTranscriptSegments,
   toLocalDateKey
 } from "../core/ledger-core.mjs";
 
@@ -113,4 +114,15 @@ test("saved transcripts, visible segments, and summaries are cleaned together", 
   assert.deepEqual(result.state.lectures[0].transcriptSegments.map((segment) => segment.text), ["Real sentence."]);
   assert.equal(result.state.lectures[0].review.summary, "Real summary.");
   assert.equal(result.state.lectures[0].notes, input.lectures[0].notes);
+});
+
+test("live transcript sections receive lecture timestamps and do not duplicate retries", () => {
+  const first = mergeLiveTranscriptSegments([], [{ start: 1, end: 4, text: "Opening sentence." }], 0, 0);
+  const second = mergeLiveTranscriptSegments(first, [{ start: 2, end: 6, text: "Next sentence." }], 1, 15);
+  const retried = mergeLiveTranscriptSegments(second, [{ start: 2, end: 6, text: "Corrected next sentence." }], 1, 15);
+  assert.deepEqual(retried.map((segment) => [segment.start, segment.end, segment.text]), [
+    [1, 4, "Opening sentence."],
+    [17, 21, "Corrected next sentence."]
+  ]);
+  assert.equal(retried.every((segment) => segment.provisional), true);
 });
