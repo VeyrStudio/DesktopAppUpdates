@@ -9,6 +9,7 @@ on:
       - "ledgerly-v*"
     paths:
       - "apps/ledgerly/source-parts/**"
+      - "apps/ledgerly/icon-parts/**"
       - "apps/ledgerly/README.md"
       - ".github/workflows/build-ledgerly.yml"
 
@@ -30,12 +31,19 @@ jobs:
       - name: Restore Ledgerly source snapshot
         shell: pwsh
         run: |
-          $encoded = (Get-ChildItem apps/ledgerly/source-parts/source-*.txt | Sort-Object Name | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          $sourceEncoded = (Get-ChildItem apps/ledgerly/source-parts/source-*.txt | Sort-Object Name | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
           $zip = Join-Path $env:RUNNER_TEMP "ledgerly-source.zip"
-          [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($encoded))
+          [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($sourceEncoded))
           Remove-Item apps/ledgerly/work -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force apps/ledgerly/work | Out-Null
           Expand-Archive -Path $zip -DestinationPath apps/ledgerly/work -Force
+
+          $iconEncoded = (Get-ChildItem apps/ledgerly/icon-parts/icon-*.txt | Sort-Object Name | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          New-Item -ItemType Directory -Force apps/ledgerly/work/build | Out-Null
+          New-Item -ItemType Directory -Force apps/ledgerly/work/src/assets | Out-Null
+          $iconPath = "apps/ledgerly/work/build/ledgerly-icon.png"
+          [IO.File]::WriteAllBytes($iconPath, [Convert]::FromBase64String($iconEncoded))
+          Copy-Item $iconPath apps/ledgerly/work/src/assets/ledgerly-icon.png -Force
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -71,7 +79,6 @@ jobs:
           if (-not $installer) { throw "Ledgerly NSIS installer was not produced." }
           "version=$version" >> $env:GITHUB_OUTPUT
           "installer=$($installer.FullName)" >> $env:GITHUB_OUTPUT
-          "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
 
       - name: Create verified update manifest
         shell: pwsh
