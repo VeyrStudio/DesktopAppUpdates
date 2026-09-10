@@ -54,6 +54,15 @@ jobs:
             if (-not (Select-String -Path "apps/ledgerly/src/index.html" -Pattern ">$category<" -Quiet)) { throw "Expense category missing after patch: $category" }
           }
 
+      - name: Configure Ledgerly as a Windows GUI app
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/ledgerly/patches/hide-console-window.py"
+          if (-not (Select-String -Path "apps/ledgerly/src-tauri/src/main.rs" -SimpleMatch '#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]' -Quiet)) {
+            throw "Ledgerly Windows GUI subsystem marker is missing."
+          }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -101,6 +110,9 @@ jobs:
         run: |
           node --check src/app.js
           Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json | Out-Null
+          if (-not (Select-String -Path "src-tauri/src/main.rs" -SimpleMatch '#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]' -Quiet)) {
+            throw "Release build would still open a console window."
+          }
 
       - name: Build Windows installer
         run: npm run build -- --bundles nsis
