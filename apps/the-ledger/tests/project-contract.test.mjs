@@ -144,6 +144,7 @@ test("live transcription uses VAD-protected rolling sections and remains local",
   assert.match(main, /enqueueTranscription/);
   assert.match(main, /ledger:transcribe-live-chunk/);
   assert.match(processor, /processLiveChunk/);
+  assert.match(processor, /"-sns", "-nf"/);
   assert.match(processor, /"--vad", "-vm", engines\.vadModel/);
   assert.match(processor, /ggml-silero-v6\.2\.0\.bin/);
   assert.match(workflow, /ggml-silero-v6\.2\.0\.bin/);
