@@ -45,6 +45,15 @@ jobs:
           if (-not (Select-String -Path "apps/ledgerly/src/index.html" -Pattern 'page-future' -Quiet)) { throw "Future Purchases page was not applied." }
           if (-not (Select-String -Path "apps/ledgerly/src/app.js" -Pattern 'renderFuturePurchases' -Quiet)) { throw "Future Purchases logic was not applied." }
 
+      - name: Apply expense category additions
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/ledgerly/patches/expense-categories.py"
+          foreach ($category in @('Gifts','Cash','Clothing','School')) {
+            if (-not (Select-String -Path "apps/ledgerly/src/index.html" -Pattern ">$category<" -Quiet)) { throw "Expense category missing after patch: $category" }
+          }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
