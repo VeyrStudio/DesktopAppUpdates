@@ -1,0 +1,130 @@
+name: Build Ledgerly for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "ledgerly-v*"
+    paths:
+      - "apps/ledgerly/source-parts/**"
+      - "apps/ledgerly/README.md"
+      - ".github/workflows/build-ledgerly.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ledgerly-windows
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - name: Check out desktop app repo
+        uses: actions/checkout@v4
+
+      - name: Restore Ledgerly source snapshot
+        shell: pwsh
+        run: |
+          $encoded = (Get-ChildItem apps/ledgerly/source-parts/source-*.txt | Sort-Object Name | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          $zip = Join-Path $env:RUNNER_TEMP "ledgerly-source.zip"
+          [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($encoded))
+          Remove-Item apps/ledgerly/work -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force apps/ledgerly/work | Out-Null
+          Expand-Archive -Path $zip -DestinationPath apps/ledgerly/work -Force
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install app dependencies
+        run: npm install
+        working-directory: apps/ledgerly/work
+
+      - name: Generate Tauri icon set
+        run: npm run tauri icon -- build/ledgerly-icon.png
+        working-directory: apps/ledgerly/work
+
+      - name: Check JavaScript
+        run: npm run check
+        working-directory: apps/ledgerly/work
+
+      - name: Build Windows installer
+        run: npm run build:win
+        working-directory: apps/ledgerly/work
+
+      - name: Read app version and locate installer
+        id: app
+        shell: pwsh
+        working-directory: apps/ledgerly/work
+        run: |
+          $version = node -p "require('./package.json').version"
+          $installer = Get-ChildItem src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          if (-not $installer) { throw "Ledgerly NSIS installer was not produced." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "installer=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+          "installer_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Create verified update manifest
+        shell: pwsh
+        working-directory: apps/ledgerly/work
+        env:
+          LEDGERLY_RELEASE_NOTES: "Ledgerly update ${{ steps.app.outputs.version }}."
+        run: node scripts/build-update-manifest.mjs "${{ steps.app.outputs.installer }}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ledgerly-Windows
+          path: |
+            ${{ steps.app.outputs.installer }}
+            apps/ledgerly/work/dist/manifest.json
+
+      - name: Publish Ledgerly installer release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ledgerly-v${{ steps.app.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Ledgerly ${{ steps.app.outputs.version }}
+          files: |
+            ${{ steps.app.outputs.installer }}
+            apps/ledgerly/work/dist/manifest.json
+          generate_release_notes: true
+
+      - name: Publish Ledgerly update channel
+        shell: pwsh
+        working-directory: .
+        run: |
+          New-Item -ItemType Directory -Force ledgerly | Out-Null
+          Copy-Item apps/ledgerly/work/dist/manifest.json ledgerly/manifest.json -Force
+          @"
+          # Ledgerly update channel
+
+          Automatic-update manifest for **Ledgerly**.
+
+          The app checks `manifest.json` in this folder. The Windows installer is built from the Ledgerly source snapshot under `apps/ledgerly`, published as a Ledgerly-specific GitHub Release, and verified in the app with SHA-256 before installation.
+
+          Ledgerly budget data lives outside the application-code files so updates do not intentionally overwrite saved budgets, groceries, paycheck history, or settings.
+          "@ | Set-Content ledgerly/README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ledgerly/manifest.json ledgerly/README.md
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) { exit 0 }
+          git commit -m "Update Ledgerly channel to ${{ steps.app.outputs.version }}"
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            git fetch origin main
+            git rebase origin/main
+            git push
+            if ($LASTEXITCODE -eq 0) { exit 0 }
+            Start-Sleep -Seconds 2
+          }
+          throw "Ledgerly channel could not be published after three attempts."
