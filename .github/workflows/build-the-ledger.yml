@@ -56,6 +56,7 @@ jobs:
           if (-not $ffmpeg) { throw "Chocolatey installed FFmpeg, but its executable could not be found." }
           Copy-Item $ffmpeg.FullName resources/bin/ffmpeg.exe -Force
           Invoke-WebRequest -Uri "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.en-q5_1.bin" -OutFile "resources/models/ggml-small.en-q5_1.bin"
+          Invoke-WebRequest -Uri "https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v6.2.0.bin" -OutFile "resources/models/ggml-silero-v6.2.0.bin"
 
       - name: Test The Ledger
         run: npm test
