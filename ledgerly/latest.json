@@ -1,7 +1,7 @@
 {
-  "version": "0.1.0",
-  "url": "",
-  "sha256": "",
-  "notes": "Ledgerly update channel initialized. The first GitHub build will publish the installer.",
-  "publishedAt": "2026-09-10T16:02:00Z"
+  "version": "0.1.1",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledgerly-v0.1.1/LedgerlySetup-0.1.1.exe",
+  "sha256": "cb1cd584d79579bbe3118553de7b04b771ecea2773586c58b9df085fe64866a5",
+  "notes": "Ledgerly desktop update (c8ca30f).",
+  "publishedAt": "2026-09-10T17:33:12.8097533Z"
 }
