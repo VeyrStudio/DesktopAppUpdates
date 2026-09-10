@@ -1,7 +1,7 @@
 {
-  "version": "0.1.1",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledgerly-v0.1.1/LedgerlySetup-0.1.1.exe",
-  "sha256": "cb1cd584d79579bbe3118553de7b04b771ecea2773586c58b9df085fe64866a5",
-  "notes": "Ledgerly desktop update (c8ca30f).",
-  "publishedAt": "2026-09-10T17:33:12.8097533Z"
+  "version": "0.1.2",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledgerly-v0.1.2/LedgerlySetup-0.1.2.exe",
+  "sha256": "d320e2ae1d77007d5a9490080938cc12422628c63170310e84d0e812fc0e667c",
+  "notes": "Ledgerly desktop update (954e269).",
+  "publishedAt": "2026-09-10T21:45:28.9057077Z"
 }
