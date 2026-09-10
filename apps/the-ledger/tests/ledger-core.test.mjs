@@ -95,6 +95,7 @@ test("old non-speech captions are removed without changing real lecture words", 
     cleanTranscriptCaptions("[MUSIC PLAYING] The professor begins. [SIDE CONVERSATION] The lecture continues. [BLANK_AUDIO]"),
     "The professor begins. The lecture continues."
   );
+  assert.equal(cleanTranscriptCaptions("Thanks for watching!"), "");
 });
 
 test("saved transcripts, visible segments, and summaries are cleaned together", () => {
@@ -116,6 +117,32 @@ test("saved transcripts, visible segments, and summaries are cleaned together", 
   assert.equal(result.state.lectures[0].notes, input.lectures[0].notes);
 });
 
+test("repeated short hallucination loops are removed from saved lectures without touching notes", () => {
+  const input = {
+    lectures: [{
+      id: "lecture-loop",
+      notes: "My note says Thank you. Keep it exactly as typed.",
+      originalTranscript: "Real opening. Thank you. Thank you. Real concept. Thank you.",
+      cleanedTranscript: "Real opening. Thank you. Thank you. Real concept. Thank you.",
+      transcriptSegments: [
+        { start: 0, text: "Real opening." },
+        { start: 16, text: "Thank you." },
+        { start: 32, text: "Thank you." },
+        { start: 48, text: "Real concept." },
+        { start: 64, text: "Thank you." }
+      ],
+      review: { summary: "Thank you. Real opening. Real concept.", assignments: [], definitions: [], keyConcepts: [], testMaterial: [], unclearTopics: [] }
+    }]
+  };
+  const result = cleanSavedTranscriptCaptions(input);
+  const lecture = result.state.lectures[0];
+  assert.deepEqual(lecture.transcriptSegments.map((segment) => segment.text), ["Real opening.", "Real concept."]);
+  assert.equal(lecture.originalTranscript, "Real opening. Real concept.");
+  assert.equal(lecture.cleanedTranscript, "Real opening. Real concept.");
+  assert.equal(lecture.review.summary, "Real opening. Real concept.");
+  assert.equal(lecture.notes, input.lectures[0].notes);
+});
+
 test("live transcript sections receive lecture timestamps and do not duplicate retries", () => {
   const first = mergeLiveTranscriptSegments([], [{ start: 1, end: 4, text: "Opening sentence." }], 0, 0);
   const second = mergeLiveTranscriptSegments(first, [{ start: 2, end: 6, text: "Next sentence." }], 1, 15);
@@ -125,4 +152,10 @@ test("live transcript sections receive lecture timestamps and do not duplicate r
     [17, 21, "Corrected next sentence."]
   ]);
   assert.equal(retried.every((segment) => segment.provisional), true);
+});
+
+test("live transcript sections keep only the first repeated short phrase", () => {
+  const first = mergeLiveTranscriptSegments([], [{ start: 1, end: 2, text: "Thank you." }], 0, 0);
+  const second = mergeLiveTranscriptSegments(first, [{ start: 1, end: 2, text: "Thank you." }], 1, 30);
+  assert.deepEqual(second.map((segment) => segment.text), ["Thank you."]);
 });

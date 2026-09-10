@@ -126,15 +126,16 @@ test("already-saved caption loops are cleaned on startup and persisted", async (
   assert.match(core, /summary/);
 });
 
-test("live transcription uses independent rolling sections and remains local", async () => {
-  const [renderer, preload, main, processor, core] = await Promise.all([
+test("live transcription uses VAD-protected rolling sections and remains local", async () => {
+  const [renderer, preload, main, processor, core, workflow] = await Promise.all([
     readFile(new URL("../src/app.js", import.meta.url), "utf8"),
     readFile(new URL("../electron/preload.cjs", import.meta.url), "utf8"),
     readFile(new URL("../electron/main.cjs", import.meta.url), "utf8"),
     readFile(new URL("../electron/processor.cjs", import.meta.url), "utf8"),
-    readFile(new URL("../core/ledger-core.mjs", import.meta.url), "utf8")
+    readFile(new URL("../core/ledger-core.mjs", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/build-windows.yml", import.meta.url), "utf8")
   ]);
-  assert.match(renderer, /LIVE_TRANSCRIPTION_SLICE_MS\s*=\s*15000/);
+  assert.match(renderer, /LIVE_TRANSCRIPTION_SLICE_MS\s*=\s*30000/);
   assert.match(renderer, /new MediaRecorder\(current\.stream/);
   assert.match(renderer, /Live text • provisional/);
   assert.match(renderer, /mergeLiveTranscriptSegments/);
@@ -143,5 +144,8 @@ test("live transcription uses independent rolling sections and remains local", a
   assert.match(main, /enqueueTranscription/);
   assert.match(main, /ledger:transcribe-live-chunk/);
   assert.match(processor, /processLiveChunk/);
+  assert.match(processor, /"--vad", "-vm", engines\.vadModel/);
+  assert.match(processor, /ggml-silero-v6\.2\.0\.bin/);
+  assert.match(workflow, /ggml-silero-v6\.2\.0\.bin/);
   assert.match(core, /liveTranscription: true/);
 });

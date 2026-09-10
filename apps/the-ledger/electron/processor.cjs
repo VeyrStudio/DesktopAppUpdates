@@ -5,6 +5,7 @@ const path = require("node:path");
 const os = require("node:os");
 
 const NON_SPEECH_CAPTION_PATTERN = /\[(?:MUSIC(?: PLAYING)?|SIDE CONVERSATION|BLANK[_ ]AUDIO|BACKGROUND NOISE|CROSSTALK|NOISE|LAUGHTER|APPLAUSE|SILENCE|INAUDIBLE)\]/gi;
+const COMMON_HALLUCINATION_PATTERN = /\b(?:(?:thanks|thank you) for watching|please (?:like and )?subscribe|see you in the next video)(?:[.!?]+)?/gi;
 
 function resourcesRoot() {
   const { app } = require("electron");
@@ -28,6 +29,10 @@ function enginePaths() {
       path.join(models, "ggml-small.en-q5_1.bin"),
       path.join(models, "ggml-small.en.bin"),
       path.join(models, "ggml-base.en.bin")
+    ]),
+    vadModel: firstExisting([
+      path.join(models, "ggml-silero-v6.2.0.bin"),
+      path.join(models, "ggml-silero-v5.1.2.bin")
     ])
   };
 }
@@ -58,6 +63,7 @@ function timestampSeconds(value) {
 function cleanWhisperText(value) {
   return String(value || "")
     .replace(NON_SPEECH_CAPTION_PATTERN, " ")
+    .replace(COMMON_HALLUCINATION_PATTERN, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -133,7 +139,9 @@ async function processLecture(audioPath, onProgress = () => {}, options = {}) {
       await run(engines.ffmpeg || "ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", audioPath, "-vn", "-af", "highpass=f=70,loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wavPath]);
     }
     onProgress({ stage: "transcription", message: "Creating local transcript" });
-    await run(engines.whisper, ["-m", engines.model, "-f", wavPath, "-l", "en", "-oj", "-of", outputPrefix, "-sns"]);
+    const whisperArgs = ["-m", engines.model, "-f", wavPath, "-l", "en", "-oj", "-of", outputPrefix, "-sns", "-nf"];
+    if (engines.vadModel) whisperArgs.push("--vad", "-vm", engines.vadModel, "-vt", "0.5", "-vspd", "250", "-vsd", "300", "-vp", "200");
+    await run(engines.whisper, whisperArgs);
     const parsed = parseWhisperJson(JSON.parse(await fsp.readFile(`${outputPrefix}.json`, "utf8")));
     if (!parsed.quality.reliable && options.allowEmpty && parsed.quality.wordCount === 0) {
       return { ok: true, originalTranscript: "", cleanedTranscript: "", transcriptSegments: [], review: extractReview("") };

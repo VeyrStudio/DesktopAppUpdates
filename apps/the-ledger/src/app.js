@@ -20,7 +20,7 @@ import {
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const COLORS = ["#6f3d60", "#57725e", "#506984", "#8d4d42", "#7b6540", "#5d5680"];
 const SPEAKER_ROLES = ["Professor", "Me", "Student", "Guest Speaker"];
-const LIVE_TRANSCRIPTION_SLICE_MS = 15000;
+const LIVE_TRANSCRIPTION_SLICE_MS = 30000;
 
 const appRoot = document.querySelector("#app");
 const viewRoot = document.querySelector("#view");
@@ -837,7 +837,7 @@ function settingsContent() {
   const s = state.settings;
   if (settingsTab === "audio") return `<span class="eyebrow">AUDIO & TRANSCRIPTION</span><h2>Lecture Audio</h2>
     ${settingSelect("microphoneId", "Microphone", "Choose the input used for lecture capture.", [["default", "System Default"]])}
-    ${settingToggle("liveTranscription", "Live transcription", "Show provisional local text throughout the lecture, usually about 15 seconds behind.")}
+    ${settingToggle("liveTranscription", "Live transcription", "Show provisional local text throughout the lecture, usually about 30 seconds behind.")}
     ${settingToggle("hideLiveTranscript", "Hide live transcript", "Keep the Notebook visually quiet while audio continues safely.")}
     ${settingSelect("transcriptionMode", "Local model", "Choose the balance between speed and accuracy.", [["fast","Fast"],["balanced","Balanced (Recommended)"],["accurate","Highest Accuracy"]])}
     <div class="setting-row"><div><h3>Microphone test</h3><p>Confirm that The Ledger can hear the selected input before class.</p></div><button id="test-microphone" class="secondary-button">Run Test</button></div>`;

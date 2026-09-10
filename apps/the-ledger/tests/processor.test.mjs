@@ -6,6 +6,7 @@ const { parseWhisperJson, cleanWhisperText, assessTranscriptQuality } = processo
 
 test("known non-speech captions are removed from transcript text", () => {
   assert.equal(cleanWhisperText("[MUSIC PLAYING] [SIDE CONVERSATION] Industrial psychology begins here. [BLANK_AUDIO]"), "Industrial psychology begins here.");
+  assert.equal(cleanWhisperText("Thanks for watching!"), "");
 });
 
 test("a side-conversation caption loop is rejected instead of saved as a transcript", () => {

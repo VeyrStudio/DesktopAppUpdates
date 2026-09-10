@@ -10,38 +10,77 @@ const timeFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 const NON_SPEECH_CAPTION_PATTERN = /\[(?:MUSIC(?: PLAYING)?|SIDE CONVERSATION|BLANK[_ ]AUDIO|BACKGROUND NOISE|CROSSTALK|NOISE|LAUGHTER|APPLAUSE|SILENCE|INAUDIBLE)\]/gi;
+const COMMON_HALLUCINATION_PATTERN = /\b(?:(?:thanks|thank you) for watching|please (?:like and )?subscribe|see you in the next video)(?:[.!?]+)?/gi;
 
 export function cleanTranscriptCaptions(value) {
   return String(value || "")
     .replace(NON_SPEECH_CAPTION_PATTERN, " ")
+    .replace(COMMON_HALLUCINATION_PATTERN, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
+function normalizeTranscriptPhrase(value) {
+  return cleanTranscriptCaptions(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function repeatedShortTranscriptPhrases(segments) {
+  const counts = new Map();
+  for (const segment of segments) {
+    const normalized = normalizeTranscriptPhrase(segment.text);
+    if (!normalized || normalized.split(" ").length > 8) continue;
+    counts.set(normalized, (counts.get(normalized) || 0) + 1);
+  }
+  return new Set([...counts].filter(([, count]) => count >= 3).map(([phrase]) => phrase));
+}
+
+function removeRepeatedShortSentences(value, repeatedPhrases) {
+  if (!repeatedPhrases.size) return cleanTranscriptCaptions(value);
+  return cleanTranscriptCaptions(value)
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => !repeatedPhrases.has(normalizeTranscriptPhrase(sentence)))
+    .join(" ")
+    .trim();
+}
+
 export function cleanSavedTranscriptCaptions(inputState) {
-  const lectures = (inputState?.lectures || []).map((lecture) => ({
-    ...lecture,
-    originalTranscript: cleanTranscriptCaptions(lecture.originalTranscript),
-    cleanedTranscript: cleanTranscriptCaptions(lecture.cleanedTranscript),
-    transcriptSegments: Array.isArray(lecture.transcriptSegments)
+  const lectures = (inputState?.lectures || []).map((lecture) => {
+    const cleanedSegments = Array.isArray(lecture.transcriptSegments)
       ? lecture.transcriptSegments
         .map((segment) => ({ ...segment, text: cleanTranscriptCaptions(segment.text) }))
         .filter((segment) => segment.text)
-      : lecture.transcriptSegments,
-    review: lecture.review ? {
-      ...lecture.review,
-      summary: cleanTranscriptCaptions(lecture.review.summary),
-      keyConcepts: (lecture.review.keyConcepts || []).map(cleanTranscriptCaptions).filter(Boolean),
-      testMaterial: (lecture.review.testMaterial || []).map(cleanTranscriptCaptions).filter(Boolean),
-      unclearTopics: (lecture.review.unclearTopics || []).map(cleanTranscriptCaptions).filter(Boolean),
-      assignments: (lecture.review.assignments || [])
-        .map((item) => ({ ...item, text: cleanTranscriptCaptions(item.text) }))
-        .filter((item) => item.text),
-      definitions: (lecture.review.definitions || [])
-        .map((item) => ({ ...item, term: cleanTranscriptCaptions(item.term), definition: cleanTranscriptCaptions(item.definition) }))
-        .filter((item) => item.term || item.definition)
-    } : lecture.review
-  }));
+      : lecture.transcriptSegments;
+    const repeatedPhrases = Array.isArray(cleanedSegments) ? repeatedShortTranscriptPhrases(cleanedSegments) : new Set();
+    const transcriptSegments = Array.isArray(cleanedSegments)
+      ? cleanedSegments.filter((segment) => !repeatedPhrases.has(normalizeTranscriptPhrase(segment.text)))
+      : cleanedSegments;
+    const rebuiltTranscript = repeatedPhrases.size
+      ? transcriptSegments.map((segment) => segment.text).join(" ").replace(/\s+/g, " ").trim()
+      : null;
+    return {
+      ...lecture,
+      originalTranscript: rebuiltTranscript ?? cleanTranscriptCaptions(lecture.originalTranscript),
+      cleanedTranscript: rebuiltTranscript ?? cleanTranscriptCaptions(lecture.cleanedTranscript),
+      transcriptSegments,
+      review: lecture.review ? {
+        ...lecture.review,
+        summary: removeRepeatedShortSentences(lecture.review.summary, repeatedPhrases),
+        keyConcepts: (lecture.review.keyConcepts || []).map(cleanTranscriptCaptions).filter(Boolean),
+        testMaterial: (lecture.review.testMaterial || []).map(cleanTranscriptCaptions).filter(Boolean),
+        unclearTopics: (lecture.review.unclearTopics || []).map(cleanTranscriptCaptions).filter(Boolean),
+        assignments: (lecture.review.assignments || [])
+          .map((item) => ({ ...item, text: cleanTranscriptCaptions(item.text) }))
+          .filter((item) => item.text),
+        definitions: (lecture.review.definitions || [])
+          .map((item) => ({ ...item, term: cleanTranscriptCaptions(item.term), definition: cleanTranscriptCaptions(item.definition) }))
+          .filter((item) => item.term || item.definition)
+      } : lecture.review
+    };
+  });
   const changed = JSON.stringify(lectures) !== JSON.stringify(inputState?.lectures || []);
   return { state: { ...(inputState || {}), lectures }, changed };
 }
@@ -182,13 +221,27 @@ export function setSegmentSpeaker(segments, segmentIndex, speaker) {
 
 export function mergeLiveTranscriptSegments(existing, incoming, sequence, offsetSeconds = 0) {
   const prior = (existing || []).filter((segment) => segment.liveSequence !== sequence);
-  const next = (incoming || []).map((segment) => ({
-    ...segment,
-    start: Number(segment.start || 0) + Number(offsetSeconds || 0),
-    end: Number(segment.end ?? segment.start ?? 0) + Number(offsetSeconds || 0),
-    liveSequence: sequence,
-    provisional: true
-  }));
+  const seen = new Map();
+  for (const segment of prior) {
+    const normalized = normalizeTranscriptPhrase(segment.text);
+    if (normalized) seen.set(normalized, (seen.get(normalized) || 0) + 1);
+  }
+  const next = [];
+  for (const segment of incoming || []) {
+    const text = cleanTranscriptCaptions(segment.text);
+    const normalized = normalizeTranscriptPhrase(text);
+    const repeatCount = seen.get(normalized) || 0;
+    if (!normalized || (repeatCount >= 1 && normalized.split(" ").length <= 12)) continue;
+    seen.set(normalized, repeatCount + 1);
+    next.push({
+      ...segment,
+      text,
+      start: Number(segment.start || 0) + Number(offsetSeconds || 0),
+      end: Number(segment.end ?? segment.start ?? 0) + Number(offsetSeconds || 0),
+      liveSequence: sequence,
+      provisional: true
+    });
+  }
   return [...prior, ...next].sort((a, b) => Number(a.start || 0) - Number(b.start || 0));
 }
 
