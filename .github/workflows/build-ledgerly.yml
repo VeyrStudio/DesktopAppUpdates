@@ -1,0 +1,156 @@
+name: Build Ledgerly
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/ledgerly/**"
+      - ".github/workflows/build-ledgerly.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/ledgerly
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct Ledgerly source
+        shell: pwsh
+        working-directory: .
+        run: |
+          $parts = Get-ChildItem "apps/ledgerly/.source-parts/*.txt" | Where-Object { $_.Name -match '^\d{2}\.txt$' } | Sort-Object Name
+          if (-not $parts) { throw "Ledgerly source parts are missing." }
+          $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          $archive = Join-Path $env:RUNNER_TEMP "ledgerly_source.tar.xz"
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = ((Get-Content "apps/ledgerly/.source-parts/SHA256.txt" -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+          if ($actual -ne $expected) { throw "Ledgerly source archive failed its SHA256 check." }
+          tar -xJf $archive -C "apps/ledgerly"
+          Copy-Item "apps/ledgerly/.bootstrap/tauri.conf.json" "apps/ledgerly/src-tauri/tauri.conf.json" -Force
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Use stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/ledgerly/src-tauri -> target
+
+      - name: Install frontend tooling
+        run: npm install
+
+      - name: Generate Windows icon set from approved Ledgerly icon
+        shell: pwsh
+        run: |
+          $source = Join-Path $env:RUNNER_TEMP "ledgerly-approved-icon.png"
+          Copy-Item "src-tauri/icons/icon.png" $source -Force
+          npx tauri icon $source
+          if (-not (Test-Path "src-tauri/icons/icon.ico")) { throw "Tauri did not generate Ledgerly icon.ico." }
+
+      - name: Assign automatic Ledgerly version
+        shell: pwsh
+        run: |
+          $version = "0.1.${{ github.run_number }}"
+          $config = Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json
+          $config.version = $version
+          $config | ConvertTo-Json -Depth 20 | Set-Content src-tauri/tauri.conf.json -Encoding UTF8
+
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $package.version = $version
+          $package | ConvertTo-Json -Depth 20 | Set-Content package.json -Encoding UTF8
+
+          $cargo = Get-Content src-tauri/Cargo.toml -Raw
+          $cargo = $cargo -replace '(?m)^version = "[^"]+"', "version = `"$version`""
+          Set-Content src-tauri/Cargo.toml $cargo -Encoding UTF8
+
+          "LEDGERLY_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Validate Ledgerly source
+        shell: pwsh
+        run: |
+          node --check src/app.js
+          Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json | Out-Null
+
+      - name: Build Windows installer
+        run: npm run build -- --bundles nsis
+
+      - name: Prepare release asset and updater manifest
+        id: release_info
+        shell: pwsh
+        run: |
+          $version = $env:LEDGERLY_VERSION
+          $tag = "ledgerly-v$version"
+          $source = Get-ChildItem "src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
+          if (-not $source) { throw "Ledgerly NSIS installer was not created." }
+
+          $assetName = "LedgerlySetup-$version.exe"
+          $assetPath = Join-Path $env:RUNNER_TEMP $assetName
+          Copy-Item $source.FullName $assetPath -Force
+          $sha256 = (Get-FileHash $assetPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$assetName"
+          $publishedAt = (Get-Date).ToUniversalTime().ToString("o")
+          $shortSha = "${{ github.sha }}".Substring(0,7)
+
+          $manifest = [ordered]@{
+            version = $version
+            url = $downloadUrl
+            sha256 = $sha256
+            notes = "Ledgerly desktop update ($shortSha)."
+            publishedAt = $publishedAt
+          }
+          $manifest | ConvertTo-Json | Set-Content (Join-Path $env:RUNNER_TEMP "latest.json") -Encoding UTF8
+
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "asset_path=$assetPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "asset_name=$assetName" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ledgerly-Windows-${{ env.LEDGERLY_VERSION }}
+          path: |
+            ${{ steps.release_info.outputs.asset_path }}
+            ${{ runner.temp }}/latest.json
+
+      - name: Publish Ledgerly release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.release_info.outputs.tag }}"
+          $asset = "${{ steps.release_info.outputs.asset_path }}"
+          if (gh release view $tag --repo "${{ github.repository }}" 2>$null) {
+            gh release upload $tag $asset --clobber --repo "${{ github.repository }}"
+          } else {
+            gh release create $tag $asset --repo "${{ github.repository }}" --title "Ledgerly $env:LEDGERLY_VERSION" --notes "Automatic Ledgerly Windows desktop build."
+          }
+
+      - name: Refresh Ledgerly live update channel
+        shell: pwsh
+        working-directory: .
+        run: |
+          New-Item -ItemType Directory -Force -Path "ledgerly" | Out-Null
+          Copy-Item (Join-Path $env:RUNNER_TEMP "latest.json") "ledgerly/latest.json" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ledgerly/latest.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Ledgerly updater: $env:LEDGERLY_VERSION [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          }
