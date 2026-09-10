@@ -127,13 +127,15 @@ test("already-saved caption loops are cleaned on startup and persisted", async (
 });
 
 test("live transcription uses VAD-protected rolling sections and remains local", async () => {
+  const workflowSource = readFile(new URL("../../../.github/workflows/build-the-ledger.yml", import.meta.url), "utf8")
+    .catch(() => readFile(new URL("../.github/workflows/build-windows.yml", import.meta.url), "utf8"));
   const [renderer, preload, main, processor, core, workflow] = await Promise.all([
     readFile(new URL("../src/app.js", import.meta.url), "utf8"),
     readFile(new URL("../electron/preload.cjs", import.meta.url), "utf8"),
     readFile(new URL("../electron/main.cjs", import.meta.url), "utf8"),
     readFile(new URL("../electron/processor.cjs", import.meta.url), "utf8"),
     readFile(new URL("../core/ledger-core.mjs", import.meta.url), "utf8"),
-    readFile(new URL("../.github/workflows/build-windows.yml", import.meta.url), "utf8")
+    workflowSource
   ]);
   assert.match(renderer, /LIVE_TRANSCRIPTION_SLICE_MS\s*=\s*30000/);
   assert.match(renderer, /new MediaRecorder\(current\.stream/);
