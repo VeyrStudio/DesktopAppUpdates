@@ -1,7 +1,7 @@
 {
-  "version": "0.1.6",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledgerly-v0.1.6/LedgerlySetup-0.1.6.exe",
-  "sha256": "8f2d7caf9ed5bb12e429c0dca5585ec29dc27b6e313a3fa9e9cbad319a73f566",
-  "notes": "Ledgerly Windows GUI build: removes the console window from the release app.",
-  "publishedAt": "2026-09-10T23:40:33Z"
+  "version": "0.1.7",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/ledgerly-v0.1.7/LedgerlySetup-0.1.7.exe",
+  "sha256": "14f815ab70b7426044e7d6edb21b77e8ef2f246d30c80012f08002ab164a78c4",
+  "notes": "Ledgerly desktop update (b227ad5).",
+  "publishedAt": "2026-09-11T00:16:17.5043528Z"
 }
