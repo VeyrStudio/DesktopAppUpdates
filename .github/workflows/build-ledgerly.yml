@@ -63,6 +63,14 @@ jobs:
             throw "Ledgerly Windows GUI subsystem marker is missing."
           }
 
+      - name: Add editable current paycheck
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/ledgerly/patches/edit-current-paycheck.py"
+          if (-not (Select-String -Path "apps/ledgerly/src/index.html" -SimpleMatch 'id="edit-current-paycheck"' -Quiet)) { throw "Current paycheck edit button is missing." }
+          if (-not (Select-String -Path "apps/ledgerly/src/app.js" -SimpleMatch 'Set the current paycheck amount:' -Quiet)) { throw "Current paycheck edit logic is missing." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
