@@ -79,6 +79,14 @@ jobs:
           if (-not (Select-String -Path "apps/ledgerly/src/index.html" -SimpleMatch 'id="clear-purchases-data"' -Quiet)) { throw "Clear Purchases button is missing." }
           if (-not (Select-String -Path "apps/ledgerly/src/app.js" -SimpleMatch 'Clear all expenses, grocery items, and future purchases?' -Quiet)) { throw "Clear Purchases logic is missing." }
 
+      - name: Add editable expected payday calendar
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/ledgerly/patches/payday-calendar.py"
+          if (-not (Select-String -Path "apps/ledgerly/src/index.html" -SimpleMatch 'id="expected-payday-calendar"' -Quiet)) { throw "Expected payday calendar is missing." }
+          if (-not (Select-String -Path "apps/ledgerly/src/app.js" -SimpleMatch 'syncExpectedPaydayCalendar' -Quiet)) { throw "Expected payday calendar logic is missing." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
