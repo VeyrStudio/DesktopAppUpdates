@@ -87,6 +87,14 @@ jobs:
           if (-not (Select-String -Path "apps/ledgerly/src/index.html" -SimpleMatch 'id="expected-payday-calendar"' -Quiet)) { throw "Expected payday calendar is missing." }
           if (-not (Select-String -Path "apps/ledgerly/src/app.js" -SimpleMatch 'syncExpectedPaydayCalendar' -Quiet)) { throw "Expected payday calendar logic is missing." }
 
+      - name: Add editable permanent set aside
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/ledgerly/patches/edit-set-aside.py"
+          if (-not (Select-String -Path "apps/ledgerly/src/index.html" -SimpleMatch 'id="permanent-set-aside-form"' -Quiet)) { throw "Permanent Set Aside form is missing." }
+          if (-not (Select-String -Path "apps/ledgerly/src/app.js" -SimpleMatch 'syncPermanentSetAsideSetting' -Quiet)) { throw "Permanent Set Aside logic is missing." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
