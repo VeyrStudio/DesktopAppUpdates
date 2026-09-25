@@ -33,10 +33,19 @@ if not changed and "stat-set-aside" in s:
         changed = True
 
 if not changed:
-    for n, line in enumerate(s.splitlines(), 1):
+    lines = s.splitlines()
+    hits = []
+    for i, line in enumerate(lines):
         low = line.lower()
-        if "set-aside" in low or "set aside" in low or "reserve" in low or "50" in line:
-            print(f"{n}: {line}")
+        if any(term in low for term in ["stat-paycheck","stat-free","stat-left","currentpaycheck","budgetstart","history.push","set-aside","set aside","reserve"]) or "50" in line:
+            hits.append(i)
+    shown = set()
+    for i in hits:
+        for j in range(max(0,i-6), min(len(lines),i+7)):
+            if j not in shown:
+                print(f"{j+1}: {lines[j]}")
+                shown.add(j)
+        print("---")
     raise SystemExit("Set Aside calculation not found.")
 
 if 'id="permanent-set-aside-form"' not in h:
