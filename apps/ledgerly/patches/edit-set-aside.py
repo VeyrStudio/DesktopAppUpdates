@@ -10,43 +10,18 @@ s = js.read_text(encoding="utf-8")
 if "permanentSetAside" not in s:
     s = s.replace("  groceryBudget: 0,", "  groceryBudget: 0,\n  permanentSetAside: 50,", 1)
 
-candidates = [
-    "setText(\"stat-set-aside\", money(50));",
-    "setText('stat-set-aside', money(50));",
-    'document.getElementById("stat-set-aside").textContent = money(50);',
-]
 changed = False
-for old in candidates:
-    if old in s:
-        s = s.replace("money(50)", "money(Number(state.permanentSetAside ?? 50))", 1)
-        changed = True
-        break
-
-if not changed and "stat-set-aside" in s:
-    pos = s.index("stat-set-aside")
-    start = max(0, pos - 500)
-    end = min(len(s), pos + 500)
-    block = s[start:end]
-    if "50" in block:
-        block2 = block.replace("50", "Number(state.permanentSetAside ?? 50)", 1)
-        s = s[:start] + block2 + s[end:]
-        changed = True
+summary_line = "  const setAside = exp.planned + groceries.now + bills.upcoming;"
+if summary_line in s:
+    s = s.replace(
+        summary_line,
+        "  const setAside = exp.planned + groceries.now + bills.upcoming + Number(state.permanentSetAside ?? 50);",
+        1,
+    )
+    changed = True
 
 if not changed:
-    lines = s.splitlines()
-    hits = []
-    for i, line in enumerate(lines):
-        low = line.lower()
-        if any(term in low for term in ["stat-paycheck","stat-free","stat-left","currentpaycheck","budgetstart","history.push","set-aside","set aside","reserve"]) or "50" in line:
-            hits.append(i)
-    shown = set()
-    for i in hits:
-        for j in range(max(0,i-6), min(len(lines),i+7)):
-            if j not in shown:
-                print(f"{j+1}: {lines[j]}")
-                shown.add(j)
-        print("---")
-    raise SystemExit("Set Aside calculation not found.")
+    raise SystemExit("Set Aside summary calculation not found.")
 
 if 'id="permanent-set-aside-form"' not in h:
     anchor = '<section class="page" id="page-settings">'
