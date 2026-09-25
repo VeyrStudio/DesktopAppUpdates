@@ -33,6 +33,10 @@ if not changed and "stat-set-aside" in s:
         changed = True
 
 if not changed:
+    for n, line in enumerate(s.splitlines(), 1):
+        low = line.lower()
+        if "set-aside" in low or "set aside" in low or "reserve" in low or "50" in line:
+            print(f"{n}: {line}")
     raise SystemExit("Set Aside calculation not found.")
 
 if 'id="permanent-set-aside-form"' not in h:
