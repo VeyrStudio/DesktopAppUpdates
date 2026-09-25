@@ -14,7 +14,7 @@ if 'id="edit-current-paycheck"' not in html_text:
 html.write_text(html_text, encoding="utf-8")
 
 js_text = js.read_text(encoding="utf-8")
-listener = '''\n  document.getElementById("edit-current-paycheck").addEventListener("click", () => {\n    const current = currentPaycheck();\n    const entered = prompt("Set the current paycheck amount:", current ? current.toFixed(2) : "");\n    if (entered === null) return;\n    const amount = Number(entered);\n    if (!Number.isFinite(amount) || amount < 0) {\n      alert("Enter a valid paycheck amount.");\n      return;\n    }\n    state.budgetStart = amount;\n    saveState();\n    renderAll();\n  });\n'''
+listener = '''\n  document.getElementById("edit-current-paycheck").addEventListener("click", () => {\n    const current = currentPaycheck();\n    const entered = prompt("Set the current paycheck amount:", current ? current.toFixed(2) : "");\n    if (entered === null) return;\n    const amount = Number(entered);\n    if (!Number.isFinite(amount) || amount < 0) {\n      alert("Enter a valid paycheck amount.");\n      return;\n    }\n    const difference = amount - current;\n    state.budgetStart = Number(state.budgetStart || 0) + difference;\n    saveState();\n    renderAll();\n  });\n'''
 anchor = '  document.getElementById("budget-start-form").addEventListener("submit", e => {\n    e.preventDefault(); state.budgetStart = Number(document.getElementById("budget-start").value || 0); saveState(); renderAll();\n  });\n'
 if 'document.getElementById("edit-current-paycheck").addEventListener' not in js_text:
     if anchor not in js_text:
