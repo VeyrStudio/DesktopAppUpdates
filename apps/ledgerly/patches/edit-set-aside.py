@@ -50,7 +50,7 @@ document.addEventListener("submit",e=>{
   e.preventDefault();
   const v=Number(document.getElementById("permanent-set-aside-amount").value);
   if(!Number.isFinite(v)||v<0)return alert("Enter a valid set-aside amount.");
-  state.permanentSetAside=v; saveState(); renderAll(); syncPermanentSetAsideSetting();
+  state.permanentSetAside=(v===0 ? "0" : v); saveState(); renderAll(); syncPermanentSetAsideSetting();
 });
 setTimeout(syncPermanentSetAsideSetting,0);
 
