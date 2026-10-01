@@ -77,6 +77,8 @@ test('Dashboard pin controls and searchable library sorting are functional',asyn
  await w.eval("addCharacter()");
  await w.eval("indexTogglePin(db.characters[0].id)");
  assert.equal(stored().characters[0].pinned,true);
+ await w.eval("indexSetProgress(db.characters[0].id,'Existing')");
+ assert.equal(stored().characters[0].status,'Existing');
  w.eval("go('Dashboard')");
  assert.ok(w.document.querySelector('#screen').textContent.includes('Pinned Characters'));
  w.eval("go('Characters');indexCharacterSort('name')");
