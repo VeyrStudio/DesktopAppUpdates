@@ -1,0 +1,35 @@
+{
+  "name": "the-index",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A desktop character and story archive",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis",
+    "pack:win": "electron-builder --win dir",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2"
+  },
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.theindex.archive",
+    "productName": "The Index",
+    "directories": {"output": "dist"},
+    "files": ["src/**/*", "assets/**/*", "package.json"],
+    "win": {"target": ["nsis"], "icon": "assets/icon.ico"},
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "TheIndexSetup-${version}.exe"
+    },
+    "publish": {"provider": "github", "owner": "VeyrStudio", "repo": "DesktopAppUpdates"}
+  }
+}
