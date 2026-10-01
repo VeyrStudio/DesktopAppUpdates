@@ -15,14 +15,26 @@
   },
   "devDependencies": {
     "electron": "^37.0.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jsdom": "^26.1.0"
   },
   "build": {
     "appId": "com.theindex.archive",
     "productName": "The Index",
-    "directories": {"output": "dist"},
-    "files": ["src/**/*", "assets/**/*", "package.json"],
-    "win": {"target": ["nsis"], "icon": "assets/icon.ico"},
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.ico"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -30,6 +42,10 @@
       "createStartMenuShortcut": true,
       "artifactName": "TheIndexSetup-${version}.exe"
     },
-    "publish": {"provider": "github", "owner": "VeyrStudio", "repo": "DesktopAppUpdates"}
+    "publish": {
+      "provider": "github",
+      "owner": "VeyrStudio",
+      "repo": "DesktopAppUpdates"
+    }
   }
 }
