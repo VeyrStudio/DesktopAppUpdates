@@ -39,6 +39,9 @@ jobs:
       - name: Install build dependencies
         run: python -m pip install --upgrade pip pyinstaller pillow
 
+      - name: Allow subscriptions without a charge date
+        run: python patches/optional_charge_date.py
+
       - name: Test Catalogue payment, recurrence, and backups
         run: python test_catalogue.py
 
