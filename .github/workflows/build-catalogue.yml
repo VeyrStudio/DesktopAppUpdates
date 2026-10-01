@@ -2,51 +2,139 @@ name: Build Catalogue Windows Installer
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "catalogue/**"
+      - "catalogue-source.txt"
+      - ".github/workflows/build-catalogue.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  windows:
     runs-on: windows-latest
     defaults:
       run:
         working-directory: catalogue
     steps:
       - uses: actions/checkout@v4
+
+      - name: Reconstruct compressed Catalogue source (Ledgerly method)
+        shell: pwsh
+        working-directory: .
+        run: |
+          if (!(Test-Path 'catalogue-source.txt')) { throw "Upload catalogue-source.txt to the repository root first." }
+          $encoded = (Get-Content 'catalogue-source.txt' -Raw) -replace '\s',''
+          $archive = Join-Path $env:RUNNER_TEMP 'catalogue-source.tar.xz'
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = '57dea9e7e253ba44e2fbbdd7c390ce9f6f22d629215d787fc285189d333dfb49'
+          if ($actual -ne $expected) { throw "Catalogue source SHA-256 verification failed." }
+          New-Item -ItemType Directory -Force -Path 'catalogue' | Out-Null
+          tar -xJf $archive -C catalogue
+          foreach ($file in @('catalogue.py','remind.py','test_catalogue.py','assets/catalogue.png','Catalogue.iss')) {
+            if (!(Test-Path (Join-Path 'catalogue' $file))) { throw "Catalogue build input missing: $file" }
+          }
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           architecture: x64
-      - name: Check Catalogue source files
-        shell: pwsh
-        run: |
-          foreach ($file in @('catalogue.py', 'remind.py', 'test_catalogue.py', 'Catalogue.iss', 'assets/catalogue.png')) {
-            if (!(Test-Path $file)) { throw "Missing required Catalogue source: $file" }
-          }
-      - name: Install dependencies
+
+      - name: Install build dependencies
         run: python -m pip install --upgrade pip pyinstaller pillow
-      - name: Test Catalogue
+
+      - name: Test Catalogue payment, recurrence, and backups
         run: python test_catalogue.py
-      - name: Build Windows applications
+
+      - name: Assign Windows build version
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean --windowed --onedir --name Catalogue --add-data "assets/catalogue.png;assets" --collect-all PIL catalogue.py
+          $version = "1.0.${{ github.run_number }}"
+          $app = Get-Content catalogue.py -Raw
+          $app = $app.Replace("APP_VERSION = '1.0.0'", "APP_VERSION = '$version'")
+          $app = $app.Replace("self.set_default('github_repo','')", "self.set_default('github_repo','${{ github.repository }}')")
+          Set-Content catalogue.py $app -Encoding UTF8
+          $iss = Get-Content Catalogue.iss -Raw
+          $iss = $iss.Replace('#define AppVersion "1.0.0"', "#define AppVersion `"$version`"")
+          Set-Content Catalogue.iss $iss -Encoding UTF8
+          "CATALOGUE_VERSION=$version" >> $env:GITHUB_ENV
+          python -m py_compile catalogue.py remind.py
+
+      - name: Generate Windows app icon
+        shell: pwsh
+        run: |
+          @'
+          from PIL import Image
+          im=Image.open('assets/catalogue.png').convert('RGBA')
+          im.save('assets/catalogue.ico',sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])
+          '@ | python -
+
+      - name: Build Windows executables
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --windowed --onedir --name Catalogue --icon assets/catalogue.ico --add-data "assets/catalogue.png;assets" --collect-all PIL catalogue.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          pyinstaller --noconfirm --clean --windowed --onedir --name CatalogueReminder --collect-all PIL remind.py
+          pyinstaller --noconfirm --clean --windowed --onedir --name CatalogueReminder --icon assets/catalogue.ico remind.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Install Inno Setup
         shell: pwsh
         run: choco install innosetup --yes --no-progress
-      - name: Compile Windows installer
+
+      - name: Compile per-user Windows installer
         shell: pwsh
         run: |
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          if (!(Test-Path $iscc)) { throw "Inno Setup compiler not found" }
+          if (!(Test-Path $iscc)) { throw "Inno Setup compiler not found." }
           & $iscc Catalogue.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $installer = Get-ChildItem "installer/Catalogue-Setup-*.exe" | Select-Object -First 1
+          if (-not $installer) { throw "Installer executable was not produced." }
+
+      - name: Create independent Catalogue release information
+        id: release_info
+        shell: pwsh
+        run: |
+          $version = $env:CATALOGUE_VERSION
+          $tag = "catalogue-v$version"
+          $installer = Get-ChildItem "installer/Catalogue-Setup-*.exe" | Select-Object -First 1
+          $sha256 = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
+          $manifest = [ordered]@{version=$version;url=$url;sha256=$sha256;publishedAt=(Get-Date).ToUniversalTime().ToString("o")}
+          $manifest | ConvertTo-Json | Set-Content (Join-Path $env:RUNNER_TEMP 'catalogue-latest.json') -Encoding UTF8
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "asset=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+
       - uses: actions/upload-artifact@v4
         with:
-          name: Catalogue-Windows-Installer
-          path: catalogue/installer/Catalogue-Setup-*.exe
+          name: Catalogue-Windows-${{ env.CATALOGUE_VERSION }}
+          path: |
+            catalogue/installer/Catalogue-Setup-*.exe
+            ${{ runner.temp }}/catalogue-latest.json
           if-no-files-found: error
+
+      - name: Publish Catalogue installer in GitHub Releases
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.release_info.outputs.tag }}" "${{ steps.release_info.outputs.asset }}" --repo "${{ github.repository }}" --title "Catalogue $env:CATALOGUE_VERSION" --notes "Catalogue Windows desktop installer."
+
+      - name: Update Catalogue-only release manifest
+        shell: pwsh
+        working-directory: .
+        run: |
+          New-Item -ItemType Directory -Force -Path catalogue | Out-Null
+          Copy-Item (Join-Path $env:RUNNER_TEMP 'catalogue-latest.json') 'catalogue/latest.json'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalogue/latest.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Catalogue updater: $env:CATALOGUE_VERSION [skip ci]"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          }
