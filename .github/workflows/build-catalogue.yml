@@ -48,6 +48,9 @@ jobs:
       - name: Repair dashboard panel sizing
         run: python patches/fix_dashboard_panel_height.py
 
+      - name: Refine high-DPI Windows typography and dashboard detailing
+        run: python patches/refine_desktop_appearance.py
+
       - name: Test Catalogue payment, recurrence, and backups
         run: python test_catalogue.py
 
