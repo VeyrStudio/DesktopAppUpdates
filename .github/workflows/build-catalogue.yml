@@ -2,10 +2,6 @@ name: Build Catalogue Windows Installer
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "catalogue/**"
-      - ".github/workflows/build-catalogue.yml"
 
 permissions:
   contents: read
