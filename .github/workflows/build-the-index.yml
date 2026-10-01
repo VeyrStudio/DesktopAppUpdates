@@ -1,11 +1,6 @@
 name: Build The Index for Windows
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'apps/the-index/**'
-      - '.github/workflows/build-the-index.yml'
   workflow_dispatch:
 
 permissions:
