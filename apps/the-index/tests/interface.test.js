@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
 const root=path.join(__dirname,'..','src');
-const scriptNames=['renderer.js','profile-enhancements.js','library-enhancements.js','settings-enhancements.js','quality-enhancements.js'];
+const scriptNames=['renderer.js','profile-enhancements.js','library-enhancements.js','settings-enhancements.js','quality-enhancements.js','productivity-enhancements.js'];
 async function setup(){
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]*><\/script>/g,'');
  const dom=new JSDOM(html,{url:'http://localhost',runScripts:'dangerously',pretendToBeVisual:true});
@@ -69,5 +69,28 @@ test('Stories, Worldbuilding, search and archive operations are connected',async
  assert.ok(w.document.querySelector('#screen').textContent.includes('Linked Characters'));
  w.eval("go('Worldbuilding')");
  assert.ok(w.document.querySelector('#screen').textContent.includes('Category'));
+ dom.window.close();
+});
+
+test('Dashboard pin controls and searchable library sorting are functional',async()=>{
+ const {w,dom,stored}=await setup();
+ await w.eval("addCharacter()");
+ await w.eval("indexTogglePin(db.characters[0].id)");
+ assert.equal(stored().characters[0].pinned,true);
+ w.eval("go('Dashboard')");
+ assert.ok(w.document.querySelector('#screen').textContent.includes('Pinned Characters'));
+ w.eval("go('Characters');indexCharacterSort('name')");
+ assert.ok(w.document.querySelector('#screen').textContent.includes('Pinned Only'));
+ dom.window.close();
+});
+test('Notebook sanitizes scripts from rich HTML while retaining readable formatting',async()=>{
+ const {w,dom}=await setup();
+ await w.eval("indexNewNote()");
+ const editor=w.document.querySelector('#index-note-editor');
+ editor.innerHTML='<b>Saved</b><img src=x onerror=alert(1)><script>alert(1)</script>';
+ w.eval('indexCommitEditor()');
+ const actual=w.eval('db.notes[0].richHtml');
+ assert.match(actual,/<b>Saved<\/b>/);
+ assert.doesNotMatch(actual,/onerror|<script|<img/i);
  dom.window.close();
 });
