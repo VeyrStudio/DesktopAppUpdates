@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "appId": "the-index",
   "appName": "The Index",
-  "version": "0.2.32",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v0.2.32/TheIndexSetup-0.2.32.exe",
-  "sha256": "f82678568e1865e819292ff839840efa7830e154b0ea690f4309fd4cf1eb6141",
-  "notes": "The Index Windows desktop 0.2.32.",
-  "publishedAt": "2026-10-01T12:35:07Z"
+  "version": "0.3.2",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v0.3.2/TheIndexSetup-0.3.2.exe",
+  "sha256": "993c5ae76be77f07b777a664d67eb4c1e694b3d19930631a4b773352661c0473",
+  "notes": "The Index Tauri desktop 0.3.2.",
+  "publishedAt": "2026-10-01T13:08:37Z"
 }
