@@ -1,0 +1,56 @@
+name: Build Catalogue Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "catalogue/**"
+      - ".github/workflows/build-catalogue.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: catalogue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Check Catalogue source files
+        shell: pwsh
+        run: |
+          foreach ($file in @('catalogue.py', 'remind.py', 'test_catalogue.py', 'Catalogue.iss', 'assets/catalogue.png')) {
+            if (!(Test-Path $file)) { throw "Missing required Catalogue source: $file" }
+          }
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pyinstaller pillow
+      - name: Test Catalogue
+        run: python test_catalogue.py
+      - name: Build Windows applications
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --windowed --onedir --name Catalogue --add-data "assets/catalogue.png;assets" --collect-all PIL catalogue.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pyinstaller --noconfirm --clean --windowed --onedir --name CatalogueReminder --collect-all PIL remind.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Compile Windows installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $iscc)) { throw "Inno Setup compiler not found" }
+          & $iscc Catalogue.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Catalogue-Windows-Installer
+          path: catalogue/installer/Catalogue-Setup-*.exe
+          if-no-files-found: error
