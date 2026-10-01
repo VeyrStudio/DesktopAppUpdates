@@ -1,0 +1,119 @@
+name: Build Catalogue WebView Desktop
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/catalogue/**"
+      - ".github/workflows/build-catalogue-webview.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: catalogue-webview-release
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/catalogue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reconstruct verified Catalogue source
+        working-directory: .
+        shell: pwsh
+        run: |
+          $parts = @(Get-ChildItem 'apps/catalogue/.source-parts/*.txt' | Sort-Object Name)
+          if ($parts.Count -ne 5) { throw 'Missing Catalogue source parts' }
+          $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ''
+          $archive = Join-Path $env:RUNNER_TEMP 'catalogue-web-source.tar.xz'
+          [IO.File]::WriteAllBytes($archive,[Convert]::FromBase64String($encoded))
+          $hash = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne 'b75c02ea4e365de2c86c3cd72b8e837bcb69cd21bfd7958a61838b41d1ac2675') { throw "Source checksum mismatch $hash" }
+          tar -xJf $archive -C apps/catalogue
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Restore approved Catalogue icon
+        working-directory: .
+        shell: pwsh
+        run: |
+          $raw = (Get-Content 'catalogue/.source-parts/archive.b64' -Raw) -replace '\s',''
+          $archive = Join-Path $env:RUNNER_TEMP 'catalogue-original.tar.xz'
+          [IO.File]::WriteAllBytes($archive,[Convert]::FromBase64String($raw))
+          $folder = Join-Path $env:RUNNER_TEMP 'catalogue-original'
+          New-Item -ItemType Directory -Force $folder | Out-Null
+          tar -xJf $archive -C $folder
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item (Join-Path $folder 'assets/catalogue.png') 'apps/catalogue/approved-icon.png'
+      - name: Generate Windows icons from approved artwork
+        shell: pwsh
+        run: |
+          python -m pip install pillow
+          @'
+          from PIL import Image
+          from pathlib import Path
+          im=Image.open('approved-icon.png').convert('RGBA')
+          icons=Path('src-tauri/icons')
+          icons.mkdir(parents=True,exist_ok=True)
+          for n,name in [(32,'32x32.png'),(128,'128x128.png'),(256,'128x128@2x.png')]:
+            im.resize((n,n),Image.Resampling.LANCZOS).save(icons/name)
+          im.save(icons/'icon.ico',sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])
+          im.resize((128,128),Image.Resampling.LANCZOS).save('src/logo.png')
+          '@ | python -
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/catalogue/src-tauri -> target
+      - name: Version Catalogue independently
+        shell: pwsh
+        run: |
+          $version = "2.0.$env:GITHUB_RUN_NUMBER"
+          $conf = Get-Content 'src-tauri/tauri.conf.json' -Raw | ConvertFrom-Json
+          $conf.version = $version
+          $conf | ConvertTo-Json -Depth 16 | Set-Content 'src-tauri/tauri.conf.json' -Encoding UTF8
+          $cargo = Get-Content 'src-tauri/Cargo.toml' -Raw
+          $cargo = $cargo -replace '(?m)^version = "2.0.0"', ('version = "' + $version + '"')
+          Set-Content 'src-tauri/Cargo.toml' $cargo -Encoding UTF8
+          "CATALOGUE_VERSION=$version" >> $env:GITHUB_ENV
+      - name: Install frontend dependencies
+        run: npm install
+      - name: Validate JavaScript
+        run: node --check src/app.js
+      - name: Compile Windows desktop installer
+        run: npm run build -- --bundles nsis
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Catalogue-WebView-Windows
+          path: apps/catalogue/src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
+      - name: Publish to existing Catalogue update channel
+        working-directory: .
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version=$env:CATALOGUE_VERSION
+          $tag="catalogue-v$version"
+          $source=Get-ChildItem 'apps/catalogue/src-tauri/target/release/bundle/nsis/*-setup.exe' | Select-Object -First 1
+          if (!$source) { throw 'Catalogue installer not built' }
+          $dest=Join-Path $env:RUNNER_TEMP "Catalogue-Setup-$version.exe"
+          Copy-Item $source.FullName $dest -Force
+          $hash=(Get-FileHash $dest -Algorithm SHA256).Hash.ToLowerInvariant()
+          gh release create $tag $dest --repo $env:GITHUB_REPOSITORY --title "Catalogue $version" --notes "Ledgerly-style Catalogue interface update; preserves the Catalogue SQLite database and uploaded icons."
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $manifest=[ordered]@{version=$version;url="https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag/Catalogue-Setup-$version.exe";sha256=$hash;publishedAt=(Get-Date).ToUniversalTime().ToString('o')}
+          $file=Join-Path $env:RUNNER_TEMP 'catalogue-latest.json'
+          $manifest | ConvertTo-Json | Set-Content $file -Encoding UTF8
+          $encoded=[Convert]::ToBase64String([IO.File]::ReadAllBytes($file))
+          $repo=$env:GITHUB_REPOSITORY
+          $path='catalogue/latest.json'
+          $sha=gh api "repos/$repo/contents/$path" --jq '.sha' 2>$null
+          $args=@('api','-X','PUT',"repos/$repo/contents/$path",'-f',"message=Catalogue updater: $version [skip ci]",'-f',"content=$encoded")
+          if ($LASTEXITCODE -eq 0 -and $sha) { $args+=@('-f',"sha=$sha") }
+          & gh @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
