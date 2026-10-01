@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "appId": "the-index",
   "appName": "The Index",
-  "version": null,
-  "url": null,
-  "sha256": null,
-  "notes": "No Windows installer released yet.",
-  "publishedAt": null
+  "version": "0.1.21",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v0.1.21/TheIndexSetup-0.1.21.exe",
+  "sha256": "c1d2dd695b6fb6131409072768a6b0aff6eeb52a69e7d5ceccfd0315acba16f1",
+  "notes": "The Index Windows starter 0.1.21.",
+  "publishedAt": "2026-10-01T12:00:15Z"
 }
