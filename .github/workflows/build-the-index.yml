@@ -71,6 +71,7 @@ jobs:
           node --check src/settings-enhancements.js
           node --check src/quality-enhancements.js
           node --check src/productivity-enhancements.js
+          node --check src/profile-layout.js
 
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
