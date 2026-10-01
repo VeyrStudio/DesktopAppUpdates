@@ -4,7 +4,7 @@ const root=path.join(__dirname,'..','src');
 const scriptNames=['renderer.js','profile-enhancements.js','library-enhancements.js','settings-enhancements.js','quality-enhancements.js'];
 async function setup(){
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script[^>]*><\/script>/g,'');
- const dom=new JSDOM(html,{url:'http://localhost',runScripts:'outside-only',pretendToBeVisual:true});
+ const dom=new JSDOM(html,{url:'http://localhost',runScripts:'dangerously',pretendToBeVisual:true});
  const w=dom.window;
  let data={characters:[],stories:[],worldbuilding:[],notes:[],tags:[],events:[],settings:{}};
  w.indexAPI={read:async()=>structuredClone(data),save:async next=>(data=structuredClone(JSON.parse(JSON.stringify(next))),data),version:async()=>'0.2.0',checkUpdate:async()=>({status:'up-to-date'}),chooseImage:async()=>null,backup:async()=>'/tmp/backup.json',onUpdate:()=>{}};
@@ -12,7 +12,7 @@ async function setup(){
  w.confirm=()=>true;
  w.alert=()=>{};
  w.document.execCommand=()=>true;
- for(const script of scriptNames)w.eval(fs.readFileSync(path.join(root,script),'utf8'));
+ for(const name of scriptNames){const script=w.document.createElement('script');script.textContent=fs.readFileSync(path.join(root,name),'utf8');w.document.body.appendChild(script);}
  await new Promise(r=>setTimeout(r,40));
  return {w,dom,stored:()=>data};
 }
