@@ -45,8 +45,14 @@ jobs:
       - name: Enable verified in-app Windows installer updates
         run: python patches/install_github_updates.py
 
+      - name: Repair dashboard panel sizing
+        run: python patches/fix_dashboard_panel_height.py
+
       - name: Test Catalogue payment, recurrence, and backups
         run: python test_catalogue.py
+
+      - name: Verify dashboard actually displays its panels
+        run: python tests/test_layout.py
 
       - name: Assign Windows build version
         shell: pwsh
