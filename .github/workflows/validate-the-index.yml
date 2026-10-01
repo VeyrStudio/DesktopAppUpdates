@@ -16,6 +16,10 @@ jobs:
         working-directory: apps/the-index
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            apps/the-index
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
