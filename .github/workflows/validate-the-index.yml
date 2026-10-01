@@ -1,0 +1,43 @@
+name: Validate The Index Features
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/the-index/**"
+      - ".github/workflows/validate-the-index.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/the-index
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Restore compressed original renderer
+        shell: pwsh
+        working-directory: .
+        run: |
+          node -e "const fs=require('fs'),zlib=require('zlib');const p='apps/the-index/.source-parts/renderer.br.b64';fs.writeFileSync('apps/the-index/src/renderer.js',zlib.brotliDecompressSync(Buffer.from(fs.readFileSync(p,'utf8').trim(),'base64')));"
+          $hash=(Get-FileHash 'apps/the-index/src/renderer.js' -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne '5f622e44ea6a8217f1bca0d6a80f211dea85c9f7b348ec4d165f83d9e8cc73e6') { throw "Invalid renderer SHA256" }
+      - name: Check JavaScript syntax for every app module
+        run: |
+          node --check src/renderer.js
+          node --check src/main.js
+          node --check src/preload.js
+          node --check src/store.js
+          node --check src/updater.js
+          node --check src/profile-enhancements.js
+          node --check src/library-enhancements.js
+          node --check src/settings-enhancements.js
+          node --check src/quality-enhancements.js
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run data, updater and browser-level interface tests
+        run: npm test
