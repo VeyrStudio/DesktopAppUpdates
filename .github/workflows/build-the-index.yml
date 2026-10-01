@@ -26,14 +26,27 @@ jobs:
         working-directory: .
         run: |
           $folder = 'apps/the-index/.source-parts'
-          $parts = Get-ChildItem "$folder/*.txt" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^\\d{3}\\.txt
+          $parts = Get-ChildItem "$folder/*.txt" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^[0-9]{3}[.]txt$' } | Sort-Object Name
+          if (-not $parts) { throw "The Index encoded source parts have not been uploaded to $folder." }
+          $expected = (Get-Content "$folder/SHA256.txt" -Raw).Split(' ')[0].Trim().ToLowerInvariant()
+          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+          $archive = Join-Path $env:RUNNER_TEMP 'the-index-source.tar.xz'
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw 'The Index source archive failed SHA256 verification.' }
+          $extract = Join-Path $env:RUNNER_TEMP 'the-index-reconstructed'
+          New-Item -ItemType Directory -Force -Path $extract | Out-Null
+          tar -xJf $archive -C $extract
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to extract The Index source archive.' }
+          Copy-Item -Path "$extract/The-Index/*" -Destination 'apps/the-index' -Recurse -Force
+      - name: Validate The Index source and approved icon
         shell: pwsh
         working-directory: .
         run: |
           foreach ($required in @('apps/the-index/package.json','apps/the-index/src/main.js','apps/the-index/assets/icon.ico','apps/the-index/assets/icon.png')) {
-            if (-not (Test-Path $required)) { throw "The Index source file missing: $required. Upload the complete approved starter project to apps/the-index first." }
+            if (-not (Test-Path $required)) { throw "The Index source file missing: $required" }
           }
-          if ('${{ inputs.version }}' -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be MAJOR.MINOR.PATCH.' }
+          if ('${{ inputs.version }}' -notmatch '^[0-9]+[.][0-9]+[.][0-9]+$') { throw 'Version must be MAJOR.MINOR.PATCH.' }
       - name: Node.js
         uses: actions/setup-node@v4
         with:
