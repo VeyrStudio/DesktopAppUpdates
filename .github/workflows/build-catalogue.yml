@@ -42,6 +42,9 @@ jobs:
       - name: Allow subscriptions without a charge date
         run: python patches/optional_charge_date.py
 
+      - name: Enable verified in-app Windows installer updates
+        run: python patches/install_github_updates.py
+
       - name: Test Catalogue payment, recurrence, and backups
         run: python test_catalogue.py
 
