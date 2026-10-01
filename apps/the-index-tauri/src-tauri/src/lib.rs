@@ -1,6 +1,6 @@
 use tauri::Manager;
 use serde_json::{json,Value};
-use std::{fs,io,io::Write,path::{Path,PathBuf},process::Command};
+use std::{fs,io,io::{Write,Read},path::{Path,PathBuf},process::Command};
 use chrono::Utc;
 use base64::Engine;
 use sha2::{Sha256,Digest};
@@ -22,7 +22,15 @@ fn save_atomic(path:&Path,data:&[u8])->Result<(),String>{
  if let Some(parent)=path.parent(){fs::create_dir_all(parent).map_err(|e|e.to_string())?;}
  let temp=path.with_extension("json.tmp");
  {let mut file=fs::File::create(&temp).map_err(|e|e.to_string())?;file.write_all(data).and_then(|_|file.sync_all()).map_err(|e|e.to_string())?;}
- fs::rename(&temp,path).map_err(|e|e.to_string())
+ if path.exists() {
+   let previous=path.with_extension("json.previous");
+   if previous.exists(){fs::remove_file(&previous).map_err(|e|e.to_string())?;}
+   fs::rename(path,&previous).map_err(|e|e.to_string())?;
+   match fs::rename(&temp,path) {
+     Ok(())=>{let _=fs::remove_file(&previous);Ok(())},
+     Err(err)=>{let _=fs::rename(&previous,path);Err(err.to_string())}
+   }
+ } else {fs::rename(&temp,path).map_err(|e|e.to_string())}
 }
 fn migrate_from_electron(app:&tauri::AppHandle,path:&Path)->Result<(),String>{
  if path.exists(){return Ok(())}
