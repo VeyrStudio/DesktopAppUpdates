@@ -29,10 +29,16 @@ dashboard=function(){
  const pinned=db.characters.filter(c=>c.pinned).slice(0,6);
  const pinnedHtml='<div class="panel" style="margin-top:14px"><div class="section-header"><h2>Pinned Characters</h2>'+button('Open Characters',"go('Characters')")+'</div>'+(pinned.length?'<div class="grid">'+pinned.map(characterTile).join('')+'</div>':'<p class="sub">Pin characters from the Characters Library to keep them here.</p>')+'</div>';
  const counts='<div class="panel" style="margin-top:14px"><h3>Workspace</h3><div class="toolbar">'+pill('Stories: '+db.stories.length)+pill('World Entries: '+db.worldbuilding.length)+pill('Notebook Notes: '+db.notes.length)+pill('Tags: '+db.tags.length)+'</div></div>';
- return basic+pinnedHtml+counts;
+ return (basic+pinnedHtml).replace(/onclick="pickCharacter\('/g,'onclick="openProfile(\'')+counts;
 };
 const indexProfileBeforePins=profile;
 profile=function(){const basic=indexProfileBeforePins();if(!profileId)return basic;const c=db.characters.find(x=>x.id===profileId);if(!c)return basic;const marker=button(c.pinned?'★ Unpin Character':'☆ Pin Character',"indexTogglePin('"+esc(c.id)+"')");
  return basic.replace(button('Duplicate',"duplicateCharacter('"+esc(c.id)+"')"),button('Duplicate',"duplicateCharacter('"+esc(c.id)+"')")+marker)};
 const indexSettingsSaveBeforeRestart=saveSetting;
 saveSetting=async function(k,v){await indexSettingsSaveBeforeRestart(k,v);if(k==='customFrame'&&api.restartApp){toast('Applying window frame preference…');setTimeout(()=>api.restartApp(),450)}};
+
+let INDEX_CLICK_AUDIO=null;
+document.addEventListener('click',event=>{
+ if(!db?.settings?.sounds||!event.target.closest('button'))return;
+ try{const Sound=window.AudioContext||window.webkitAudioContext;if(!Sound)return;INDEX_CLICK_AUDIO??=new Sound();const osc=INDEX_CLICK_AUDIO.createOscillator(),gain=INDEX_CLICK_AUDIO.createGain();osc.type='sine';osc.frequency.value=610;gain.gain.value=.008;osc.connect(gain).connect(INDEX_CLICK_AUDIO.destination);const t=INDEX_CLICK_AUDIO.currentTime;osc.start(t);osc.stop(t+.025)}catch{}
+});
