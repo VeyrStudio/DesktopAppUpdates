@@ -1,6 +1,11 @@
 name: Build The Index for Windows
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/the-index/**'
+      - '.github/workflows/build-the-index.yml'
   workflow_dispatch:
 
 permissions:
@@ -19,6 +24,11 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            apps/the-index
+            the-index
+          sparse-checkout-cone-mode: false
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -56,6 +66,11 @@ jobs:
           node --check src/renderer.js
           node --check src/preload.js
           node --check src/updater.js
+          node --check src/profile-enhancements.js
+          node --check src/library-enhancements.js
+          node --check src/settings-enhancements.js
+          node --check src/quality-enhancements.js
+          node --check src/productivity-enhancements.js
 
       - name: Install app dependencies
         run: npm install --no-audit --no-fund
@@ -66,7 +81,7 @@ jobs:
       - name: Assign The Index version
         shell: pwsh
         run: |
-          $version = '0.1.${{ github.run_number }}'
+          $version = '0.2.${{ github.run_number }}'
           npm version $version --no-git-tag-version --allow-same-version
           if ($LASTEXITCODE -ne 0) { throw 'Version update failed' }
           "INDEX_VERSION=$version" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
@@ -91,8 +106,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "the-index-v$env:INDEX_VERSION"
-          gh release create $tag $env:INDEX_INSTALLER_FILE --repo 'VeyrStudio/DesktopAppUpdates' --title "The Index $env:INDEX_VERSION" --notes "The Index Windows starter build. Additional approved features are in development." --target '${{ github.sha }}'
-          if ($LASTEXITCODE -ne 0) { throw "Release publication failed" }
+          $published = $false
+          for ($attempt=1; $attempt -le 3; $attempt++) {
+            gh release create $tag $env:INDEX_INSTALLER_FILE --repo 'VeyrStudio/DesktopAppUpdates' --title "The Index $env:INDEX_VERSION" --notes "The Index expanded Windows release: character editors, stories, worldbuilding, notebook, tags, timeline, settings, and updates." --target '${{ github.sha }}'
+            if ($LASTEXITCODE -eq 0) { $published=$true; break }
+            if ($attempt -lt 3) { Start-Sleep -Seconds 12 }
+          }
+          if (-not $published) { throw "Release publication failed after 3 attempts" }
 
       - name: Update dedicated The Index manifest
         shell: pwsh
@@ -106,7 +126,7 @@ jobs:
             version = $version
             url = "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v$version/TheIndexSetup-$version.exe"
             sha256 = $env:INDEX_INSTALLER_SHA
-            notes = "The Index Windows starter $version."
+            notes = "The Index Windows desktop $version."
             publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
           }
           $manifest | ConvertTo-Json -Depth 5 | Set-Content 'the-index/latest.json' -Encoding utf8
