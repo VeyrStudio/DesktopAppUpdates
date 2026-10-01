@@ -85,6 +85,7 @@ test('Dashboard pin controls and searchable library sorting are functional',asyn
 });
 test('Notebook sanitizes scripts from rich HTML while retaining readable formatting',async()=>{
  const {w,dom}=await setup();
+ w.eval("go('Notebook')");
  await w.eval("indexNewNote()");
  const editor=w.document.querySelector('#index-note-editor');
  editor.innerHTML='<b>Saved</b><img src=x onerror=alert(1)><script>alert(1)</script>';
