@@ -120,6 +120,7 @@ jobs:
           git add 'the-index/latest.json'
           git commit -m "Publish The Index manifest v$version"
           if ($LASTEXITCODE -ne 0) { throw "Manifest commit failed" }
+          git restore 'apps/the-index/package.json'
           git pull --rebase origin main
           if ($LASTEXITCODE -ne 0) { throw "Rebase failed" }
           git push origin HEAD:main
