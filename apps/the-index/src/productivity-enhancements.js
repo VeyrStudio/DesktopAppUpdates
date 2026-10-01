@@ -42,3 +42,17 @@ document.addEventListener('click',event=>{
  if(!db?.settings?.sounds||!event.target.closest('button'))return;
  try{const Sound=window.AudioContext||window.webkitAudioContext;if(!Sound)return;INDEX_CLICK_AUDIO??=new Sound();const osc=INDEX_CLICK_AUDIO.createOscillator(),gain=INDEX_CLICK_AUDIO.createGain();osc.type='sine';osc.frequency.value=610;gain.gain.value=.008;osc.connect(gain).connect(INDEX_CLICK_AUDIO.destination);const t=INDEX_CLICK_AUDIO.currentTime;osc.start(t);osc.stop(t+.025)}catch{}
 });
+
+async function indexSetProgress(id,value){
+ const c=db.characters.find(x=>x.id===id);
+ if(!c||!['Existing','In Progress','Blank'].includes(value))return;
+ indexRemember();c.status=value;c.updated=Date.now();await commit();
+}
+const indexProfileBeforeProgress=profile;
+profile=function(){
+ const html=indexProfileBeforeProgress();
+ if(!profileId)return html;
+ const c=db.characters.find(x=>x.id===profileId);if(!c)return html;
+ const progress='<label class="profile-progress">Profile Progress <select aria-label="Profile progress" onchange="indexSetProgress(\''+esc(c.id)+'\',this.value)">'+['Blank','In Progress','Existing'].map(v=>'<option '+(c.status===v?'selected':'')+'>'+v+'</option>').join('')+'</select></label>';
+ return html.replace('<div class="section-tabs">',progress+'<div class="section-tabs">');
+};
