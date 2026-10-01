@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "The Index",
+  "version": "0.3.0",
+  "identifier": "com.veyrstudio.theindex",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "The Index",
+        "width": 1536,
+        "height": 950,
+        "minWidth": 1100,
+        "minHeight": 750,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "skipTaskbar": false,
+        "backgroundColor": "#F6F3EA"
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "withGlobalTauri": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico"
+      }
+    }
+  }
+}
