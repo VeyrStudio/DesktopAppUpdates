@@ -41,6 +41,7 @@ jobs:
           node --check src/library-enhancements.js
           node --check src/settings-enhancements.js
           node --check src/quality-enhancements.js
+          node --check src/productivity-enhancements.js
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Run data, updater and browser-level interface tests
