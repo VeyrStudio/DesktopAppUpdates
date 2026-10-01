@@ -3,6 +3,7 @@ const path=require('node:path');
 const fs=require('node:fs');
 const {createStore}=require('./store');
 let mainWindow,store,updater;
+function desktopFrameOptions(){if(process.platform!=='win32'||!store?.read().settings.customFrame)return {};return {titleBarStyle:'hidden',titleBarOverlay:{color:'#0a2e23',symbolColor:'#f7f0dd',height:34}};}
 function dataFolder(){const fallback=path.join(app.getPath('userData'),'data');const config=path.join(app.getPath('userData'),'data-location.json');try{const candidate=JSON.parse(fs.readFileSync(config,'utf8')).path;if(typeof candidate==='string'&&path.isAbsolute(candidate)&&fs.existsSync(candidate))return candidate;}catch{}return fallback;}
 function htmlEscape(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
 function setupUpdater(){
@@ -13,10 +14,10 @@ function setupUpdater(){
 
 app.whenReady().then(()=>{
   store=createStore(dataFolder());
-  mainWindow=new BrowserWindow({width:1500,height:950,minWidth:1024,minHeight:650,backgroundColor:'#f8f5ed',icon:path.join(__dirname,'../assets/icon.png'),webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+  mainWindow=new BrowserWindow({width:1500,height:950,minWidth:1024,minHeight:650,backgroundColor:'#f8f5ed',...desktopFrameOptions(),icon:path.join(__dirname,'../assets/icon.png'),webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
   mainWindow.loadFile(path.join(__dirname,'index.html'));
   setupUpdater();
-  app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0){mainWindow=new BrowserWindow({width:1500,height:950,webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});mainWindow.loadFile(path.join(__dirname,'index.html'));}});
+  app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0){mainWindow=new BrowserWindow({width:1500,height:950,...desktopFrameOptions(),webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});mainWindow.loadFile(path.join(__dirname,'index.html'));}});
 });
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit();});
 ipcMain.handle('read',()=>store.read());
@@ -75,3 +76,5 @@ ipcMain.handle('export-pdf',async(_event,request={})=>{
  const window=new BrowserWindow({show:false,webPreferences:{sandbox:true,nodeIntegration:false,contextIsolation:true}});
  try{await window.loadURL('data:text/html;charset=utf-8,'+encodeURIComponent(html));const pdf=await window.webContents.printToPDF({printBackground:true,pageSize:'A4'});fs.writeFileSync(result.filePath,pdf);return result.filePath;}finally{window.destroy();}
 });
+
+ipcMain.handle('restart-app',async()=>{app.relaunch();app.quit();return true});
