@@ -6,6 +6,9 @@ on:
       - "apps/the-index/**"
       - ".github/workflows/validate-the-index.yml"
   workflow_dispatch:
+concurrency:
+  group: the-index-qa
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
