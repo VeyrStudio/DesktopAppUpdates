@@ -21,6 +21,85 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Reconstruct The Index from encoded source parts
+        shell: pwsh
+        working-directory: .
+        run: |
+          $folder = 'apps/the-index/.source-parts'
+          $parts = Get-ChildItem "$folder/*.txt" -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^\\d{3}\\.txt
+        shell: pwsh
+        working-directory: .
+        run: |
+          foreach ($required in @('apps/the-index/package.json','apps/the-index/src/main.js','apps/the-index/assets/icon.ico','apps/the-index/assets/icon.png')) {
+            if (-not (Test-Path $required)) { throw "The Index source file missing: $required. Upload the complete approved starter project to apps/the-index first." }
+          }
+          if ('${{ inputs.version }}' -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be MAJOR.MINOR.PATCH.' }
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install app dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run storage and updater tests
+        run: npm test
+      - name: Set release version
+        shell: pwsh
+        run: npm version '${{ inputs.version }}' --no-git-tag-version --allow-same-version
+      - name: Build NSIS installer (without automatic publication)
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win nsis --publish never
+      - name: Check exact installer filename and checksum
+        shell: pwsh
+        run: |
+          $version='${{ inputs.version }}'
+          $file="dist/TheIndexSetup-$version.exe"
+          if (-not (Test-Path $file)) { throw "Expected installer not built: $file" }
+          $sha=(Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant()
+          "INDEX_INSTALLER_SHA=$sha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "INDEX_INSTALLER_FILE=$file" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Publish app-specific GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $version='${{ inputs.version }}'
+          $tag="the-index-v$version"
+          gh release create $tag "$env:INDEX_INSTALLER_FILE" --repo 'VeyrStudio/DesktopAppUpdates' --title "The Index $version" --notes "Windows installer for The Index." --target "${{ github.sha }}"
+      - name: Publish The Index update manifest
+        shell: pwsh
+        working-directory: .
+        run: |
+          $version='${{ inputs.version }}'
+          $manifest = [ordered]@{
+            schemaVersion=1
+            appId='the-index'
+            appName='The Index'
+            version=$version
+            url="https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v$version/TheIndexSetup-$version.exe"
+            sha256="$env:INDEX_INSTALLER_SHA"
+            notes="The Index Windows desktop $version."
+            publishedAt=(Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+          }
+          $manifest | ConvertTo-Json -Depth 8 | Set-Content 'the-index/latest.json' -Encoding utf8
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'the-index/latest.json'
+          git commit -m "Publish The Index update manifest v$version"
+          git push
+ } | Sort-Object Name
+          if (-not $parts) { throw "The Index encoded source parts have not been uploaded to $folder." }
+          $expected = ((Get-Content "$folder/SHA256.txt" -Raw).Trim() -split '\\s+')[0].ToLowerInvariant()
+          $encoded = ($parts | ForEach-Object { (Get-Content $_.FullName -Raw).Trim() }) -join ''
+          $archive = Join-Path $env:RUNNER_TEMP 'the-index-source.tar.xz'
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw 'The Index source archive failed SHA256 verification.' }
+          $extract = Join-Path $env:RUNNER_TEMP 'the-index-reconstructed'
+          New-Item -ItemType Directory -Force -Path $extract | Out-Null
+          tar -xJf $archive -C $extract
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to extract The Index source archive.' }
+          Copy-Item -Path "$extract/The-Index/*" -Destination 'apps/the-index' -Recurse -Force
       - name: Validate The Index source and approved icon
         shell: pwsh
         working-directory: .
