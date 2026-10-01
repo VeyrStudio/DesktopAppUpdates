@@ -1,0 +1,18 @@
+'use strict';
+const https=require('node:https');
+const fs=require('node:fs');
+const path=require('node:path');
+const os=require('node:os');
+const crypto=require('node:crypto');
+const {spawn}=require('node:child_process');
+const MANIFEST='https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/the-index/latest.json';
+const ASSET_PREFIX='https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v';
+function versionGreater(a,b){const parse=v=>String(v).split('.').map(x=>Number(x));const x=parse(a),y=parse(b);return [0,1,2].some((_,i)=>{if((x[i]||0)!==(y[i]||0))return (x[i]||0)>(y[i]||0);return false;});}
+function get(url, redirects=5){return new Promise((resolve,reject)=>{if(redirects<0)return reject(new Error('Too many redirects'));const req=https.get(url,{headers:{'User-Agent':'TheIndex-Updater/0.1','Cache-Control':'no-cache'}},res=>{if([301,302,303,307,308].includes(res.statusCode)){const target=new URL(res.headers.location,url);res.resume();if(target.protocol!=='https:')return reject(new Error('Non-HTTPS redirect rejected'));return resolve(get(target.toString(),redirects-1));}if(res.statusCode!==200){res.resume();return reject(new Error('Update server returned HTTP '+res.statusCode));}resolve(res);});req.on('error',reject);req.setTimeout(20000,()=>req.destroy(new Error('Update request timed out')));});}
+async function readManifest(){const res=await get(MANIFEST);let raw='';for await(const chunk of res){raw+=chunk;if(raw.length>50000)throw new Error('Update manifest is too large');}const m=JSON.parse(raw);if(m.appId!=='the-index'||m.schemaVersion!==1)throw new Error('Unexpected update manifest');if(m.version===null||m.url===null)return null;if(!/^\d+\.\d+\.\d+$/.test(m.version)|| !/^[a-f0-9]{64}$/i.test(m.sha256||''))throw new Error('Invalid update metadata');const validUrl=ASSET_PREFIX+m.version+'/TheIndexSetup-'+m.version+'.exe';if(m.url!==validUrl)throw new Error('Update URL does not match The Index release');return m;}
+function createUpdater({app,notify,settings}){let available=null,downloaded=null;
+ async function check(){if(!app.isPackaged)return {status:'packaged-only'};const m=await readManifest();if(!m||!versionGreater(m.version,app.getVersion()))return {status:'up-to-date'};available=m;notify({status:'available',version:m.version});if(settings().backgroundDownloads)await download();return {status:'available',version:m.version};}
+ async function download(){if(!available)throw new Error('Check for updates first');const m=available;const temp=path.join(os.tmpdir(),'TheIndex-'+m.version+'-'+crypto.randomBytes(6).toString('hex')+'.exe');let hash=crypto.createHash('sha256');try{const res=await get(m.url);const stream=fs.createWriteStream(temp,{flags:'wx'});try{for await(const chunk of res){hash.update(chunk);if(!stream.write(chunk))await new Promise(resolve=>stream.once('drain',resolve));}await new Promise((resolve,reject)=>stream.end(err=>err?reject(err):resolve()));}catch(e){stream.destroy();throw e;}if(hash.digest('hex').toLowerCase()!==m.sha256.toLowerCase())throw new Error('Installer checksum did not match release manifest');downloaded=temp;notify({status:'downloaded',version:m.version});return {status:'downloaded',version:m.version};}catch(e){try{fs.unlinkSync(temp);}catch{}throw e;}}
+ function install(){if(!downloaded)throw new Error('Download and verify update first');if(process.platform!=='win32')throw new Error('Windows installer required');const child=spawn(downloaded,[],{detached:true,stdio:'ignore'});child.unref();app.quit();return {status:'installing'};}
+ return {check,download,install};}
+module.exports={createUpdater,readManifest,versionGreater};
