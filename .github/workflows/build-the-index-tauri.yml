@@ -1,0 +1,129 @@
+name: Build The Index (Ledgerly Tauri Foundation)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/the-index-tauri/**'
+      - '.github/workflows/build-the-index-tauri.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: the-index-tauri-build
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/the-index-tauri
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            apps/the-index
+            apps/the-index-tauri
+            the-index
+          sparse-checkout-cone-mode: false
+      - name: Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rust stable (Ledgerly framework)
+        uses: dtolnay/rust-toolchain@stable
+      - name: Restore original Index frontend with verified approved icon
+        shell: pwsh
+        working-directory: .
+        run: |
+          $s='apps/the-index'; $t='apps/the-index-tauri'
+          node -e "const fs=require('fs'),zlib=require('zlib');fs.writeFileSync('$t/src/renderer.js',zlib.brotliDecompressSync(Buffer.from(fs.readFileSync('$s/.source-parts/renderer.br.b64','utf8').trim(),'base64')))"
+          if((Get-FileHash "$t/src/renderer.js" -Algorithm SHA256).Hash.ToLowerInvariant() -ne '5f622e44ea6a8217f1bca0d6a80f211dea85c9f7b348ec4d165f83d9e8cc73e6'){throw 'Original renderer SHA256 mismatch'}
+          foreach($f in @('styles.css','enhancements.css','profile-enhancements.js','library-enhancements.js','settings-enhancements.js','quality-enhancements.js','productivity-enhancements.js','profile-layout.js')){Copy-Item "$s/src/$f" "$t/src/$f" -Force}
+          New-Item -ItemType Directory -Force "$t/src/assets" | Out-Null
+          [IO.File]::WriteAllBytes("$t/src/assets/icon.png",[Convert]::FromBase64String((Get-Content "$s/.source-parts/icon-small.png.b64" -Raw).Trim()))
+          if((Get-FileHash "$t/src/assets/icon.png" -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'fe83e043999038b7037e6115cfa51a3bf552f93bcf61007944a44e26059827a1'){throw 'Approved icon SHA256 mismatch'}
+          foreach($f in @('bridge.js','renderer.js','profile-enhancements.js','library-enhancements.js','settings-enhancements.js','quality-enhancements.js','productivity-enhancements.js','profile-layout.js','creation-fixes.js')){node --check "$t/src/$f";if($LASTEXITCODE -ne 0){throw "JavaScript syntax error in $f"}}
+      - name: Install frontend tools
+        run: npm install --no-audit --no-fund
+      - name: Test creation of characters, stories, worldbuilding, notes, tags
+        run: npm test
+      - name: Generate approved Windows icon
+        shell: pwsh
+        run: |
+          python -m pip install pillow
+          @'
+          from PIL import Image
+          Image.open("src/assets/icon.png").convert("RGBA").resize((512,512),Image.Resampling.LANCZOS).save("src-tauri/icon-source.png")
+          '@ | python -
+          if($LASTEXITCODE -ne 0){throw 'Preparing icon failed'}
+          npx tauri icon 'src-tauri/icon-source.png'
+          if($LASTEXITCODE -ne 0 -or -not (Test-Path 'src-tauri/icons/icon.ico')){throw 'Windows icon missing'}
+      - name: Assign independent Tauri Index version
+        shell: pwsh
+        run: |
+          $v='0.3.${{ github.run_number }}'
+          $c=Get-Content 'src-tauri/tauri.conf.json' -Raw | ConvertFrom-Json
+          $c.version=$v
+          $c | ConvertTo-Json -Depth 20 | Set-Content 'src-tauri/tauri.conf.json' -Encoding utf8
+          npm version $v --no-git-tag-version --allow-same-version
+          if($LASTEXITCODE -ne 0){throw 'Version update failed'}
+          $cargo=Get-Content 'src-tauri/Cargo.toml' -Raw
+          $cargo=$cargo -replace '(?m)^version = "[^"]+"',"version = $([char]34)$v$([char]34)"
+          Set-Content 'src-tauri/Cargo.toml' -Value $cargo -Encoding utf8
+          "INDEX_TAURI_VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Cache Rust compilation
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/the-index-tauri/src-tauri -> target
+      - name: Build Tauri Windows NSIS installer
+        run: npm run build
+      - name: Stage installer and SHA256
+        shell: pwsh
+        run: |
+          $source=Get-ChildItem 'src-tauri/target/release/bundle/nsis/*-setup.exe' | Select-Object -First 1
+          if(-not $source){throw 'Tauri Windows installer missing'}
+          $file=Join-Path $env:RUNNER_TEMP "TheIndexSetup-$env:INDEX_TAURI_VERSION.exe"
+          Copy-Item $source.FullName $file -Force
+          "INDEX_INSTALLER_FILE=$file" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "INDEX_INSTALLER_SHA=$((Get-FileHash $file -Algorithm SHA256).Hash.ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Preserve download even if release publishing fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: The-Index-Tauri-Windows-${{ env.INDEX_TAURI_VERSION }}
+          path: ${{ env.INDEX_INSTALLER_FILE }}
+      - name: Publish The Index Tauri release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v=$env:INDEX_TAURI_VERSION
+          gh release create "the-index-v$v" $env:INDEX_INSTALLER_FILE --repo 'VeyrStudio/DesktopAppUpdates' --title "The Index $v (Tauri)" --notes "Rebuilt on Ledgerly's Tauri foundation with corrected native Add forms, isolated storage and migration." --target '${{ github.sha }}'
+          if($LASTEXITCODE -ne 0){throw 'Release publication failed. The Windows installer is still available as a workflow artifact.'}
+      - name: Publish independent update manifest
+        shell: pwsh
+        working-directory: .
+        run: |
+          $v=$env:INDEX_TAURI_VERSION
+          $manifest=[ordered]@{
+            schemaVersion=1
+            appId='the-index'
+            appName='The Index'
+            version=$v
+            url="https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/the-index-v$v/TheIndexSetup-$v.exe"
+            sha256=$env:INDEX_INSTALLER_SHA
+            notes="The Index Tauri desktop $v."
+            publishedAt=(Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+          }
+          $manifest | ConvertTo-Json -Depth 5 | Set-Content 'the-index/latest.json' -Encoding utf8
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'the-index/latest.json'
+          git commit -m "Publish The Index Tauri update $v [skip ci]"
+          if($LASTEXITCODE -ne 0){throw 'Manifest commit failed'}
+          git restore 'apps/the-index-tauri/package.json' 'apps/the-index-tauri/src-tauri/tauri.conf.json' 'apps/the-index-tauri/src-tauri/Cargo.toml'
+          git pull --rebase origin main
+          if($LASTEXITCODE -ne 0){throw 'Manifest rebase failed'}
+          git push origin HEAD:main
+          if($LASTEXITCODE -ne 0){throw 'Manifest push failed'}
