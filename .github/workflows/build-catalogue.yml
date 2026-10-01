@@ -116,18 +116,18 @@ jobs:
         run: |
           gh release create "${{ steps.release_info.outputs.tag }}" "${{ steps.release_info.outputs.asset }}" --repo "${{ github.repository }}" --title "Catalogue $env:CATALOGUE_VERSION" --notes "Catalogue Windows desktop installer."
 
-      - name: Update Catalogue-only release manifest
+      - name: Update Catalogue release manifest through GitHub API
         shell: pwsh
         working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          New-Item -ItemType Directory -Force -Path catalogue | Out-Null
-          Copy-Item (Join-Path $env:RUNNER_TEMP 'catalogue-latest.json') 'catalogue/latest.json'
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add catalogue/latest.json
-          git diff --cached --quiet
-          if ($LASTEXITCODE -ne 0) {
-            git commit -m "Catalogue updater: $env:CATALOGUE_VERSION [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          }
+          $repo = "${{ github.repository }}"
+          $path = 'catalogue/latest.json'
+          $file = Join-Path $env:RUNNER_TEMP 'catalogue-latest.json'
+          $content = [Convert]::ToBase64String([IO.File]::ReadAllBytes($file))
+          $oldSha = gh api "repos/$repo/contents/$path" --jq '.sha' 2>$null
+          $args = @('api','-X','PUT',"repos/$repo/contents/$path",'-f',"message=Catalogue updater: $env:CATALOGUE_VERSION [skip ci]",'-f',"content=$content")
+          if ($LASTEXITCODE -eq 0 -and $oldSha) { $args += @('-f',"sha=$oldSha") }
+          & gh @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
