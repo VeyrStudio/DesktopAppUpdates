@@ -20,6 +20,17 @@ jobs:
         working-directory: catalogue
     steps:
       - uses: actions/checkout@v4
+      - name: Reconstruct Catalogue source
+        shell: pwsh
+        working-directory: .
+        run: |
+          $encoded = (Get-Content 'catalogue/.source-parts/archive.b64' -Raw) -replace '\s',''
+          $archive = Join-Path $env:RUNNER_TEMP 'catalogue-source.tar.xz'
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne '57dea9e7e253ba44e2fbbdd7c390ce9f6f22d629215d787fc285189d333dfb49') { throw 'Catalogue source checksum mismatch' }
+          tar -xJf $archive -C catalogue
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Reconstruct compressed Catalogue source (Ledgerly method)
         shell: pwsh
