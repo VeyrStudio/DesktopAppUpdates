@@ -80,6 +80,15 @@ jobs:
           $cargo = $cargo -replace '(?m)^version = "2.0.0"', ('version = "' + $version + '"')
           Set-Content 'src-tauri/Cargo.toml' $cargo -Encoding UTF8
           "CATALOGUE_VERSION=$version" >> $env:GITHUB_ENV
+      - name: Enable Rust JSON response support
+        shell: pwsh
+        run: |
+          $file='src-tauri/Cargo.toml'
+          $src=Get-Content $file -Raw
+          $src=$src -replace '(?m)^(reqwest\s*=\s*\{[^\r\n]*features\s*=\s*\[)([^\]]*)(\])', '$1$2, "json"$3'
+          if ($src -notmatch '"json"') { throw 'reqwest JSON feature not enabled' }
+          Set-Content $file $src -Encoding UTF8
+
       - name: Install frontend dependencies
         run: npm install
       - name: Validate JavaScript
