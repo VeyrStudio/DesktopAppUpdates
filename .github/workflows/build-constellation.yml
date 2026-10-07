@@ -36,6 +36,14 @@ jobs:
           if ($actual -ne $expected) { throw "Constellation source archive failed its SHA256 check." }
           tar -xJf $archive -C "apps/constellation"
 
+      - name: Enable animated GIF ship images
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/gif-ship-images.py"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'class="card-art-image"' -Quiet)) { throw "Animated GIF ship image markup was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src/styles.css" -SimpleMatch '.card-art-image{' -Quiet)) { throw "Animated GIF ship image CSS was not applied." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
