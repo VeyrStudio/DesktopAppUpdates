@@ -44,6 +44,13 @@ jobs:
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'class="card-art-image"' -Quiet)) { throw "Animated GIF ship image markup was not applied." }
           if (-not (Select-String -Path "apps/constellation/src/styles.css" -SimpleMatch '.card-art-image{' -Quiet)) { throw "Animated GIF ship image CSS was not applied." }
 
+      - name: Make update checks bypass stale caches
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/fresh-update-check.py"
+          if (-not (Select-String -Path "apps/constellation/src-tauri/src/lib.rs" -SimpleMatch 'CACHE_CONTROL' -Quiet)) { throw "Fresh update check patch was not applied." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
