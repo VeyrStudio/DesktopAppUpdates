@@ -22,20 +22,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Reconstruct Constellation source
-        shell: pwsh
-        working-directory: .
-        run: |
-          $parts = Get-ChildItem "apps/constellation/.source-parts/*.txt" | Where-Object { $_.Name -match '^\\d{2}\\.txt$' } | Sort-Object Name
-          if (-not $parts) { throw "Constellation source parts are missing." }
-          $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
-          $archive = Join-Path $env:RUNNER_TEMP "constellation_source.tar.xz"
-          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
-          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
-          $expected = ((Get-Content "apps/constellation/.source-parts/SHA256.txt" -Raw).Trim() -split '\\s+')[0].ToLowerInvariant()
-          if ($actual -ne $expected) { throw "Constellation source archive failed its SHA256 check." }
-          tar -xJf $archive -C "apps/constellation"
-
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -52,12 +38,16 @@ jobs:
       - name: Install frontend tooling
         run: npm install
 
-      - name: Generate Windows icon set from Constellation icon
+      - name: Reconstruct approved Constellation icon
         shell: pwsh
         run: |
+          $parts = Get-ChildItem ".icon-parts/*.txt" | Sort-Object Name
+          if (-not $parts) { throw "Constellation icon parts are missing." }
+          $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          New-Item -ItemType Directory -Force -Path "src/assets" | Out-Null
           $source = Join-Path $env:RUNNER_TEMP "constellation-approved-icon.png"
-          $b64 = (Get-Content "icon-base64.txt" -Raw).Trim()
-          [IO.File]::WriteAllBytes($source, [Convert]::FromBase64String($b64))
+          [IO.File]::WriteAllBytes($source, [Convert]::FromBase64String($encoded))
+          Copy-Item $source "src/assets/icon.png" -Force
           npx tauri icon $source
           if (-not (Test-Path "src-tauri/icons/icon.ico")) { throw "Tauri did not generate Constellation icon.ico." }
 
@@ -76,17 +66,16 @@ jobs:
           $cargo = Get-Content src-tauri/Cargo.toml -Raw
           $cargo = $cargo -replace '(?m)^version = "[^"]+"', "version = `"$version`""
           Set-Content src-tauri/Cargo.toml $cargo -Encoding UTF8
-
           "CONSTELLATION_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Validate Constellation source
         shell: pwsh
         run: |
           node --check src/app.js
+          node --check src/seed.js
           Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json | Out-Null
-          if (-not (Select-String -Path "src-tauri/src/main.rs" -SimpleMatch '#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]' -Quiet)) {
-            throw "Release build would still open a console window."
-          }
+          if (-not (Test-Path "src/assets/icon.png")) { throw "App icon missing." }
+          if (-not (Select-String -Path "src-tauri/src/main.rs" -SimpleMatch '#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]' -Quiet)) { throw "Release build would open a console window." }
 
       - name: Build Windows installer
         run: npm run build -- --bundles nsis
@@ -99,7 +88,6 @@ jobs:
           $tag = "constellation-v$version"
           $source = Get-ChildItem "src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
           if (-not $source) { throw "Constellation NSIS installer was not created." }
-
           $assetName = "ConstellationSetup-$version.exe"
           $assetPath = Join-Path $env:RUNNER_TEMP $assetName
           Copy-Item $source.FullName $assetPath -Force
@@ -107,19 +95,10 @@ jobs:
           $downloadUrl = "https://github.com/${{ github.repository }}/releases/download/$tag/$assetName"
           $publishedAt = (Get-Date).ToUniversalTime().ToString("o")
           $shortSha = "${{ github.sha }}".Substring(0,7)
-
-          $manifest = [ordered]@{
-            version = $version
-            url = $downloadUrl
-            sha256 = $sha256
-            notes = "Constellation desktop update ($shortSha)."
-            publishedAt = $publishedAt
-          }
+          $manifest = [ordered]@{ version=$version; url=$downloadUrl; sha256=$sha256; notes="Constellation desktop update ($shortSha)."; publishedAt=$publishedAt }
           $manifest | ConvertTo-Json | Set-Content (Join-Path $env:RUNNER_TEMP "latest.json") -Encoding UTF8
-
           "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "asset_path=$assetPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          "asset_name=$assetName" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
@@ -136,11 +115,8 @@ jobs:
         run: |
           $tag = "${{ steps.release_info.outputs.tag }}"
           $asset = "${{ steps.release_info.outputs.asset_path }}"
-          if (gh release view $tag --repo "${{ github.repository }}" 2>$null) {
-            gh release upload $tag $asset --clobber --repo "${{ github.repository }}"
-          } else {
-            gh release create $tag $asset --repo "${{ github.repository }}" --title "Constellation $env:CONSTELLATION_VERSION" --notes "Automatic Constellation Windows desktop build."
-          }
+          if (gh release view $tag --repo "${{ github.repository }}" 2>$null) { gh release upload $tag $asset --clobber --repo "${{ github.repository }}" }
+          else { gh release create $tag $asset --repo "${{ github.repository }}" --title "Constellation $env:CONSTELLATION_VERSION" --notes "Automatic Constellation Windows desktop build." }
 
       - name: Refresh Constellation live update channel
         shell: pwsh
