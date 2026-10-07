@@ -1,0 +1,12 @@
+{
+  "name": "constellation-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tauri build",
+    "dev": "tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.4"
+  }
+}
