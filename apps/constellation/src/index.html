@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Constellation — Ships & Fandoms</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar"><div class="window-title"><img src="assets/icon.png" class="tiny-logo" alt=""><span>Constellation</span></div></header>
+<aside class="sidebar">
+<div class="brand"><img src="assets/icon.png" class="brand-icon" alt="Constellation"><div><div class="brand-name">Constellation</div><div class="brand-sub">FANDOMS · SHIPS · ARCHIVE</div></div></div>
+<nav class="nav">
+<button class="nav-item active" data-view="dashboard"><span>⌂</span>Dashboard</button>
+<button class="nav-item" data-view="romantic"><span>♡</span>Romantic</button>
+<button class="nav-item" data-view="platonic"><span>♧</span>Platonic</button>
+<button class="nav-item" data-view="fandoms"><span>▤</span>Fandoms</button>
+<button class="nav-item" data-view="favorites"><span>☆</span>Favorites</button>
+<button class="nav-item" data-view="settings"><span>⚙</span>Settings</button>
+</nav>
+<div class="sidebar-divider"></div>
+<div class="side-mini"><div class="side-label">BROWSE</div>
+<button class="side-link" data-browse="fandom">By Fandom</button>
+<button class="side-link" data-browse="character">By Character</button>
+<button class="side-link" data-browse="type">By Type</button></div>
+<div class="side-quote">“Every favorite has a place in the stars.”</div>
+</aside>
+<main class="main">
+<section class="page-head"><div><h1 id="pageTitle">Dashboard</h1><p id="pageSubtitle">A home for the fandoms and ships you love.</p></div><button id="addNewBtn" class="primary-btn">＋ Add New</button></section>
+<section class="controls"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search ships, fandoms, or characters…"></div>
+<select id="fandomFilter"><option value="">All fandoms</option></select>
+<select id="typeFilter"><option value="">All types</option><option value="M/M">M/M</option><option value="F/M">F/M</option></select>
+<select id="characterFilter"><option value="">All characters</option></select>
+<button id="openFandomBtn" class="ghost-btn hidden">Open Fandom →</button><button id="clearFilters" class="ghost-btn">Clear</button></section>
+<section id="dashboardView" class="view active">
+<section class="panel"><div class="panel-title-row"><h2>♡ Pinned Ships</h2><button class="text-btn" data-view-jump="favorites">View All →</button></div><div id="pinnedShips" class="cards-grid"></div></section>
+<section class="panel"><div class="panel-title-row"><h2>▤ Fandoms</h2><button class="text-btn" data-view-jump="fandoms">View All →</button></div><div id="dashboardFandoms" class="fandom-grid"></div></section>
+</section>
+<section id="listView" class="view"><div id="fandomPageBar" class="fandom-page-bar hidden"><button id="backToFandomsBtn" class="ghost-btn">← All Fandoms</button><div id="fandomPageName" class="fandom-page-name"></div></div>
+<div class="panel"><div class="panel-title-row"><h2 id="listHeading">Ships</h2><div id="resultCount" class="count-pill"></div></div><div id="shipGrid" class="cards-grid"></div>
+<div id="emptyState" class="empty-state hidden"><div class="empty-mark">✦</div><h3>No matches found.</h3><p>Try clearing a filter or adding a new entry.</p></div></div></section>
+<section id="fandomView" class="view"><div class="panel"><div class="panel-title-row"><h2>Fandoms</h2><div id="fandomCount" class="count-pill"></div></div><div id="fandomGrid" class="fandom-grid"></div></div></section>
+<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button></div></section>
+</main>
+</div>
+
+<dialog id="addDialog" class="modal"><form method="dialog" id="addForm">
+<div class="modal-head"><div><h2>Add New</h2><p>Create a romantic or platonic entry.</p></div><button class="icon-btn" value="cancel">×</button></div>
+<label>Relationship type<select id="newCategory" required><option value="romantic">Romantic</option><option value="platonic">Platonic</option></select></label>
+<div class="two-col"><label>Character one<input id="newA" required></label><label>Character two<input id="newB" required></label></div>
+<label>Fandom<input id="newFandom" required></label>
+<label id="newTypeWrap">Romantic type<select id="newType"><option value="M/M">M/M</option><option value="F/M">F/M</option></select></label>
+<label class="check-row"><input id="newFavorite" type="checkbox"> Pin to favorites</label>
+<div class="modal-actions"><button class="ghost-btn" value="cancel">Cancel</button><button class="primary-btn" value="default">Save Entry</button></div>
+</form></dialog>
+
+<dialog id="editDialog" class="modal"><form method="dialog" id="editForm">
+<div class="modal-head"><div><h2>Edit Entry</h2><p>Change details or add a picture.</p></div><button class="icon-btn" value="cancel">×</button></div>
+<input type="hidden" id="editId">
+<label>Relationship type<select id="editCategory" required><option value="romantic">Romantic</option><option value="platonic">Platonic</option></select></label>
+<div class="two-col"><label>Character one<input id="editA" required></label><label>Character two<input id="editB" required></label></div>
+<label>Fandom<input id="editFandom" required></label>
+<label id="editTypeWrap">Romantic type<select id="editType"><option value="M/M">M/M</option><option value="F/M">F/M</option></select></label>
+<label>Picture<input id="editImage" type="file" accept="image/*"></label>
+<div id="editImagePreviewWrap" class="image-preview-wrap hidden"><img id="editImagePreview" class="image-preview" alt="Entry preview"><button type="button" id="removeImageBtn" class="ghost-btn">Remove Picture</button></div>
+<label class="check-row"><input id="editFavorite" type="checkbox"> Pin to favorites</label>
+<div class="modal-actions modal-actions-split"><button type="button" id="deleteEntryBtn" class="danger-btn">Delete</button><div class="modal-actions-right"><button class="ghost-btn" value="cancel">Cancel</button><button class="primary-btn" value="default">Save Changes</button></div></div>
+</form></dialog>
+<script src="seed.js"></script><script src="app.js"></script>
+</body></html>
