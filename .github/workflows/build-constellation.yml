@@ -26,13 +26,13 @@ jobs:
         shell: pwsh
         working-directory: .
         run: |
-          $parts = Get-ChildItem "apps/constellation/.source-parts/*.txt" | Where-Object { $_.Name -match '^\\d{2}\\.txt$' } | Sort-Object Name
+          $parts = Get-ChildItem "apps/constellation/.source-parts/*.txt" | Where-Object { $_.Name -match '^\d{2}\.txt$' } | Sort-Object Name
           if (-not $parts) { throw "Constellation source parts are missing." }
           $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
           $archive = Join-Path $env:RUNNER_TEMP "constellation_source.tar.xz"
           [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
           $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
-          $expected = ((Get-Content "apps/constellation/.source-parts/SHA256.txt" -Raw).Trim() -split '\\s+')[0].ToLowerInvariant()
+          $expected = ((Get-Content "apps/constellation/.source-parts/SHA256.txt" -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
           if ($actual -ne $expected) { throw "Constellation source archive failed its SHA256 check." }
           tar -xJf $archive -C "apps/constellation"
 
