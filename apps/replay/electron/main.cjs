@@ -48,3 +48,26 @@ let readyInstaller='';
 ipcMain.handle('stage-update',async(_e,manifest)=>{readyInstaller=await stageInstaller(manifest);return true});
 ipcMain.handle('apply-update',async()=>{if(process.platform!=='win32'||!readyInstaller)throw Error('No verified Windows update ready');const child=spawn(readyInstaller,['/S'],{detached:true,stdio:'ignore'});child.unref();setImmediate(()=>app.quit());return true});
 ipcMain.handle('version',()=>app.getVersion());
+
+async function restoreFromBackup(selectedIds=[]){
+ const d=await load(),target=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');
+ const manifest=JSON.parse(await fsp.readFile(path.join(target,'replay-index.json'),'utf8'));
+ if(!Array.isArray(manifest.items)||!Array.isArray(manifest.folders))throw Error('Invalid backup catalog');
+ let restored=0;
+ for(const item of manifest.items){
+   if(item.deletedAt || (selectedIds.length&&!selectedIds.includes(item.id)) || d.items.some(x=>x.id===item.id))continue;
+   if(!['videos','images','gifs'].includes(item.kind)||!item.name||!/^[a-f0-9]{64}$/i.test(item.hash||''))continue;
+   const rel=String(item.stored||'');
+   if(path.isAbsolute(rel)||rel.split(/[\\/]/).includes('..')||!rel.startsWith(item.kind+path.sep))continue;
+   const chain=[];let f=manifest.folders.find(x=>x.id===item.folder);const seen=new Set();
+   while(f&&!seen.has(f.id)){seen.add(f.id);chain.unshift(safe(f.name));f=manifest.folders.find(x=>x.id===f.parent)}
+   const original=path.join(target,item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',...chain,safe(item.name));
+   if((await checksum(original))!==item.hash)throw Error('Backup integrity failed for '+item.name);
+   await fileCopy(original,path.join(root,rel));
+   d.items.push(item);restored++;
+ }
+ for(const f of manifest.folders)if(!d.folders.some(x=>x.id===f.id))d.folders.push(f);
+ await save(d);return {restored};
+}
+ipcMain.handle('restore-backup',(_e,ids)=>restoreFromBackup(Array.isArray(ids)?ids:[]));
+ipcMain.handle('list-backup',async()=>{const d=await load(),base=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');try{return JSON.parse(await fsp.readFile(path.join(base,'replay-index.json'),'utf8')).items||[]}catch{return []}});
