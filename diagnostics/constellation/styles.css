@@ -205,10 +205,16 @@ body{overflow-x:hidden}
 }
 .edit-btn:hover{background:white}
 .card-art.has-image{
-  background-size:cover!important;
-  background-position:center!important;
+  background:none!important;
 }
 .card-art.has-image:after{content:"";display:none}
+.card-art-image{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:center;
+}
 .image-preview-wrap{
   display:flex;align-items:center;gap:12px;margin:-2px 0 14px;
 }
@@ -251,3 +257,20 @@ body{overflow-x:hidden}
 .settings-card h3{margin:0 0 7px;color:#55127E;font-size:21px}
 .settings-card p{margin:0;color:#806789;line-height:1.5}
 .settings-note{margin-top:14px;color:#7A6481;font-family:"Courier New",monospace;font-size:13px}
+
+.settings-panel{max-width:980px!important;padding:28px 30px}
+.settings-panel>h2{font-size:30px}
+.settings-panel p{color:#735C7C;line-height:1.55}
+.settings-divider{height:1px;background:var(--line);margin:28px 0}
+.settings-section{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(380px,1.25fr);gap:32px;align-items:start}
+.settings-section-copy h3{margin:0 0 8px;color:#55127E;font-size:22px}
+.settings-section-copy p{margin:0}
+.shortcut-icon-controls{display:grid;grid-template-columns:1fr;gap:12px}
+.shortcut-icon-drop{min-height:150px;border:2px dashed #CDB5D9;border-radius:16px;background:linear-gradient(180deg,#FFF,#FAF5FC);display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;padding:24px;color:#5A2D6B;transition:.15s;outline:none}
+.shortcut-icon-drop:hover,.shortcut-icon-drop:focus,.shortcut-icon-drop.drag-over{border-color:#8E4CC2;background:#F4E9FA;box-shadow:0 0 0 4px rgba(142,76,194,.08)}
+.shortcut-icon-drop-mark{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#EEE0F7;color:#6E1294;font-size:24px;flex:0 0 auto}
+.shortcut-icon-drop strong{display:block;font-size:17px}
+.shortcut-icon-drop span{display:block;margin-top:4px;color:#8A6B95;font-size:13px}
+.shortcut-browse-btn{justify-self:start}
+.shortcut-icon-status{margin:12px 0 0;min-height:24px;font-family:"Courier New",monospace;font-size:13px}
+@media(max-width:900px){.settings-section{grid-template-columns:1fr}.settings-panel{padding:22px}.shortcut-icon-drop{min-height:130px}}

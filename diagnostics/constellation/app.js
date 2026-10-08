@@ -54,10 +54,10 @@ function getFiltered(base=entries) {
 
 function cardHTML(x) {
   const cat = x.category === "platonic" ? "Platonic" : "Romantic";
-  const artStyle = x.image ? `style="background-image:url('${x.image.replace(/'/g, "%27")}')"` : "";
+  const artHTML = x.image ? `<img class="card-art-image" src="${esc(x.image)}" alt="" />` : "";
   return `
     <article class="ship-card">
-      <div class="card-art ${x.image ? "has-image" : ""}" ${artStyle}></div>
+      <div class="card-art ${x.image ? "has-image" : ""}">${artHTML}</div>
       <button class="edit-btn" data-edit="${x.id}" title="Edit entry">Edit</button>
       <button class="fav-btn ${x.favorite ? "on" : ""}" data-fav="${x.id}" title="Toggle favorite">${x.favorite ? "★" : "☆"}</button>
       <div class="card-body">
@@ -449,4 +449,83 @@ if (updateBtn) updateBtn.addEventListener("click", () => checkDesktopUpdate());
 window.addEventListener("DOMContentLoaded", () => {
   refreshDesktopVersion();
   if (tauriInvoke) setTimeout(() => checkDesktopUpdate({ automatic: true }), 1400);
+});
+
+
+const shortcutIconFile=$("#shortcutIconFile");
+const shortcutIconDropZone=$("#shortcutIconDropZone");
+
+async function applyShortcutIconFile(file){
+  const status=$("#shortcutIconStatus");
+  if(!file||!tauriInvoke)return;
+  try{
+    if(status)status.textContent="Preparing image…";
+    let iconData;
+    if(file.name.toLowerCase().endsWith(".ico")){
+      iconData=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result));
+        reader.onerror=()=>reject(new Error("Could not read that icon file."));
+        reader.readAsDataURL(file);
+      });
+    }else{
+      iconData=await new Promise((resolve,reject)=>{
+        const url=URL.createObjectURL(file);
+        const img=new Image();
+        img.onload=()=>{
+          try{
+            const size=256;
+            const canvas=document.createElement("canvas");
+            canvas.width=size; canvas.height=size;
+            const ctx=canvas.getContext("2d");
+            ctx.clearRect(0,0,size,size);
+            const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight);
+            const w=Math.max(1,Math.round(img.naturalWidth*scale));
+            const h=Math.max(1,Math.round(img.naturalHeight*scale));
+            const x=Math.round((size-w)/2);
+            const y=Math.round((size-h)/2);
+            ctx.drawImage(img,x,y,w,h);
+            resolve(canvas.toDataURL("image/png"));
+          }catch(err){reject(err);}
+          finally{URL.revokeObjectURL(url);}
+        };
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("That image format could not be opened."));};
+        img.src=url;
+      });
+    }
+    if(status)status.textContent="Changing desktop shortcut icon…";
+    const shortcutPath=await tauriInvoke("set_desktop_shortcut_icon",{iconData});
+    if(status)status.textContent="Desktop shortcut created with " + file.name + ": " + shortcutPath;
+  }catch(err){
+    if(status)status.textContent=String(err?.message||err);
+  }finally{
+    if(shortcutIconFile)shortcutIconFile.value="";
+    shortcutIconDropZone?.classList.remove("drag-over");
+  }
+}
+
+$("#chooseShortcutIconBtn")?.addEventListener("click",()=>shortcutIconFile?.click());
+shortcutIconDropZone?.addEventListener("click",()=>shortcutIconFile?.click());
+shortcutIconDropZone?.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();shortcutIconFile?.click();}
+});
+["dragenter","dragover"].forEach(type=>shortcutIconDropZone?.addEventListener(type,(e)=>{
+  e.preventDefault();e.stopPropagation();shortcutIconDropZone.classList.add("drag-over");
+}));
+["dragleave","drop"].forEach(type=>shortcutIconDropZone?.addEventListener(type,(e)=>{
+  e.preventDefault();e.stopPropagation();shortcutIconDropZone.classList.remove("drag-over");
+}));
+shortcutIconDropZone?.addEventListener("drop",(e)=>applyShortcutIconFile(e.dataTransfer?.files?.[0]));
+shortcutIconFile?.addEventListener("change",(e)=>applyShortcutIconFile(e.target.files?.[0]));
+
+$("#repairShortcutIconBtn")?.addEventListener("click",async()=>{
+  const status=$("#shortcutIconStatus");
+  if(!tauriInvoke)return;
+  try{
+    if(status)status.textContent="Repairing desktop shortcut icon…";
+    const shortcutPath=await tauriInvoke("reset_desktop_shortcut_icon");
+    if(status)status.textContent="Desktop shortcut recreated with the Constellation app icon: " + shortcutPath;
+  }catch(err){
+    if(status)status.textContent=String(err);
+  }
 });

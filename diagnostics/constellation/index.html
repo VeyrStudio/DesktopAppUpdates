@@ -118,24 +118,8 @@
         </div>
       </section>
 
-      <section id="settingsView" class="view">
-        <div class="panel settings-panel">
-          <div class="panel-title-row">
-            <h2>Settings</h2>
-          </div>
-          <div class="settings-card">
-            <div>
-              <h3>App Updates</h3>
-              <p id="updateStatus">Constellation checks for updates automatically when it opens.</p>
-            </div>
-            <button id="checkUpdateBtn" class="primary-btn">Check for Updates</button>
-          </div>
-          <div class="settings-note">
-            <strong>Version</strong> <span id="appVersion">Loading…</span>
-          </div>
-        </div>
-      </section>
-    </main>
+      <section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop almost any image file below. Constellation will convert it and create or replace the desktop shortcut for you.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop an image here</strong><span>PNG, JPG, JPEG, WEBP, GIF, BMP, SVG, ICO and other browser-supported images</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for image</button><input id="shortcutIconFile" type="file" accept="image/*,.ico" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section></div></section>
+</main>
   </div>
 
   <dialog id="addDialog" class="modal">
