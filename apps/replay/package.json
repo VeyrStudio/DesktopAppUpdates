@@ -30,7 +30,6 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.ico",
       "artifactName": "ReplaySetup-${version}.${ext}"
     },
     "nsis": {
