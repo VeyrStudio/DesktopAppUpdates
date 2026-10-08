@@ -68,7 +68,29 @@ async function stageInstaller(manifest){
 }
 let readyInstaller='';
 ipcMain.handle('stage-update',async(_e,manifest)=>{readyInstaller=await stageInstaller(manifest);return true});
-ipcMain.handle('apply-update',async()=>{if(process.platform!=='win32'||!readyInstaller)throw Error('No verified Windows update ready');const child=spawn(readyInstaller,['/S'],{detached:true,stdio:'ignore'});child.unref();setImmediate(()=>app.quit());return true});
+ipcMain.handle('apply-update',async()=>{
+ if(process.platform!=='win32'||!readyInstaller)throw Error('No verified Windows update ready');
+ // A detached PowerShell helper survives Replay closing, waits for NSIS to
+ // finish installing, then launches the updated executable only on success.
+ const installedExe=process.execPath;
+ const scriptPath=path.join(app.getPath('temp'),'replay-update-'+crypto.randomUUID()+'.ps1');
+ const psQuote=value=>"'"+String(value).replace(/'/g,"''")+"'";
+ const script=[
+  '$ErrorActionPreference = "Stop"',
+  '$installer = '+psQuote(readyInstaller),
+  '$replayExe = '+psQuote(installedExe),
+  'try {',
+  '  Start-Sleep -Seconds 2',
+  '  $process = Start-Process -FilePath $installer -ArgumentList "/S" -Wait -PassThru',
+  '  if ($process.ExitCode -ne 0) { exit $process.ExitCode }',
+  '  for ($i = 0; $i -lt 30 -and !(Test-Path -LiteralPath $replayExe); $i++) { Start-Sleep -Seconds 1 }',
+  '  if (Test-Path -LiteralPath $replayExe) { Start-Process -FilePath $replayExe }',
+  '} finally { Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue }'
+ ].join('\\n');
+ await fsp.writeFile(scriptPath,script,'utf8');
+ const child=spawn('powershell.exe',['-NoProfile','-NonInteractive','-WindowStyle','Hidden','-ExecutionPolicy','Bypass','-File',scriptPath],{detached:true,stdio:'ignore',windowsHide:true});
+ child.unref();setImmediate(()=>app.quit());return true;
+});
 ipcMain.handle('version',()=>app.getVersion());
 
 async function restoreFromBackup(selectedIds=[]){
