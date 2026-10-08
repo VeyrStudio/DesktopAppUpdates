@@ -15,3 +15,5 @@ test('media supports seeking in original and converted videos',()=>{
  assert.match(main,/file=path\.join\(root,item\.stored\)/);
  assert.match(main,/req\.headers\.get\('range'\)/);
 });
+
+test('media URLs preserve the original item identifier',()=>{assert.match(main,/resource\.pathname\.slice\(1\)/)});
