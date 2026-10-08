@@ -6,11 +6,19 @@ js = root / "src" / "app.js"
 css = root / "src" / "styles.css"
 
 h = html.read_text(encoding="utf-8")
-old = '''<hr style="margin:28px 0;border:0;border-top:1px solid rgba(255,255,255,.12)"><h3>Desktop Shortcut Icon</h3><p>Repair the shortcut to use Constellation’s built-in icon, or choose your own Windows .ico file.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><button id="chooseShortcutIconBtn" class="ghost-btn" type="button">Choose Custom .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus"></p>'''
 new = '''<div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop a Windows <strong>.ico</strong> file below to use your own.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop a custom .ico here</strong><span>or click to browse</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section>'''
-if old not in h:
-    raise SystemExit("Current shortcut icon settings block not found")
-html.write_text(h.replace(old, new, 1), encoding="utf-8")
+if 'id="shortcutIconDropZone"' not in h:
+    start = h.find('<h3>Desktop Shortcut Icon</h3>')
+    end_marker = '<p id="shortcutIconStatus"></p>'
+    end = h.find(end_marker, start)
+    if start < 0 or end < 0:
+        raise SystemExit("Shortcut icon settings area not found")
+    block_start = h.rfind('<hr', 0, start)
+    if block_start < 0:
+        block_start = start
+    end += len(end_marker)
+    h = h[:block_start] + new + h[end:]
+    html.write_text(h, encoding="utf-8")
 
 j = js.read_text(encoding="utf-8")
 start = j.find('const shortcutIconFile=$("#shortcutIconFile");')
