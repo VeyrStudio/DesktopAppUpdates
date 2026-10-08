@@ -23,6 +23,20 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Test source
         run: npm test
+      - name: Prepare approved Replay icon
+        shell: pwsh
+        run: |
+          $raw = [Convert]::FromBase64String((Get-Content 'build/icon.base64' -Raw).Trim())
+          New-Item -ItemType Directory -Force -Path 'build' | Out-Null
+          [IO.File]::WriteAllBytes('build/icon.png', $raw)
+          $ico = New-Object IO.MemoryStream
+          $writer = New-Object IO.BinaryWriter($ico)
+          $writer.Write([uint16]0); $writer.Write([uint16]1); $writer.Write([uint16]1)
+          $writer.Write([byte]48); $writer.Write([byte]48); $writer.Write([byte]0); $writer.Write([byte]0)
+          $writer.Write([uint16]1); $writer.Write([uint16]32); $writer.Write([uint32]$raw.Length); $writer.Write([uint32]22)
+          $writer.Write($raw); $writer.Flush()
+          [IO.File]::WriteAllBytes('build/icon.ico', $ico.ToArray())
+          $writer.Dispose(); $ico.Dispose()
       - name: Build Windows installer
         run: npm run build:win
       - name: Upload installer artifact
