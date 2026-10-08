@@ -20,7 +20,27 @@ jobs:
       - name: Reconstruct Constellation source
         shell: pwsh
         run: |
-          $parts = Get-ChildItem "apps/constellation/.source-parts/*.txt" | Where-Object { $_.Name -match '^\\d{2}\\.txt$' } | Sort-Object Name
+          $parts = Get-ChildItem "apps/constellation/.source-parts/*.txt" | Where-Object { $_.Name -match '^\d{2}\.txt } | Sort-Object Name
+          if (-not $parts) { throw "Constellation source parts are missing." }
+          $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          $archive = Join-Path $env:RUNNER_TEMP "constellation_source.tar.xz"
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          tar -xJf $archive -C "apps/constellation"
+
+      - name: Publish temporary diagnostic source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "diagnostics/constellation" | Out-Null
+          Copy-Item "apps/constellation/src/app.js" "diagnostics/constellation/app.js" -Force
+          Copy-Item "apps/constellation/src/index.html" "diagnostics/constellation/index.html" -Force
+          Copy-Item "apps/constellation/src/styles.css" "diagnostics/constellation/styles.css" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add diagnostics/constellation
+          git commit -m "Temporary Constellation diagnostic source [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+ } | Sort-Object Name
           if (-not $parts) { throw "Constellation source parts are missing." }
           $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
           $archive = Join-Path $env:RUNNER_TEMP "constellation_source.tar.xz"
