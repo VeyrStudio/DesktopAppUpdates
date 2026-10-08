@@ -1,4 +1,5 @@
 name: Build Constellation
+# safe-media-storage-v1
 # rollback-multi-image-v1
 # multiple-pairing-images-v1
 # all-image-uploads-v1
@@ -81,6 +82,14 @@ jobs:
           python "apps/constellation/patches/settings-icon-drop.py"
           if (-not (Select-String -Path "apps/constellation/src/index.html" -SimpleMatch 'shortcutIconDropZone' -Quiet)) { throw "Shortcut icon drop zone was not applied." }
           if (-not (Select-String -Path "apps/constellation/src/styles.css" -SimpleMatch '.shortcut-icon-drop{' -Quiet)) { throw "Expanded Settings styles were not applied." }
+
+      - name: Move images into safe storage
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/safe-media-storage.py"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'CONSTELLATION_MEDIA_DB_V2' -Quiet)) { throw "Safe media storage patch was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'delete copy.image' -Quiet)) { throw "Image payloads would still be written to localStorage." }
 
       - name: Use Node.js
         uses: actions/setup-node@v4
