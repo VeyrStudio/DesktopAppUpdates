@@ -1,6 +1,7 @@
 {
-  "version": "0.1.5",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/photobridge-v0.1.5/PhotoBridge-Setup-0.1.5.exe",
-  "sha256": "61977d7f211de9b1a59578b3ad73da270dfd8c827370ac4031a775f907103453",
-  "publishedAt": "2026-10-08T20:30:55.2212340Z"
+  "version": "0.1.12",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/photobridge-v0.1.12/PhotoBridge-Setup-0.1.12.exe",
+  "sha256": "ed8a63df4d1318d8d0d4647d65fda6b5d069c69272c3ba3ff7bb6c460a6ad806",
+  "notes": "PhotoBridge Windows update",
+  "publishedAt": "2026-10-08T23:46:59Z"
 }
