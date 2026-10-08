@@ -62,6 +62,8 @@ if 'set_desktop_shortcut_icon' not in j:
 r = rust.read_text(encoding="utf-8")
 if 'use base64::Engine;' not in r:
     r = 'use base64::Engine;\n' + r
+if 'use std::os::windows::process::CommandExt;' not in r:
+    r = 'use std::os::windows::process::CommandExt;\n' + r
 
 insert_before = '''#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {'''
@@ -70,34 +72,65 @@ fn ps_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "''"))
 }
 
-fn write_desktop_shortcut(icon_path: &std::path::Path) -> Result<(), String> {
+fn write_desktop_shortcut(icon_path: &std::path::Path) -> Result<String, String> {
     let exe = std::env::current_exe().map_err(|e| format!("Could not locate Constellation: {e}"))?;
     let exe_s = exe.to_string_lossy().to_string();
     let icon_s = icon_path.to_string_lossy().to_string();
     let script = format!(
-        "$desktop=[Environment]::GetFolderPath('Desktop'); \
-         $shortcut=Join-Path $desktop 'Constellation.lnk'; \
+        "$ErrorActionPreference='Stop'; \
          $ws=New-Object -ComObject WScript.Shell; \
+         $desktop=$ws.SpecialFolders.Item('Desktop'); \
+         if([string]::IsNullOrWhiteSpace($desktop)){{$desktop=[Environment]::GetFolderPath('Desktop')}}; \
+         if(-not (Test-Path -LiteralPath $desktop)){{New-Item -ItemType Directory -Path $desktop -Force | Out-Null}}; \
+         $shortcut=Join-Path $desktop 'Constellation.lnk'; \
+         if(Test-Path -LiteralPath $shortcut){{Remove-Item -LiteralPath $shortcut -Force}}; \
          $s=$ws.CreateShortcut($shortcut); \
          $s.TargetPath={exe}; \
-         $s.WorkingDirectory=Split-Path {exe}; \
+         $s.WorkingDirectory=[System.IO.Path]::GetDirectoryName({exe}); \
          $s.IconLocation={icon}; \
-         $s.Save();",
+         $s.Description='Constellation'; \
+         $s.Save(); \
+         if(-not (Test-Path -LiteralPath $shortcut)){{throw 'Shortcut file was not created.'}}; \
+         Write-Output $shortcut;",
         exe = ps_quote(&exe_s),
         icon = ps_quote(&(icon_s + ",0"))
     );
-    let status = Command::new("powershell")
-        .args(["-NoProfile", "-NonInteractive", "-Command", &script])
-        .status()
-        .map_err(|e| format!("Could not update desktop shortcut: {e}"))?;
-    if !status.success() {
-        return Err("Windows could not update the desktop shortcut.".into());
+
+    let mut command = Command::new("powershell.exe");
+    command.creation_flags(0x08000000);
+    let output = command
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-WindowStyle",
+            "Hidden",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            &script,
+        ])
+        .output()
+        .map_err(|e| format!("Could not create desktop shortcut: {e}"))?;
+
+    if !output.status.success() {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(if detail.is_empty() {
+            "Windows could not create the desktop shortcut.".into()
+        } else {
+            format!("Windows could not create the desktop shortcut: {detail}")
+        });
     }
-    Ok(())
+
+    let shortcut = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if shortcut.is_empty() {
+        return Err("Windows reported success, but no shortcut path was returned.".into());
+    }
+    Ok(shortcut)
 }
 
 #[tauri::command]
-fn set_desktop_shortcut_icon(icon_data: String) -> Result<(), String> {
+fn set_desktop_shortcut_icon(icon_data: String) -> Result<String, String> {
     let encoded = icon_data
         .split_once(',')
         .map(|(_, data)| data)
@@ -144,7 +177,7 @@ fn set_desktop_shortcut_icon(icon_data: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn reset_desktop_shortcut_icon() -> Result<(), String> {
+fn reset_desktop_shortcut_icon() -> Result<String, String> {
     let exe = std::env::current_exe().map_err(|e| format!("Could not locate Constellation: {e}"))?;
     write_desktop_shortcut(&exe)
 }
