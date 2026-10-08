@@ -1,0 +1,33 @@
+name: Replay Windows Installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, replay-development]
+    paths:
+      - 'apps/replay/**'
+      - '.github/workflows/replay-windows.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/replay
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run application tests
+        run: npm test
+      - name: Package installer
+        run: npm run build:win
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Replay-Windows-Installer
+          path: apps/replay/dist/ReplaySetup-*.exe
+          if-no-files-found: error
