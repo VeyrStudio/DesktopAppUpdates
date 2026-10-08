@@ -17,3 +17,5 @@ test('media supports seeking in original and converted videos',()=>{
 });
 
 test('media URLs preserve the original item identifier',()=>{assert.match(main,/resource\.pathname\.slice\(1\)/)});
+
+test('video byte ranges accept numeric offsets',()=>{const source=main.match(/const match=(.+?)\.exec\(range\.trim\(\)\)/)?.[1];assert.ok(source,'range parser missing');const regex=vm.runInNewContext(source);assert.deepEqual(Array.from(regex.exec('bytes=0-')),['bytes=0-','0','']);assert.deepEqual(Array.from(regex.exec('bytes=123-456')),['bytes=123-456','123','456']);assert.equal(regex.exec('bytes=abc-'),null)});
