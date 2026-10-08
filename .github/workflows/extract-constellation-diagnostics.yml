@@ -33,6 +33,15 @@ jobs:
           [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
           tar -xJf $archive -C "apps/constellation"
 
+      - name: Apply current Constellation patches
+        shell: pwsh
+        run: |
+          python "apps/constellation/patches/gif-ship-images.py"
+          python "apps/constellation/patches/all-ship-image-formats.py"
+          python "apps/constellation/patches/fresh-update-check.py"
+          python "apps/constellation/patches/desktop-shortcut-icon.py"
+          python "apps/constellation/patches/settings-icon-drop.py"
+
       - name: Publish temporary diagnostic source
         shell: pwsh
         run: |
