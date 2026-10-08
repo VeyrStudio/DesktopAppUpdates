@@ -95,7 +95,7 @@ async function restoreFromBackup(selectedIds=[]){
  await save(d);return {restored};
 }
 ipcMain.handle('restore-backup',(_e,ids)=>restoreFromBackup(Array.isArray(ids)?ids:[]));
-ipcMain.handle('list-backup',async()=>{const d=await load(),base=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');try{return JSON.parse(await fsp.readFile(path.join(base,'replay-index.json'),'utf8')).items||[]}catch{return []}});
+ipcMain.handle('list-backup',async()=>{const d=await load(),base=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');try{const meta=JSON.parse(await fsp.readFile(path.join(base,'replay-index.json'),'utf8'));return (meta.items||[]).map(item=>({...item,folderName:meta.folders?.find(f=>f.id===item.folder)?.name||'(Root)'}))}catch{return []}});
 
 async function trashList(){const d=await load();return d.items.filter(x=>!!x.deletedAt)}
 ipcMain.handle('list-trash',trashList);
