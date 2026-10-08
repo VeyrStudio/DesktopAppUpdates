@@ -1,7 +1,7 @@
 {
-  "version": "0.1.13",
-  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/constellation-v0.1.13/ConstellationSetup-0.1.13.exe",
-  "sha256": "eca202affc91bf07acda1a22c93047dd3f71f22c4d2420191580b80e383e49f8",
-  "notes": "Constellation desktop update (45869d6).",
-  "publishedAt": "2026-10-08T19:18:10.5102237Z"
+  "version": "0.1.14",
+  "url": "https://github.com/VeyrStudio/DesktopAppUpdates/releases/download/constellation-v0.1.14/ConstellationSetup-0.1.14.exe",
+  "sha256": "90795025d1d62c8c77beb1804369d3b9a028e5d9609be21d279932d1c48d1394",
+  "notes": "Constellation desktop update (ef36af0).",
+  "publishedAt": "2026-10-08T19:31:04.4830721Z"
 }
