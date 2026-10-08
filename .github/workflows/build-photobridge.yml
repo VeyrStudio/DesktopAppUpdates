@@ -67,14 +67,26 @@ jobs:
         run: |
           gh release create "$env:PB_TAG" "$env:PB_ASSET" --repo "${{ github.repository }}" --title "PhotoBridge $env:PHOTOBRIDGE_VERSION" --notes "Windows PhotoBridge installer."
       - name: Update PhotoBridge channel
-        shell: pwsh
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add photobridge/latest.json
-          git diff --cached --quiet
-          if ($LASTEXITCODE -ne 0) {
-            git commit -m "PhotoBridge updater: $env:PHOTOBRIDGE_VERSION [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          }
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'photobridge/latest.json';
+            const content = Buffer.from(fs.readFileSync(path)).toString('base64');
+            for (let attempt = 0; attempt < 8; attempt++) {
+              const current = await github.rest.repos.getContent({
+                owner: context.repo.owner, repo: context.repo.repo, path, ref: 'main'
+              });
+              try {
+                await github.rest.repos.createOrUpdateFileContents({
+                  owner: context.repo.owner, repo: context.repo.repo, path,
+                  message: 'PhotoBridge update channel [skip ci]',
+                  content, sha: current.data.sha, branch: 'main'
+                });
+                return;
+              } catch (e) {
+                if (e.status !== 409 && e.status !== 422) throw e;
+                await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+              }
+            }
+            throw new Error('Failed to publish PhotoBridge update channel after retries');
