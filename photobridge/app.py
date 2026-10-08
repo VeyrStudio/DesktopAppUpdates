@@ -15,7 +15,15 @@ except Exception: DEST=Path.home()/"Pictures"/"PhotoBridge"
 DEST.mkdir(parents=True,exist_ok=True)
 KEY=secrets.token_urlsafe(28)
 LOCK=threading.Lock()
-WEB="""<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>PhotoBridge</title><style>body{font:16px system-ui;background:#f4eddd;color:#17382e;margin:30px auto;max-width:650px;padding:26px;border-top:8px solid #17382e}button{background:#17382e;color:#f4eddd;padding:15px;border:1px solid #c5a46a;border-radius:5px;width:100%;margin:18px 0}progress{width:100%;accent-color:#c5a46a}h1{font: bold 34px Georgia;color:#17382e}input{max-width:100%}</style></head><body><h1>PhotoBridge</h1><p>Select photos and videos, then tap Send to computer. Keep Safari open.</p><input type="file" multiple accept="image/*,video/*,.gif,.heic,.mov" id="files"><button id="go">Send to computer</button><progress id="bar" value="0" max="100"></progress><p id="status">Ready</p><p>Original files stay on your iPhone. Verify before deleting manually.</p><script>let f=document.getElementById('files'),b=document.getElementById('go'),s=document.getElementById('status'),p=document.getElementById('bar');b.onclick=async()=>{if(!f.files.length)return alert('Choose files first');b.disabled=true;let done=0;for(let i=0;i<f.files.length;i++){let x=f.files[i];s.textContent='Sending '+(i+1)+'/'+f.files.length+' — '+x.name;try{let r=await fetch('/upload?key=__KEY__&name='+encodeURIComponent(x.name),{method:'POST',body:x,headers:{'Content-Type':'application/octet-stream'}});if(!r.ok)throw Error(await r.text());done++;p.value=Math.round(done*100/f.files.length)}catch(e){s.textContent='Stopped after '+done+': '+e.message;b.disabled=false;return}}s.textContent='Transferred '+done+' files. Check them on your PC.';b.disabled=false}</script></body></html>"""
+WEB="""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PhotoBridge • Transfer</title><style>
+:root{color-scheme:dark;--bg:#101014;--panel:#1b1a20;--border:#70542b;--gold:#dcb160;--cream:#f3e5d2;--purple:#83118f}
+*{box-sizing:border-box}body{margin:0;background:repeating-linear-gradient(130deg,#101014,#101014 4px,#121116 5px);color:var(--cream);font-family:Georgia,serif;min-height:100vh}
+header{background:var(--purple);height:33px}main{max-width:600px;margin:auto;padding:29px 18px 65px}.eyebrow{font:700 11px system-ui;letter-spacing:3px;color:var(--gold)}h1{font-size:43px;font-weight:normal;margin:8px 0 3px}p{line-height:1.5;color:#d4c4b8}.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:22px;margin-top:20px}.step{display:flex;align-items:center;gap:14px;margin:12px 0;font:15px system-ui}.num{color:var(--gold);border:1px solid var(--border);width:29px;height:29px;display:grid;place-items:center;border-radius:50%;flex-shrink:0}.picker{display:block;border:1px dashed var(--gold);background:#251922;padding:22px;text-align:center;border-radius:12px;font:16px system-ui;color:var(--cream)}input{margin-top:13px;width:100%;font:14px system-ui}button{font:600 16px system-ui;background:#491b40;color:#fff0e0;border:1px solid var(--gold);border-radius:10px;padding:16px;width:100%;margin-top:18px}button:disabled{opacity:.6}progress{width:100%;height:20px;margin:15px 0;accent-color:var(--gold)}#status{font:14px system-ui;overflow-wrap:anywhere}#count{font:13px system-ui;color:var(--gold)}.note{font:13px system-ui;color:#d9c7a9;border-left:3px solid #815e37;padding-left:12px}
+</style></head><body><header></header><main><div class="eyebrow">THE PRIVATE MEDIA ARCHIVE</div><h1>PhotoBridge</h1><p>Send your memories from iPhone to Windows, directly over your home Wi-Fi.</p><section class="panel"><div class="eyebrow">HOW IT WORKS</div><div class="step"><span class="num">1</span><span>Keep PhotoBridge open on your computer.</span></div><div class="step"><span class="num">2</span><span>Choose photos and videos below.</span></div><div class="step"><span class="num">3</span><span>Press Send and keep Safari open.</span></div></section><section class="panel"><div class="eyebrow">SELECT MEDIA</div><label class="picker">Choose photos, videos & GIFs<input id="files" type="file" multiple accept="image/*,video/*,.gif,.heic,.heif,.mov,.mp4"></label><p id="count">No files selected</p><button id="go">Send to computer →</button><progress id="bar" value="0" max="100"></progress><p id="status" role="status" aria-live="polite">Ready to transfer</p></section><p class="note">This is a copy-only transfer. Nothing gets deleted from your phone. Safari might not expose every original Live Photo component. Review your PC copies before deleting anything.</p></main><script>
+const f=document.getElementById('files'),b=document.getElementById('go'),s=document.getElementById('status'),p=document.getElementById('bar'),count=document.getElementById('count');
+f.onchange=()=>{count.textContent=f.files.length.toLocaleString()+' files selected';p.value=0};
+b.onclick=async()=>{if(!f.files.length){alert('Select files first');return}b.disabled=true;let done=0,dupes=0;for(let i=0;i<f.files.length;i++){let x=f.files[i];s.textContent='Sending '+(i+1)+' of '+f.files.length+' — '+x.name;try{let r=await fetch('/upload?key=__KEY__&name='+encodeURIComponent(x.name),{method:'POST',body:x,headers:{'Content-Type':'application/octet-stream'}});if(!r.ok)throw Error(await r.text());if((await r.text()).includes('Duplicate'))dupes++;done++;p.value=Math.round(done*100/f.files.length)}catch(e){s.textContent='Stopped after '+done+' files. '+e.message+'. Keep your originals and try again.';b.disabled=false;return}}s.textContent='Complete: '+done+' files received ('+dupes+' duplicates skipped). Verify them on your computer.';b.disabled=false};
+</script></body></html>"""
 class Receiver(BaseHTTPRequestHandler):
     def reply(self,code,data,ctype="text/plain"):
         raw=data.encode()
@@ -65,12 +73,12 @@ def local_ip():
             s.connect(("192.0.2.1",80));return s.getsockname()[0]
     except Exception:return socket.gethostbyname(socket.gethostname())
 class App:
-    GREEN="#17382e"
-    DEEP="#102820"
-    PANEL="#204538"
-    CREAM="#f4eddd"
-    GOLD="#c5a46a"
-    MUTED="#b7c8b8"
+    GREEN="#201b24"
+    DEEP="#101014"
+    PANEL="#392036"
+    CREAM="#f0e2ce"
+    GOLD="#d5aa58"
+    MUTED="#bca9b2"
     def __init__(self,root):
         self.root=root
         self.server=None
@@ -84,9 +92,9 @@ class App:
         root.title("PhotoBridge  |  Media Transfer")
         root.geometry("1040x700")
         root.minsize(840,580)
-        root.configure(bg=self.CREAM)
+        root.configure(bg=self.DEEP)
         self.root.option_add("*Font","Segoe UI 10")
-        self.sidebar=tk.Frame(root,bg=self.GREEN,width=225)
+        self.sidebar=tk.Frame(root,bg="#161318",width=235)
         self.sidebar.pack(side="left",fill="y")
         self.sidebar.pack_propagate(False)
         tk.Label(self.sidebar,text="PHOTO",bg=self.GREEN,fg=self.CREAM,font=("Georgia",23,"bold"),anchor="w").pack(fill="x",padx=26,pady=(31,0))
@@ -94,30 +102,30 @@ class App:
         for page,mark in [("Dashboard","⌂"),("Transfers","⇄"),("Library","▤"),("Settings","⚙")]:
             tk.Button(self.sidebar,text="  "+mark+"    "+page,anchor="w",bg=self.GREEN,fg=self.CREAM,activebackground=self.PANEL,activeforeground=self.GOLD,borderwidth=0,highlightthickness=0,padx=19,pady=14,font=("Segoe UI",11),command=lambda p=page:self.show(p)).pack(fill="x",padx=10,pady=2)
         tk.Label(self.sidebar,text="LOCAL TRANSFER  •  v"+VERSION,bg=self.GREEN,fg=self.MUTED,font=("Segoe UI",8)).pack(side="bottom",pady=23)
-        self.main=tk.Frame(root,bg=self.CREAM)
+        self.main=tk.Frame(root,bg="#101014")
         self.main.pack(side="left",fill="both",expand=True)
-        self.header=tk.Frame(self.main,bg=self.CREAM)
+        self.header=tk.Frame(self.main,bg="#101014")
         self.header.pack(fill="x",padx=38,pady=(27,15))
-        self.heading=tk.Label(self.header,text="Dashboard",bg=self.CREAM,fg=self.GREEN,font=("Georgia",25,"bold"))
+        self.heading=tk.Label(self.header,text="Dashboard",bg="#101014",fg=self.CREAM,font=("Georgia",28))
         self.heading.pack(side="left")
-        self.chip=tk.Label(self.header,textvariable=self.state,bg=self.GREEN,fg=self.CREAM,font=("Segoe UI",9,"bold"),padx=12,pady=8)
+        self.chip=tk.Label(self.header,textvariable=self.state,bg="#381a38",fg=self.GOLD,font=("Segoe UI",9,"bold"),padx=12,pady=8)
         self.chip.pack(side="right")
-        self.body=tk.Frame(self.main,bg=self.CREAM)
+        self.body=tk.Frame(self.main,bg="#101014")
         self.body.pack(fill="both",expand=True,padx=38,pady=(0,22))
         self.show("Dashboard")
         self.root.after(3000,lambda:self.update(False))
         self.root.after(2000,self.refresh)
         root.protocol("WM_DELETE_WINDOW",self.close)
     def panel(self,parent):
-        card=tk.Frame(parent,bg="#fffaf0",highlightbackground="#dfd4b9",highlightthickness=1,padx=20,pady=18)
+        card=tk.Frame(parent,bg="#1a191e",highlightbackground="#624a29",highlightthickness=1,padx=23,pady=21)
         card.pack(fill="x",pady=(0,16))
         return card
     def label(self,parent,text,size=11,fg=None,bold=False):
-        w=tk.Label(parent,text=text,bg=parent.cget("bg"),fg=fg or self.GREEN,font=("Georgia" if size>=16 else "Segoe UI",size,"bold" if bold else "normal"),anchor="w",justify="left",wraplength=680)
+        w=tk.Label(parent,text=text,bg=parent.cget("bg"),fg=fg or self.CREAM,font=("Georgia" if size>=16 else "Segoe UI",size,"bold" if bold else "normal"),anchor="w",justify="left",wraplength=680)
         w.pack(fill="x",pady=(0,9))
         return w
     def button(self,parent,title,command,primary=True):
-        w=tk.Button(parent,text=title,command=command,bg=self.GREEN if primary else "#e8ddc8",fg=self.CREAM if primary else self.GREEN,activebackground=self.PANEL if primary else "#d8cba9",activeforeground=self.CREAM if primary else self.GREEN,relief="flat",borderwidth=0,padx=18,pady=12,font=("Segoe UI",10,"bold"),cursor="hand2")
+        w=tk.Button(parent,text=title,command=command,bg=self.GREEN if primary else "#e8ddc8",fg=self.CREAM if primary else self.GOLD,activebackground=self.PANEL if primary else "#d8cba9",activeforeground=self.CREAM if primary else self.GREEN,relief="flat",borderwidth=0,padx=18,pady=12,font=("Segoe UI",10,"bold"),cursor="hand2")
         w.pack(side="left",padx=(0,9),pady=4)
         return w
     def show(self,page):
@@ -125,8 +133,8 @@ class App:
         self.heading.config(text=page)
         for child in self.body.winfo_children():child.destroy()
         if page=="Dashboard":
-            self.label(self.body,"Your photos. Your computer. Your control.",17)
-            self.label(self.body,"Transfer your iPhone media over your own Wi-Fi, only when you choose.",10,fg="#596f60")
+            self.label(self.body,"Your photos. Your computer. Your control.",20)
+            self.label(self.body,"Transfer your iPhone media over your own Wi-Fi, only when you choose.",10,fg="#bba9a9")
             card=self.panel(self.body)
             self.label(card,"RECEIVER CONNECTION",12,bold=True)
             tk.Label(card,textvariable=self.link,bg=card.cget("bg"),fg=self.GREEN,font=("Consolas",10),wraplength=620).pack(anchor="w",pady=8)
@@ -136,7 +144,7 @@ class App:
             card=self.panel(self.body)
             self.label(card,"TRANSFER STATUS",12,bold=True)
             tk.Label(card,textvariable=self.count,bg=card.cget("bg"),fg=self.GREEN,font=("Georgia",22,"bold")).pack(anchor="w")
-            tk.Label(card,textvariable=self.checked,bg=card.cget("bg"),fg="#596f60",wraplength=580).pack(anchor="w",pady=10)
+            tk.Label(card,textvariable=self.checked,bg=card.cget("bg"),fg="#bba9a9",wraplength=580).pack(anchor="w",pady=10)
             bar=tk.Frame(card,bg=card.cget("bg"));bar.pack(anchor="w")
             self.button(bar,"View Library",lambda:self.show("Library"))
             self.button(bar,"Verify Saved Files",self.verify,False)
@@ -158,10 +166,10 @@ class App:
             row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
             self.button(row,"Open Saved Folder",lambda:os.startfile(DEST))
             self.button(row,"Verify Library",self.verify,False)
-            self.listbox=tk.Listbox(card,bg="#fcf6e9",fg=self.GREEN,selectbackground=self.GOLD,relief="flat",height=13,font=("Segoe UI",10),activestyle="none")
+            self.listbox=tk.Listbox(card,bg="#25232a",fg=self.CREAM,selectbackground="#642c60",relief="flat",height=13,font=("Segoe UI",10),activestyle="none")
             self.listbox.pack(fill="both",expand=True,pady=10)
             self.refresh_list()
-            tk.Label(card,textvariable=self.checked,bg=card.cget("bg"),fg="#596f60",wraplength=620).pack(anchor="w")
+            tk.Label(card,textvariable=self.checked,bg=card.cget("bg"),fg="#bba9a9",wraplength=620).pack(anchor="w")
         else:
             card=self.panel(self.body)
             self.label(card,"FILE STORAGE",16,bold=True)
@@ -172,7 +180,7 @@ class App:
             card=self.panel(self.body)
             self.label(card,"GITHUB UPDATES",16,bold=True)
             self.label(card,"PhotoBridge uses its own update channel in DesktopAppUpdates. New installers are checked and verified before installation.",10)
-            tk.Label(card,textvariable=self.update_state,bg=card.cget("bg"),fg="#596f60").pack(anchor="w")
+            tk.Label(card,textvariable=self.update_state,bg=card.cget("bg"),fg="#bba9a9").pack(anchor="w")
             row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
             self.button(row,"Check for Updates",lambda:self.update(True))
     def refresh_list(self):
