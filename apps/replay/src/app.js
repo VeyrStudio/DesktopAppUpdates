@@ -25,8 +25,15 @@ async function importMedia(providedPaths){
  notice.innerHTML='<strong>Importing media</strong> <progress value="0" max="100" style="width:100%"></progress><p class="import-detail">Starting '+entries.length+' file(s)…</p>';
  let results=await replay.import(entries);
  const duplicates=results.filter(x=>x.status==='duplicate');
- if(duplicates.length&&confirm(duplicates.length+' duplicate(s) found. Keep both versions for all duplicates?')){
-  for(const item of duplicates){const entry=entries.find(x=>x.path.split(/[\\/]/).pop()===item.name);if(entry)results.push(...await replay.import([{...entry,keepDuplicate:true}]))}
+ if(duplicates.length){
+  const applyAll=confirm(duplicates.length+' duplicates detected. Apply one choice to all duplicates?');
+  const allKeep=applyAll?confirm('Keep both copies of all duplicates? OK keeps both; Cancel skips them all.'):false;
+  for(const item of duplicates){
+   const keep=applyAll?allKeep:confirm('Duplicate: '+item.name+'. OK = keep both, Cancel = skip.');
+   if(!keep)continue;
+   const entry=entries.find(x=>x.path.split(/[\\/]/).pop()===item.name);
+   if(entry)results.push(...await replay.import([{...entry,keepDuplicate:true}]));
+  }
  }
  notice.querySelector('progress').value=100;notice.querySelector('.import-detail').textContent=results.filter(x=>x.status==='imported').length+' files imported. '+results.filter(x=>x.status==='error').length+' errors.';
  const failures=results.filter(x=>x.status==='error'||x.status==='unsupported'||x.status==='imported-source-retained');
