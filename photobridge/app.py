@@ -65,43 +65,150 @@ def local_ip():
             s.connect(("192.0.2.1",80));return s.getsockname()[0]
     except Exception:return socket.gethostbyname(socket.gethostname())
 class App:
+    GREEN="#17382e"
+    DEEP="#102820"
+    PANEL="#204538"
+    CREAM="#f4eddd"
+    GOLD="#c5a46a"
+    MUTED="#b7c8b8"
     def __init__(self,root):
-        self.root=root;self.server=None
-        root.title("PhotoBridge");root.geometry("680x480");root.configure(bg="#20152b")
-        frame=tk.Frame(root,bg="#20152b",padx=25,pady=24);frame.pack(fill="both",expand=True)
-        def txt(t,size=11):
-            w=tk.Label(frame,text=t,font=("Segoe UI",size),fg="#f7ecff",bg="#20152b",wraplength=620);w.pack(pady=7);return w
-        txt("PhotoBridge",27)
-        txt("Send photos, videos and GIFs from Safari directly to this PC.")
-        tk.Button(frame,text="Start / Stop Receiver",command=self.toggle,bg="#8e4cc2",fg="white",font=("Segoe UI",12)).pack(fill="x",pady=12)
-        self.link=tk.StringVar(value="Receiver is off")
-        tk.Label(frame,textvariable=self.link,fg="#dfadff",bg="#20152b",wraplength=620).pack(pady=8)
-        tk.Button(frame,text="Copy iPhone link",command=self.copy).pack(pady=5)
+        self.root=root
+        self.server=None
+        self.page="Dashboard"
+        self.checked=tk.StringVar(value="No transfer verification performed yet")
+        self.link=tk.StringVar(value="Receiver is offline")
         self.folder=tk.StringVar(value=str(DEST))
-        tk.Label(frame,textvariable=self.folder,fg="white",bg="#20152b",wraplength=620).pack(pady=8)
-        row=tk.Frame(frame,bg="#20152b");row.pack()
-        for name,fn in [("Change Folder",self.choose),("Open Folder",lambda:os.startfile(DEST)),("Verify Files",self.verify),("Check Updates",lambda:self.update(True))]:
-            tk.Button(row,text=name,command=fn).pack(side="left",padx=4)
-        txt("Transfers only happen when you press Send on your iPhone. Originals are never deleted.",10)
+        self.state=tk.StringVar(value="OFFLINE")
+        self.count=tk.StringVar(value="0 saved files")
+        self.update_state=tk.StringVar(value="Updates checked automatically")
+        root.title("PhotoBridge  |  Media Transfer")
+        root.geometry("1040x700")
+        root.minsize(840,580)
+        root.configure(bg=self.CREAM)
+        self.root.option_add("*Font","Segoe UI 10")
+        self.sidebar=tk.Frame(root,bg=self.GREEN,width=225)
+        self.sidebar.pack(side="left",fill="y")
+        self.sidebar.pack_propagate(False)
+        tk.Label(self.sidebar,text="PHOTO",bg=self.GREEN,fg=self.CREAM,font=("Georgia",23,"bold"),anchor="w").pack(fill="x",padx=26,pady=(31,0))
+        tk.Label(self.sidebar,text="B R I D G E",bg=self.GREEN,fg=self.GOLD,font=("Georgia",13,"bold"),anchor="w").pack(fill="x",padx=27,pady=(0,33))
+        for page,mark in [("Dashboard","⌂"),("Transfers","⇄"),("Library","▤"),("Settings","⚙")]:
+            tk.Button(self.sidebar,text="  "+mark+"    "+page,anchor="w",bg=self.GREEN,fg=self.CREAM,activebackground=self.PANEL,activeforeground=self.GOLD,borderwidth=0,highlightthickness=0,padx=19,pady=14,font=("Segoe UI",11),command=lambda p=page:self.show(p)).pack(fill="x",padx=10,pady=2)
+        tk.Label(self.sidebar,text="LOCAL TRANSFER  •  v"+VERSION,bg=self.GREEN,fg=self.MUTED,font=("Segoe UI",8)).pack(side="bottom",pady=23)
+        self.main=tk.Frame(root,bg=self.CREAM)
+        self.main.pack(side="left",fill="both",expand=True)
+        self.header=tk.Frame(self.main,bg=self.CREAM)
+        self.header.pack(fill="x",padx=38,pady=(27,15))
+        self.heading=tk.Label(self.header,text="Dashboard",bg=self.CREAM,fg=self.GREEN,font=("Georgia",25,"bold"))
+        self.heading.pack(side="left")
+        self.chip=tk.Label(self.header,textvariable=self.state,bg=self.GREEN,fg=self.CREAM,font=("Segoe UI",9,"bold"),padx=12,pady=8)
+        self.chip.pack(side="right")
+        self.body=tk.Frame(self.main,bg=self.CREAM)
+        self.body.pack(fill="both",expand=True,padx=38,pady=(0,22))
+        self.show("Dashboard")
+        self.root.after(3000,lambda:self.update(False))
+        self.root.after(2000,self.refresh)
         root.protocol("WM_DELETE_WINDOW",self.close)
-        root.after(2000,lambda:self.update(False))
+    def panel(self,parent):
+        card=tk.Frame(parent,bg="#fffaf0",highlightbackground="#dfd4b9",highlightthickness=1,padx=20,pady=18)
+        card.pack(fill="x",pady=(0,16))
+        return card
+    def label(self,parent,text,size=11,fg=None,bold=False):
+        w=tk.Label(parent,text=text,bg=parent.cget("bg"),fg=fg or self.GREEN,font=("Georgia" if size>=16 else "Segoe UI",size,"bold" if bold else "normal"),anchor="w",justify="left",wraplength=680)
+        w.pack(fill="x",pady=(0,9))
+        return w
+    def button(self,parent,title,command,primary=True):
+        w=tk.Button(parent,text=title,command=command,bg=self.GREEN if primary else "#e8ddc8",fg=self.CREAM if primary else self.GREEN,activebackground=self.PANEL if primary else "#d8cba9",activeforeground=self.CREAM if primary else self.GREEN,relief="flat",borderwidth=0,padx=18,pady=12,font=("Segoe UI",10,"bold"),cursor="hand2")
+        w.pack(side="left",padx=(0,9),pady=4)
+        return w
+    def show(self,page):
+        self.page=page
+        self.heading.config(text=page)
+        for child in self.body.winfo_children():child.destroy()
+        if page=="Dashboard":
+            self.label(self.body,"Your photos. Your computer. Your control.",17)
+            self.label(self.body,"Transfer your iPhone media over your own Wi-Fi, only when you choose.",10,fg="#596f60")
+            card=self.panel(self.body)
+            self.label(card,"RECEIVER CONNECTION",12,bold=True)
+            tk.Label(card,textvariable=self.link,bg=card.cget("bg"),fg=self.GREEN,font=("Consolas",10),wraplength=620).pack(anchor="w",pady=8)
+            bar=tk.Frame(card,bg=card.cget("bg"));bar.pack(anchor="w",fill="x")
+            self.button(bar,"Start / Stop Receiver",self.toggle)
+            self.button(bar,"Copy iPhone Link",self.copy,False)
+            card=self.panel(self.body)
+            self.label(card,"TRANSFER STATUS",12,bold=True)
+            tk.Label(card,textvariable=self.count,bg=card.cget("bg"),fg=self.GREEN,font=("Georgia",22,"bold")).pack(anchor="w")
+            tk.Label(card,textvariable=self.checked,bg=card.cget("bg"),fg="#596f60",wraplength=580).pack(anchor="w",pady=10)
+            bar=tk.Frame(card,bg=card.cget("bg"));bar.pack(anchor="w")
+            self.button(bar,"View Library",lambda:self.show("Library"))
+            self.button(bar,"Verify Saved Files",self.verify,False)
+        elif page=="Transfers":
+            card=self.panel(self.body)
+            self.label(card,"TRANSFER FROM iPHONE",16,bold=True)
+            self.label(card,"1. Open PhotoBridge on your computer and start the receiver.\n2. On your iPhone, open the address shown below in Safari.\n3. Select pictures, videos or GIFs, then tap Send to computer.\n4. Leave Safari open until it confirms the transfer.",11)
+            tk.Label(card,textvariable=self.link,bg=card.cget("bg"),fg=self.GREEN,font=("Consolas",10),wraplength=620).pack(anchor="w",pady=9)
+            row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
+            self.button(row,"Start / Stop Receiver",self.toggle)
+            self.button(row,"Copy iPhone Link",self.copy,False)
+            card=self.panel(self.body)
+            self.label(card,"IMPORTANT",12,bold=True)
+            self.label(card,"Photos remain on your iPhone. Safari only uploads the media you select. Verify the files on this computer, including videos and Live Photos, before deleting originals.",10)
+        elif page=="Library":
+            card=self.panel(self.body)
+            self.label(card,"SAVED MEDIA",16,bold=True)
+            self.label(card,"All received files are stored in your chosen Windows folder.")
+            row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
+            self.button(row,"Open Saved Folder",lambda:os.startfile(DEST))
+            self.button(row,"Verify Library",self.verify,False)
+            self.listbox=tk.Listbox(card,bg="#fcf6e9",fg=self.GREEN,selectbackground=self.GOLD,relief="flat",height=13,font=("Segoe UI",10),activestyle="none")
+            self.listbox.pack(fill="both",expand=True,pady=10)
+            self.refresh_list()
+            tk.Label(card,textvariable=self.checked,bg=card.cget("bg"),fg="#596f60",wraplength=620).pack(anchor="w")
+        else:
+            card=self.panel(self.body)
+            self.label(card,"FILE STORAGE",16,bold=True)
+            tk.Label(card,textvariable=self.folder,bg=card.cget("bg"),fg=self.GREEN,wraplength=610).pack(anchor="w",pady=9)
+            row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
+            self.button(row,"Change Storage Folder",self.choose)
+            self.button(row,"Open Folder",lambda:os.startfile(DEST),False)
+            card=self.panel(self.body)
+            self.label(card,"GITHUB UPDATES",16,bold=True)
+            self.label(card,"PhotoBridge uses its own update channel in DesktopAppUpdates. New installers are checked and verified before installation.",10)
+            tk.Label(card,textvariable=self.update_state,bg=card.cget("bg"),fg="#596f60").pack(anchor="w")
+            row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
+            self.button(row,"Check for Updates",lambda:self.update(True))
+    def refresh_list(self):
+        if not hasattr(self,"listbox") or not self.listbox.winfo_exists():return
+        self.listbox.delete(0,"end")
+        files=sorted((p for p in DEST.iterdir() if p.is_file() and not p.name.startswith(".") and p.suffix!=".part"),key=lambda p:p.stat().st_mtime,reverse=True)
+        for p in files[:2500]:self.listbox.insert("end",p.name+"    ·    "+str(round(p.stat().st_size/1024/1024,1))+" MB")
+        if not files:self.listbox.insert("end","No files transferred yet.")
+    def refresh(self):
+        try:
+            files=[p for p in DEST.iterdir() if p.is_file() and not p.name.startswith(".") and p.suffix!=".part"]
+            self.count.set(str(len(files))+" saved files")
+            if self.page=="Library":self.refresh_list()
+        except Exception:pass
+        self.root.after(2500,self.refresh)
     def toggle(self):
         if self.server:
             old=self.server;self.server=None
             threading.Thread(target=lambda:(old.shutdown(),old.server_close()),daemon=True).start()
-            self.link.set("Receiver is off");return
+            self.link.set("Receiver is offline");self.state.set("OFFLINE");return
         try:self.server=ThreadingHTTPServer(("0.0.0.0",8765),Receiver)
         except OSError as e:messagebox.showerror("Receiver error",str(e));return
         threading.Thread(target=self.server.serve_forever,daemon=True).start()
         self.link.set("http://"+local_ip()+":8765/?key="+KEY)
+        self.state.set("CONNECTED")
     def copy(self):
+        if not self.server:return messagebox.showinfo("PhotoBridge","Start the receiver first.")
         self.root.clipboard_clear();self.root.clipboard_append(self.link.get())
+        messagebox.showinfo("Link copied","Paste this address into Safari on your iPhone.")
     def choose(self):
         global DEST
-        if self.server:return messagebox.showinfo("PhotoBridge","Stop receiver before changing folders.")
+        if self.server:return messagebox.showinfo("PhotoBridge","Stop the receiver before changing folders.")
         p=filedialog.askdirectory()
         if p:
-            DEST=Path(p);CONFIG.write_text(json.dumps({"folder":str(DEST)}));self.folder.set(p)
+            DEST=Path(p);DEST.mkdir(parents=True,exist_ok=True)
+            CONFIG.write_text(json.dumps({"folder":str(DEST)}));self.folder.set(p)
     def verify(self):
         try:idx=json.loads((DEST/".photobridge-index.json").read_text())
         except Exception:idx={}
@@ -113,17 +220,22 @@ class App:
             with p.open("rb") as f:
                 for block in iter(lambda:f.read(1024*1024),b""):h.update(block)
             if h.hexdigest()!=digest:bad.append(name)
-        messagebox.showinfo("Verification",str(len(idx)-len(bad))+" verified; "+str(len(bad))+" missing or damaged.\nAlso confirm all intended phone photos were selected and transferred before deleting originals.")
+        result=str(len(idx)-len(bad))+" indexed files verified; "+str(len(bad))+" missing or changed."
+        self.checked.set(result)
+        messagebox.showinfo("Verification",result+"\n\nVerify that all intended photos and videos were selected and sent before deleting anything from your phone.")
     def update(self,manual):
+        self.update_state.set("Checking GitHub...")
         def run():
             try:
                 with urllib.request.urlopen(urllib.request.Request(MANIFEST,headers={"User-Agent":"PhotoBridge"}),timeout=12) as response:m=json.load(response)
                 ver=lambda x:tuple(int(k) for k in x.split("."))
                 if ver(m["version"])<=ver(VERSION):
-                    if manual:self.root.after(0,lambda:messagebox.showinfo("Updates","Up to date."))
+                    self.root.after(0,lambda:self.update_state.set("PhotoBridge is up to date."))
+                    if manual:self.root.after(0,lambda:messagebox.showinfo("Updates","PhotoBridge is up to date."))
                     return
                 self.root.after(0,lambda:self.offer(m))
             except Exception as e:
+                self.root.after(0,lambda:self.update_state.set("Update check unavailable."))
                 if manual:self.root.after(0,lambda:messagebox.showerror("Updates",str(e)))
         threading.Thread(target=run,daemon=True).start()
     def offer(self,m):
