@@ -71,3 +71,8 @@ async function restoreFromBackup(selectedIds=[]){
 }
 ipcMain.handle('restore-backup',(_e,ids)=>restoreFromBackup(Array.isArray(ids)?ids:[]));
 ipcMain.handle('list-backup',async()=>{const d=await load(),base=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');try{return JSON.parse(await fsp.readFile(path.join(base,'replay-index.json'),'utf8')).items||[]}catch{return []}});
+
+async function trashList(){const d=await load();return d.items.filter(x=>!!x.deletedAt)}
+ipcMain.handle('list-trash',trashList);
+async function purgeExpired(){const d=await load(),cutoff=Date.now()-30*86400000;let count=0;for(const item of d.items.filter(x=>x.deletedAt&&x.deletedAt<cutoff)){await fsp.rm(path.join(root,item.stored),{force:true});count++}if(count){d.items=d.items.filter(x=>!x.deletedAt||x.deletedAt>=cutoff);await save(d)}return count}
+app.on('browser-window-created',()=>{purgeExpired().catch(e=>console.error('Trash cleanup failed:',e))});
