@@ -29,3 +29,22 @@ ipcMain.handle('choose-backup',async()=>{const r=await dialog.showOpenDialog({pr
 ipcMain.handle('backup',async()=>{const d=await load();for(const item of d.items.filter(x=>!x.deletedAt))await backupOne(d,item);return true});
 ipcMain.handle('empty-trash',async()=>{const d=await load(),cut=Date.now()-30*86400000;for(const item of d.items.filter(x=>x.deletedAt&&x.deletedAt<cut)){await fsp.rm(path.join(root,item.stored),{force:true})}d.items=d.items.filter(x=>!x.deletedAt||x.deletedAt>=cut);await save(d);return d});
 ipcMain.handle('check-update',async()=>{const r=await fetch('https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/replay/replay.json');return r.ok?await r.json():null});
+
+const {spawn}=require('node:child_process');
+const {Readable}=require('node:stream');
+const {pipeline}=require('node:stream/promises');
+async function stageInstaller(manifest){
+  if(!manifest || !/^https:\/\//.test(manifest.url)||!/^[a-f0-9]{64}$/i.test(manifest.sha256||'')) throw Error('Invalid update manifest');
+  const response=await fetch(manifest.url,{cache:'no-store'});
+  if(!response.ok||!response.body) throw Error('Installer download failed: '+response.status);
+  const target=path.join(app.getPath('temp'),'ReplaySetup-'+String(manifest.version).replace(/[^a-z0-9.-]/ig,'_')+'.exe');
+  const hash=crypto.createHash('sha256');
+  const {Transform}=require('node:stream');
+  await pipeline(Readable.fromWeb(response.body),new Transform({transform(chunk,enc,cb){hash.update(chunk);cb(null,chunk)}}),fs.createWriteStream(target));
+  if(hash.digest('hex').toLowerCase()!==manifest.sha256.toLowerCase()){await fsp.rm(target,{force:true});throw Error('Installer checksum mismatch')}
+  return target;
+}
+let readyInstaller='';
+ipcMain.handle('stage-update',async(_e,manifest)=>{readyInstaller=await stageInstaller(manifest);return true});
+ipcMain.handle('apply-update',async()=>{if(process.platform!=='win32'||!readyInstaller)throw Error('No verified Windows update ready');const child=spawn(readyInstaller,['/S'],{detached:true,stdio:'ignore'});child.unref();setImmediate(()=>app.quit());return true});
+ipcMain.handle('version',()=>app.getVersion());
