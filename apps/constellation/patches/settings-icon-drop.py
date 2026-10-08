@@ -8,7 +8,7 @@ css = root / "src" / "styles.css"
 
 # Replace the entire Settings view so matching cannot fail on earlier wording/layout changes.
 h = html.read_text(encoding="utf-8")
-settings = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop almost any image file below. Constellation will convert it into a Windows shortcut icon for you.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop an image here</strong><span>PNG, JPG, JPEG, WEBP, GIF, BMP, SVG, ICO and other browser-supported images</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for image</button><input id="shortcutIconFile" type="file" accept="image/*,.ico" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section></div></section>'''
+settings = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop almost any image file below. Constellation will convert it and create or replace the desktop shortcut for you.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop an image here</strong><span>PNG, JPG, JPEG, WEBP, GIF, BMP, SVG, ICO and other browser-supported images</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for image</button><input id="shortcutIconFile" type="file" accept="image/*,.ico" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section></div></section>'''
 new_h, count = re.subn(r'<section id="settingsView" class="view">.*?</section>\s*</main>', settings + '\n</main>', h, count=1, flags=re.S)
 if count != 1:
     raise SystemExit("Settings view not found")
@@ -61,8 +61,8 @@ async function applyShortcutIconFile(file){
       });
     }
     if(status)status.textContent="Changing desktop shortcut icon…";
-    await tauriInvoke("set_desktop_shortcut_icon",{iconData});
-    if(status)status.textContent="Desktop shortcut icon changed to " + file.name + ".";
+    const shortcutPath=await tauriInvoke("set_desktop_shortcut_icon",{iconData});
+    if(status)status.textContent="Desktop shortcut created with " + file.name + ": " + shortcutPath;
   }catch(err){
     if(status)status.textContent=String(err?.message||err);
   }finally{
@@ -90,8 +90,8 @@ $("#repairShortcutIconBtn")?.addEventListener("click",async()=>{
   if(!tauriInvoke)return;
   try{
     if(status)status.textContent="Repairing desktop shortcut icon…";
-    await tauriInvoke("reset_desktop_shortcut_icon");
-    if(status)status.textContent="Desktop shortcut now uses the Constellation app icon.";
+    const shortcutPath=await tauriInvoke("reset_desktop_shortcut_icon");
+    if(status)status.textContent="Desktop shortcut recreated with the Constellation app icon: " + shortcutPath;
   }catch(err){
     if(status)status.textContent=String(err);
   }
