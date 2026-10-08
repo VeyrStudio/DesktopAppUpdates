@@ -86,7 +86,7 @@ ipcMain.handle('apply-update',async()=>{
   '  for ($i = 0; $i -lt 30 -and !(Test-Path -LiteralPath $replayExe); $i++) { Start-Sleep -Seconds 1 }',
   '  if (Test-Path -LiteralPath $replayExe) { Start-Process -FilePath $replayExe }',
   '} finally { Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue }'
- ].join('\\n');
+ ].join('\n');
  await fsp.writeFile(scriptPath,script,'utf8');
  const child=spawn('powershell.exe',['-NoProfile','-NonInteractive','-WindowStyle','Hidden','-ExecutionPolicy','Bypass','-File',scriptPath],{detached:true,stdio:'ignore',windowsHide:true});
  child.unref();setImmediate(()=>app.quit());return true;
