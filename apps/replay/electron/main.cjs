@@ -22,8 +22,8 @@ ipcMain.handle('import',(event,x)=>importFiles(x,event.sender));
 ipcMain.handle('folder',async(_e,x)=>{const d=await load();d.folders.push({id:crypto.randomUUID(),kind:x.kind,group:x.group,name:x.name,parent:x.parent||'',cover:'',color:'#b58a48'});await save(d);return d});
 ipcMain.handle('folder-update',async(_e,id,patch)=>{const d=await load(),f=d.folders.find(x=>x.id===id);if(!f)throw Error('Not found');if(patch.name!==undefined)f.name=safe(patch.name);if(patch.pinned!==undefined)f.pinned=!!patch.pinned;if(/^#[0-9a-f]{6}$/i.test(patch.color||''))f.color=patch.color;if(patch.icon!==undefined)f.icon=String(patch.icon).slice(0,3);if(patch.cover!==undefined){if(patch.cover&&!d.items.some(i=>i.id===patch.cover&&i.kind==='images'&&!i.deletedAt))throw Error('Cover must be a stored image');f.cover=patch.cover}if(patch.parent!==undefined){if(patch.parent===id)throw Error('Folder cannot be parent of itself');const parent=patch.parent&&d.folders.find(x=>x.id===patch.parent);if(patch.parent&&(!parent||parent.kind!==f.kind||parent.group!==f.group))throw Error('Invalid parent');let current=parent;while(current){if(current.id===id)throw Error('Cannot move folder into its descendant');current=d.folders.find(x=>x.id===current.parent)}f.parent=patch.parent||''}await save(d);await synchronizeBackup();return d});
 ipcMain.handle('item-update',async(_e,id,x)=>{const d=await updateItem(id,x);await synchronizeBackup();return d});
-ipcMain.handle('item-delete',(_e,id)=>updateItem(id,{deletedAt:Date.now()}));
-ipcMain.handle('restore',(_e,id)=>updateItem(id,{deletedAt:null}));
+ipcMain.handle('item-delete',async(_e,id)=>{const d=await updateItem(id,{deletedAt:Date.now()});await synchronizeBackup();return d});
+ipcMain.handle('restore',async(_e,id)=>{const d=await updateItem(id,{deletedAt:null});await synchronizeBackup();return d});
 ipcMain.handle('settings',async(_e,x)=>{const d=await load();Object.assign(d.settings,x);await save(d);return d});
 ipcMain.handle('choose-backup',async()=>{const r=await dialog.showOpenDialog({properties:['openDirectory','createDirectory']});return r.canceled?'':r.filePaths[0]});
 async function synchronizeBackup(){
@@ -72,16 +72,22 @@ async function restoreFromBackup(selectedIds=[]){
  if(!Array.isArray(manifest.items)||!Array.isArray(manifest.folders))throw Error('Invalid backup catalog');
  let restored=0;
  for(const item of manifest.items){
-   if(item.deletedAt || (selectedIds.length&&!selectedIds.includes(item.id)) || d.items.some(x=>x.id===item.id))continue;
+   if((item.deletedAt&&Date.now()-item.deletedAt>30*86400000) || (selectedIds.length&&!selectedIds.includes(item.id)) || d.items.some(x=>x.id===item.id))continue;
    if(!['videos','images','gifs'].includes(item.kind)||!item.name||!/^[a-f0-9]{64}$/i.test(item.hash||''))continue;
    const rel=String(item.stored||'');
    if(path.isAbsolute(rel)||rel.split(/[\\/]/).includes('..')||!rel.startsWith(item.kind+path.sep))continue;
    const chain=[];let f=manifest.folders.find(x=>x.id===item.folder);const seen=new Set();
    while(f&&!seen.has(f.id)){seen.add(f.id);chain.unshift(safe(f.name));f=manifest.folders.find(x=>x.id===f.parent)}
    const original=path.join(target,item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',...chain,safe(item.name));
-   if((await checksum(original))!==item.hash)throw Error('Backup integrity failed for '+item.name);
-   await fileCopy(original,path.join(root,rel));
-   d.items.push(item);restored++;
+   let source=original;
+   try{await fsp.access(source)}catch{
+     const recovery=path.join(target,'.Replay Recovery');let buckets=[];try{buckets=await fsp.readdir(recovery)}catch{}
+     buckets=buckets.filter(x=>/^\d+$/.test(x)&&Date.now()-Number(x)<=30*86400000).sort((a,b)=>Number(b)-Number(a));
+     for(const bucket of buckets){const candidate=path.join(recovery,bucket,item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',...chain,safe(item.name));try{await fsp.access(candidate);source=candidate;break}catch{}}
+   }
+   if((await checksum(source))!==item.hash)throw Error('Backup integrity failed for '+item.name);
+   await fileCopy(source,path.join(root,rel));
+   d.items.push({...item,deletedAt:null});restored++;
  }
  for(const f of manifest.folders)if(!d.folders.some(x=>x.id===f.id))d.folders.push(f);
  await save(d);return {restored};
