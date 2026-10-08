@@ -105,9 +105,7 @@ fn set_desktop_shortcut_icon(icon_data: String) -> Result<(), String> {
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(encoded)
         .map_err(|e| format!("Could not read icon file: {e}"))?;
-    if bytes.len() < 6 || &bytes[0..4] != [0, 0, 1, 0] {
-        return Err("That file is not a valid Windows .ico file.".into());
-    }
+    let is_ico = bytes.len() >= 6 && &bytes[0..4] == [0, 0, 1, 0];
     let base = std::env::var_os("LOCALAPPDATA")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(std::env::temp_dir)
@@ -115,7 +113,33 @@ fn set_desktop_shortcut_icon(icon_data: String) -> Result<(), String> {
         .join("Constellation");
     fs::create_dir_all(&base).map_err(|e| format!("Could not create icon folder: {e}"))?;
     let icon = base.join("desktop-shortcut.ico");
-    fs::write(&icon, bytes).map_err(|e| format!("Could not save shortcut icon: {e}"))?;
+    if is_ico {
+        fs::write(&icon, bytes).map_err(|e| format!("Could not save shortcut icon: {e}"))?;
+    } else {
+        let decoded = image::load_from_memory(&bytes)
+            .map_err(|e| format!("Could not read that image: {e}"))?;
+        let rgba = decoded.to_rgba8();
+        let (w, h) = rgba.dimensions();
+        if w == 0 || h == 0 {
+            return Err("That image has no usable dimensions.".into());
+        }
+        let scale = (256.0_f32 / w as f32).min(256.0_f32 / h as f32);
+        let nw = ((w as f32 * scale).round() as u32).max(1);
+        let nh = ((h as f32 * scale).round() as u32).max(1);
+        let resized = image::imageops::resize(
+            &rgba,
+            nw,
+            nh,
+            image::imageops::FilterType::Lanczos3,
+        );
+        let mut canvas = image::RgbaImage::from_pixel(256, 256, image::Rgba([0, 0, 0, 0]));
+        let x = ((256 - nw) / 2) as i64;
+        let y = ((256 - nh) / 2) as i64;
+        image::imageops::overlay(&mut canvas, &resized, x, y);
+        image::DynamicImage::ImageRgba8(canvas)
+            .save_with_format(&icon, image::ImageFormat::Ico)
+            .map_err(|e| format!("Could not convert that image to a Windows icon: {e}"))?;
+    }
     write_desktop_shortcut(&icon)
 }
 
@@ -143,6 +167,8 @@ rust.write_text(r, encoding="utf-8")
 c = cargo.read_text(encoding="utf-8")
 if '\nbase64 = ' not in c:
     c += '\nbase64 = "0.22"\n'
+if '\nimage = ' not in c:
+    c += '\nimage = { version = "0.25", default-features = false, features = ["png", "ico"] }\n'
 cargo.write_text(c, encoding="utf-8")
 
 print("Desktop shortcut icon controls applied.")
