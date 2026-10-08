@@ -1,4 +1,5 @@
 name: Build Constellation
+# all-image-uploads-v1
 # shortcut-create-no-console-v1
 # image-picker-all-types-v1
 # deterministic-settings-dropzone-v3
@@ -48,6 +49,13 @@ jobs:
           python "apps/constellation/patches/gif-ship-images.py"
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'class="card-art-image"' -Quiet)) { throw "Animated GIF ship image markup was not applied." }
           if (-not (Select-String -Path "apps/constellation/src/styles.css" -SimpleMatch '.card-art-image{' -Quiet)) { throw "Animated GIF ship image CSS was not applied." }
+
+      - name: Broaden ship and fandom image formats
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/all-ship-image-formats.py"
+          if (-not (Select-String -Path "apps/constellation/src/index.html" -SimpleMatch 'accept="image/*"' -Quiet)) { throw "Broad image picker compatibility was not applied." }
 
       - name: Make update checks bypass stale caches
         shell: pwsh
