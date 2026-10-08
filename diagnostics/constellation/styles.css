@@ -1,0 +1,253 @@
+
+:root{
+  --deep:#2B0738;
+  --deep2:#3A0A4D;
+  --main:#6E1294;
+  --light:#8E4CC2;
+  --accent:#B66FE0;
+  --cream:#FBF8F3;
+  --paper:#FFFDF9;
+  --ink:#2E1638;
+  --muted:#856C8D;
+  --line:#E7DEE9;
+  --shadow:0 14px 30px rgba(49, 11, 66, .08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--cream);color:var(--ink);font-family:Georgia, "Times New Roman", serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+body{overflow-x:hidden}
+.app-shell{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  grid-template-rows:34px 1fr;
+}
+.topbar{
+  grid-column:1/-1;
+  height:34px;
+  background:linear-gradient(90deg,var(--main),#8A1AA8);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 10px;
+  font-size:14px;
+  letter-spacing:.01em;
+}
+.window-title{display:flex;gap:8px;align-items:center}
+.tiny-logo{width:20px;height:20px;object-fit:cover;border-radius:5px}
+.window-actions{display:flex;gap:24px;opacity:.9;padding-right:8px}
+.sidebar{
+  grid-row:2;
+  background:
+    radial-gradient(circle at 80% 75%, rgba(182,111,224,.18), transparent 22%),
+    linear-gradient(180deg,#2A0637 0%,#3D0A52 55%,#250431 100%);
+  color:white;
+  padding:22px 16px 24px;
+  min-height:calc(100vh - 34px);
+  position:sticky;
+  top:34px;
+}
+.brand{display:flex;align-items:center;gap:14px;padding:4px 8px 24px;border-bottom:1px solid rgba(255,255,255,.13)}
+.brand-icon{
+  width:66px;height:66px;object-fit:cover;border-radius:18px;
+  box-shadow:0 8px 22px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.15);
+}
+.brand-name{font-size:28px;line-height:1;font-weight:700}
+.brand-sub{font-size:10px;color:#D8B1EE;letter-spacing:.14em;margin-top:7px}
+.nav{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.nav-item{
+  border:0;background:transparent;color:#F7ECFB;text-align:left;
+  padding:14px 14px;border-radius:10px;font-size:18px;display:flex;align-items:center;gap:13px;
+}
+.nav-item span{width:22px;color:#E69EFF;font-size:21px;text-align:center}
+.nav-item:hover,.nav-item.active{
+  background:linear-gradient(90deg,rgba(142,76,194,.5),rgba(110,18,148,.45));
+  box-shadow:inset 4px 0 0 #DB82FF;
+}
+.sidebar-divider{height:1px;background:rgba(255,255,255,.13);margin:18px 8px}
+.side-mini{padding:0 8px}
+.side-label{font-size:10px;color:#DDA8F3;letter-spacing:.16em;margin-bottom:8px}
+.side-link{
+  display:block;width:100%;border:0;background:transparent;color:#EFE0F7;
+  text-align:left;padding:8px 0;font-size:14px
+}
+.side-link:hover{color:white;text-decoration:underline}
+.side-quote{
+  position:absolute;left:24px;right:24px;bottom:26px;
+  color:#DAB7EA;font-size:12px;line-height:1.5;font-style:italic;border-top:1px solid rgba(255,255,255,.12);padding-top:14px
+}
+.main{
+  grid-column:2;
+  grid-row:2;
+  padding:28px 28px 44px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.82),rgba(251,248,243,.95)),
+    radial-gradient(circle at 85% 0%,rgba(142,76,194,.07),transparent 28%);
+}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin:0 0 18px}
+.page-head h1{font-size:48px;line-height:1;margin:0;color:#501078}
+.page-head p{margin:10px 0 0;color:#7C5E88;font-family:"Courier New",monospace;font-size:15px}
+.primary-btn{
+  border:0;border-radius:12px;background:linear-gradient(180deg,#57106F,#3B074D);color:white;
+  padding:13px 22px;font-weight:700;box-shadow:0 8px 18px rgba(69,12,91,.18)
+}
+.primary-btn:hover{transform:translateY(-1px)}
+.controls{
+  display:grid;
+  grid-template-columns:minmax(260px,1.5fr) repeat(3,minmax(150px,.6fr)) auto;
+  gap:10px;
+  margin-bottom:18px
+}
+.search-wrap{
+  display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--line);border-radius:10px;padding:0 12px
+}
+.search-wrap input{width:100%;border:0;outline:0;background:transparent;padding:11px 2px;color:var(--ink)}
+.controls select,.ghost-btn{
+  border:1px solid var(--line);background:white;color:#4C2B58;border-radius:10px;padding:10px 12px
+}
+.panel{
+  background:rgba(255,255,255,.74);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:var(--shadow);
+  margin-bottom:18px
+}
+.panel-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.panel h2{margin:0;color:#55127E;font-size:25px}
+.text-btn{border:0;background:transparent;color:#5E217F;text-decoration:underline;font-weight:700}
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(210px,1fr));
+  gap:16px
+}
+.ship-card{
+  background:white;border:1px solid #E8E0E9;border-radius:14px;overflow:hidden;
+  box-shadow:0 7px 15px rgba(66,25,80,.05);position:relative
+}
+.card-art{
+  height:110px;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(255,255,255,.25),transparent 23%),
+    linear-gradient(135deg,#4D0C65 0%,#6E1294 42%,#8E4CC2 72%,#B878DF 100%);
+  position:relative;
+}
+.card-art:after{
+  content:"✦";
+  position:absolute;inset:0;display:grid;place-items:center;
+  color:rgba(255,255,255,.84);font-size:36px;text-shadow:0 2px 8px rgba(0,0,0,.25)
+}
+.card-body{padding:13px 14px 15px}
+.card-title{font-weight:700;font-size:18px;color:#461060;line-height:1.15}
+.card-fandom{font-family:"Courier New",monospace;font-size:12px;color:#8A61A2;margin:7px 0 12px;min-height:30px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{font-size:12px;border-radius:999px;padding:5px 9px;background:#F0E3F6;color:#6C288E}
+.chip.romantic{background:#F9DFF5;color:#A42D86}
+.chip.platonic{background:#E9E1FF;color:#5639A4}
+.fav-btn{
+  position:absolute;right:10px;top:9px;width:34px;height:34px;border-radius:10px;border:0;
+  background:rgba(255,255,255,.92);color:#6E1294;font-size:20px
+}
+.fav-btn.on{color:#D55FFF}
+.fandom-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(200px,1fr));
+  gap:16px
+}
+.fandom-card{
+  background:white;border:1px solid #E8E0E9;border-radius:14px;padding:16px;
+  min-height:130px;display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:0 7px 15px rgba(66,25,80,.05)
+}
+.fandom-card .fandom-name{font-weight:700;color:#4E126F;font-size:19px}
+.fandom-count{font-family:"Courier New",monospace;color:#8E4CC2;font-size:13px;margin-top:18px}
+.count-pill{background:#F1E3F8;color:#6E1294;border-radius:999px;padding:6px 10px;font-size:12px}
+.view{display:none}
+.view.active{display:block}
+.empty-state{text-align:center;padding:54px 20px;color:#876E8F}
+.empty-mark{font-size:38px;color:#8E4CC2}
+.hidden{display:none!important}
+.modal{
+  width:min(620px,92vw);border:1px solid #DCCFE2;border-radius:18px;padding:0;background:#FFFDF9;color:#32143E;
+  box-shadow:0 26px 90px rgba(33,7,44,.32)
+}
+.modal::backdrop{background:rgba(22,5,28,.62);backdrop-filter:blur(3px)}
+.modal form{padding:22px}
+.modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
+.modal-head h2{margin:0;color:#5C167D;font-size:30px}
+.modal-head p{margin:5px 0 0;color:#876E8F}
+.icon-btn{border:0;background:transparent;font-size:26px;color:#5F4770}
+.modal label{display:flex;flex-direction:column;gap:7px;font-weight:700;margin-bottom:14px}
+.modal input,.modal select{border:1px solid #DCCFE2;border-radius:10px;padding:11px;background:white}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.check-row{flex-direction:row!important;align-items:center;font-weight:400!important}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+@media (max-width:1150px){
+  .cards-grid,.fandom-grid{grid-template-columns:repeat(2,1fr)}
+  .controls{grid-template-columns:1fr 1fr}
+}
+@media (max-width:780px){
+  .app-shell{grid-template-columns:1fr;grid-template-rows:34px auto 1fr}
+  .sidebar{grid-column:1;grid-row:2;position:relative;top:auto;min-height:auto}
+  .main{grid-column:1;grid-row:3}
+  .side-quote{display:none}
+  .cards-grid,.fandom-grid{grid-template-columns:1fr}
+  .controls{grid-template-columns:1fr}
+  .page-head{flex-direction:column}
+}
+
+.edit-btn{
+  position:absolute;left:10px;top:9px;height:34px;border-radius:10px;border:0;
+  background:rgba(255,255,255,.92);color:#5C167D;font-size:13px;font-weight:700;
+  padding:0 10px;
+}
+.edit-btn:hover{background:white}
+.card-art.has-image{
+  background-size:cover!important;
+  background-position:center!important;
+}
+.card-art.has-image:after{content:"";display:none}
+.image-preview-wrap{
+  display:flex;align-items:center;gap:12px;margin:-2px 0 14px;
+}
+.image-preview{
+  width:150px;height:100px;object-fit:cover;border-radius:12px;border:1px solid #DCCFE2;
+  background:#F4ECF7;
+}
+.danger-btn{
+  border:1px solid #D6A4B8;background:#FFF1F5;color:#9D234F;border-radius:10px;
+  padding:10px 14px;font-weight:700;
+}
+.modal-actions-split{justify-content:space-between;align-items:center}
+.modal-actions-right{display:flex;gap:10px}
+
+.card-fandom{
+  font-family:"Courier New",monospace;
+  font-size:12px;color:#8A61A2;margin:7px 0 12px;min-height:30px
+}
+.fandom-link{
+  border:0;background:transparent;padding:0;
+  color:#7A3898;text-decoration:underline;text-underline-offset:2px;
+  font-family:"Courier New",monospace;font-size:12px;text-align:left;
+}
+.fandom-link:hover{color:#53106F}
+.fandom-card{cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}
+.fandom-card:hover{
+  transform:translateY(-2px);
+  border-color:#C7A4D8;
+  box-shadow:0 12px 24px rgba(66,25,80,.10)
+}
+.fandom-card:focus-visible{outline:3px solid #B66FE0;outline-offset:3px}
+.fandom-page-bar{
+  display:flex;align-items:center;gap:16px;margin-bottom:14px
+}
+.fandom-page-name{
+  font-size:18px;font-weight:700;color:#5B1978
+}
+.settings-panel{max-width:900px}
+.settings-card{display:flex;align-items:center;justify-content:space-between;gap:24px;background:white;border:1px solid var(--line);border-radius:14px;padding:20px}
+.settings-card h3{margin:0 0 7px;color:#55127E;font-size:21px}
+.settings-card p{margin:0;color:#806789;line-height:1.5}
+.settings-note{margin-top:14px;color:#7A6481;font-family:"Courier New",monospace;font-size:13px}
