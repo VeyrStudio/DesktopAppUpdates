@@ -12,3 +12,29 @@
 .subfolder-info-value{line-height:1.5;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;color:#eee1cd}
 .subfolder-ao3{background:#542740;border-color:#d6ab63;color:#f2d4a0;padding:8px 16px;font-weight:700;letter-spacing:1px}
 @media(max-width:780px){.subfolder-info-card{margin:10px 0 22px;width:100%}}
+
+/* Side-by-side media and slimmer information card. */
+.media-with-information{display:grid;grid-template-columns:minmax(0,1fr) 265px;align-items:start;gap:16px}
+.media-with-information #gallery{min-width:0}
+.media-with-information .subfolder-info-card{grid-column:2;grid-row:1;width:265px;margin:0;padding:18px 17px;position:sticky;top:12px}
+.media-with-information #gallery{grid-column:1;grid-row:1}
+.media-with-information .subfolder-info-heading h3{font-size:19px}
+@media(max-width:960px){.media-with-information{grid-template-columns:minmax(0,1fr)}.media-with-information .subfolder-info-card{grid-column:1;grid-row:1;width:min(310px,100%);margin-left:auto;position:relative}.media-with-information #gallery{grid-column:1;grid-row:2}}
+#folder-editor{max-width:850px}
+#folder-editor label{line-height:1.5}
+#folder-editor input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px;vertical-align:middle;margin-right:6px}
+#folder-editor .folder-section-title{font:24px Georgia,serif;color:#e2bf80;margin:28px 0 17px}
+.folder-form-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px}
+.folder-field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.folder-field>span{font-size:13px;color:#d6b67b;font-weight:600}
+.folder-field input:not([type=checkbox]),.folder-field textarea,.folder-field select{width:100%;min-width:0;color:var(--ivory);background:#18161a;border:1px solid #685039;border-radius:8px;padding:10px;line-height:1.4}
+.folder-field textarea{min-height:80px;resize:vertical;font:inherit}
+.folder-checks{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.folder-checks label{display:inline-flex;align-items:center;white-space:nowrap;gap:3px}
+.import-dialog-backdrop{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:150;padding:25px}
+.import-dialog{width:min(660px,100%);padding:25px;background:linear-gradient(145deg,#321d2c,#19161b);border:1px solid #b58a48;border-radius:17px;box-shadow:0 24px 80px #0009}
+.import-dialog h2{font:26px Georgia,serif;color:#e6bd7b;margin:0 0 12px}
+.import-dialog p{line-height:1.5;overflow-wrap:anywhere}
+.import-dialog-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.import-folder-select{width:100%}
+@media(max-width:650px){.folder-form-fields{grid-template-columns:1fr}}
