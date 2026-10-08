@@ -1,25 +1,20 @@
 from pathlib import Path
+import re
 
 root = Path("apps/constellation")
 html = root / "src" / "index.html"
 js = root / "src" / "app.js"
 css = root / "src" / "styles.css"
 
+# Replace the entire Settings view so matching cannot fail on earlier wording/layout changes.
 h = html.read_text(encoding="utf-8")
-new = '''<div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop a Windows <strong>.ico</strong> file below to use your own.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop a custom .ico here</strong><span>or click to browse</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section>'''
-if 'id="shortcutIconDropZone"' not in h:
-    start = h.find('<h3>Desktop Shortcut Icon</h3>')
-    end_marker = '<p id="shortcutIconStatus"></p>'
-    end = h.find(end_marker, start)
-    if start < 0 or end < 0:
-        raise SystemExit("Shortcut icon settings area not found")
-    block_start = h.rfind('<hr', 0, start)
-    if block_start < 0:
-        block_start = start
-    end += len(end_marker)
-    h = h[:block_start] + new + h[end:]
-    html.write_text(h, encoding="utf-8")
+settings = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop a Windows <strong>.ico</strong> file below to use your own.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop a custom .ico here</strong><span>or click to browse</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section></div></section>'''
+new_h, count = re.subn(r'<section id="settingsView" class="view">.*?</section>\s*</main>', settings + '\n</main>', h, count=1, flags=re.S)
+if count != 1:
+    raise SystemExit("Settings view not found")
+html.write_text(new_h, encoding="utf-8")
 
+# Replace the shortcut-icon JS tail with drop-zone aware handling.
 j = js.read_text(encoding="utf-8")
 start = j.find('const shortcutIconFile=$("#shortcutIconFile");')
 if start < 0:
@@ -76,16 +71,28 @@ $("#repairShortcutIconBtn")?.addEventListener("click",async()=>{
   }
 });
 '''
-j = j[:start] + replacement
-js.write_text(j, encoding="utf-8")
+js.write_text(j[:start] + replacement, encoding="utf-8")
 
+# Append overrides instead of depending on exact existing CSS text.
 c = css.read_text(encoding="utf-8")
-old_css = '.settings-panel{max-width:700px}.settings-panel p{color:#735C7C}'
-new_css = '''.settings-panel{max-width:980px;padding:28px 30px}.settings-panel>h2{font-size:30px}.settings-panel p{color:#735C7C;line-height:1.55}.settings-divider{height:1px;background:var(--line);margin:28px 0}.settings-section{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(380px,1.25fr);gap:32px;align-items:start}.settings-section-copy h3{margin:0 0 8px;color:#55127E;font-size:22px}.settings-section-copy p{margin:0}.shortcut-icon-controls{display:grid;grid-template-columns:1fr;gap:12px}.shortcut-icon-drop{min-height:150px;border:2px dashed #CDB5D9;border-radius:16px;background:linear-gradient(180deg,#FFF,#FAF5FC);display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;padding:24px;color:#5A2D6B;transition:.15s;outline:none}.shortcut-icon-drop:hover,.shortcut-icon-drop:focus,.shortcut-icon-drop.drag-over{border-color:#8E4CC2;background:#F4E9FA;box-shadow:0 0 0 4px rgba(142,76,194,.08)}.shortcut-icon-drop-mark{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#EEE0F7;color:#6E1294;font-size:24px;flex:0 0 auto}.shortcut-icon-drop strong{display:block;font-size:17px}.shortcut-icon-drop span{display:block;margin-top:4px;color:#8A6B95;font-size:13px}.shortcut-browse-btn{justify-self:start}.shortcut-icon-status{margin:12px 0 0;min-height:24px;font-family:"Courier New",monospace;font-size:13px}'''
-if old_css not in c:
-    raise SystemExit("Settings CSS block not found")
-c = c.replace(old_css, new_css, 1)
-c += '\n@media(max-width:900px){.settings-section{grid-template-columns:1fr}.settings-panel{padding:22px}.shortcut-icon-drop{min-height:130px}}\n'
+c += '''
+.settings-panel{max-width:980px!important;padding:28px 30px}
+.settings-panel>h2{font-size:30px}
+.settings-panel p{color:#735C7C;line-height:1.55}
+.settings-divider{height:1px;background:var(--line);margin:28px 0}
+.settings-section{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(380px,1.25fr);gap:32px;align-items:start}
+.settings-section-copy h3{margin:0 0 8px;color:#55127E;font-size:22px}
+.settings-section-copy p{margin:0}
+.shortcut-icon-controls{display:grid;grid-template-columns:1fr;gap:12px}
+.shortcut-icon-drop{min-height:150px;border:2px dashed #CDB5D9;border-radius:16px;background:linear-gradient(180deg,#FFF,#FAF5FC);display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;padding:24px;color:#5A2D6B;transition:.15s;outline:none}
+.shortcut-icon-drop:hover,.shortcut-icon-drop:focus,.shortcut-icon-drop.drag-over{border-color:#8E4CC2;background:#F4E9FA;box-shadow:0 0 0 4px rgba(142,76,194,.08)}
+.shortcut-icon-drop-mark{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#EEE0F7;color:#6E1294;font-size:24px;flex:0 0 auto}
+.shortcut-icon-drop strong{display:block;font-size:17px}
+.shortcut-icon-drop span{display:block;margin-top:4px;color:#8A6B95;font-size:13px}
+.shortcut-browse-btn{justify-self:start}
+.shortcut-icon-status{margin:12px 0 0;min-height:24px;font-family:"Courier New",monospace;font-size:13px}
+@media(max-width:900px){.settings-section{grid-template-columns:1fr}.settings-panel{padding:22px}.shortcut-icon-drop{min-height:130px}}
+'''
 css.write_text(c, encoding="utf-8")
 
 print("Settings layout and drag/drop shortcut icon control applied.")
