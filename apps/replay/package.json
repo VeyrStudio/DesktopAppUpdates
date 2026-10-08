@@ -1,6 +1,6 @@
 {
   "name": "replay",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Replay personal media archive",
   "main": "electron/main.cjs",
   "private": true,
