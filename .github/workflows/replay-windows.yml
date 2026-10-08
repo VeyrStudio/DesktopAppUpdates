@@ -1,8 +1,8 @@
-name: Replay Windows Installer
+name: Build and publish Replay for Windows
 on:
   workflow_dispatch:
   push:
-    branches: [main, replay-development]
+    branches: [main]
     paths:
       - 'apps/replay/**'
       - '.github/workflows/replay-windows.yml'
@@ -21,13 +21,42 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Run application tests
+      - name: Test source
         run: npm test
-      - name: Package installer
+      - name: Build Windows installer
         run: npm run build:win
-      - name: Upload Windows installer
+      - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: Replay-Windows-Installer
           path: apps/replay/dist/ReplaySetup-*.exe
           if-no-files-found: error
+      - name: Publish versioned installer and update manifest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (Get-Content 'package.json' | ConvertFrom-Json).version
+          $installer = (Get-ChildItem 'dist/ReplaySetup-*.exe' | Select-Object -First 1).FullName
+          $tag = "replay-v$version"
+          $filename = Split-Path $installer -Leaf
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $installer --clobber
+          } else {
+            gh release create $tag $installer --title "Replay $version" --notes "Replay Windows installer"
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish Replay installer' }
+          $sha = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLowerInvariant()
+          $manifest = @{ version = $version; url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag/$filename"; sha256 = $sha } | ConvertTo-Json
+          New-Item -ItemType Directory -Force -Path '../../replay' | Out-Null
+          Set-Content -Path '../../replay/replay.json' -Value $manifest -Encoding UTF8
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ../../replay/replay.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Publish Replay update manifest $version"
+            git push origin HEAD:main
+          }
