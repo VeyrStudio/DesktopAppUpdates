@@ -40,13 +40,17 @@ async function putMediaImage(id, data) {
   });
 }
 
-async function getMediaImage(id) {
+async function getAllMediaImages() {
   const db = await openMediaDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(CONSTELLATION_MEDIA_STORE, "readonly");
-    const req = tx.objectStore(CONSTELLATION_MEDIA_STORE).get(String(id));
-    req.onsuccess = () => { const row = req.result; db.close(); resolve(row?.data || null); };
-    req.onerror = () => { const err = req.error; db.close(); reject(err || new Error("Could not load image.")); };
+    const req = tx.objectStore(CONSTELLATION_MEDIA_STORE).getAll();
+    req.onsuccess = () => {
+      const rows = req.result || [];
+      db.close();
+      resolve(new Map(rows.map((row) => [String(row.id), row.data])));
+    };
+    req.onerror = () => { const err = req.error; db.close(); reject(err || new Error("Could not load images.")); };
   });
 }
 
@@ -61,18 +65,26 @@ async function deleteMediaImage(id) {
   });
 }
 
-async function putMigrationBackup(payload) {
+async function migrateLegacyImages(legacyImages, payload) {
   const db = await openMediaDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(CONSTELLATION_BACKUP_STORE, "readwrite");
-    tx.objectStore(CONSTELLATION_BACKUP_STORE).put({
+    const tx = db.transaction([CONSTELLATION_MEDIA_STORE, CONSTELLATION_BACKUP_STORE], "readwrite");
+    const imageStore = tx.objectStore(CONSTELLATION_MEDIA_STORE);
+    const backupStore = tx.objectStore(CONSTELLATION_BACKUP_STORE);
+
+    backupStore.put({
       key: "pre-media-migration-v1",
       payload,
       createdAt: new Date().toISOString()
     });
+
+    legacyImages.forEach((entry) => {
+      imageStore.put({ id: String(entry.id), data: entry.image });
+    });
+
     tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { const err = tx.error; db.close(); reject(err || new Error("Could not create migration backup.")); };
-    tx.onabort = () => { const err = tx.error; db.close(); reject(err || new Error("Could not create migration backup.")); };
+    tx.onerror = () => { const err = tx.error; db.close(); reject(err || new Error("Could not migrate legacy images.")); };
+    tx.onabort = () => { const err = tx.error; db.close(); reject(err || new Error("Could not migrate legacy images.")); };
   });
 }
 
@@ -102,20 +114,17 @@ async function initializeMediaStorage() {
 
   if (legacyImages.length) {
     const legacySnapshot = JSON.stringify(entries);
-    await putMigrationBackup(legacySnapshot);
 
-    for (const entry of legacyImages) {
-      await putMediaImage(entry.id, entry.image);
-    }
-
-    // Only remove large image payloads from localStorage after every legacy image
-    // has been copied successfully into IndexedDB.
+    // Backup + image migration happen in one IndexedDB transaction. localStorage
+    // is only slimmed down after that transaction completes successfully.
+    await migrateLegacyImages(legacyImages, legacySnapshot);
     save();
   }
 
+  const storedImages = await getAllMediaImages();
   for (const entry of entries) {
     if (!entry.image) {
-      const stored = await getMediaImage(entry.id);
+      const stored = storedImages.get(String(entry.id));
       if (stored) entry.image = stored;
     }
   }
