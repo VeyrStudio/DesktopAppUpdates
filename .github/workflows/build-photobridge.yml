@@ -25,6 +25,10 @@ jobs:
           $version = "0.1.${{ github.run_number }}"
           "PHOTOBRIDGE_VERSION=$version" >> $env:GITHUB_ENV
           (Get-Content photobridge/app.py -Raw).Replace('VERSION="0.1.0"', "VERSION=`"$version`"") | Set-Content photobridge/app.py
+      - name: Test iPhone upload and receiver
+        shell: pwsh
+        working-directory: photobridge
+        run: python -m unittest -v test_transfer.py
       - name: Package Windows GUI
         shell: pwsh
         working-directory: photobridge
