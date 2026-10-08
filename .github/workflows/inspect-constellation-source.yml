@@ -1,0 +1,40 @@
+name: Inspect Constellation Source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/inspect-constellation-source.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct Constellation source
+        shell: pwsh
+        run: |
+          $parts = Get-ChildItem "apps/constellation/.source-parts/*.txt" | Where-Object { $_.Name -match '^\\d{2}\\.txt$' } | Sort-Object Name
+          if (-not $parts) { throw "Constellation source parts are missing." }
+          $encoded = ($parts | ForEach-Object { Get-Content $_.FullName -Raw }) -join ""
+          $archive = Join-Path $env:RUNNER_TEMP "constellation_source.tar.xz"
+          [IO.File]::WriteAllBytes($archive, [Convert]::FromBase64String($encoded))
+          tar -xJf $archive -C "apps/constellation"
+
+      - name: Upload source files for diagnosis
+        uses: actions/upload-artifact@v4
+        with:
+          name: constellation-source-diagnostic
+          path: |
+            apps/constellation/src/app.js
+            apps/constellation/src/index.html
+            apps/constellation/src/styles.css
+            apps/constellation/src-tauri/tauri.conf.json
+            apps/constellation/src-tauri/src/lib.rs
+          retention-days: 1
