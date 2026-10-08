@@ -8,11 +8,13 @@ cargo = root / "src-tauri" / "Cargo.toml"
 
 # Settings UI
 h = html.read_text(encoding="utf-8")
-old = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button></div></section>'''
-new = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><hr style="margin:28px 0;border:0;border-top:1px solid rgba(255,255,255,.12)"><h3>Desktop Shortcut Icon</h3><p>Repair the shortcut to use Constellation’s built-in icon, or choose your own Windows .ico file.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><button id="chooseShortcutIconBtn" class="ghost-btn" type="button">Choose Custom .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus"></p></div></section>'''
-if old not in h:
-    raise SystemExit("Settings panel block not found")
-html.write_text(h.replace(old, new, 1), encoding="utf-8")
+if 'id="chooseShortcutIconBtn"' not in h:
+    anchor = '<button id="checkUpdateBtn" class="primary-btn">Check for Updates</button>'
+    controls = '''<button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><hr style="margin:28px 0;border:0;border-top:1px solid rgba(255,255,255,.12)"><h3>Desktop Shortcut Icon</h3><p>Repair the shortcut to use Constellation’s built-in icon, or choose your own Windows .ico file.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><button id="chooseShortcutIconBtn" class="ghost-btn" type="button">Choose Custom .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus"></p>'''
+    if anchor not in h:
+        raise SystemExit("Check for Updates button not found")
+    h = h.replace(anchor, controls, 1)
+    html.write_text(h, encoding="utf-8")
 
 # Frontend commands
 j = js.read_text(encoding="utf-8")
