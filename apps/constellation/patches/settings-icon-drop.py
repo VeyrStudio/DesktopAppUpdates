@@ -8,7 +8,7 @@ css = root / "src" / "styles.css"
 
 # Replace the entire Settings view so matching cannot fail on earlier wording/layout changes.
 h = html.read_text(encoding="utf-8")
-settings = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop a Windows <strong>.ico</strong> file below to use your own.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop a custom .ico here</strong><span>or click to browse</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for .ico</button><input id="shortcutIconFile" type="file" accept=".ico,image/x-icon" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section></div></section>'''
+settings = '''<section id="settingsView" class="view"><div class="panel settings-panel"><h2>Constellation</h2><p>Desktop app version <strong id="appVersion">—</strong></p><p id="updateStatus">Updates are checked automatically when Constellation opens.</p><button id="checkUpdateBtn" class="primary-btn">Check for Updates</button><div class="settings-divider"></div><section class="settings-section"><div class="settings-section-copy"><h3>Desktop Shortcut Icon</h3><p>Use Constellation’s built-in icon, or drop almost any image file below. Constellation will convert it into a Windows shortcut icon for you.</p></div><div class="shortcut-icon-controls"><button id="repairShortcutIconBtn" class="primary-btn" type="button">Use Constellation Icon</button><div id="shortcutIconDropZone" class="shortcut-icon-drop" role="button" tabindex="0" aria-label="Drop a custom icon file or browse for one"><div class="shortcut-icon-drop-mark">✦</div><div><strong>Drop an image here</strong><span>PNG, JPG, JPEG, WEBP, GIF, BMP, SVG, ICO and other browser-supported images</span></div></div><button id="chooseShortcutIconBtn" class="ghost-btn shortcut-browse-btn" type="button">Browse for image</button><input id="shortcutIconFile" type="file" accept="image/*,.ico" hidden></div><p id="shortcutIconStatus" class="shortcut-icon-status" aria-live="polite"></p></section></div></section>'''
 new_h, count = re.subn(r'<section id="settingsView" class="view">.*?</section>\s*</main>', settings + '\n</main>', h, count=1, flags=re.S)
 if count != 1:
     raise SystemExit("Settings view not found")
@@ -25,24 +25,50 @@ const shortcutIconDropZone=$("#shortcutIconDropZone");
 async function applyShortcutIconFile(file){
   const status=$("#shortcutIconStatus");
   if(!file||!tauriInvoke)return;
-  if(!file.name.toLowerCase().endsWith(".ico")){
-    if(status)status.textContent="Please use a Windows .ico file.";
-    return;
-  }
-  const reader=new FileReader();
-  reader.onload=async()=>{
-    try{
-      if(status)status.textContent="Changing desktop shortcut icon…";
-      await tauriInvoke("set_desktop_shortcut_icon",{iconData:String(reader.result)});
-      if(status)status.textContent="Desktop shortcut icon changed to " + file.name + ".";
-    }catch(err){
-      if(status)status.textContent=String(err);
-    }finally{
-      if(shortcutIconFile)shortcutIconFile.value="";
-      shortcutIconDropZone?.classList.remove("drag-over");
+  try{
+    if(status)status.textContent="Preparing image…";
+    let iconData;
+    if(file.name.toLowerCase().endsWith(".ico")){
+      iconData=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result));
+        reader.onerror=()=>reject(new Error("Could not read that icon file."));
+        reader.readAsDataURL(file);
+      });
+    }else{
+      iconData=await new Promise((resolve,reject)=>{
+        const url=URL.createObjectURL(file);
+        const img=new Image();
+        img.onload=()=>{
+          try{
+            const size=256;
+            const canvas=document.createElement("canvas");
+            canvas.width=size; canvas.height=size;
+            const ctx=canvas.getContext("2d");
+            ctx.clearRect(0,0,size,size);
+            const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight);
+            const w=Math.max(1,Math.round(img.naturalWidth*scale));
+            const h=Math.max(1,Math.round(img.naturalHeight*scale));
+            const x=Math.round((size-w)/2);
+            const y=Math.round((size-h)/2);
+            ctx.drawImage(img,x,y,w,h);
+            resolve(canvas.toDataURL("image/png"));
+          }catch(err){reject(err);}
+          finally{URL.revokeObjectURL(url);}
+        };
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("That image format could not be opened."));};
+        img.src=url;
+      });
     }
-  };
-  reader.readAsDataURL(file);
+    if(status)status.textContent="Changing desktop shortcut icon…";
+    await tauriInvoke("set_desktop_shortcut_icon",{iconData});
+    if(status)status.textContent="Desktop shortcut icon changed to " + file.name + ".";
+  }catch(err){
+    if(status)status.textContent=String(err?.message||err);
+  }finally{
+    if(shortcutIconFile)shortcutIconFile.value="";
+    shortcutIconDropZone?.classList.remove("drag-over");
+  }
 }
 
 $("#chooseShortcutIconBtn")?.addEventListener("click",()=>shortcutIconFile?.click());
