@@ -15,12 +15,16 @@ except Exception: DEST=Path.home()/"Pictures"/"PhotoBridge"
 DEST.mkdir(parents=True,exist_ok=True)
 KEY=secrets.token_urlsafe(28)
 LOCK=threading.Lock()
+try:
+    ICON64=Path(__file__).with_name("icon-96.b64").read_text().strip()
+except Exception:
+    ICON64=""
 TRANSFERS={'success':{},'failure':{},'active':{}}
 def success_dir():
     p=DEST/'Success'
     p.mkdir(parents=True,exist_ok=True)
     return p
-WEB="""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PhotoBridge • Transfer</title><style>
+WEB="""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PhotoBridge • Transfer</title><link rel="icon" href="data:image/png;base64,__ICON__"><style>
 :root{color-scheme:dark;--bg:#101014;--panel:#1b1a20;--border:#70542b;--gold:#dcb160;--cream:#f3e5d2;--purple:#83118f}
 *{box-sizing:border-box}body{margin:0;background:repeating-linear-gradient(130deg,#101014,#101014 4px,#121116 5px);color:var(--cream);font-family:Georgia,serif;min-height:100vh}
 header{background:var(--purple);height:33px}main{max-width:600px;margin:auto;padding:29px 18px 65px}.eyebrow{font:700 11px system-ui;letter-spacing:3px;color:var(--gold)}h1{font-size:43px;font-weight:normal;margin:8px 0 3px}p{line-height:1.5;color:#d4c4b8}.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:22px;margin-top:20px}.step{display:flex;align-items:center;gap:14px;margin:12px 0;font:15px system-ui}.num{color:var(--gold);border:1px solid var(--border);width:29px;height:29px;display:grid;place-items:center;border-radius:50%;flex-shrink:0}.picker{display:block;border:1px dashed var(--gold);background:#251922;padding:22px;text-align:center;border-radius:12px;font:16px system-ui;color:var(--cream)}input{margin-top:13px;width:100%;font:14px system-ui}button{font:600 16px system-ui;background:#491b40;color:#fff0e0;border:1px solid var(--gold);border-radius:10px;padding:16px;width:100%;margin-top:18px}button:disabled{opacity:.6}progress{width:100%;height:20px;margin:15px 0;accent-color:var(--gold)}#status{font:14px system-ui;overflow-wrap:anywhere}#count{font:13px system-ui;color:var(--gold)}.note{font:13px system-ui;color:#d9c7a9;border-left:3px solid #815e37;padding-left:12px}
@@ -47,7 +51,7 @@ class Receiver(BaseHTTPRequestHandler):
         if urlparse(self.path).path=='/status':
             with LOCK: state={k:dict(v) for k,v in TRANSFERS.items()}
             return self.reply(200,json.dumps(state),'application/json')
-        self.reply(200,WEB.replace("__KEY__",KEY),"text/html; charset=utf-8")
+        self.reply(200,WEB.replace("__KEY__",KEY).replace("__ICON__",ICON64),"text/html; charset=utf-8")
     def do_POST(self):
         if not self.permitted():return self.reply(403,"Denied")
         if urlparse(self.path).path=="/failure":
@@ -129,6 +133,12 @@ class App:
         self.count=tk.StringVar(value="0 saved files")
         self.update_state=tk.StringVar(value="Updates checked automatically")
         root.title("PhotoBridge  |  Media Transfer")
+        if ICON64:
+            try:
+                self.icon=tk.PhotoImage(data=ICON64)
+                root.iconphoto(True,self.icon)
+            except Exception:
+                pass
         root.geometry("1040x700")
         root.minsize(840,580)
         root.configure(bg=self.DEEP)
