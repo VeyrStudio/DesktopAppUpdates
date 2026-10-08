@@ -197,9 +197,9 @@ class App:
         elif page=="Library":
             card=self.panel(self.body)
             self.label(card,"SAVED MEDIA",16,bold=True)
-            self.label(card,"All received files are stored in your chosen Windows folder.")
+            self.label(card,"Completed transfers move to Success. Failed files remain in General with red highlighting.")
             row=tk.Frame(card,bg=card.cget("bg"));row.pack(anchor="w")
-            self.button(row,"Open Saved Folder",lambda:os.startfile(DEST))
+            self.button(row,"Open Success Folder",lambda:os.startfile(success_dir()))
             self.button(row,"Verify Library",self.verify,False)
             self.listbox=tk.Listbox(card,bg="#25232a",fg=self.CREAM,selectbackground="#642c60",relief="flat",height=13,font=("Segoe UI",10),activestyle="none")
             self.listbox.pack(fill="both",expand=True,pady=10)
@@ -221,12 +221,23 @@ class App:
     def refresh_list(self):
         if not hasattr(self,"listbox") or not self.listbox.winfo_exists():return
         self.listbox.delete(0,"end")
-        files=sorted((p for p in DEST.iterdir() if p.is_file() and not p.name.startswith(".") and p.suffix!=".part"),key=lambda p:p.stat().st_mtime,reverse=True)
-        for p in files[:2500]:self.listbox.insert("end",p.name+"    ·    "+str(round(p.stat().st_size/1024/1024,1))+" MB")
-        if not files:self.listbox.insert("end","No files transferred yet.")
+        with LOCK:
+            failures=dict(TRANSFERS["failure"])
+            active=dict(TRANSFERS["active"])
+        self.listbox.insert("end","GENERAL / FAILED OR IN PROGRESS")
+        for name,reason in failures.items():
+            self.listbox.insert("end","FAILED • "+name+" — "+reason)
+            self.listbox.itemconfig("end",foreground="#ff8e9c",background="#521525")
+        for name in active:self.listbox.insert("end","TRANSFERRING • "+name)
+        self.listbox.insert("end","")
+        self.listbox.insert("end","SUCCESS / SAVED FILES")
+        files=sorted((p for p in success_dir().iterdir() if p.is_file()),key=lambda p:p.stat().st_mtime,reverse=True)
+        for p in files[:2500]:
+            self.listbox.insert("end",p.name+" · "+str(round(p.stat().st_size/1048576,1))+" MB")
+        if not files:self.listbox.insert("end","No successful transfers yet.")
     def refresh(self):
         try:
-            files=[p for p in DEST.iterdir() if p.is_file() and not p.name.startswith(".") and p.suffix!=".part"]
+            files=[p for p in success_dir().iterdir() if p.is_file()]
             self.count.set(str(len(files))+" saved files")
             if self.page=="Library":self.refresh_list()
         except Exception:pass
@@ -257,7 +268,7 @@ class App:
         except Exception:idx={}
         bad=[]
         for digest,name in idx.items():
-            p=DEST/name
+            p=success_dir()/name
             if not p.exists():bad.append(name);continue
             h=hashlib.sha256()
             with p.open("rb") as f:
