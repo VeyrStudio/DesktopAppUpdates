@@ -6,6 +6,7 @@ AppVersion={#V}
 DefaultDirName={localappdata}\Programs\PhotoBridge
 DefaultGroupName=PhotoBridge
 UninstallDisplayIcon={app}\PhotoBridge.exe
+SetupIconFile=icon.ico
 OutputDir=dist
 OutputBaseFilename=PhotoBridge-Setup-{#V}
 PrivilegesRequired=lowest
