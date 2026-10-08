@@ -42,12 +42,25 @@ class Receiver(BaseHTTPRequestHandler):
         self.reply(200,WEB.replace("__KEY__",KEY),"text/html; charset=utf-8")
     def do_POST(self):
         if not self.permitted():return self.reply(403,"Denied")
+        if urlparse(self.path).path=="/failure":
+            try:
+                length=int(self.headers.get("Content-Length","0"))
+                if not 0<length<5000:return self.reply(413,"Invalid report")
+                record=json.loads(self.rfile.read(length))
+                name=str(record.get("name",""))[:255]
+                if not name:return self.reply(400,"Missing name")
+                with LOCK:TRANSFERS["failure"][name]=str(record.get("reason","Upload failed"))[:300]
+                return self.reply(200,"Recorded")
+            except Exception:return self.reply(400,"Bad report")
         if urlparse(self.path).path!="/upload":return self.reply(404,"Not found")
         name=Path(parse_qs(urlparse(self.path).query).get("name",["file"])[0].replace("\\","/")).name
         if not name or name in (".",".."):return self.reply(400,"Invalid name")
         try:size=int(self.headers.get("Content-Length","0"))
         except ValueError:return self.reply(400,"Invalid length")
         if not 0<size<=20*1024**3:return self.reply(413,"Invalid size")
+        with LOCK:
+            TRANSFERS["active"][name]="Receiving"
+            TRANSFERS["failure"].pop(name,None)
         staging=DEST/("."+uuid4().hex+".part")
         try:
             digest=hashlib.sha256()
@@ -62,18 +75,28 @@ class Receiver(BaseHTTPRequestHandler):
                 try: idx=json.loads(idxfile.read_text())
                 except Exception:idx={}
                 sha=digest.hexdigest()
-                if sha in idx and (DEST/idx[sha]).exists():
-                    staging.unlink();return self.reply(200,"Duplicate")
-                out=DEST/name
+                if sha in idx and (success_dir()/idx[sha]).exists():
+                    staging.unlink()
+                    TRANSFERS["active"].pop(name,None)
+                    TRANSFERS["success"][name]=idx[sha]
+                    return self.reply(200,"Duplicate")
+                out=success_dir()/name
                 n=2
                 while out.exists():
-                    p=Path(name);out=DEST/(p.stem+" ("+str(n)+")"+p.suffix);n+=1
+                    p=Path(name);out=success_dir()/(p.stem+" ("+str(n)+")"+p.suffix);n+=1
                 os.replace(staging,out);idx[sha]=out.name
                 temp=idxfile.with_suffix(".tmp")
                 temp.write_text(json.dumps(idx,indent=2));os.replace(temp,idxfile)
+                TRANSFERS["active"].pop(name,None)
+                TRANSFERS["success"][name]=out.name
+                TRANSFERS["failure"].pop(name,None)
             self.reply(200,"Saved")
         except Exception as e:
-            staging.unlink(missing_ok=True);self.reply(500,str(e))
+            staging.unlink(missing_ok=True)
+            with LOCK:
+                TRANSFERS["active"].pop(name,None)
+                TRANSFERS["failure"][name]=str(e)[:250]
+            self.reply(500,str(e))
     def log_message(self,*args):pass
 def local_ip():
     try:
