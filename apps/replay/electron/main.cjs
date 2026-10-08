@@ -20,13 +20,32 @@ ipcMain.handle('state',()=>load());
 ipcMain.handle('browse',async()=>{const r=await dialog.showOpenDialog({properties:['openFile','multiSelections'],filters:[{name:'Media',extensions:['mp4','mov','mkv','webm','avi','gif','png','jpg','jpeg','webp','heic','bmp','tiff']}]});return r.canceled?[]:r.filePaths});
 ipcMain.handle('import',(event,x)=>importFiles(x,event.sender));
 ipcMain.handle('folder',async(_e,x)=>{const d=await load();d.folders.push({id:crypto.randomUUID(),kind:x.kind,group:x.group,name:x.name,parent:x.parent||'',cover:'',color:'#b58a48'});await save(d);return d});
-ipcMain.handle('folder-update',async(_e,id,patch)=>{const d=await load(),f=d.folders.find(x=>x.id===id);if(!f)throw Error('Not found');Object.assign(f,patch);await save(d);return d});
+ipcMain.handle('folder-update',async(_e,id,patch)=>{const d=await load(),f=d.folders.find(x=>x.id===id);if(!f)throw Error('Not found');if(patch.name!==undefined)f.name=safe(patch.name);if(patch.pinned!==undefined)f.pinned=!!patch.pinned;if(/^#[0-9a-f]{6}$/i.test(patch.color||''))f.color=patch.color;if(patch.icon!==undefined)f.icon=String(patch.icon).slice(0,3);if(patch.parent!==undefined){if(patch.parent===id)throw Error('Folder cannot be parent of itself');const parent=patch.parent&&d.folders.find(x=>x.id===patch.parent);if(patch.parent&&(!parent||parent.kind!==f.kind||parent.group!==f.group))throw Error('Invalid parent');let current=parent;while(current){if(current.id===id)throw Error('Cannot move folder into its descendant');current=d.folders.find(x=>x.id===current.parent)}f.parent=patch.parent||''}await save(d);await synchronizeBackup();return d});
 ipcMain.handle('item-update',(_e,id,x)=>updateItem(id,x));
 ipcMain.handle('item-delete',(_e,id)=>updateItem(id,{deletedAt:Date.now()}));
 ipcMain.handle('restore',(_e,id)=>updateItem(id,{deletedAt:null}));
 ipcMain.handle('settings',async(_e,x)=>{const d=await load();Object.assign(d.settings,x);await save(d);return d});
 ipcMain.handle('choose-backup',async()=>{const r=await dialog.showOpenDialog({properties:['openDirectory','createDirectory']});return r.canceled?'':r.filePaths[0]});
-ipcMain.handle('backup',async()=>{const d=await load();for(const item of d.items.filter(x=>!x.deletedAt))await backupOne(d,item);return true});
+async function synchronizeBackup(){
+ const d=await load();
+ const dest=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');
+ const expected=new Set();
+ for(const item of d.items.filter(i=>!i.deletedAt)){
+  const relative=path.join(item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',await folderPath(d,item.folder),safe(item.name));
+  if(expected.has(relative.toLowerCase()))throw Error('Backup filename collision: '+relative);
+  expected.add(relative.toLowerCase());
+ }
+ for(const item of d.items.filter(i=>!i.deletedAt))await backupOne(d,item);
+ const recovery=path.join(dest,'.Replay Recovery');
+ async function walk(dir,rel=''){let children=[];try{children=await fsp.readdir(dir,{withFileTypes:true})}catch(e){if(e.code==='ENOENT')return;throw e}
+  for(const entry of children){if(entry.name==='.Replay Recovery'||entry.name==='replay-index.json'||entry.name.endsWith('.partial'))continue;const relative=path.join(rel,entry.name),full=path.join(dir,entry.name);if(entry.isDirectory())await walk(full,relative);else if(entry.isFile()&&!expected.has(relative.toLowerCase())){const stamped=path.join(recovery,String(Date.now()),relative);await fsp.mkdir(path.dirname(stamped),{recursive:true});await fsp.rename(full,stamped)}}
+ }
+ for(const kind of ['videos','images','gifs'])await walk(path.join(dest,kind),kind);
+ let dates=[];try{dates=await fsp.readdir(recovery,{withFileTypes:true})}catch(e){if(e.code!=='ENOENT')throw e}
+ for(const entry of dates)if(entry.isDirectory()&&/^\d+$/.test(entry.name)&&Date.now()-Number(entry.name)>30*86400000)await fsp.rm(path.join(recovery,entry.name),{recursive:true,force:true});
+ return true;
+}
+ipcMain.handle('backup',()=>synchronizeBackup());
 ipcMain.handle('empty-trash',async()=>{const d=await load(),cut=Date.now()-30*86400000;for(const item of d.items.filter(x=>x.deletedAt&&x.deletedAt<cut)){await fsp.rm(path.join(root,item.stored),{force:true})}d.items=d.items.filter(x=>!x.deletedAt||x.deletedAt>=cut);await save(d);return d});
 ipcMain.handle('check-update',async()=>{const r=await fetch('https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/replay/replay.json');return r.ok?await r.json():null});
 
