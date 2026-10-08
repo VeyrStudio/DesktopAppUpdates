@@ -24,13 +24,15 @@
       "electron/**/*",
       "src/**/*",
       "build/**/*",
-      "package.json"
+      "package.json",
+      "build/icon.png"
     ],
     "win": {
       "target": [
         "nsis"
       ],
-      "artifactName": "ReplaySetup-${version}.${ext}"
+      "artifactName": "ReplaySetup-${version}.${ext}",
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
