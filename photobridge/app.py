@@ -82,6 +82,12 @@ class Receiver(BaseHTTPRequestHandler):
                     if not data:raise IOError("Interrupted")
                     f.write(data);digest.update(data);size-=len(data)
                 f.flush();os.fsync(f.fileno())
+            verified=hashlib.sha256()
+            with staging.open("rb") as incoming:
+                for block in iter(lambda:incoming.read(1024*1024),b""):
+                    verified.update(block)
+            if verified.hexdigest()!=digest.hexdigest():
+                raise IOError("Verification failed: written file differs from received bytes")
             with LOCK:
                 idxfile=DEST/".photobridge-index.json"
                 try: idx=json.loads(idxfile.read_text())
