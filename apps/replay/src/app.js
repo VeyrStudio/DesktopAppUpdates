@@ -15,7 +15,7 @@ async function customizeFolder(id){
 function showSubfolderInfo(){
  document.querySelector('#subfolder-information')?.remove();
  const f=folderOf(folder);
- if(!f||(f.isSubfolder!==true&&!f.parent))return;
+ if(!f)return; // Show the information card in EVERY opened folder, including older folders.
  const d=f.details||{},panel=document.createElement('section');
  panel.id='subfolder-information';
  panel.className='subfolder-info-card';
@@ -24,7 +24,7 @@ function showSubfolderInfo(){
  const gallery=document.querySelector('#gallery');
  if(!gallery)return;
  const toolbar=gallery.previousElementSibling;
- if(toolbar&&toolbar.classList.contains('toolbar'))toolbar.after(panel);else gallery.before(panel);
+ if(toolbar&&toolbar.classList.contains('toolbar'))toolbar.after(panel);else gallery.before(panel); // Visible above media tiles
  panel.querySelector('#edit-subfolder').onclick=()=>customizeFolder(f.id);
  panel.querySelector('#subfolder-ao3')?.addEventListener('click',()=>replay.openAO3(d.ao3).catch(e=>alert(e.message)));
 }
