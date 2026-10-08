@@ -41,6 +41,10 @@ jobs:
           python "apps/constellation/patches/fresh-update-check.py"
           python "apps/constellation/patches/desktop-shortcut-icon.py"
           python "apps/constellation/patches/settings-icon-drop.py"
+          python "diagnostics/constellation-safe-media-storage.py"
+          node --check "apps/constellation/src/app.js"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'CONSTELLATION_MEDIA_DB_V2' -Quiet)) { throw "Safe media storage patch was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'delete copy.image' -Quiet)) { throw "Image payloads would still be written to localStorage." }
 
       - name: Publish temporary diagnostic source
         shell: pwsh
