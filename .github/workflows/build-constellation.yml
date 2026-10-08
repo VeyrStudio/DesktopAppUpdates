@@ -1,4 +1,5 @@
 name: Build Constellation
+# multiple-pairing-images-v1
 # all-image-uploads-v1
 # shortcut-create-no-console-v1
 # image-picker-all-types-v1
@@ -56,6 +57,13 @@ jobs:
         run: |
           python "apps/constellation/patches/all-ship-image-formats.py"
           if (-not (Select-String -Path "apps/constellation/src/index.html" -SimpleMatch 'accept="image/*"' -Quiet)) { throw "Broad image picker compatibility was not applied." }
+
+      - name: Enable multiple images per pairing
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/multiple-pairing-images.py"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'CONSTELLATION_MEDIA_DB' -Quiet)) { throw "Multiple pairing image support was not applied." }
 
       - name: Make update checks bypass stale caches
         shell: pwsh
