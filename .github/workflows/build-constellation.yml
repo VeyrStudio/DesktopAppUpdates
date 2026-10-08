@@ -60,6 +60,14 @@ jobs:
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'set_desktop_shortcut_icon' -Quiet)) { throw "Shortcut icon frontend patch was not applied." }
           if (-not (Select-String -Path "apps/constellation/src-tauri/src/lib.rs" -SimpleMatch 'reset_desktop_shortcut_icon' -Quiet)) { throw "Shortcut icon backend patch was not applied." }
 
+      - name: Expand Settings and add icon drop zone
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/settings-icon-drop.py"
+          if (-not (Select-String -Path "apps/constellation/src/index.html" -SimpleMatch 'shortcutIconDropZone' -Quiet)) { throw "Shortcut icon drop zone was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src/styles.css" -SimpleMatch '.shortcut-icon-drop{' -Quiet)) { throw "Expanded Settings styles were not applied." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
