@@ -33,7 +33,7 @@ app.whenReady().then(async()=>{await fsp.mkdir(root,{recursive:true});if(!fs.exi
  const headers={'Accept-Ranges':'bytes','Content-Type':types[ext]||'application/octet-stream','Cache-Control':'no-store'};
  let start=0,end=total-1,status=200;
  if(range){
-  const match=/^bytes=(\\d*)-(\\d*)$/.exec(range.trim());
+  const match=/^bytes=(\d*)-(\d*)$/.exec(range.trim());
   if(!match||(!match[1]&&!match[2])||total===0){return new Response(null,{status:416,headers:{...headers,'Content-Range':'bytes */'+total}})}
   if(!match[1]){const suffix=Number(match[2]);if(!Number.isSafeInteger(suffix)||suffix<=0)return new Response(null,{status:416,headers:{...headers,'Content-Range':'bytes */'+total}});start=Math.max(0,total-suffix)}
   else{start=Number(match[1]);if(match[2])end=Number(match[2])}
