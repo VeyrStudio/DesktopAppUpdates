@@ -1,6 +1,10 @@
 name: Build and publish Replay for Windows
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/replay/**'
+      - '.github/workflows/replay-windows.yml'
   push:
     branches: [main]
     paths:
@@ -46,6 +50,7 @@ jobs:
           path: apps/replay/dist/ReplaySetup-*.exe
           if-no-files-found: error
       - name: Publish versioned installer and update manifest
+        if: github.event_name != 'pull_request'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
