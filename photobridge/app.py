@@ -15,6 +15,11 @@ except Exception: DEST=Path.home()/"Pictures"/"PhotoBridge"
 DEST.mkdir(parents=True,exist_ok=True)
 KEY=secrets.token_urlsafe(28)
 LOCK=threading.Lock()
+TRANSFERS={'success':{},'failure':{},'active':{}}
+def success_dir():
+    p=DEST/'Success'
+    p.mkdir(parents=True,exist_ok=True)
+    return p
 WEB="""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>PhotoBridge • Transfer</title><style>
 :root{color-scheme:dark;--bg:#101014;--panel:#1b1a20;--border:#70542b;--gold:#dcb160;--cream:#f3e5d2;--purple:#83118f}
 *{box-sizing:border-box}body{margin:0;background:repeating-linear-gradient(130deg,#101014,#101014 4px,#121116 5px);color:var(--cream);font-family:Georgia,serif;min-height:100vh}
@@ -31,6 +36,9 @@ class Receiver(BaseHTTPRequestHandler):
     def permitted(self):return parse_qs(urlparse(self.path).query).get("key",[""])[0]==KEY
     def do_GET(self):
         if not self.permitted():return self.reply(403,"Denied")
+        if urlparse(self.path).path=='/status':
+            with LOCK: state={k:dict(v) for k,v in TRANSFERS.items()}
+            return self.reply(200,json.dumps(state),'application/json')
         self.reply(200,WEB.replace("__KEY__",KEY),"text/html; charset=utf-8")
     def do_POST(self):
         if not self.permitted():return self.reply(403,"Denied")
