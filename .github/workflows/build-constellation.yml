@@ -51,6 +51,14 @@ jobs:
           python "apps/constellation/patches/fresh-update-check.py"
           if (-not (Select-String -Path "apps/constellation/src-tauri/src/lib.rs" -SimpleMatch 'CACHE_CONTROL' -Quiet)) { throw "Fresh update check patch was not applied." }
 
+      - name: Add desktop shortcut icon controls
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/desktop-shortcut-icon.py"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'set_desktop_shortcut_icon' -Quiet)) { throw "Shortcut icon frontend patch was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src-tauri/src/lib.rs" -SimpleMatch 'reset_desktop_shortcut_icon' -Quiet)) { throw "Shortcut icon backend patch was not applied." }
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
