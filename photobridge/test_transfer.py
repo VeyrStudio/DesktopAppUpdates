@@ -33,11 +33,18 @@ class TransferTests(unittest.TestCase):
         payload=b"PhotoBridge end-to-end upload test bytes"
         path="/upload?key="+app.KEY+"&name=test.jpg"
         self.assertEqual(self.request("POST",path,payload)[0],200)
-        self.assertEqual((app.DEST/"test.jpg").read_bytes(),payload)
+        self.assertEqual((app.DEST/"Success"/"test.jpg").read_bytes(),payload)
         self.assertEqual(self.request("POST",path,payload),(200,"Duplicate"))
-        self.assertEqual(len(list(app.DEST.glob("*.jpg"))),1)
+        self.assertEqual(len(list((app.DEST/"Success").glob("*.jpg"))),1)
         index=json.loads((app.DEST/".photobridge-index.json").read_text())
         self.assertEqual(index[hashlib.sha256(payload).hexdigest()],"test.jpg")
+    def test_failure_report_and_status(self):
+        body=json.dumps({"name":"broken.mov","reason":"Timed out"}).encode()
+        path="/failure?key="+app.KEY
+        self.assertEqual(self.request("POST",path,body)[0],200)
+        code,data=self.request("GET","/status?key="+app.KEY)
+        self.assertEqual(code,200)
+        self.assertEqual(json.loads(data)["failure"]["broken.mov"],"Timed out")
     def test_bad_secret_rejected(self):
         self.assertEqual(self.request("POST","/upload?key=wrong&name=test.jpg",b"abc")[0],403)
         self.assertEqual(list(app.DEST.iterdir()),[])
