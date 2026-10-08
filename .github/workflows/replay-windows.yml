@@ -30,17 +30,26 @@ jobs:
       - name: Prepare approved Replay icon
         shell: pwsh
         run: |
-          $raw = [Convert]::FromBase64String((Get-Content 'build/icon.base64' -Raw).Trim())
-          New-Item -ItemType Directory -Force -Path 'build' | Out-Null
+          Add-Type -AssemblyName System.Drawing
+          $sourceBytes = [Convert]::FromBase64String((Get-Content 'build/icon.base64' -Raw).Trim())
+          $inputStream = [IO.MemoryStream]::new([byte[]]$sourceBytes)
+          $source = [Drawing.Image]::FromStream($inputStream)
+          $bitmap = [Drawing.Bitmap]::new(256, 256)
+          $graphics = [Drawing.Graphics]::FromImage($bitmap)
+          $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $graphics.DrawImage($source, 0, 0, 256, 256)
+          $outputStream = [IO.MemoryStream]::new()
+          $bitmap.Save($outputStream, [Drawing.Imaging.ImageFormat]::Png)
+          $raw = $outputStream.ToArray()
           [IO.File]::WriteAllBytes('build/icon.png', $raw)
-          $ico = New-Object IO.MemoryStream
-          $writer = New-Object IO.BinaryWriter($ico)
+          $ico = [IO.MemoryStream]::new()
+          $writer = [IO.BinaryWriter]::new($ico)
           $writer.Write([uint16]0); $writer.Write([uint16]1); $writer.Write([uint16]1)
-          $writer.Write([byte]48); $writer.Write([byte]48); $writer.Write([byte]0); $writer.Write([byte]0)
+          $writer.Write([byte]0); $writer.Write([byte]0); $writer.Write([byte]0); $writer.Write([byte]0)
           $writer.Write([uint16]1); $writer.Write([uint16]32); $writer.Write([uint32]$raw.Length); $writer.Write([uint32]22)
           $writer.Write($raw); $writer.Flush()
           [IO.File]::WriteAllBytes('build/icon.ico', $ico.ToArray())
-          $writer.Dispose(); $ico.Dispose()
+          $writer.Dispose(); $ico.Dispose(); $graphics.Dispose(); $bitmap.Dispose(); $source.Dispose(); $inputStream.Dispose(); $outputStream.Dispose()
       - name: Build Windows installer
         run: npm run build:win
       - name: Upload installer artifact
