@@ -38,3 +38,8 @@
 .import-dialog-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .import-folder-select{width:100%}
 @media(max-width:650px){.folder-form-fields{grid-template-columns:1fr}}
+
+/* Multi-select media tiles */
+#gallery .tile[data-item].bulk-selected{outline:3px solid #e0b96f;outline-offset:-3px;box-shadow:0 0 0 2px rgba(224,185,111,.35),0 0 18px rgba(224,185,111,.22)}
+#bulk-selection{align-items:center;gap:10px}
+#bulk-selection #selection-count{margin-right:10px;color:#e0b96f}
