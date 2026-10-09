@@ -10,9 +10,11 @@ test('folder naming is optional in both creation and editing',()=>{
 test('imports and folder transfers both apply sequential naming',()=>{
  assert.match(main,/numberedMediaName\(d,requestedFolder\?\.id,ext\)/);
  assert.match(main,/item\.folder!==originalFolder/);
- assert.match(main,/numberedMediaName\(d,item\.folder,path\.extname\(item\.name\),item\.id\)/);
+ assert.match(main,/numberedMediaName\(d,item\.folder,path\.extname\(item\.stored\),item\.id\)/);
 });
 test('numbering respects other occupied names and preserves extension',()=>{
  assert.match(main,/used\.has\(name\.toLowerCase\(\)\)/);
  assert.match(main,/safe\(f\.name\+' '\+number\)\+extension/);
 });
+
+test('enabling numbering immediately names existing files',()=>{assert.match(main,/!numberingWasEnabled/);assert.match(main,/item\.name=safe\(f\.name\+' '\+n\+\+\)\+path\.extname\(item\.stored\)/)});
