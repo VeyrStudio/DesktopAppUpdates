@@ -19,7 +19,17 @@ function ensureApprovedFandomFolders(d){
  }
  return added;
 }
-async function installApprovedFandomFolders(){const d=await load();const added=ensureApprovedFandomFolders(d);if(added)await save(d);return added}
+function consolidateMediaLibraries(d){
+ let changes=0;
+ for(const kind of ['videos','images','gifs']){
+  let non=d.folders.find(f=>f.kind===kind&&f.group==='fandom'&&f.name==='Non-Fandom'&&!f.parent);
+  if(!non){non={id:crypto.randomUUID(),kind,group:'fandom',name:'Non-Fandom',parent:'',color:'#b58a48',order:d.folders.length,autoNumberMedia:false};d.folders.push(non);changes++}
+  for(const f of d.folders.filter(f=>f.kind===kind&&f.group==='nonfandom')){f.group='fandom';if(!f.parent)f.parent=non.id;changes++}
+  for(const item of d.items.filter(x=>x.kind===kind&&x.group==='nonfandom')){item.group='fandom';if(!item.folder)item.folder=non.id;item.fandoms=[];changes++}
+ }
+ return changes;
+}
+async function installApprovedFandomFolders(){const d=await load();const added=ensureApprovedFandomFolders(d);const migrated=consolidateMediaLibraries(d);if(added||migrated)await save(d);return added+migrated}
 async function load(){try{return {...initial(),...JSON.parse(await fsp.readFile(dbfile,'utf8'))}}catch{return initial()}}
 async function save(d){await fsp.mkdir(path.dirname(dbfile),{recursive:true});const tmp=dbfile+'.tmp';await fsp.writeFile(tmp,JSON.stringify(d,null,2));await fsp.rename(tmp,dbfile)}
 const checksum=async p=>new Promise((resolve,reject)=>{const h=crypto.createHash('sha256');fs.createReadStream(p).on('data',b=>h.update(b)).on('error',reject).on('end',()=>resolve(h.digest('hex')))});
