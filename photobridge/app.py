@@ -4,6 +4,8 @@ from uuid import uuid4
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from urllib.parse import parse_qs,urlparse
 import tkinter as tk
+import sys
+import ctypes
 from tkinter import filedialog,messagebox
 
 VERSION="0.1.0"
@@ -138,7 +140,19 @@ class App:
         self.state=tk.StringVar(value="OFFLINE")
         self.count=tk.StringVar(value="0 saved files")
         self.update_state=tk.StringVar(value="Updates checked automatically")
+        if sys.platform=="win32":
+            try:
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("VeyrStudio.PhotoBridge.Desktop")
+            except Exception:
+                pass
         root.title("PhotoBridge  |  Media Transfer")
+        if sys.platform=="win32":
+            try:
+                bundled_ico=Path(getattr(sys,"_MEIPASS",Path(__file__).parent))/"icon.ico"
+                if bundled_ico.exists():
+                    root.iconbitmap(default=str(bundled_ico))
+            except Exception:
+                pass
         if ICON64:
             try:
                 self.icon=tk.PhotoImage(data=ICON64)
