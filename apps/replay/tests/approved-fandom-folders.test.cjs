@@ -1,0 +1,30 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const source=fs.readFileSync(path.join(__dirname,'../electron/main.cjs'),'utf8');
+const match=source.match(/const replayFandomTree=([^;]+);/);
+assert.ok(match,'Approved fandom tree exists');
+const tree=JSON.parse(match[1]);
+test('approved fandom parents and child arrangements',()=>{
+ const lookup=Object.fromEntries(tree);
+ assert.deepEqual(lookup['911'],['LA','LS']);
+ assert.deepEqual(lookup['Marauders'],['Starchaser','Wolfstar','Modern']);
+ assert.deepEqual(lookup['Hellaverse'],['Hazbin Hotel','Helluva Boss']);
+ assert.deepEqual(lookup['Immortal Universe'],['Interview with the Vampire','The Talamasca','Armand','The Vampire Lestat']);
+ assert.ok(lookup['DC'].includes('The Sandman')&&lookup['DC'].includes('Dead Boy Detectives'));
+ assert.ok(lookup['Marvel'].includes('Venom')&&lookup['Marvel'].includes('The Avengers'));
+ assert.ok(lookup['Shadowhunters'].includes('The Eldest Curses')&&lookup['Shadowhunters'].includes('The Last Hours'));
+ assert.deepEqual(lookup['Star Wars'],['The Rise of Skywalker','The Mandalorian','The Book of Boba Fett','The Acolyte','Prequel Trilogy','Original Trilogy']);
+ assert.ok(Object.hasOwn(lookup,'Invisible Boys'));
+});
+test('initialization adds all folders to videos images gifs without duplication',()=>{
+ const start=source.indexOf('function ensureApprovedFandomFolders(d){'),end=source.indexOf('async function installApprovedFandomFolders()',start);
+ assert.ok(start>=0&&end>start);
+ const fn=vm.runInNewContext(source.slice(start,end)+';ensureApprovedFandomFolders',{replayFandomTree:tree,crypto:require('node:crypto')});
+ const d={folders:[]};
+ const first=fn(d),second=fn(d);
+ const count=tree.reduce((n,[,sub])=>n+1+sub.length,0);
+ assert.equal(first,count*3);
+ assert.equal(second,0);
+ assert.equal(d.folders.length,count*3);
+ for(const kind of ['videos','images','gifs'])assert.ok(d.folders.some(f=>f.kind===kind&&f.group==='fandom'&&f.name==='Invisible Boys'));
+});
+test('initialization runs on app launch',()=>assert.match(source,/await installApprovedFandomFolders\(\)/));
