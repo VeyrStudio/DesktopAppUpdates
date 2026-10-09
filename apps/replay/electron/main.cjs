@@ -46,8 +46,33 @@ function enableDefaultNumberingOnce(d){
  return changed+1;
 }
 async function installApprovedFandomFolders(){const d=await load();const added=ensureApprovedFandomFolders(d);const migrated=consolidateMediaLibraries(d);const numbered=enableDefaultNumberingOnce(d);if(added||migrated||numbered)await save(d);return added+migrated+numbered}
-async function load(){try{return {...initial(),...JSON.parse(await fsp.readFile(dbfile,'utf8'))}}catch{return initial()}}
-async function save(d){await fsp.mkdir(path.dirname(dbfile),{recursive:true});const tmp=dbfile+'.tmp';await fsp.writeFile(tmp,JSON.stringify(d,null,2));await fsp.rename(tmp,dbfile)}
+// Never silently replace an unreadable or damaged existing library with an empty one.
+async function load(){
+ let raw;
+ try{raw=await fsp.readFile(dbfile,'utf8')}catch(error){
+  if(error.code==='ENOENT'&&!fs.existsSync(dbfile))return initial();
+  throw new Error('Replay could not read the library. Your existing library has not been replaced: '+error.message);
+ }
+ let data;
+ try{data=JSON.parse(raw)}catch(error){throw new Error('Replay library is not valid JSON. Your existing library has not been replaced: '+error.message)}
+ if(!data||!Array.isArray(data.items)||!Array.isArray(data.folders)||!data.settings||typeof data.settings!=='object')
+  throw new Error('Replay library has an invalid structure. The app will not replace it.');
+ return data;
+}
+// Unique temp files prevent concurrent writes from deleting one another's .tmp file.
+// Snapshot rollback protects the previous valid library from unexpected write failures.
+let libraryWriteQueue=Promise.resolve();
+async function save(d){
+ const snapshot=JSON.stringify(d,null,2);
+ const task=libraryWriteQueue.catch(()=>{}).then(async()=>{
+  await fsp.mkdir(path.dirname(dbfile),{recursive:true});
+  const tmp=dbfile+'.'+crypto.randomUUID()+'.tmp';
+  try{await fsp.writeFile(tmp,snapshot);await fsp.rename(tmp,dbfile)}
+  finally{await fsp.rm(tmp,{force:true}).catch(()=>{})}
+ });
+ libraryWriteQueue=task;
+ return task;
+}
 const checksum=async p=>new Promise((resolve,reject)=>{const h=crypto.createHash('sha256');fs.createReadStream(p).on('data',b=>h.update(b)).on('error',reject).on('end',()=>resolve(h.digest('hex')))});
 const category=f=>/\.gif$/i.test(f)?'gifs':/\.(mp4|mov|mkv|avi|webm|m4v|wmv|flv|ts)$/i.test(f)?'videos':/\.(jpg|jpeg|png|webp|bmp|heic|tif|tiff|avif)$/i.test(f)?'images':null;
 async function fileCopy(src,dst){await fsp.mkdir(path.dirname(dst),{recursive:true});const tmp=dst+'.partial';await fsp.copyFile(src,tmp);if((await checksum(src))!== (await checksum(tmp))){await fsp.rm(tmp,{force:true});throw Error('Copy failed verification')}await fsp.rename(tmp,dst)}
