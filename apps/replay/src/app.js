@@ -70,7 +70,7 @@ function selectMedia(event,id){
   if(!event.ctrlKey&&!event.metaKey)selectedMedia.clear();
   for(const key of ids.slice(Math.min(a,b),Math.max(a,b)+1))selectedMedia.add(key);
  }else if(event.ctrlKey||event.metaKey){if(selectedMedia.has(id))selectedMedia.delete(id);else selectedMedia.add(id);selectionAnchor=id}
- else{selectedMedia.clear();selectedMedia.add(id);selectionAnchor=id}
+ else if(selectedMedia.size){if(selectedMedia.has(id))selectedMedia.delete(id);else selectedMedia.add(id);selectionAnchor=id}else{selectedMedia.clear();selectedMedia.add(id);selectionAnchor=id}
  selectionUI();
 }
 async function moveMediaBatch(ids,targetFolder,targetGroup){
@@ -157,14 +157,17 @@ function moveMediaPicker(item,folders){
   const panel=document.createElement('div');panel.className='import-dialog';
   const title=document.createElement('h2');title.textContent='Move Media';
   const description=document.createElement('p');description.textContent='Move '+item.name+' to a nearby folder in '+item.kind+'.';
-  const select=document.createElement('select');select.className='import-folder-select';
-  for(const [id,label] of choices){const opt=document.createElement('option');opt.value=id;opt.textContent=label;select.append(opt)}
+  const destinations=document.createElement('div');destinations.className='replay-move-destinations';destinations.style.cssText='display:grid;gap:8px;max-height:50vh;overflow-y:auto;padding:5px';
+  for(const [id,label] of choices){
+   const button=document.createElement('button');button.type='button';
+   button.textContent=label;button.style.cssText='text-align:left;padding:12px;white-space:normal';
+   button.onclick=()=>{const target=folders.find(f=>f.id===id);overlay.remove();resolve({group:target?.group||'fandom',folder:id})};
+   destinations.append(button);
+  }
   const actions=document.createElement('div');actions.className='import-dialog-actions';
-  const move=document.createElement('button');move.type='button';move.textContent='Move Here';move.disabled=!choices.size;
-  move.onclick=()=>{const target=folders.find(f=>f.id===select.value);overlay.remove();resolve({group:target?.group||'fandom',folder:select.value})};
   const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.onclick=()=>{overlay.remove();resolve(null)};
   if(!choices.size)description.textContent='No nearby destinations available.';
-  actions.append(move,cancel);panel.append(title,description,select,actions);overlay.append(panel);document.body.append(overlay);select.focus();
+  actions.append(cancel);panel.append(title,description,destinations,actions);overlay.append(panel);document.body.append(overlay);destinations.querySelector('button')?.focus();
  });
 }
 async function importFolderPicker(filePath,folders,defaultFolder){
@@ -203,8 +206,29 @@ function dropDestination(element){
  if(element.closest('#gallery'))return {folder,group};
  return null;
 }
+// Dragging near the viewport edge scrolls through the complete collection.
+let replayDragScrollLast=0;
+function replayDragAutoScroll(event){
+ if(!isMediaDrag(event))return;
+ const now=Date.now();if(now-replayDragScrollLast<25)return;
+ replayDragScrollLast=now;
+ const margin=100,y=event.clientY,h=window.innerHeight;
+ const direction=y<margin?-1:y>h-margin?1:0;
+ if(!direction)return;
+ const speed=Math.max(12,Math.round(35*(direction<0?(margin-y)/margin:(y-(h-margin))/margin)));
+ let el=event.target;
+ while(el&&el!==document.body){
+  if(el.scrollHeight>el.clientHeight+10&&getComputedStyle(el).overflowY!=='hidden'){
+   const before=el.scrollTop;el.scrollTop+=direction*speed;
+   if(el.scrollTop!==before)return;
+  }
+  el=el.parentElement;
+ }
+ window.scrollBy(0,direction*speed);
+}
 document.addEventListener('dragover',event=>{
  if(!isMediaDrag(event))return;
+ replayDragAutoScroll(event);
  const target=dropDestination(event.target);
  if(!target)return;
  const id=window.replayDragId;
