@@ -17,7 +17,7 @@ CloseApplications=yes
 [Tasks]
 Name: "desktopicon"; Description: "Create desktop shortcut"; Flags: checkedonce
 [Files]
-Source: "dist\PhotoBridge.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\PhotoBridge\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
 Name: "{autoprograms}\PhotoBridge"; Filename: "{app}\PhotoBridge.exe"
 Name: "{autodesktop}\PhotoBridge"; Filename: "{app}\PhotoBridge.exe"; Tasks: desktopicon
