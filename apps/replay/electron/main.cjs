@@ -45,7 +45,53 @@ function enableDefaultNumberingOnce(d){
  d.settings.numberingDefaultAppliedV043=true;
  return changed+1;
 }
-async function installApprovedFandomFolders(){const d=await load();const added=ensureApprovedFandomFolders(d);const migrated=consolidateMediaLibraries(d);const numbered=enableDefaultNumberingOnce(d);if(added||migrated||numbered)await save(d);return added+migrated+numbered}
+// All three libraries share folder appearance, while media assignments remain independent.
+const replayKinds=['videos','images','gifs'];
+const sharedFolderFields=['name','isSubfolder','showInfoCard','autoNumberMedia','details','pinned','order','color','icon','iconImage','cover'];
+function folderKey(d,f){
+ const parts=[],seen=new Set();let cur=f;
+ while(cur&&!seen.has(cur.id)){seen.add(cur.id);parts.unshift(cur.name.toLowerCase());cur=d.folders.find(x=>x.id===cur.parent)}
+ return parts.join('/');
+}
+function copyFolderAppearance(source,target){
+ for(const key of sharedFolderFields){
+  if(source[key]!==undefined)target[key]=JSON.parse(JSON.stringify(source[key]));
+  else delete target[key];
+ }
+}
+function matchingFolderCopies(d,source){
+ const key=folderKey(d,source);
+ return d.folders.filter(f=>f.group===source.group&&folderKey(d,f)===key);
+}
+function ensureMatchingFolder(d,source,kind,seen=new Set()){
+ if(source.kind===kind)return source;
+ if(seen.has(source.id))throw Error('Folder hierarchy contains a cycle');
+ seen.add(source.id);
+ const parent=source.parent&&d.folders.find(f=>f.id===source.parent);
+ const destParent=parent?ensureMatchingFolder(d,parent,kind,seen):null;
+ let match=d.folders.find(f=>f.kind===kind&&f.group===source.group&&(f.parent||'')===(destParent?.id||'')&&f.name.toLowerCase()===source.name.toLowerCase());
+ if(!match){
+  match={id:crypto.randomUUID(),kind,group:source.group,parent:destParent?.id||'',name:source.name};
+  d.folders.push(match);
+ }
+ return match;
+}
+function synchronizeFolderAppearance(d,source){
+ for(const kind of replayKinds){
+  const counterpart=ensureMatchingFolder(d,source,kind);
+  if(counterpart!==source)copyFolderAppearance(source,counterpart);
+ }
+}
+function synchronizeExistingVideoFoldersOnce(d){
+ if(d.settings?.folderAppearanceSyncedV048)return 0;
+ let changed=0;
+ for(const source of d.folders.filter(f=>f.kind==='videos'&&f.group==='fandom')){
+  synchronizeFolderAppearance(d,source);changed++;
+ }
+ d.settings.folderAppearanceSyncedV048=true;
+ return changed+1;
+}
+async function installApprovedFandomFolders(){const d=await load();const added=ensureApprovedFandomFolders(d);const migrated=consolidateMediaLibraries(d);const numbered=enableDefaultNumberingOnce(d);const synced=synchronizeExistingVideoFoldersOnce(d);if(added||migrated||numbered||synced)await save(d);return added+migrated+numbered+synced}
 // Never silently replace an unreadable or damaged existing library with an empty one.
 async function load(){
  let raw;
@@ -119,8 +165,8 @@ ipcMain.handle('browse-folder',async()=>{const r=await dialog.showOpenDialog({pr
 ipcMain.handle('import',(event,x)=>importFiles(x,event.sender));
 ipcMain.handle('choose-folder-icon',async()=>{const r=await dialog.showOpenDialog({title:'Choose folder icon',properties:['openFile'],filters:[{name:'Images',extensions:['png','jpg','jpeg','webp','gif']} ]});if(r.canceled||!r.filePaths.length)return null;const p=r.filePaths[0],stat=await fsp.stat(p);if(stat.size>3*1024*1024)throw Error('Choose an image smaller than 3 MB');const ext=path.extname(p).toLowerCase();const mime=ext==='.png'?'image/png':ext==='.webp'?'image/webp':ext==='.gif'?'image/gif':'image/jpeg';return 'data:'+mime+';base64,'+(await fsp.readFile(p)).toString('base64')});
 ipcMain.handle('open-ao3',async(_e,url)=>{const parsed=new URL(url);if(parsed.protocol!=='https:'||!['archiveofourown.org','www.archiveofourown.org'].includes(parsed.hostname))throw Error('Invalid AO3 link');await shell.openExternal(parsed.toString());return true});
-ipcMain.handle('folder',async(_e,x)=>{const d=await load();const parent=x.parent&&d.folders.find(f=>f.id===x.parent&&f.kind===x.kind&&f.group===x.group);if(x.parent&&!parent)throw Error('Select a valid parent folder');d.folders.push({id:crypto.randomUUID(),kind:x.kind,group:x.group,name:safe(x.name),parent:parent?.id||'',isSubfolder:!!x.isSubfolder,showInfoCard:x.showInfoCard!==false,autoNumberMedia:x.autoNumberMedia!==false,details:{},cover:'',color:'#b58a48',order:d.folders.length});await save(d);return d});
-ipcMain.handle('folder-update',async(_e,id,patch)=>{const d=await load(),f=d.folders.find(x=>x.id===id);if(!f)throw Error('Not found');if(patch.name!==undefined)f.name=safe(patch.name);if(patch.isSubfolder!==undefined)f.isSubfolder=!!patch.isSubfolder;if(patch.showInfoCard!==undefined)f.showInfoCard=!!patch.showInfoCard;const numberingWasEnabled=f.autoNumberMedia===true;if(patch.autoNumberMedia!==undefined)f.autoNumberMedia=!!patch.autoNumberMedia;if(f.autoNumberMedia&&(patch.numberExisting===true||patch.autoNumberMedia===true&&!numberingWasEnabled)){let n=1;const existing=d.items.filter(x=>!x.deletedAt&&x.folder===f.id&&x.kind===f.kind&&x.group===f.group).sort((a,b)=>(a.order||0)-(b.order||0)||(a.added||0)-(b.added||0));for(const item of existing){item.name=safe(f.name+' '+n++)}}if(patch.details!==undefined){const v=patch.details||{};const media=Array.isArray(v.sources)?v.sources.filter(x=>['Book','TV Show','Movie'].includes(x)):[];const category=['M/M','M/F','Platonic','No Relationship'].includes(v.category)?v.category:'';let ao3=String(v.ao3||'').trim();if(ao3){let parsed;try{parsed=new URL(ao3)}catch{throw Error('Enter a valid AO3 link')}if(parsed.protocol!=='https:'||!['archiveofourown.org','www.archiveofourown.org'].includes(parsed.hostname))throw Error('AO3 link must start with https://archiveofourown.org/')}f.details={pairings:String(v.pairings||'').slice(0,1200),shipName:String(v.shipName||'').slice(0,200),sources:media,category,ao3}};if(patch.pinned!==undefined)f.pinned=!!patch.pinned;if(Number.isInteger(patch.order)&&patch.order>=0)f.order=patch.order;if(/^#[0-9a-f]{6}$/i.test(patch.color||''))f.color=patch.color;if(patch.icon!==undefined)f.icon=String(patch.icon).slice(0,3);if(patch.iconImage!==undefined){if(patch.iconImage!==''&&!/^data:image\/(png|jpeg|webp|gif);base64,[a-z0-9+/=]+$/i.test(patch.iconImage))throw Error('Invalid folder icon image');if(patch.iconImage.length>4200000)throw Error('Folder icon is too large');f.iconImage=patch.iconImage}if(patch.cover!==undefined){if(patch.cover&&!d.items.some(i=>i.id===patch.cover&&i.kind==='images'&&!i.deletedAt))throw Error('Cover must be a stored image');f.cover=patch.cover}if(patch.parent!==undefined){if(patch.parent===id)throw Error('Folder cannot be parent of itself');const parent=patch.parent&&d.folders.find(x=>x.id===patch.parent);if(patch.parent&&(!parent||parent.kind!==f.kind||parent.group!==f.group))throw Error('Invalid parent');let current=parent;while(current){if(current.id===id)throw Error('Cannot move folder into its descendant');current=d.folders.find(x=>x.id===current.parent)}f.parent=patch.parent||''}await save(d);queueFolderBackup();return d});
+ipcMain.handle('folder',async(_e,x)=>{const d=await load();const parent=x.parent&&d.folders.find(f=>f.id===x.parent&&f.kind===x.kind&&f.group===x.group);if(x.parent&&!parent)throw Error('Select a valid parent folder');const created={id:crypto.randomUUID(),kind:x.kind,group:x.group,name:safe(x.name),parent:parent?.id||'',isSubfolder:!!x.isSubfolder,showInfoCard:x.showInfoCard!==false,autoNumberMedia:x.autoNumberMedia!==false,details:{},cover:'',color:'#b58a48',order:d.folders.length};if(d.folders.some(f=>f.kind===x.kind&&f.group===x.group&&f.name.toLowerCase()===created.name.toLowerCase()&&(f.parent||'')===created.parent))throw Error('A folder with that name already exists here');d.folders.push(created);synchronizeFolderAppearance(d,created);await save(d);return d});
+ipcMain.handle('folder-update',async(_e,id,patch)=>{const d=await load(),f=d.folders.find(x=>x.id===id);if(!f)throw Error('Not found');const peerCopies=matchingFolderCopies(d,f);if(patch.name!==undefined)f.name=safe(patch.name);if(patch.isSubfolder!==undefined)f.isSubfolder=!!patch.isSubfolder;if(patch.showInfoCard!==undefined)f.showInfoCard=!!patch.showInfoCard;const numberingWasEnabled=f.autoNumberMedia===true;if(patch.autoNumberMedia!==undefined)f.autoNumberMedia=!!patch.autoNumberMedia;if(f.autoNumberMedia&&(patch.numberExisting===true||patch.autoNumberMedia===true&&!numberingWasEnabled)){let n=1;const existing=d.items.filter(x=>!x.deletedAt&&x.folder===f.id&&x.kind===f.kind&&x.group===f.group).sort((a,b)=>(a.order||0)-(b.order||0)||(a.added||0)-(b.added||0));for(const item of existing){item.name=safe(f.name+' '+n++)}}if(patch.details!==undefined){const v=patch.details||{};const media=Array.isArray(v.sources)?v.sources.filter(x=>['Book','TV Show','Movie'].includes(x)):[];const category=['M/M','M/F','Platonic','No Relationship'].includes(v.category)?v.category:'';let ao3=String(v.ao3||'').trim();if(ao3){let parsed;try{parsed=new URL(ao3)}catch{throw Error('Enter a valid AO3 link')}if(parsed.protocol!=='https:'||!['archiveofourown.org','www.archiveofourown.org'].includes(parsed.hostname))throw Error('AO3 link must start with https://archiveofourown.org/')}f.details={pairings:String(v.pairings||'').slice(0,1200),shipName:String(v.shipName||'').slice(0,200),sources:media,category,ao3}};if(patch.pinned!==undefined)f.pinned=!!patch.pinned;if(Number.isInteger(patch.order)&&patch.order>=0)f.order=patch.order;if(/^#[0-9a-f]{6}$/i.test(patch.color||''))f.color=patch.color;if(patch.icon!==undefined)f.icon=String(patch.icon).slice(0,3);if(patch.iconImage!==undefined){if(patch.iconImage!==''&&!/^data:image\/(png|jpeg|webp|gif);base64,[a-z0-9+/=]+$/i.test(patch.iconImage))throw Error('Invalid folder icon image');if(patch.iconImage.length>4200000)throw Error('Folder icon is too large');f.iconImage=patch.iconImage}if(patch.cover!==undefined){if(patch.cover&&!d.items.some(i=>i.id===patch.cover&&i.kind==='images'&&!i.deletedAt))throw Error('Cover must be a stored image');f.cover=patch.cover}if(patch.parent!==undefined){if(patch.parent===id)throw Error('Folder cannot be parent of itself');const parent=patch.parent&&d.folders.find(x=>x.id===patch.parent);if(patch.parent&&(!parent||parent.kind!==f.kind||parent.group!==f.group))throw Error('Invalid parent');let current=parent;while(current){if(current.id===id)throw Error('Cannot move folder into its descendant');current=d.folders.find(x=>x.id===current.parent)}f.parent=patch.parent||''}for(const peer of peerCopies){if(peer===f)continue;const parent=f.parent&&d.folders.find(x=>x.id===f.parent);const counterpartParent=parent?ensureMatchingFolder(d,parent,peer.kind):null;peer.parent=counterpartParent?.id||'';copyFolderAppearance(f,peer)}synchronizeFolderAppearance(d,f);await save(d);queueFolderBackup();return d});
 ipcMain.handle('item-update',async(_e,id,x)=>{const d=await updateItem(id,x);await synchronizeBackup();return d});
 ipcMain.handle('item-delete',async(_e,id)=>{const d=await updateItem(id,{deletedAt:Date.now()});await synchronizeBackup();return d});
 ipcMain.handle('restore',async(_e,id)=>{const d=await updateItem(id,{deletedAt:null});await synchronizeBackup();return d});
