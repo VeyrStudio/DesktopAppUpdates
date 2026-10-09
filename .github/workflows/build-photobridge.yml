@@ -37,7 +37,14 @@ jobs:
           python -m py_compile app.py
           python -c "import base64,pathlib;pathlib.Path('icon.png').write_bytes(base64.b64decode(pathlib.Path('icon-96.b64').read_text()))"
           python -c "from PIL import Image;Image.open('icon.png').convert('RGBA').save('icon.ico',format='ICO',sizes=[(16,16),(24,24),(32,32),(48,48),(64,64),(96,96)])"
-          pyinstaller --clean --noconfirm --onefile --windowed --name PhotoBridge --icon icon.ico --add-data "icon.ico;." --add-data "icon-96.b64;." app.py
+          pyinstaller --clean --noconfirm --onedir --windowed --name PhotoBridge --icon icon.ico --add-data "icon.ico;." --add-data "icon-96.b64;." app.py
+      - name: Validate bundled Python runtime
+        shell: pwsh
+        working-directory: photobridge
+        run: |
+          $runtime = Get-ChildItem dist/PhotoBridge -Filter python312.dll -Recurse | Select-Object -First 1
+          if (-not $runtime) { throw "Bundled Python runtime missing" }
+          if (-not (Test-Path dist/PhotoBridge/PhotoBridge.exe)) { throw "Desktop executable missing" }
       - name: Install Inno Setup
         shell: pwsh
         run: choco install innosetup -y --no-progress
