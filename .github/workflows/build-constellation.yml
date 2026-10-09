@@ -1,4 +1,5 @@
 name: Build Constellation
+# multiple-pairing-media-v2
 # safe-media-storage-v1
 # rollback-multi-image-v1
 # multiple-pairing-images-v1
@@ -90,6 +91,14 @@ jobs:
           python "apps/constellation/patches/safe-media-storage.py"
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'CONSTELLATION_MEDIA_DB_V2' -Quiet)) { throw "Safe media storage patch was not applied." }
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'delete copy.image' -Quiet)) { throw "Image payloads would still be written to localStorage." }
+
+      - name: Restore multiple pairing media
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/multiple-pairing-media-v2.py"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'CONSTELLATION_EXTRA_MEDIA_DB' -Quiet)) { throw "Multiple pairing media support was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'accept="image/*,video/*"' -Quiet)) { throw "Pairing media picker does not accept images and video." }
 
       - name: Use Node.js
         uses: actions/setup-node@v4
