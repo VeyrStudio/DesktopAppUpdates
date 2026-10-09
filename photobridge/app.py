@@ -148,7 +148,7 @@ class App:
         root.geometry("1040x700")
         root.minsize(840,580)
         root.configure(bg=self.DEEP)
-        self.root.option_add("*Font","Segoe UI 10")
+        # Explicit widget fonts are set individually; no malformed Tk font default.
         self.sidebar=tk.Frame(root,bg="#161318",width=235)
         self.sidebar.pack(side="left",fill="y")
         self.sidebar.pack_propagate(False)
