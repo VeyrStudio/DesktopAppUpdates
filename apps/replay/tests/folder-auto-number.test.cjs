@@ -14,7 +14,10 @@ test('imports and folder transfers both apply sequential naming',()=>{
 });
 test('numbering respects other occupied names and preserves extension',()=>{
  assert.match(main,/used\.has\(name\.toLowerCase\(\)\)/);
- assert.match(main,/safe\(f\.name\+' '\+number\)\+extension/);
+ assert.match(main,/safe\(f\.name\+' '\+number\)/);
 });
 
-test('enabling numbering immediately names existing files',()=>{assert.match(main,/!numberingWasEnabled/);assert.match(main,/item\.name=safe\(f\.name\+' '\+n\+\+\)\+path\.extname\(item\.stored\)/)});
+test('enabling numbering immediately names existing files',()=>{assert.match(main,/!numberingWasEnabled/);assert.match(main,/item\.name=safe\(f\.name\+' '\+n\+\+\)/)});
+
+test('display names omit extensions while actual stored media remains unchanged',()=>{assert.match(main,/name=safe\(f\.name\+' '\+number\)/);assert.match(main,/item\.name=safe\(f\.name\+' '\+n\+\+\)/);assert.match(main,/const id=crypto\.randomUUID\(\),ext=path\.extname\(src\),stored=path\.join\(kind,id\+ext\)/)});
+test('dropping into an already selected numbered folder also corrects the name',()=>{assert.match(main,/patch\.folder!==undefined/)});
