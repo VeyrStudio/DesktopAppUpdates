@@ -199,6 +199,16 @@ async function synchronizeBackup(){
 }
 ipcMain.handle('backup',()=>synchronizeBackup());
 ipcMain.handle('empty-trash',async()=>{const d=await load(),cut=Date.now()-30*86400000;for(const item of d.items.filter(x=>x.deletedAt&&x.deletedAt<cut)){await fsp.rm(path.join(root,item.stored),{force:true})}d.items=d.items.filter(x=>!x.deletedAt||x.deletedAt>=cut);await save(d);return d});
+// Explicit emptying of Trash permanently removes archived files only after UI confirmation.
+ipcMain.handle('delete-all-trash',async()=>{
+ const d=await load(),trashed=d.items.filter(x=>x.deletedAt);
+ // Do not change metadata if deleting a file fails.
+ for(const item of trashed)await fsp.rm(path.join(root,item.stored),{force:true});
+ d.items=d.items.filter(x=>!x.deletedAt);
+ await save(d);
+ queueFolderBackup();
+ return {deleted:trashed.length};
+});
 ipcMain.handle('check-update',async()=>{const r=await fetch('https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/replay/replay.json');return r.ok?await r.json():null});
 
 const {spawn}=require('node:child_process');
