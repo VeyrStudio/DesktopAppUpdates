@@ -163,6 +163,58 @@ ipcMain.handle('browse',async()=>{const r=await dialog.showOpenDialog({propertie
 ipcMain.handle('browse-folder',async()=>{const r=await dialog.showOpenDialog({properties:['openDirectory']});if(r.canceled)return [];const found=[];async function crawl(dir){for(const ent of await fsp.readdir(dir,{withFileTypes:true})){const full=path.join(dir,ent.name);if(ent.isDirectory())await crawl(full);else if(ent.isFile()&&category(ent.name))found.push(full)}}await crawl(r.filePaths[0]);return found});
 
 ipcMain.handle('import',(event,x)=>importFiles(x,event.sender));
+// One-time, resumable copy-only import of Replay's photos and complete folder hierarchy.
+// Never opens Replay files for writing or removes any Replay content.
+ipcMain.handle('migrate-replay-photos',async(event)=>{
+ const replayBase=path.join(app.getPath('appData'),'VeyrStudio','Replay');
+ const replayDb=path.join(replayBase,'library.json');
+ const ask=await dialog.showMessageBox({type:'question',buttons:['Copy photos','Cancel'],defaultId:1,cancelId:1,
+  title:'Copy photos from Replay',message:'Import your Replay photos and folders into Resume?',
+  detail:'Resume will copy and SHA-256 verify each photo. Replay files will NOT be moved, deleted, or changed.'});
+ if(ask.response!==0)return {cancelled:true};
+ let source;try{source=JSON.parse(await fsp.readFile(replayDb,'utf8'))}catch(error){throw Error('Cannot read Replay library: '+error.message)}
+ if(!Array.isArray(source.items)||!Array.isArray(source.folders))throw Error('Replay library has an invalid structure');
+ const d=await load();
+ if(d.settings.replayMigrationComplete)return {alreadyComplete:true};
+ const sourceFolders=source.folders.filter(f=>f.kind==='images');
+ const sourcePhotos=source.items.filter(i=>i.kind==='images'&&!i.deletedAt);
+ // Preserve Replay IDs, hierarchy, covers, notes, favorites and ordering.
+ const knownFolders=new Set(d.folders.map(f=>f.id));
+ for(const f of sourceFolders)if(!knownFolders.has(f.id)){d.folders.push(structuredClone(f));knownFolders.add(f.id)}
+ await save(d);
+ let copied=0,skipped=0;const errors=[];
+ for(let index=0;index<sourcePhotos.length;index++){
+  const item=sourcePhotos[index];
+  event.sender.send('resume-migration-progress',{completed:index,total:sourcePhotos.length,copied,skipped});
+  if(d.items.some(x=>x.id===item.id)){skipped++;continue}
+  try{
+   if(typeof item.stored!=='string')throw Error('Missing archive filename');
+   const relative=path.normalize(item.stored);
+   if(path.isAbsolute(relative)||relative.startsWith('..'+path.sep)||relative==='..')throw Error('Unsafe source path');
+   const src=path.resolve(replayBase,'Media',relative);
+   const expectedBase=path.resolve(replayBase,'Media');
+   if(!src.startsWith(expectedBase+path.sep))throw Error('Photo outside Replay archive');
+   const photoHash=await checksum(src);
+   const destStored=path.join('images',crypto.randomUUID()+path.extname(src));
+   const dest=path.join(root,destStored);
+   await fileCopy(src,dest);
+   const verifiedHash=await checksum(dest);
+   if(verifiedHash!==photoHash){await fsp.rm(dest,{force:true});throw Error('Destination checksum mismatch')}
+   const migrated={...structuredClone(item),stored:destStored,hash:photoHash};
+   d.items.push(migrated);
+   try{await save(d)}catch(error){d.items.pop();await fsp.rm(dest,{force:true});throw error}
+   copied++;
+  }catch(error){errors.push({id:item.id,name:String(item.name||''),error:error.message})}
+ }
+ const report={date:new Date().toISOString(),total:sourcePhotos.length,copied,previouslyCopied:skipped,failed:errors.length,errors};
+ const reportPath=path.join(app.getPath('userData'),'replay-migration-report.json');
+ await fsp.writeFile(reportPath,JSON.stringify(report,null,2));
+ if(!errors.length){d.settings.replayMigrationComplete=true;d.settings.replayMigrationAt=report.date;await save(d)}
+ event.sender.send('resume-migration-progress',{completed:sourcePhotos.length,total:sourcePhotos.length,copied,skipped,finished:true});
+ queueFolderBackup();
+ return {...report,reportPath};
+});
+
 ipcMain.handle('choose-folder-icon',async()=>{const r=await dialog.showOpenDialog({title:'Choose folder icon',properties:['openFile'],filters:[{name:'Images',extensions:['png','jpg','jpeg','webp','gif']} ]});if(r.canceled||!r.filePaths.length)return null;const p=r.filePaths[0],stat=await fsp.stat(p);if(stat.size>3*1024*1024)throw Error('Choose an image smaller than 3 MB');const ext=path.extname(p).toLowerCase();const mime=ext==='.png'?'image/png':ext==='.webp'?'image/webp':ext==='.gif'?'image/gif':'image/jpeg';return 'data:'+mime+';base64,'+(await fsp.readFile(p)).toString('base64')});
 ipcMain.handle('open-ao3',async(_e,url)=>{const parsed=new URL(url);if(parsed.protocol!=='https:'||!['archiveofourown.org','www.archiveofourown.org'].includes(parsed.hostname))throw Error('Invalid AO3 link');await shell.openExternal(parsed.toString());return true});
 ipcMain.handle('folder',async(_e,x)=>{const d=await load();const parent=x.parent&&d.folders.find(f=>f.id===x.parent&&f.kind===x.kind&&f.group===x.group);if(x.parent&&!parent)throw Error('Select a valid parent folder');const created={id:crypto.randomUUID(),kind:x.kind,group:x.group,name:safe(x.name),parent:parent?.id||'',isSubfolder:!!x.isSubfolder,showInfoCard:x.showInfoCard!==false,autoNumberMedia:x.autoNumberMedia!==false,details:{},cover:'',color:'#b58a48',order:d.folders.length};if(d.folders.some(f=>f.kind===x.kind&&f.group===x.group&&f.name.toLowerCase()===created.name.toLowerCase()&&(f.parent||'')===created.parent))throw Error('A folder with that name already exists here');d.folders.push(created);synchronizeFolderAppearance(d,created);await save(d);return d});
