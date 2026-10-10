@@ -1,0 +1,7 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const ui=fs.readFileSync(path.join(__dirname,'../src/app.js'),'utf8'),main=fs.readFileSync(path.join(__dirname,'../electron/main.cjs'),'utf8'),preload=fs.readFileSync(path.join(__dirname,'../electron/preload.cjs'),'utf8');
+test('Replay scripts parse',()=>{new vm.Script(ui);new vm.Script(main);new vm.Script(preload)});
+test('dedicated Trash navigation and restoration',()=>{assert.match(ui,/\['trash','♧ Trash'\]/);assert.match(ui,/view==='trash'/);assert.match(ui,/data-restore-trash/);assert.match(ui,/replay\.restore\(b\.dataset\.restoreTrash\)/)});
+test('Delete All requires confirmation and calls dedicated permanent-delete action',()=>{assert.match(ui,/confirm\('Permanently delete all '\+count/);assert.match(ui,/replay\.deleteAllTrash\(\)/);assert.match(preload,/deleteAllTrash:\(\)=>call\('delete-all-trash'\)/);assert.match(main,/ipcMain\.handle\('delete-all-trash'/)});
+test('Move destination includes Trash in gallery and viewer',()=>{assert.match(ui,/choices\.set\('__trash__'/);assert.match(ui,/\{trash:true\}/);assert.match(ui,/destination\.trash\?await replay\.itemDelete\(moving\.id\)/);assert.match(ui,/if\(dest\.trash\)/)});
+test('permanent clear applies only to trashed records',()=>{assert.match(main,/const d=await load\(\),trashed=d\.items\.filter\(x=>x\.deletedAt\)/);assert.match(main,/d\.items=d\.items\.filter\(x=>!x\.deletedAt\)/)});
