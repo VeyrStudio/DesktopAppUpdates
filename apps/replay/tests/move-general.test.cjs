@@ -10,5 +10,5 @@ test('internal Move picker shows immediate parent and siblings or children only'
 });
 test('moving can be cancelled without changing an item',()=>{
  assert.match(ui,/cancel\.onclick=\(\)=>\{overlay\.remove\(\);resolve\(null\)\}/);
- assert.match(ui,/if\(destination\)await replay\.itemUpdate/);
+ assert.match(ui,/if\(destination\)\{if\(destination\.trash\)await replay\.itemDelete\(it\.id\);else await replay\.itemUpdate/);
 });
