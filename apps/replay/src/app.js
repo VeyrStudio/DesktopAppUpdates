@@ -139,7 +139,7 @@ async function importMedia(providedPaths){
  await redraw();
 }
 // Move existing media between any folder/subfolder and the General (root) sections.
-function moveMediaPicker(item,folders){
+function moveMediaPicker(item,folders,allDestinations=false){
  return new Promise(resolve=>{
   document.querySelector('#move-media-dialog')?.remove();
   const current=folders.find(f=>f.id===item.folder);
@@ -149,14 +149,20 @@ function moveMediaPicker(item,folders){
   const children=current?folders.filter(f=>f.kind===item.kind&&f.group==='fandom'&&(f.parent||'')===current.id):folders.filter(f=>f.kind===item.kind&&f.group==='fandom'&&!f.parent);
   const choices=new Map();
   const add=(id,label)=>{if(id!==item.folder)choices.set(id,label)};
+  if(allDestinations){
+   add('','General (Library root)');
+   const pathFor=f=>{const names=[f.name],seen=new Set([f.id]);let p=folders.find(x=>x.id===f.parent);while(p&&!seen.has(p.id)){seen.add(p.id);names.unshift(p.name);p=folders.find(x=>x.id===p.parent)}return names.join(' / ')};
+   for(const f of folders.filter(f=>f.kind===item.kind&&f.group==='fandom').sort((x,y)=>pathFor(x).localeCompare(pathFor(y))))add(f.id,pathFor(f));
+  }else{
   if(current)add(parentId,parentId?(folders.find(f=>f.id===parentId)?.name||'Parent folder'):'Library root');
   else add('', 'Library root');
   for(const f of current?(current.parent?nearby:children):children)add(f.id,f.name);
   if(current&&!current.parent){for(const f of children)add(f.id,f.name)}
+  }
   const overlay=document.createElement('div');overlay.id='move-media-dialog';overlay.className='import-dialog-backdrop';
   const panel=document.createElement('div');panel.className='import-dialog';
   const title=document.createElement('h2');title.textContent='Move Media';
-  const description=document.createElement('p');description.textContent='Move '+item.name+' to a nearby folder in '+item.kind+'.';
+  const description=document.createElement('p');description.textContent='Move '+item.name+' to '+(allDestinations?'any folder':'a nearby folder')+' in '+item.kind+'.';
   const destinations=document.createElement('div');destinations.className='replay-move-destinations';destinations.style.cssText='display:grid;gap:8px;max-height:50vh;overflow-y:auto;padding:5px';
   for(const [id,label] of choices){
    const button=document.createElement('button');button.type='button';
@@ -264,8 +270,26 @@ function openItem(it){
   scale=1;panX=0;panY=0;
   const url='replay://media/'+current.id;
   $('#player').innerHTML=current.kind==='videos'?'<video src="'+url+'" controls autoplay loop></video>':'<img draggable="false" src="'+url+'">';
-  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
+  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
   $('#previous-media').onclick=()=>move(-1);$('#next-media').onclick=()=>move(1);
+  $('#move-viewed-media').onclick=async()=>{
+   const moving=current;
+   const destination=await moveMediaPicker(moving,data.folders.filter(f=>f.kind===moving.kind),true);
+   if(!destination)return;
+   const control=$('#move-viewed-media');control.disabled=true;
+   try{
+    // Keep the original viewer sequence, even when a move removes this file from General.
+    const oldIndex=peers.findIndex(x=>x.id===moving.id);
+    const next=peers.slice(oldIndex+1).find(x=>x.id!==moving.id&&!x.deletedAt&&x.folder===moving.folder)
+      ||peers.slice(0,Math.max(0,oldIndex)).find(x=>x.id!==moving.id&&!x.deletedAt&&x.folder===moving.folder);
+    const updated=await replay.itemUpdate(moving.id,{folder:destination.folder,group:destination.group,fandoms:[]});
+    data=updated;
+    await redraw();
+    if(next){current=data.items.find(x=>x.id===next.id)||next;display()}
+    else{current=data.items.find(x=>x.id===moving.id)||moving;display()}
+   }catch(error){alert('Could not move media: '+error.message);control.disabled=false}
+  };
+
   $('#separate-media').onclick=async()=>{try{await replay.openMediaWindow(current.id);$('#close').click()}catch(e){alert('Could not open media window: '+e.message)}};$('#full-media').onclick=()=>$('#player').requestFullscreen?.();
   const video=$('#player video'),img=$('#player img');
   if(video){
