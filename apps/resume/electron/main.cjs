@@ -251,6 +251,21 @@ ipcMain.handle('save-photo-edit',async(_e,id,dataUrl)=>{
   return d;
  }catch(error){await fsp.rm(partial,{force:true});await fsp.rm(destination,{force:true});throw error}
 });
+ipcMain.handle('restore-original-photo',async(_e,id)=>{
+ const d=await load(),item=d.items.find(x=>x.id===id&&x.kind==='images'&&!x.deletedAt);
+ if(!item)throw Error('Photo not found');
+ const originals=path.join(app.getPath('userData'),'Originals');
+ let files=[];try{files=await fsp.readdir(originals)}catch(error){if(error.code!=='ENOENT')throw error}
+ const original=files.find(x=>path.parse(x).name===id);
+ if(!original)throw Error('This photo has no previous edits to revert');
+ const src=path.join(originals,original),stored=path.join('images',crypto.randomUUID()+path.extname(original)),dest=path.join(root,stored);
+ await fileCopy(src,dest);
+ const hash=await checksum(dest);
+ const previous={stored:item.stored,hash:item.hash,name:item.name,modified:item.modified};
+ item.stored=stored;item.hash=hash;item.name=path.parse(item.name).name+path.extname(original);item.modified=Date.now();
+ try{await save(d)}catch(error){Object.assign(item,previous);await fsp.rm(dest,{force:true});throw error}
+ queueFolderBackup();return d;
+});
 // Save As exports a copy; never moves or modifies Resume's archived original.
 ipcMain.handle('save-photo-as',async(_e,id)=>{
  const d=await load(),item=d.items.find(x=>x.id===id&&x.kind==='images'&&!x.deletedAt);
