@@ -1,12 +1,12 @@
 {
-  "name": "replay",
-  "version": "0.5.2",
-  "description": "Replay personal media archive",
+  "name": "resume",
+  "version": "0.1.0",
+  "description": "Resume independent personal photo archive",
   "main": "electron/main.cjs",
   "private": true,
   "scripts": {
     "start": "electron .",
-    "test": "node --test tests/*.test.cjs",
+    "test": "node --test tests/resume-isolation.test.cjs",
     "build:win": "electron-builder --win nsis --x64 --publish never"
   },
   "devDependencies": {
@@ -14,8 +14,8 @@
     "electron-builder": "26.15.7"
   },
   "build": {
-    "appId": "studio.veyr.replay",
-    "productName": "Replay",
+    "appId": "studio.veyr.resume",
+    "productName": "Resume",
     "asar": true,
     "directories": {
       "output": "dist"
@@ -31,7 +31,7 @@
       "target": [
         "nsis"
       ],
-      "artifactName": "ReplaySetup-${version}.${ext}",
+      "artifactName": "ResumeSetup-${version}.${ext}",
       "icon": "build/icon.ico"
     },
     "nsis": {
@@ -39,12 +39,7 @@
       "perMachine": false,
       "createDesktopShortcut": true
     },
-    "extraResources": [
-      {
-        "from": "node_modules/ffmpeg-static/ffmpeg.exe",
-        "to": "ffmpeg/ffmpeg.exe"
-      }
-    ]
+    "extraResources": []
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0"
