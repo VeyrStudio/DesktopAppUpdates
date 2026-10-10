@@ -4,12 +4,12 @@ const {pathToFileURL}=require('node:url');
 protocol.registerSchemesAsPrivileged([{scheme:'resume',privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}}]);
 app.setPath('userData',path.join(app.getPath('appData'),'VeyrStudio','Resume'));
 const root=path.join(app.getPath('userData'),'Media'), dbfile=path.join(app.getPath('userData'),'library.json');
-const initial=()=>({folders:['videos','images','gifs'].flatMap(kind=>['Dog Photos','Family','Other'].map(name=>({id:crypto.randomUUID(),kind,group:'nonfandom',name,parent:'',color:'#b58a48',pinned:false,cover:''}))),items:[],settings:{backupRoot:path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup'),thumbnailSize:170,launch:'dashboard'},favorites:[]});
+const initial=()=>({folders:['images'].flatMap(kind=>['Dog Photos','Family','Other'].map(name=>({id:crypto.randomUUID(),kind,group:'nonfandom',name,parent:'',color:'#b58a48',pinned:false,cover:''}))),items:[],settings:{backupRoot:path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup'),thumbnailSize:170,launch:'dashboard'},favorites:[]});
 // Approved Replay fandom tree. Seed missing folders once, preserving all user-created folders.
 const replayFandomTree=[["911",["LA","LS"]],["Arcane",[]],["Castlevania",[]],["Cobra Kai",[]],["DC",["Batman","Titans","Nightwing","Red Hood","Robin","Superman","Smallville","Superman & Lois","Supergirl","The Flash","Arrow","Legends of Tomorrow","Justice League","Doom Patrol","The Sandman","Dead Boy Detectives","Shazam!","Lucifer"]],["Eyewitness",[]],["Good Omens",[]],["Grishaverse",["Shadow and Bone","Six of Crows"]],["Hellaverse",["Hazbin Hotel","Helluva Boss"]],["Heartstopper",[]],["Heated Rivalry",[]],["Hotel Portofino",[]],["Immortal Universe",["Interview with the Vampire","The Talamasca","Armand","The Vampire Lestat"]],["Invisible Boys",[]],["Julie and the Phantoms",[]],["KPop Demon Hunters",[]],["Leviticus",[]],["Marauders",["Starchaser","Wolfstar","Modern"]],["Marvel",["The Avengers","Iron Man","Captain America","Thor","Loki","The Falcon and the Winter Soldier","Hawkeye","WandaVision","Doctor Strange","Ant-Man","Black Panther","Guardians of the Galaxy","The Marvels / Captain Marvel","Thunderbolts","Spider-Man (MCU)","The Amazing Spider-Man","Spider-Verse","X-Men","Deadpool","Wolverine","Daredevil","The Punisher","Jessica Jones","The Defenders","Moon Knight","She-Hulk","Agatha All Along","Fantastic Four","Venom"]],["Merlin",[]],["Nimona",[]],["Our Flag Means Death",[]],["Prodigal Son",[]],["Project Hail Mary",[]],["Red, White & Royal Blue",[]],["Riverdale",[]],["Roswell, New Mexico",[]],["Shadowhunters",["The Mortal Instruments","The Infernal Devices","The Dark Artifices","The Last Hours","The Eldest Curses","The Wicked Powers","The Bane Chronicles","Tales from the Shadowhunter Academy","Ghosts of the Shadow Market"]],["Shameless",[]],["Star Wars",["The Rise of Skywalker","The Mandalorian","The Book of Boba Fett","The Acolyte","Prequel Trilogy","Original Trilogy"]],["Stranger Things",[]],["Supernatural",[]],["Teen Wolf",[]],["The 100",[]],["The Gray Man",[]],["The Last of Us",[]],["The Old Guard",[]],["The Witcher",[]],["Wednesday",[]]];
 function ensureApprovedFandomFolders(d){
  let added=0;
- for(const kind of ['videos','images','gifs']){
+ for(const kind of ['images']){
   const ensure=(name,parent='')=>{
    let f=d.folders.find(x=>x.kind===kind&&x.group==='fandom'&&(x.parent||'')===parent&&x.name.toLowerCase()===name.toLowerCase());
    if(!f){f={id:crypto.randomUUID(),kind,group:'fandom',name,parent,isSubfolder:!!parent,showInfoCard:true,autoNumberMedia:true,details:{},cover:'',color:'#b58a48',order:d.folders.length};d.folders.push(f);added++}
@@ -21,7 +21,7 @@ function ensureApprovedFandomFolders(d){
 }
 function consolidateMediaLibraries(d){
  let changes=0;
- for(const kind of ['videos','images','gifs']){
+ for(const kind of ['images']){
   let non=d.folders.find(f=>f.kind===kind&&f.group==='fandom'&&f.name==='Non-Fandom'&&!f.parent);
   if(!non){non={id:crypto.randomUUID(),kind,group:'fandom',name:'Non-Fandom',parent:'',color:'#b58a48',order:d.folders.length,showInfoCard:true,autoNumberMedia:true};d.folders.push(non);changes++}
   for(const f of d.folders.filter(f=>f.kind===kind&&f.group==='nonfandom')){f.group='fandom';if(!f.parent)f.parent=non.id;changes++}
@@ -33,7 +33,7 @@ function enableDefaultNumberingOnce(d){
  if(d.settings?.numberingDefaultAppliedV043)return 0;
  let changed=0;
  for(const f of d.folders){
-  if(!['videos','images','gifs'].includes(f.kind))continue;
+  if(f.kind!=='images')continue;
   f.autoNumberMedia=true;
   f.showInfoCard=true;
   const items=d.items.filter(x=>!x.deletedAt&&x.folder===f.id&&x.kind===f.kind).sort((a,b)=>(a.order||0)-(b.order||0)||(a.added||0)-(b.added||0));
@@ -46,7 +46,7 @@ function enableDefaultNumberingOnce(d){
  return changed+1;
 }
 // All three libraries share folder appearance, while media assignments remain independent.
-const replayKinds=['videos','images','gifs'];
+const replayKinds=['images'];
 const sharedFolderFields=['name','isSubfolder','showInfoCard','autoNumberMedia','details','pinned','order','color','icon','iconImage','cover'];
 function folderKey(d,f){
  const parts=[],seen=new Set();let cur=f;
@@ -85,7 +85,7 @@ function synchronizeFolderAppearance(d,source){
 function synchronizeExistingVideoFoldersOnce(d){
  if(d.settings?.folderAppearanceSyncedV048)return 0;
  let changed=0;
- for(const source of d.folders.filter(f=>f.kind==='videos'&&f.group==='fandom')){
+ for(const source of d.folders.filter(f=>f.kind==='images'&&f.group==='fandom')){
   synchronizeFolderAppearance(d,source);changed++;
  }
  d.settings.folderAppearanceSyncedV048=true;
@@ -192,7 +192,7 @@ async function synchronizeBackup(){
  async function walk(dir,rel=''){let children=[];try{children=await fsp.readdir(dir,{withFileTypes:true})}catch(e){if(e.code==='ENOENT')return;throw e}
   for(const entry of children){if(entry.name==='.Replay Recovery'||entry.name==='replay-index.json'||entry.name.endsWith('.partial'))continue;const relative=path.join(rel,entry.name),full=path.join(dir,entry.name);if(entry.isDirectory())await walk(full,relative);else if(entry.isFile()&&!expected.has(relative.toLowerCase())){const stamped=path.join(recovery,String(Date.now()),relative);await fsp.mkdir(path.dirname(stamped),{recursive:true});await fsp.rename(full,stamped)}}
  }
- for(const kind of ['videos','images','gifs'])await walk(path.join(dest,kind),kind);
+ for(const kind of ['images'])await walk(path.join(dest,kind),kind);
  let dates=[];try{dates=await fsp.readdir(recovery,{withFileTypes:true})}catch(e){if(e.code!=='ENOENT')throw e}
  for(const entry of dates)if(entry.isDirectory()&&/^\d+$/.test(entry.name)&&Date.now()-Number(entry.name)>30*86400000)await fsp.rm(path.join(recovery,entry.name),{recursive:true,force:true});
  return true;
