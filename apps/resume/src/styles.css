@@ -59,3 +59,13 @@ h1,h2,.brand strong{font-family:Georgia,'Palatino Linotype',serif;color:#dfc38c;
 button:hover{background:#2d5139;box-shadow:0 0 0 1px #c8ae78}
 nav button.active{background:linear-gradient(90deg,#30563e,#183a2b);border-left:3px solid #d0af6e}
 .overlay{background:#04140fef}
+
+/* In-viewer editor: contained, scrollable, and never hidden behind the viewer controls. */
+.resume-editor{position:absolute;inset:0;z-index:4;background:#061b16f5;display:flex;align-items:center;justify-content:center;overflow:auto;padding:20px}
+.resume-editor-inner{width:min(900px,96vw);max-height:100%;overflow:auto;padding:22px;background:linear-gradient(145deg,#18392b,#081c16);border:3px double #bd9a58;box-shadow:0 24px 60px #000a;text-align:center}
+.resume-editor h2{margin:0 0 10px;color:#ddc28e}
+.resume-editor p{color:#d0c6ad}
+#resume-edit-canvas{display:block;max-width:100%;max-height:52vh;object-fit:contain;margin:12px auto;border:1px solid #bd9a5877}
+.resume-editor-controls{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.resume-editor-controls label{font-size:12px;color:#f2e8d2;display:flex;flex-direction:column;gap:4px}
+.resume-editor-controls input{width:110px}
