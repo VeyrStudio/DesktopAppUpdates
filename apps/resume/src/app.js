@@ -294,9 +294,43 @@ function openItem(it){
   scale=1;panX=0;panY=0;
   const url='resume://media/'+current.id;
   $('#player').innerHTML=current.kind==='videos'?'<video src="'+url+'" controls autoplay loop></video>':'<img draggable="false" src="'+url+'">';
-  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="download-viewed-photo">Save As</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
+  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="download-viewed-photo">Save As</button><button id="edit-viewed-photo">Edit Photo</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
   $('#previous-media').onclick=()=>move(-1);$('#next-media').onclick=()=>move(1);
   $('#download-viewed-photo').onclick=async()=>{try{await replay.savePhotoAs(current.id)}catch(error){alert('Could not save photo: '+error.message)}};
+  $('#edit-viewed-photo').onclick=()=>{
+   const source=$('#player img');
+   if(!source||!source.complete||!source.naturalWidth){alert('Wait for the photo to load before editing.');return}
+   const host=$('#player');
+   const panel=document.createElement('div');
+   panel.className='resume-editor';
+   panel.innerHTML='<div class="resume-editor-inner"><h2>Edit photo</h2><p>Changes are temporary until you save. Resume preserves the original.</p><canvas id="resume-edit-canvas"></canvas><div class="resume-editor-controls"><label>Brightness <input type="range" id="edit-brightness" min="50" max="150" value="100"></label><label>Contrast <input type="range" id="edit-contrast" min="50" max="150" value="100"></label><label>Saturation <input type="range" id="edit-saturation" min="0" max="200" value="100"></label><label>Center crop <input type="range" id="edit-crop" min="50" max="100" value="100"></label><button id="edit-rotate">Rotate 90°</button><button id="edit-cancel">Cancel</button><button id="edit-save" class="primary">Save Changes</button></div></div>';
+   host.append(panel);
+   let rotation=0;
+   const canvas=panel.querySelector('canvas'),ctx=canvas.getContext('2d');
+   const draw=()=>{
+    const crop=Number(panel.querySelector('#edit-crop').value)/100;
+    const w=Math.max(1,Math.floor(source.naturalWidth*crop)),h=Math.max(1,Math.floor(source.naturalHeight*crop));
+    const turned=rotation%180!==0;
+    canvas.width=turned?h:w;canvas.height=turned?w:h;
+    ctx.save();ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(rotation*Math.PI/180);
+    ctx.filter='brightness('+panel.querySelector('#edit-brightness').value+'%) contrast('+panel.querySelector('#edit-contrast').value+'%) saturate('+panel.querySelector('#edit-saturation').value+'%)';
+    ctx.drawImage(source,(source.naturalWidth-w)/2,(source.naturalHeight-h)/2,w,h,-w/2,-h/2,w,h);
+    ctx.restore();
+   };
+   panel.querySelectorAll('input').forEach(el=>el.oninput=draw);
+   panel.querySelector('#edit-rotate').onclick=()=>{rotation=(rotation+90)%360;draw()};
+   panel.querySelector('#edit-cancel').onclick=()=>panel.remove();
+   panel.querySelector('#edit-save').onclick=async()=>{
+    const btn=panel.querySelector('#edit-save');btn.disabled=true;btn.textContent='Saving…';
+    try{
+     const latest=await replay.savePhotoEdit(current.id,canvas.toDataURL('image/png'));
+     data=latest;
+     current=data.items.find(x=>x.id===current.id)||current;
+     panel.remove();display();await redraw();
+    }catch(error){alert('Could not save changes: '+error.message);btn.disabled=false;btn.textContent='Save Changes'}
+   };
+   draw();
+  };
   $('#move-viewed-media').onclick=async()=>{
    const moving=current;
    const destination=await moveMediaPicker(moving,data.folders.filter(f=>f.kind===moving.kind),true);
