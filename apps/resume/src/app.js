@@ -295,9 +295,14 @@ function openItem(it){
   scale=1;panX=0;panY=0;
   const url='resume://media/'+current.id;
   $('#player').innerHTML=current.kind==='videos'?'<video src="'+url+'" controls autoplay loop></video>':'<img draggable="false" src="'+url+'">';
-  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="download-viewed-photo">Save As</button><button id="edit-viewed-photo">Edit Photo</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
+  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="download-viewed-photo">Save As</button><button id="edit-viewed-photo">Edit Photo</button><button id="restore-original-photo">Restore Original</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
   $('#previous-media').onclick=()=>move(-1);$('#next-media').onclick=()=>move(1);
   $('#download-viewed-photo').onclick=async()=>{try{await replay.savePhotoAs(current.id)}catch(error){alert('Could not save photo: '+error.message)}};
+  $('#restore-original-photo').onclick=async()=>{
+   if(!confirm('Restore this photo to its original version? Resume will preserve the original bytes.'))return;
+   try{data=await replay.restoreOriginalPhoto(current.id);current=data.items.find(x=>x.id===current.id)||current;display();await redraw()}
+   catch(error){alert('Could not restore original: '+error.message)}
+  };
   $('#edit-viewed-photo').onclick=()=>{
    const source=$('#player img');
    if(!source||!source.complete||!source.naturalWidth){alert('Wait for the photo to load before editing.');return}
