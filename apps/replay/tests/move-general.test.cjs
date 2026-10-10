@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const ui=fs.readFileSync(path.join(__dirname,'../src/app.js'),'utf8');
 test('Replay renderer parses',()=>new vm.Script(ui));
 test('internal Move picker shows immediate parent and siblings or children only',()=>{
- assert.match(ui,/function moveMediaPicker\(item,folders\)/);
+ assert.match(ui,/function moveMediaPicker\(item,folders,allDestinations=false\)/);
  assert.match(ui,/const parentId=current/);
  assert.match(ui,/const nearby=folders\.filter/);
  assert.match(ui,/const children=current\?folders\.filter/);
