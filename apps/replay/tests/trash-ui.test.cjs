@@ -5,3 +5,6 @@ test('dedicated Trash navigation and restoration',()=>{assert.match(ui,/\['trash
 test('Delete All requires confirmation and calls dedicated permanent-delete action',()=>{assert.match(ui,/confirm\('Permanently delete all '\+count/);assert.match(ui,/replay\.deleteAllTrash\(\)/);assert.match(preload,/deleteAllTrash:\(\)=>call\('delete-all-trash'\)/);assert.match(main,/ipcMain\.handle\('delete-all-trash'/)});
 test('Move destination includes Trash in gallery and viewer',()=>{assert.match(ui,/choices\.set\('__trash__'/);assert.match(ui,/\{trash:true\}/);assert.match(ui,/destination\.trash\?await replay\.itemDelete\(moving\.id\)/);assert.match(ui,/if\(dest\.trash\)/)});
 test('permanent clear applies only to trashed records',()=>{assert.match(main,/const d=await load\(\),trashed=d\.items\.filter\(x=>x\.deletedAt\)/);assert.match(main,/d\.items=d\.items\.filter\(x=>!x\.deletedAt\)/)});
+
+test('Trash presents a folder-style thumbnail gallery and top toolbar Delete All',()=>{assert.match(ui,/id="trash-contents" class="grid"/);assert.match(ui,/data-trashed/);assert.match(ui,/id="delete-all-trash"/)});
+test('viewer limits full-list choices to parent and standalone leaf folders',()=>{assert.match(ui,/!f\.parent\|\|!folders\.some\(child=>child\.parent===f\.id\)/)});
