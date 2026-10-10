@@ -1,0 +1,73 @@
+name: Build and publish Resume for Windows
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/resume/**'
+      - '.github/workflows/resume-windows.yml'
+  push:
+    branches: [resume-photo-app]
+    paths:
+      - 'apps/resume/**'
+      - '.github/workflows/resume-windows.yml'
+concurrency:
+  group: resume-release
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/resume
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Test source
+        run: npm test
+      - name: Prepare approved Resume icon
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          $sourceBytes = [Convert]::FromBase64String((Get-Content 'build/icon.base64' -Raw).Trim())
+          $inputStream = [IO.MemoryStream]::new([byte[]]$sourceBytes)
+          $source = [Drawing.Image]::FromStream($inputStream)
+          $bitmap = [Drawing.Bitmap]::new(256, 256)
+          $graphics = [Drawing.Graphics]::FromImage($bitmap)
+          $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $graphics.DrawImage($source, 0, 0, 256, 256)
+          # Recolor the burgundy field to dark emerald, retaining gold ornament.
+          for ($y=0; $y -lt 256; $y++) {
+            for ($x=0; $x -lt 256; $x++) {
+              $c=$bitmap.GetPixel($x,$y)
+              if ($c.A -gt 0 -and $c.R -gt ($c.G * 1.14) -and $c.G -lt 140 -and $c.B -lt ($c.R * 0.9)) {
+                $lum=[Math]::Max(0.18,[Math]::Min(1.2,$c.R / 95.0))
+                $bitmap.SetPixel($x,$y,[Drawing.Color]::FromArgb($c.A,[int](11*$lum),[int](48*$lum),[int](34*$lum)))
+              }
+            }
+          }
+          $outputStream = [IO.MemoryStream]::new()
+          $bitmap.Save($outputStream, [Drawing.Imaging.ImageFormat]::Png)
+          $raw = $outputStream.ToArray()
+          [IO.File]::WriteAllBytes('build/icon.png', $raw)
+          $ico = [IO.MemoryStream]::new()
+          $writer = [IO.BinaryWriter]::new($ico)
+          $writer.Write([uint16]0); $writer.Write([uint16]1); $writer.Write([uint16]1)
+          $writer.Write([byte]0); $writer.Write([byte]0); $writer.Write([byte]0); $writer.Write([byte]0)
+          $writer.Write([uint16]1); $writer.Write([uint16]32); $writer.Write([uint32]$raw.Length); $writer.Write([uint32]22)
+          $writer.Write($raw); $writer.Flush()
+          [IO.File]::WriteAllBytes('build/icon.ico', $ico.ToArray())
+          $writer.Dispose(); $ico.Dispose(); $graphics.Dispose(); $bitmap.Dispose(); $source.Dispose(); $inputStream.Dispose(); $outputStream.Dispose()
+      - name: Build Windows installer
+        run: npm run build:win
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Resume-Windows-Installer
+          path: apps/resume/dist/ResumeSetup-*.exe
+          if-no-files-found: error
