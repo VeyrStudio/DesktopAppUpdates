@@ -220,6 +220,37 @@ ipcMain.handle('open-ao3',async(_e,url)=>{const parsed=new URL(url);if(parsed.pr
 ipcMain.handle('folder',async(_e,x)=>{const d=await load();const parent=x.parent&&d.folders.find(f=>f.id===x.parent&&f.kind===x.kind&&f.group===x.group);if(x.parent&&!parent)throw Error('Select a valid parent folder');const created={id:crypto.randomUUID(),kind:x.kind,group:x.group,name:safe(x.name),parent:parent?.id||'',isSubfolder:!!x.isSubfolder,showInfoCard:x.showInfoCard!==false,autoNumberMedia:x.autoNumberMedia!==false,details:{},cover:'',color:'#b58a48',order:d.folders.length};if(d.folders.some(f=>f.kind===x.kind&&f.group===x.group&&f.name.toLowerCase()===created.name.toLowerCase()&&(f.parent||'')===created.parent))throw Error('A folder with that name already exists here');d.folders.push(created);synchronizeFolderAppearance(d,created);await save(d);return d});
 ipcMain.handle('folder-update',async(_e,id,patch)=>{const d=await load(),f=d.folders.find(x=>x.id===id);if(!f)throw Error('Not found');const peerCopies=matchingFolderCopies(d,f);if(patch.name!==undefined)f.name=safe(patch.name);if(patch.isSubfolder!==undefined)f.isSubfolder=!!patch.isSubfolder;if(patch.showInfoCard!==undefined)f.showInfoCard=!!patch.showInfoCard;const numberingWasEnabled=f.autoNumberMedia===true;if(patch.autoNumberMedia!==undefined)f.autoNumberMedia=!!patch.autoNumberMedia;if(f.autoNumberMedia&&(patch.numberExisting===true||patch.autoNumberMedia===true&&!numberingWasEnabled)){let n=1;const existing=d.items.filter(x=>!x.deletedAt&&x.folder===f.id&&x.kind===f.kind&&x.group===f.group).sort((a,b)=>(a.order||0)-(b.order||0)||(a.added||0)-(b.added||0));for(const item of existing){item.name=safe(f.name+' '+n++)}}if(patch.details!==undefined){const v=patch.details||{};const media=Array.isArray(v.sources)?v.sources.filter(x=>['Book','TV Show','Movie'].includes(x)):[];const category=['M/M','M/F','Platonic','No Relationship'].includes(v.category)?v.category:'';let ao3=String(v.ao3||'').trim();if(ao3){let parsed;try{parsed=new URL(ao3)}catch{throw Error('Enter a valid AO3 link')}if(parsed.protocol!=='https:'||!['archiveofourown.org','www.archiveofourown.org'].includes(parsed.hostname))throw Error('AO3 link must start with https://archiveofourown.org/')}f.details={pairings:String(v.pairings||'').slice(0,1200),shipName:String(v.shipName||'').slice(0,200),sources:media,category,ao3}};if(patch.pinned!==undefined)f.pinned=!!patch.pinned;if(Number.isInteger(patch.order)&&patch.order>=0)f.order=patch.order;if(/^#[0-9a-f]{6}$/i.test(patch.color||''))f.color=patch.color;if(patch.icon!==undefined)f.icon=String(patch.icon).slice(0,3);if(patch.iconImage!==undefined){if(patch.iconImage!==''&&!/^data:image\/(png|jpeg|webp|gif);base64,[a-z0-9+/=]+$/i.test(patch.iconImage))throw Error('Invalid folder icon image');if(patch.iconImage.length>4200000)throw Error('Folder icon is too large');f.iconImage=patch.iconImage}if(patch.cover!==undefined){if(patch.cover&&!d.items.some(i=>i.id===patch.cover&&i.kind==='images'&&!i.deletedAt))throw Error('Cover must be a stored image');f.cover=patch.cover}if(patch.parent!==undefined){if(patch.parent===id)throw Error('Folder cannot be parent of itself');const parent=patch.parent&&d.folders.find(x=>x.id===patch.parent);if(patch.parent&&(!parent||parent.kind!==f.kind||parent.group!==f.group))throw Error('Invalid parent');let current=parent;while(current){if(current.id===id)throw Error('Cannot move folder into its descendant');current=d.folders.find(x=>x.id===current.parent)}f.parent=patch.parent||''}for(const peer of peerCopies){if(peer===f)continue;const parent=f.parent&&d.folders.find(x=>x.id===f.parent);const counterpartParent=parent?ensureMatchingFolder(d,parent,peer.kind):null;peer.parent=counterpartParent?.id||'';copyFolderAppearance(f,peer)}synchronizeFolderAppearance(d,f);await save(d);queueFolderBackup();return d});
 ipcMain.handle('item-update',async(_e,id,x)=>{const d=await updateItem(id,x);queueFolderBackup();return d});
+// Editing is non-destructive: source bytes are preserved in Resume/Originals.
+ipcMain.handle('save-photo-edit',async(_e,id,dataUrl)=>{
+ if(typeof dataUrl!=='string'||!/^data:image\/png;base64,/.test(dataUrl))throw Error('Expected PNG edit data');
+ const encoded=dataUrl.slice('data:image/png;base64,'.length);
+ if(encoded.length>55*1024*1024)throw Error('Edited image is too large');
+ const output=Buffer.from(encoded,'base64');
+ if(output.length<16||output.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw Error('Invalid PNG data');
+ const d=await load(),item=d.items.find(x=>x.id===id&&x.kind==='images'&&!x.deletedAt);
+ if(!item)throw Error('Photo not found');
+ const source=path.resolve(root,item.stored);
+ if(!source.startsWith(path.resolve(root)+path.sep))throw Error('Invalid managed photo path');
+ const originals=path.join(app.getPath('userData'),'Originals');
+ await fsp.mkdir(originals,{recursive:true});
+ const originalPath=path.join(originals,id+path.extname(source));
+ if(!fs.existsSync(originalPath))await fileCopy(source,originalPath);
+ const stored=path.join('images',crypto.randomUUID()+'.png');
+ const destination=path.join(root,stored);
+ await fsp.mkdir(path.dirname(destination),{recursive:true});
+ const partial=destination+'.partial';
+ try{
+  await fsp.writeFile(partial,output,{flag:'wx'});
+  await fsp.rename(partial,destination);
+  const hash=await checksum(destination);
+  const old={stored:item.stored,hash:item.hash,name:item.name};
+  item.stored=stored;item.hash=hash;item.modified=Date.now();
+  item.name=path.parse(item.name).name+'.png';
+  try{await save(d)}catch(error){Object.assign(item,old);throw error}
+  queueFolderBackup();
+  return d;
+ }catch(error){await fsp.rm(partial,{force:true});await fsp.rm(destination,{force:true});throw error}
+});
 // Save As exports a copy; never moves or modifies Resume's archived original.
 ipcMain.handle('save-photo-as',async(_e,id)=>{
  const d=await load(),item=d.items.find(x=>x.id===id&&x.kind==='images'&&!x.deletedAt);
