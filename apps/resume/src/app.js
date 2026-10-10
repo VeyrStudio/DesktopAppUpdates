@@ -98,8 +98,9 @@ function cards(){const folders=foldersFor();let items=activeItems().filter(x=>x.
    const result=await replay.migrateReplayPhotos();
    if(result.cancelled){status.textContent='Migration cancelled. Replay is unchanged.';migrationButton.disabled=false;return}
    if(result.alreadyComplete){status.textContent='Photos were already copied.';await redraw();return}
-   status.textContent='Copied '+result.copied+' photos; previously copied '+result.previouslyCopied+'; failed '+result.failed+'. Report: '+result.reportPath;
    await redraw();
+   const summary='Copied '+result.copied+' photos; previously copied '+result.previouslyCopied+'; failed '+result.failed+'. Report: '+result.reportPath;
+   const visible=$('#resume-migration-status');if(visible)visible.textContent=summary;else alert(summary);
   }catch(error){status.textContent='Could not copy photos: '+error.message;migrationButton.disabled=false}
  };
  const pins=data.folders.filter(f=>f.pinned);$('#pinned-collections').innerHTML=pins.length?pins.map(f=>'<button data-pin="'+f.id+'">▤ '+escape(f.name)+'</button>').join(''):'<p>No pinned collections yet. Right-click a folder to pin it.</p>';$('#pinned-collections').querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const f=folderOf(b.dataset.pin);kind=f.kind;group=f.group;folder=f.id;view=f.kind;render()})}else if(view==='images'){kind=view;group='fandom';gallery()}else if(view==='trash'){
