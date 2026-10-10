@@ -1,10 +1,10 @@
 const {app,BrowserWindow,dialog,ipcMain,protocol,net,shell}=require('electron');
 const fs=require('node:fs'), fsp=require('node:fs/promises'), path=require('node:path'),crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
-protocol.registerSchemesAsPrivileged([{scheme:'replay',privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}}]);
-app.setPath('userData',path.join(app.getPath('appData'),'VeyrStudio','Replay'));
+protocol.registerSchemesAsPrivileged([{scheme:'resume',privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}}]);
+app.setPath('userData',path.join(app.getPath('appData'),'VeyrStudio','Resume'));
 const root=path.join(app.getPath('userData'),'Media'), dbfile=path.join(app.getPath('userData'),'library.json');
-const initial=()=>({folders:['videos','images','gifs'].flatMap(kind=>['Dog Photos','Family','Other'].map(name=>({id:crypto.randomUUID(),kind,group:'nonfandom',name,parent:'',color:'#b58a48',pinned:false,cover:''}))),items:[],settings:{backupRoot:path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup'),thumbnailSize:170,launch:'dashboard'},favorites:[]});
+const initial=()=>({folders:['videos','images','gifs'].flatMap(kind=>['Dog Photos','Family','Other'].map(name=>({id:crypto.randomUUID(),kind,group:'nonfandom',name,parent:'',color:'#b58a48',pinned:false,cover:''}))),items:[],settings:{backupRoot:path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup'),thumbnailSize:170,launch:'dashboard'},favorites:[]});
 // Approved Replay fandom tree. Seed missing folders once, preserving all user-created folders.
 const replayFandomTree=[["911",["LA","LS"]],["Arcane",[]],["Castlevania",[]],["Cobra Kai",[]],["DC",["Batman","Titans","Nightwing","Red Hood","Robin","Superman","Smallville","Superman & Lois","Supergirl","The Flash","Arrow","Legends of Tomorrow","Justice League","Doom Patrol","The Sandman","Dead Boy Detectives","Shazam!","Lucifer"]],["Eyewitness",[]],["Good Omens",[]],["Grishaverse",["Shadow and Bone","Six of Crows"]],["Hellaverse",["Hazbin Hotel","Helluva Boss"]],["Heartstopper",[]],["Heated Rivalry",[]],["Hotel Portofino",[]],["Immortal Universe",["Interview with the Vampire","The Talamasca","Armand","The Vampire Lestat"]],["Invisible Boys",[]],["Julie and the Phantoms",[]],["KPop Demon Hunters",[]],["Leviticus",[]],["Marauders",["Starchaser","Wolfstar","Modern"]],["Marvel",["The Avengers","Iron Man","Captain America","Thor","Loki","The Falcon and the Winter Soldier","Hawkeye","WandaVision","Doctor Strange","Ant-Man","Black Panther","Guardians of the Galaxy","The Marvels / Captain Marvel","Thunderbolts","Spider-Man (MCU)","The Amazing Spider-Man","Spider-Verse","X-Men","Deadpool","Wolverine","Daredevil","The Punisher","Jessica Jones","The Defenders","Moon Knight","She-Hulk","Agatha All Along","Fantastic Four","Venom"]],["Merlin",[]],["Nimona",[]],["Our Flag Means Death",[]],["Prodigal Son",[]],["Project Hail Mary",[]],["Red, White & Royal Blue",[]],["Riverdale",[]],["Roswell, New Mexico",[]],["Shadowhunters",["The Mortal Instruments","The Infernal Devices","The Dark Artifices","The Last Hours","The Eldest Curses","The Wicked Powers","The Bane Chronicles","Tales from the Shadowhunter Academy","Ghosts of the Shadow Market"]],["Shameless",[]],["Star Wars",["The Rise of Skywalker","The Mandalorian","The Book of Boba Fett","The Acolyte","Prequel Trilogy","Original Trilogy"]],["Stranger Things",[]],["Supernatural",[]],["Teen Wolf",[]],["The 100",[]],["The Gray Man",[]],["The Last of Us",[]],["The Old Guard",[]],["The Witcher",[]],["Wednesday",[]]];
 function ensureApprovedFandomFolders(d){
@@ -100,9 +100,9 @@ async function load(){
   throw new Error('Replay could not read the library. Your existing library has not been replaced: '+error.message);
  }
  let data;
- try{data=JSON.parse(raw)}catch(error){throw new Error('Replay library is not valid JSON. Your existing library has not been replaced: '+error.message)}
+ try{data=JSON.parse(raw)}catch(error){throw new Error('Resume library is not valid JSON. Your existing library has not been replaced: '+error.message)}
  if(!data||!Array.isArray(data.items)||!Array.isArray(data.folders)||!data.settings||typeof data.settings!=='object')
-  throw new Error('Replay library has an invalid structure. The app will not replace it.');
+  throw new Error('Resume library has an invalid structure. The app will not replace it.');
  return data;
 }
 // Unique temp files prevent concurrent writes from deleting one another's .tmp file.
@@ -120,11 +120,11 @@ async function save(d){
  return task;
 }
 const checksum=async p=>new Promise((resolve,reject)=>{const h=crypto.createHash('sha256');fs.createReadStream(p).on('data',b=>h.update(b)).on('error',reject).on('end',()=>resolve(h.digest('hex')))});
-const category=f=>/\.gif$/i.test(f)?'gifs':/\.(mp4|mov|mkv|avi|webm|m4v|wmv|flv|ts)$/i.test(f)?'videos':/\.(jpg|jpeg|png|webp|bmp|heic|tif|tiff|avif)$/i.test(f)?'images':null;
+const category=f=>/\.(jpg|jpeg|png|webp|bmp|heic|tif|tiff|avif)$/i.test(f)?'images':null;
 async function fileCopy(src,dst){await fsp.mkdir(path.dirname(dst),{recursive:true});const tmp=dst+'.partial';await fsp.copyFile(src,tmp);if((await checksum(src))!== (await checksum(tmp))){await fsp.rm(tmp,{force:true});throw Error('Copy failed verification')}await fsp.rename(tmp,dst)}
 function safe(s){return String(s).replace(/[<>:"/\\|?*\x00-\x1f]/g,'_').slice(0,90)||'Unnamed'}
 async function folderPath(d,id){let f=d.folders.find(x=>x.id===id);const names=[],visited=new Set();while(f&&!visited.has(f.id)){visited.add(f.id);names.unshift(safe(f.name));f=d.folders.find(x=>x.id===f.parent)}return names.join(path.sep)}
-async function backupOne(d,item){const target=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');const folders=item.group==='fandom'?[...new Set([item.folder,...(item.fandoms||[])])]:[item.folder];for(const id of folders){if(id&&!d.folders.some(f=>f.id===id&&f.kind===item.kind&&f.group===item.group))continue;const folder=await folderPath(d,id);const dir=path.join(target,item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',folder);const destination=path.join(dir,safe(item.name));try{const existing=await checksum(destination);if(existing!==item.hash){const keep=path.join(target,'.Replay Recovery',String(Date.now())+'-'+crypto.randomUUID(),path.relative(target,destination));await fsp.mkdir(path.dirname(keep),{recursive:true});await fsp.rename(destination,keep);await fileCopy(path.join(root,item.stored),destination)}}catch(error){if(error.code!=='ENOENT')throw error;await fileCopy(path.join(root,item.stored),destination)}}await fsp.mkdir(target,{recursive:true});const tmp=path.join(target,'replay-index.'+crypto.randomUUID()+'.partial');try{await fsp.writeFile(tmp,JSON.stringify(d,null,2));await fsp.rename(tmp,path.join(target,'replay-index.json'))}finally{await fsp.rm(tmp,{force:true}).catch(()=>{})}}
+async function backupOne(d,item){const target=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup');const folders=item.group==='fandom'?[...new Set([item.folder,...(item.fandoms||[])])]:[item.folder];for(const id of folders){if(id&&!d.folders.some(f=>f.id===id&&f.kind===item.kind&&f.group===item.group))continue;const folder=await folderPath(d,id);const dir=path.join(target,item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',folder);const destination=path.join(dir,safe(item.name));try{const existing=await checksum(destination);if(existing!==item.hash){const keep=path.join(target,'.Replay Recovery',String(Date.now())+'-'+crypto.randomUUID(),path.relative(target,destination));await fsp.mkdir(path.dirname(keep),{recursive:true});await fsp.rename(destination,keep);await fileCopy(path.join(root,item.stored),destination)}}catch(error){if(error.code!=='ENOENT')throw error;await fileCopy(path.join(root,item.stored),destination)}}await fsp.mkdir(target,{recursive:true});const tmp=path.join(target,'replay-index.'+crypto.randomUUID()+'.partial');try{await fsp.writeFile(tmp,JSON.stringify(d,null,2));await fsp.rename(tmp,path.join(target,'replay-index.json'))}finally{await fsp.rm(tmp,{force:true}).catch(()=>{})}}
 // Auto-numbering is opt-in per folder, including nested folders.
 function numberedMediaName(d,folderId,extension,excludeId=''){
  const f=d.folders.find(x=>x.id===folderId);if(!f||!f.autoNumberMedia)return null;
@@ -182,7 +182,7 @@ function queueFolderBackup(){
 }
 async function synchronizeBackup(){
  const d=await load();
- const dest=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');
+ const dest=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup');
  const expected=new Set();
  for(const item of d.items.filter(i=>!i.deletedAt)){
   for(const id of item.group==='fandom'?[...new Set([item.folder,...(item.fandoms||[])])]:[item.folder]){const relative=path.join(item.kind,item.group==='fandom'?'Fandoms':'Non-Fandom',await folderPath(d,id),safe(item.name));if(expected.has(relative.toLowerCase()))throw Error('Backup filename collision: '+relative);expected.add(relative.toLowerCase())}
@@ -209,7 +209,7 @@ ipcMain.handle('delete-all-trash',async()=>{
  queueFolderBackup();
  return {deleted:trashed.length};
 });
-ipcMain.handle('check-update',async()=>{const r=await fetch('https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/replay/replay.json');return r.ok?await r.json():null});
+ipcMain.handle('check-update',async()=>{const r=await fetch('https://raw.githubusercontent.com/VeyrStudio/DesktopAppUpdates/main/resume/resume.json');return r.ok?await r.json():null});
 
 const {spawn}=require('node:child_process');
 const {Readable}=require('node:stream');
@@ -218,7 +218,7 @@ async function stageInstaller(manifest){
   if(!manifest || !/^https:\/\//.test(manifest.url)||!/^[a-f0-9]{64}$/i.test(manifest.sha256||'')) throw Error('Invalid update manifest');
   const response=await fetch(manifest.url,{cache:'no-store'});
   if(!response.ok||!response.body) throw Error('Installer download failed: '+response.status);
-  const target=path.join(app.getPath('temp'),'ReplaySetup-'+String(manifest.version).replace(/[^a-z0-9.-]/ig,'_')+'.exe');
+  const target=path.join(app.getPath('temp'),'ResumeSetup-'+String(manifest.version).replace(/[^a-z0-9.-]/ig,'_')+'.exe');
   const hash=crypto.createHash('sha256');
   const {Transform}=require('node:stream');
   await pipeline(Readable.fromWeb(response.body),new Transform({transform(chunk,enc,cb){hash.update(chunk);cb(null,chunk)}}),fs.createWriteStream(target));
@@ -253,7 +253,7 @@ ipcMain.handle('apply-update',async()=>{
 ipcMain.handle('version',()=>app.getVersion());
 
 async function restoreFromBackup(selectedIds=[]){
- const d=await load(),target=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');
+ const d=await load(),target=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup');
  const manifest=JSON.parse(await fsp.readFile(path.join(target,'replay-index.json'),'utf8'));
  if(!Array.isArray(manifest.items)||!Array.isArray(manifest.folders))throw Error('Invalid backup catalog');
  let restored=0;
@@ -279,7 +279,7 @@ async function restoreFromBackup(selectedIds=[]){
  await save(d);return {restored};
 }
 ipcMain.handle('restore-backup',(_e,ids)=>restoreFromBackup(Array.isArray(ids)?ids:[]));
-ipcMain.handle('list-backup',async()=>{const d=await load(),base=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ReplayBackup');try{const meta=JSON.parse(await fsp.readFile(path.join(base,'replay-index.json'),'utf8'));return (meta.items||[]).map(item=>({...item,folderName:meta.folders?.find(f=>f.id===item.folder)?.name||'(Root)'}))}catch{return []}});
+ipcMain.handle('list-backup',async()=>{const d=await load(),base=d.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup');try{const meta=JSON.parse(await fsp.readFile(path.join(base,'replay-index.json'),'utf8'));return (meta.items||[]).map(item=>({...item,folderName:meta.folders?.find(f=>f.id===item.folder)?.name||'(Root)'}))}catch{return []}});
 
 async function trashList(){const d=await load();return d.items.filter(x=>!!x.deletedAt)}
 ipcMain.handle('list-trash',trashList);
@@ -291,11 +291,11 @@ function ffmpegExecutable(){const platform=process.platform==='win32'?'ffmpeg.ex
 ipcMain.handle('compatible-video',async (_e,id)=>{
  const d=await load(),item=d.items.find(x=>x.id===id&&!x.deletedAt&&x.kind==='videos');
  if(!item)throw Error('Video not found');
- const existing=compatibleVideoCache.get(id);if(existing&&fs.existsSync(existing))return 'replay://converted/'+id;
+ const existing=compatibleVideoCache.get(id);if(existing&&fs.existsSync(existing))return 'resume://converted/'+id;
  if(transcodeJobs.has(id))return transcodeJobs.get(id);
  const ffmpeg=ffmpegExecutable();if(!ffmpeg)throw Error('FFmpeg is not included in this build');
  const task=(async()=>{const dir=path.join(app.getPath('userData'),'Cache','Playback');await fsp.mkdir(dir,{recursive:true});const final=path.join(dir,id+'.mp4'),temp=final+'.partial.mp4';
- try{await new Promise((resolve,reject)=>{const proc=spawn(ffmpeg,['-hide_banner','-nostdin','-loglevel','error','-y','-i',path.join(root,item.stored),'-map','0:v:0','-map','0:a?','-c:v','libx264','-preset','veryfast','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart',temp],{windowsHide:true});proc.on('error',reject);proc.on('exit',code=>code===0?resolve():reject(Error('Video conversion failed: '+code)))});await fsp.rename(temp,final);compatibleVideoCache.set(id,final);return 'replay://converted/'+id}
+ try{await new Promise((resolve,reject)=>{const proc=spawn(ffmpeg,['-hide_banner','-nostdin','-loglevel','error','-y','-i',path.join(root,item.stored),'-map','0:v:0','-map','0:a?','-c:v','libx264','-preset','veryfast','-pix_fmt','yuv420p','-c:a','aac','-movflags','+faststart',temp],{windowsHide:true});proc.on('error',reject);proc.on('exit',code=>code===0?resolve():reject(Error('Video conversion failed: '+code)))});await fsp.rename(temp,final);compatibleVideoCache.set(id,final);return 'resume://converted/'+id}
  finally{await fsp.rm(temp,{force:true}).catch(()=>{});transcodeJobs.delete(id)}
  })();transcodeJobs.set(id,task);return task;
 });
