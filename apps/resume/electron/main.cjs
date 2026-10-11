@@ -279,6 +279,17 @@ ipcMain.handle('save-photo-as',async(_e,id)=>{
  await fsp.copyFile(source,destination);
  return true;
 });
+ipcMain.handle('permanent-photo-delete',async(_e,id)=>{
+ const d=await load(),item=d.items.find(x=>x.id===id&&x.kind==='images'&&!x.deletedAt);
+ if(!item)throw Error('Photo not found');
+ const file=path.resolve(root,item.stored);
+ if(!file.startsWith(path.resolve(root)+path.sep))throw Error('Invalid photo archive path');
+ await fsp.rm(file);
+ d.items=d.items.filter(x=>x.id!==id);
+ await save(d);
+ queueFolderBackup();
+ return d;
+});
 ipcMain.handle('item-delete',async(_e,id)=>{const d=await updateItem(id,{deletedAt:Date.now()});await synchronizeBackup();return d});
 ipcMain.handle('restore',async(_e,id)=>{const d=await updateItem(id,{deletedAt:null});await synchronizeBackup();return d});
 ipcMain.handle('settings',async(_e,x)=>{const d=await load();if(typeof x.backupRoot==='string'){const backup=path.resolve(x.backupRoot),archive=path.resolve(app.getPath('userData'));if(!path.isAbsolute(x.backupRoot)||backup===archive||backup.startsWith(archive+path.sep)||archive.startsWith(backup+path.sep))throw Error('Backups must be stored outside Resume application data');}Object.assign(d.settings,x);await save(d);if(x.backupRoot)await synchronizeBackup();return d});
