@@ -88,21 +88,39 @@ function cards(){const folders=foldersFor();let items=activeItems().filter(x=>x.
  for(const target of dropTargets){
   target.ondragover=event=>{if(event.dataTransfer.types.includes('text/replay-item')){event.preventDefault();event.dataTransfer.dropEffect='move'}};
   target.ondrop=async event=>{const id=event.dataTransfer.getData('text/replay-item');if(!id)return;event.preventDefault();event.stopPropagation();const item=data.items.find(x=>x.id===id&&!x.deletedAt);if(!item)return;const targetFolder=target.dataset.folder||'';const destination=targetFolder?folderOf(targetFolder):null;if(destination&&destination.kind!==item.kind){alert('This folder cannot hold that media type');return}try{await moveMediaBatch(window.replayDragIds?.includes(id)?window.replayDragIds:[id],targetFolder,destination?.group||group)}catch(error){alert('Could not move media: '+error.message)}};
- }for(const [n,v] of [['small',110],['medium',170],['large',230]])$('#'+n).onclick=()=>resize(v);$('#size').oninput=e=>resize(+e.target.value);const sortKey=kind+':'+group+':'+folder;sort=data.settings.sortByFolder?.[sortKey]||'custom';showSubfolderInfo();$('#sort').value=sort;$('#sort').onchange=async e=>{sort=e.target.value;await replay.settings({sortByFolder:{...(data.settings.sortByFolder||{}),[sortKey]:sort}});cards()};cards()}async function resize(n){size=n;$('#gallery').style.setProperty('--tile',n+'px');$('#size').value=n;await replay.settings({thumbnailSize:n})}function render(){nav();if(view==='dashboard'){header('Dashboard','Your personal photo archive');$('#content').innerHTML=(!data.settings.replayMigrationComplete?'<div class="panel"><h2>Transfer your photos from Replay</h2><p>Transfer photos, folder covers and organization from Replay. After copy and backup verification, original photos are removed from the Replay library; recovery copies are retained. Close Replay first.</p><button id="resume-migrate" class="primary">Transfer photos from Replay</button><p id="resume-migration-status" class="muted"></p></div>':'')+'<div class="panel"><h2>Pinned Collections</h2><div id="pinned-collections" class="grid"></div></div><div class="panel"><h2>Add Media</h2><p>Import photos to your private library.</p><button id="add-media" class="primary">+ Add Media</button></div>';$('#add-media').onclick=importMedia;
- const migrationButton=$('#resume-migrate');
- if(migrationButton)migrationButton.onclick=async()=>{
-  migrationButton.disabled=true;
-  const status=$('#resume-migration-status');
-  status.textContent='Copying and verifying photos…';
-  try{
-   const result=await replay.migrateReplayPhotos();
-   if(result.cancelled){status.textContent='Migration cancelled. Replay is unchanged.';migrationButton.disabled=false;return}
-   if(result.alreadyComplete){status.textContent='Photos were already copied.';await redraw();return}
-   await redraw();
-   const summary='Copied '+result.copied+' photos; previously copied '+result.previouslyCopied+'; failed '+result.failed+'. Report: '+result.reportPath;
-   const visible=$('#resume-migration-status');if(visible)visible.textContent=summary;else alert(summary);
-  }catch(error){status.textContent='Could not copy photos: '+error.message;migrationButton.disabled=false}
+ }for(const [n,v] of [['small',110],['medium',170],['large',230]])$('#'+n).onclick=()=>resize(v);$('#size').oninput=e=>resize(+e.target.value);const sortKey=kind+':'+group+':'+folder;sort=data.settings.sortByFolder?.[sortKey]||'custom';showSubfolderInfo();$('#sort').value=sort;$('#sort').onchange=async e=>{sort=e.target.value;await replay.settings({sortByFolder:{...(data.settings.sortByFolder||{}),[sortKey]:sort}});cards()};cards()}async function resize(n){size=n;$('#gallery').style.setProperty('--tile',n+'px');$('#size').value=n;await replay.settings({thumbnailSize:n})}function render(){nav();if(view==='dashboard'){header('Dashboard','Your personal photo archive');$('#content').innerHTML='<div class="panel"><h2>Transfer photos from Replay</h2><p>Choose the entire remaining photo library or one folder. Only Replay folders containing photos are offered. Selected folders include their subfolders. After archive and backup verification, transferred photos are removed from the Replay library; recovery copies are retained. Close Replay first.</p><div class="row"><button id="resume-migrate-all" class="primary">Transfer Entire Library</button><button id="resume-load-folders">Transfer Selected Folder</button></div><div id="resume-folder-picker" class="hidden" style="margin-top:12px"><label for="resume-folder-select">Replay folders containing photos</label><div class="row"><select id="resume-folder-select" style="flex:1;min-width:180px"></select><button id="resume-migrate-selected" class="primary">Transfer This Folder</button></div></div><p id="resume-migration-status" class="muted" role="status"></p></div>'+'<div class="panel"><h2>Pinned Collections</h2><div id="pinned-collections" class="grid"></div></div><div class="panel"><h2>Add Media</h2><p>Import photos to your private library.</p><button id="add-media" class="primary">+ Add Media</button></div>';$('#add-media').onclick=importMedia;
+ const migrationStatus=$('#resume-migration-status');
+ const fullTransferButton=$('#resume-migrate-all'),pickerButton=$('#resume-load-folders'),folderPicker=$('#resume-folder-picker'),folderSelect=$('#resume-folder-select'),selectedTransferButton=$('#resume-migrate-selected');
+ const loadReplayFolders=async()=>{
+  const available=await replay.replayPhotoFolders();
+  const all=new Map(available.folders.map(f=>[f.id,f]));
+  const hierarchy=f=>{
+   const names=[f.name];const seen=new Set([f.id]);let parent=f.parent;
+   while(parent&&all.has(parent)&&!seen.has(parent)){seen.add(parent);const ancestor=all.get(parent);names.unshift(ancestor.name);parent=ancestor.parent}
+   return names.join(' / ');
+  };
+  folderSelect.innerHTML=available.folders.sort((a,b)=>hierarchy(a).localeCompare(hierarchy(b))).map(f=>'<option value="'+escape(f.id)+'">'+escape(hierarchy(f))+' ('+f.count+' photo'+(f.count===1?'':'s')+')</option>').join('');
+  selectedTransferButton.disabled=!available.folders.length;
+  migrationStatus.textContent=available.folders.length?'Choose a folder to transfer. Folders with no photos are hidden.':'Replay has no remaining photo folders to transfer.';
+  folderPicker.classList.remove('hidden');
  };
+ pickerButton.onclick=async()=>{
+  pickerButton.disabled=true;try{await loadReplayFolders()}catch(error){migrationStatus.textContent='Cannot list Replay folders: '+error.message}finally{pickerButton.disabled=false}
+ };
+ const transfer=async(folderId)=>{
+  fullTransferButton.disabled=true;selectedTransferButton.disabled=true;pickerButton.disabled=true;
+  migrationStatus.textContent='Copying and verifying photos…';
+  try{
+   const result=await replay.migrateReplayPhotos(folderId?{folderId}:{});
+   if(result.cancelled){migrationStatus.textContent='Transfer cancelled. Replay is unchanged.';return}
+   const summary='Copied '+result.copied+' photos; previously copied '+result.previouslyCopied+'; removed from Replay '+result.replayRemoved+'; failed '+result.failed+'. Report: '+result.reportPath;
+   await redraw();
+   const visible=$('#resume-migration-status');if(visible)visible.textContent=summary;else alert(summary);
+  }catch(error){migrationStatus.textContent='Could not transfer photos: '+error.message}
+  finally{fullTransferButton.disabled=false;selectedTransferButton.disabled=false;pickerButton.disabled=false}
+ };
+ fullTransferButton.onclick=()=>transfer(null);
+ selectedTransferButton.onclick=()=>{if(folderSelect.value)transfer(folderSelect.value)};
  const pins=data.folders.filter(f=>f.pinned);$('#pinned-collections').innerHTML=pins.length?pins.map(f=>'<button data-pin="'+f.id+'">▤ '+escape(f.name)+'</button>').join(''):'<p>No pinned collections yet. Right-click a folder to pin it.</p>';$('#pinned-collections').querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const f=folderOf(b.dataset.pin);kind=f.kind;group=f.group;folder=f.id;view=f.kind;render()})}else if(view==='images'){kind=view;group='fandom';gallery()}else if(view==='trash'){
  header('Trash','Deleted photos');
  const deleted=data.items.filter(x=>x.deletedAt).sort((a,b)=>b.deletedAt-a.deletedAt);
