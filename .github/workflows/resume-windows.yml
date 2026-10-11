@@ -41,13 +41,18 @@ jobs:
           $graphics = [Drawing.Graphics]::FromImage($bitmap)
           $graphics.InterpolationMode = [Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
           $graphics.DrawImage($source, 0, 0, 256, 256)
-          # Recolor the burgundy field to dark emerald, retaining gold ornament.
+          # Preserve bright gold strokes, recolor dark burgundy fields without darkening the symbol.
           for ($y=0; $y -lt 256; $y++) {
             for ($x=0; $x -lt 256; $x++) {
               $c=$bitmap.GetPixel($x,$y)
-              if ($c.A -gt 0 -and $c.R -gt ($c.G * 1.14) -and $c.G -lt 140 -and $c.B -lt ($c.R * 0.9)) {
-                $lum=[Math]::Max(0.18,[Math]::Min(1.2,$c.R / 95.0))
-                $bitmap.SetPixel($x,$y,[Drawing.Color]::FromArgb($c.A,[int](11*$lum),[int](48*$lum),[int](34*$lum)))
+              if ($c.A -eq 0) { continue }
+              $gold = ($c.R -gt 100 -and $c.G -gt 73 -and $c.B -lt ($c.G * 0.89) -and $c.R -lt ($c.G * 2.05))
+              if (-not $gold) {
+                $light=[Math]::Max(0.15,[Math]::Min(1.0,(($c.R+$c.G+$c.B)/3.0)/130.0))
+                $rr=[int](9 + 20*$light)
+                $gg=[int](26 + 67*$light)
+                $bb=[int](20 + 41*$light)
+                $bitmap.SetPixel($x,$y,[Drawing.Color]::FromArgb($c.A,$rr,$gg,$bb))
               }
             }
           }
