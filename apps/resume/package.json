@@ -1,6 +1,6 @@
 {
   "name": "resume",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Resume independent personal photo archive",
   "main": "electron/main.cjs",
   "private": true,
