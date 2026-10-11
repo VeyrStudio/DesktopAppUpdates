@@ -46,7 +46,7 @@ function showSubfolderInfo(){
  panel.id='subfolder-information';
  panel.className='subfolder-info-card';
  const section=(label,value)=>'<div class="subfolder-info-field"><div class="subfolder-info-label">'+label+'</div><div class="subfolder-info-value">'+escape(value||'Not specified')+'</div></div>';
- panel.innerHTML='<div class="subfolder-info-heading"><div><div class="subfolder-info-eyebrow">REPLAY COLLECTION</div><h3>Folder Information</h3></div><button type="button" id="edit-subfolder" title="Edit information">Edit ✎</button></div>'+section('MAIN PAIRING(S)',d.pairings)+(d.shipName?section('SHIP NAME',d.shipName):'')+section('MEDIA SOURCE',(d.sources||[]).join(' · '))+section('RELATIONSHIP',d.category)+(d.ao3?'<button type="button" class="subfolder-ao3" id="subfolder-ao3">AO3 ↗</button>':'');
+ panel.innerHTML='<div class="subfolder-info-heading"><div><div class="subfolder-info-eyebrow">RESUME COLLECTION</div><h3>Folder Information</h3></div><button type="button" id="edit-subfolder" title="Edit information">Edit ✎</button></div>'+section('MAIN PAIRING(S)',d.pairings)+(d.shipName?section('SHIP NAME',d.shipName):'')+section('MEDIA SOURCE',(d.sources||[]).join(' · '))+section('RELATIONSHIP',d.category)+(d.ao3?'<button type="button" class="subfolder-ao3" id="subfolder-ao3">AO3 ↗</button>':'');
  const gallery=document.querySelector('#gallery');
  if(!gallery)return;
  const layout=document.createElement('div');layout.className='media-with-information';gallery.before(layout);layout.append(gallery,panel); // Info card sits beside, not above, the media grid.
