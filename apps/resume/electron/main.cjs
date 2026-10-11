@@ -183,9 +183,9 @@ ipcMain.handle('import',(event,x)=>importFiles(x,event.sender));
 ipcMain.handle('migrate-replay-photos',async(event)=>{
  const replayBase=path.join(app.getPath('appData'),'VeyrStudio','Replay');
  const replayDb=path.join(replayBase,'library.json');
- const ask=await dialog.showMessageBox({type:'question',buttons:['Copy photos','Cancel'],defaultId:1,cancelId:1,
-  title:'Copy photos from Replay',message:'Import your Replay photos and folders into Resume?',
-  detail:'Resume will copy and SHA-256 verify each photo. Replay files will NOT be moved, deleted, or changed.'});
+ const ask=await dialog.showMessageBox({type:'question',buttons:['Transfer photos','Cancel'],defaultId:1,cancelId:1,
+  title:'Transfer photos from Replay',message:'Transfer Replay photos into Resume?',
+  detail:'Resume will verify copies and backups before removing the originals from Replay. Close Replay first. A recovery snapshot will be preserved.'});
  if(ask.response!==0)return {cancelled:true};
  let source;try{source=JSON.parse(await fsp.readFile(replayDb,'utf8'))}catch(error){throw Error('Cannot read Replay library: '+error.message)}
  if(!Array.isArray(source.items)||!Array.isArray(source.folders))throw Error('Replay library has an invalid structure');
@@ -221,7 +221,66 @@ ipcMain.handle('migrate-replay-photos',async(event)=>{
    copied++;
   }catch(error){errors.push({id:item.id,name:String(item.name||''),error:error.message})}
  }
- const report={date:new Date().toISOString(),total:sourcePhotos.length,copied,previouslyCopied:skipped,failed:errors.length,errors};
+ // Replay cleanup is deliberately all-or-nothing. Never touch its files if any
+ // copy or independent backup is missing, or if Replay is still running.
+ let replayRemoved=0;
+ if(!errors.length&&sourcePhotos.length){
+  try{
+   if(process.platform==='win32'){
+    const {execFile}=require('node:child_process');
+    const list=await new Promise((resolve,reject)=>execFile('tasklist',['/FI','IMAGENAME eq Replay.exe','/FO','CSV','/NH'],{windowsHide:true},(err,out)=>err?reject(err):resolve(out)));
+    if(/"Replay\.exe"/i.test(list))throw Error('Close Replay completely before transferring its files');
+   }
+   // Confirm the Replay database has not changed since migration began.
+   const currentDb=await fsp.readFile(replayDb,'utf8');
+   const latest=JSON.parse(currentDb);
+   const currentPhotos=latest.items.filter(i=>i.kind==='images'&&!i.deletedAt);
+   if(currentPhotos.length!==sourcePhotos.length||currentPhotos.some(i=>!sourcePhotos.some(o=>o.id===i.id&&o.stored===i.stored)))
+    throw Error('Replay library changed during transfer. Originals retained');
+   const ownDb=await load();
+   for(const original of sourcePhotos){
+    const copy=ownDb.items.find(i=>i.id===original.id&&i.kind==='images'&&!i.deletedAt);
+    if(!copy)throw Error('Resume does not contain photo '+original.id);
+    const digest=await checksum(path.join(root,copy.stored));
+    if(digest!==copy.hash)throw Error('Resume photo verification failed: '+original.id);
+    await backupOne(ownDb,copy);
+    const backupRoot=ownDb.settings.backupRoot||path.join(app.getPath('appData'),'VeyrStudio','ResumeBackup');
+    const ids=copy.group==='fandom'?[...new Set([copy.folder,...(copy.fandoms||[])])]:[copy.folder];
+    for(const folderId of ids){
+     if(folderId&&!ownDb.folders.some(f=>f.id===folderId&&f.kind===copy.kind&&f.group===copy.group))continue;
+     const backupFile=path.join(backupRoot,copy.kind,copy.group==='fandom'?'Fandoms':'Non-Fandom',await folderPath(ownDb,folderId),safe(copy.name));
+     if((await checksum(backupFile))!==digest)throw Error('Resume backup verification failed: '+original.id);
+    }
+    const oldFile=path.resolve(replayBase,'Media',original.stored);
+    if(!oldFile.startsWith(path.resolve(replayBase,'Media')+path.sep)||await checksum(oldFile)!==digest)
+     throw Error('Replay source changed or is missing: '+original.id);
+   }
+   // Write a recovery copy of Replay metadata before making ANY source changes.
+   const recovery=path.join(app.getPath('userData'),'ReplayMigrationRecovery',String(Date.now()));
+   await fsp.mkdir(recovery,{recursive:true});
+   await fsp.copyFile(replayDb,path.join(recovery,'library-before-migration.json'));
+   const staged=[];
+   try{
+    for(const original of sourcePhotos){
+     const from=path.resolve(replayBase,'Media',original.stored);
+     const moved=path.join(recovery,'photos',original.stored);
+     await fsp.mkdir(path.dirname(moved),{recursive:true});
+     await fsp.rename(from,moved);
+     staged.push({from,moved});
+    }
+    latest.items=latest.items.filter(i=>!(i.kind==='images'&&!i.deletedAt));
+    const tmp=replayDb+'.resume-'+crypto.randomUUID()+'.tmp';
+    try{await fsp.writeFile(tmp,JSON.stringify(latest,null,2));await fsp.rename(tmp,replayDb)}
+    finally{await fsp.rm(tmp,{force:true}).catch(()=>{})}
+    replayRemoved=staged.length;
+    // Keep recovery files rather than irreversibly erasing them.
+   }catch(error){
+    for(const entry of staged.reverse()){await fsp.mkdir(path.dirname(entry.from),{recursive:true});await fsp.rename(entry.moved,entry.from)}
+    throw error;
+   }
+  }catch(error){errors.push({name:'Replay source cleanup',error:error.message})}
+ }
+ const report={date:new Date().toISOString(),total:sourcePhotos.length,copied,previouslyCopied:skipped,failed:errors.length,replayRemoved,errors};
  const reportPath=path.join(app.getPath('userData'),'replay-migration-report.json');
  await fsp.writeFile(reportPath,JSON.stringify(report,null,2));
  if(!errors.length){d.settings.replayMigrationComplete=true;d.settings.replayMigrationAt=report.date;await save(d)}
