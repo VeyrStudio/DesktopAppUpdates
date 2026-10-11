@@ -37,3 +37,26 @@ test('Resume photo viewer deletes without a confirmation dialog',()=>{
  assert.ok(pos>=0&&stop>pos);
  assert.doesNotMatch(body,/confirm\(/);
 });
+
+test('Replay migration exposes full-library and chosen-folder options without a completion gate',()=>{
+ assert.match(main,/ipcMain\.handle\('replay-photo-folders'/);
+ assert.match(main,/selectedFolderIds=new Set\(\[selection\]\)/);
+ assert.match(main,/selectedFolderIds\.has\(f\.parent\)/);
+ assert.match(main,/const sourcePhotos=selectedFolderIds\?/);
+ assert.doesNotMatch(main,/if\(d\.settings\.replayMigrationComplete\)return/);
+ assert.match(ui,/Transfer Entire Library/);
+ assert.match(ui,/Transfer Selected Folder/);
+ assert.match(ui,/resume-folder-select/);
+ assert.match(ui,/replay\.migrateReplayPhotos\(folderId\?\{folderId\}:\{\}\)/);
+});
+test('Replay folder selector includes only folders with direct or descendant photos',()=>{
+ assert.match(main,/const photos=source\.items\.filter\(i=>i\.kind==='images'&&!i\.deletedAt\)/);
+ assert.match(main,/ids\.has\(f\.parent\)/);
+ assert.match(main,/photos\.filter\(i=>ids\.has\(i\.folder\)/);
+ assert.match(main,/\.filter\(f=>f\.count>0\)/);
+});
+test('selected Replay transfers do not remove photos from other folders',()=>{
+ assert.match(main,/const currentPhotos=latest\.items\.filter\(i=>sourcePhotos\.some\(p=>p\.id===i\.id\)\)/);
+ assert.match(main,/const movingIds=new Set\(sourcePhotos\.map\(i=>i\.id\)\)/);
+ assert.match(main,/latest\.items=latest\.items\.filter\(i=>!movingIds\.has\(i\.id\)\)/);
+});
