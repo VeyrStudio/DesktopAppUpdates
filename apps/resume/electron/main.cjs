@@ -180,7 +180,25 @@ ipcMain.handle('browse-folder',async()=>{const r=await dialog.showOpenDialog({pr
 ipcMain.handle('import',(event,x)=>importFiles(x,event.sender));
 // One-time, resumable copy-only import of Replay's photos and complete folder hierarchy.
 // Never opens Replay files for writing or removes any Replay content.
-ipcMain.handle('migrate-replay-photos',async(event)=>{
+ipcMain.handle('replay-photo-folders',async()=>{
+ const replayDb=path.join(app.getPath('appData'),'VeyrStudio','Replay','library.json');
+ const source=JSON.parse(await fsp.readFile(replayDb,'utf8'));
+ if(!Array.isArray(source.folders)||!Array.isArray(source.items))throw Error('Invalid Replay library');
+ const folders=source.folders.filter(f=>f.kind==='images');
+ const photos=source.items.filter(i=>i.kind==='images'&&!i.deletedAt);
+ const descendants=id=>{
+  const ids=new Set([id]);let changed=true;
+  while(changed){changed=false;for(const f of folders)if(ids.has(f.parent)&&!ids.has(f.id)){ids.add(f.id);changed=true}}
+  return ids;
+ };
+ const options=folders.map(f=>{
+  const ids=descendants(f.id);
+  return {id:f.id,name:f.name,parent:f.parent||'',count:photos.filter(i=>ids.has(i.folder)||(i.fandoms||[]).some(x=>ids.has(x))).length};
+ }).filter(f=>f.count>0);
+ return {total:photos.length,folders:options};
+});
+ipcMain.handle('migrate-replay-photos',async(event,_selection)=>{
+ const selection=_selection&&_selection.folderId?String(_selection.folderId):null;
  const replayBase=path.join(app.getPath('appData'),'VeyrStudio','Replay');
  const replayDb=path.join(replayBase,'library.json');
  const ask=await dialog.showMessageBox({type:'question',buttons:['Transfer photos','Cancel'],defaultId:1,cancelId:1,
@@ -190,9 +208,16 @@ ipcMain.handle('migrate-replay-photos',async(event)=>{
  let source;try{source=JSON.parse(await fsp.readFile(replayDb,'utf8'))}catch(error){throw Error('Cannot read Replay library: '+error.message)}
  if(!Array.isArray(source.items)||!Array.isArray(source.folders))throw Error('Replay library has an invalid structure');
  const d=await load();
- if(d.settings.replayMigrationComplete)return {alreadyComplete:true};
  const sourceFolders=source.folders.filter(f=>f.kind==='images');
- const sourcePhotos=source.items.filter(i=>i.kind==='images'&&!i.deletedAt);
+ const eligible=source.items.filter(i=>i.kind==='images'&&!i.deletedAt);
+ let selectedFolderIds=null;
+ if(selection){
+  const start=sourceFolders.find(f=>f.id===selection);
+  if(!start)throw Error('Selected Replay folder not found');
+  selectedFolderIds=new Set([selection]);let changed=true;
+  while(changed){changed=false;for(const f of sourceFolders)if(selectedFolderIds.has(f.parent)&&!selectedFolderIds.has(f.id)){selectedFolderIds.add(f.id);changed=true}}
+ }
+ const sourcePhotos=selectedFolderIds?eligible.filter(i=>selectedFolderIds.has(i.folder)||(i.fandoms||[]).some(id=>selectedFolderIds.has(id))):eligible;
  // Preserve Replay IDs, hierarchy, covers, notes, favorites and ordering.
  const knownFolders=new Set(d.folders.map(f=>f.id));
  for(const f of sourceFolders)if(!knownFolders.has(f.id)){d.folders.push(structuredClone(f));knownFolders.add(f.id)}
@@ -234,7 +259,7 @@ ipcMain.handle('migrate-replay-photos',async(event)=>{
    // Confirm the Replay database has not changed since migration began.
    const currentDb=await fsp.readFile(replayDb,'utf8');
    const latest=JSON.parse(currentDb);
-   const currentPhotos=latest.items.filter(i=>i.kind==='images'&&!i.deletedAt);
+   const currentPhotos=latest.items.filter(i=>sourcePhotos.some(p=>p.id===i.id));
    if(currentPhotos.length!==sourcePhotos.length||currentPhotos.some(i=>!sourcePhotos.some(o=>o.id===i.id&&o.stored===i.stored)))
     throw Error('Replay library changed during transfer. Originals retained');
    const ownDb=await load();
@@ -268,7 +293,8 @@ ipcMain.handle('migrate-replay-photos',async(event)=>{
      await fsp.rename(from,moved);
      staged.push({from,moved});
     }
-    latest.items=latest.items.filter(i=>!(i.kind==='images'&&!i.deletedAt));
+    const movingIds=new Set(sourcePhotos.map(i=>i.id));
+    latest.items=latest.items.filter(i=>!movingIds.has(i.id));
     const tmp=replayDb+'.resume-'+crypto.randomUUID()+'.tmp';
     try{await fsp.writeFile(tmp,JSON.stringify(latest,null,2));await fsp.rename(tmp,replayDb)}
     finally{await fsp.rm(tmp,{force:true}).catch(()=>{})}
@@ -283,7 +309,7 @@ ipcMain.handle('migrate-replay-photos',async(event)=>{
  const report={date:new Date().toISOString(),total:sourcePhotos.length,copied,previouslyCopied:skipped,failed:errors.length,replayRemoved,errors};
  const reportPath=path.join(app.getPath('userData'),'replay-migration-report.json');
  await fsp.writeFile(reportPath,JSON.stringify(report,null,2));
- if(!errors.length){d.settings.replayMigrationComplete=true;d.settings.replayMigrationAt=report.date;await save(d)}
+ if(!errors.length){d.settings.replayMigrationAt=report.date;await save(d)}
  event.sender.send('resume-migration-progress',{completed:sourcePhotos.length,total:sourcePhotos.length,copied,skipped,finished:true});
  queueFolderBackup();
  return {...report,reportPath};
