@@ -280,8 +280,23 @@ function openItem(it){
   scale=1;panX=0;panY=0;
   const url='replay://media/'+current.id;
   $('#player').innerHTML=current.kind==='videos'?'<video src="'+url+'" controls autoplay loop></video>':'<img draggable="false" src="'+url+'">';
-  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
+  $('#controls').innerHTML='<button id="previous-media">← Previous</button><button id="next-media">Next →</button><button id="move-viewed-media">Move</button><button id="permanent-delete-photo" title="Permanently delete this photo" aria-label="Permanently delete photo" style="color:#f3a89e;border-color:#a85b51">🗑</button><button id="separate-media">Open in New Window ↗</button><button id="full-media">Fullscreen</button>'+(current.kind==='videos'?'<button id="loop-media">Loop: on</button><button id="mute-media">Mute</button><select id="speed-media"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>':current.kind==='images'?'<button id="zoom-out">−</button><button id="zoom-in">+</button><button id="fit-image">Fit</button>':current.kind==='gifs'?'<button id="pause-gif">Pause GIF</button>':'');
   $('#previous-media').onclick=()=>move(-1);$('#next-media').onclick=()=>move(1);
+  const permanentDeleteButton=$('#permanent-delete-photo');
+  permanentDeleteButton.hidden=current.kind!=='images';
+  permanentDeleteButton.onclick=async()=>{
+   if(!confirm('Permanently delete this photo? This cannot be undone.'))return;
+   permanentDeleteButton.disabled=true;
+   try{
+    const removedId=current.id;
+    const index=peers.findIndex(x=>x.id===removedId);
+    data=await replay.permanentPhotoDelete(removedId);
+    peers.splice(index,1);
+    await redraw();
+    if(peers.length){current=data.items.find(x=>x.id===peers[Math.min(index,peers.length-1)].id)||peers[0];display()}
+    else $('#close').click();
+   }catch(error){alert('Could not permanently delete photo: '+error.message);permanentDeleteButton.disabled=false}
+  };
   $('#move-viewed-media').onclick=async()=>{
    const moving=current;
    const destination=await moveMediaPicker(moving,data.folders.filter(f=>f.kind===moving.kind),true);
