@@ -211,6 +211,32 @@ async function synchronizeBackup(){
 ipcMain.handle('backup',()=>synchronizeBackup());
 ipcMain.handle('empty-trash',async()=>{const d=await load(),cut=Date.now()-30*86400000;for(const item of d.items.filter(x=>x.deletedAt&&x.deletedAt<cut)){await fsp.rm(path.join(root,item.stored),{force:true})}d.items=d.items.filter(x=>!x.deletedAt||x.deletedAt>=cut);await save(d);return d});
 // Explicit emptying of Trash permanently removes archived files only after UI confirmation.
+ipcMain.handle('delete-entire-photo-library',async()=>{
+ const d=await load(),photos=d.items.filter(item=>item.kind==='images');
+ // Stage the removal so a failure can restore every original photo.
+ const staged=[],staging=path.join(app.getPath('userData'),'photo-delete-staging-'+crypto.randomUUID());
+ try{
+  for(const item of photos){
+   const from=path.resolve(root,item.stored);
+   if(!from.startsWith(path.resolve(root)+path.sep))throw Error('Unsafe photo path');
+   const target=path.join(staging,item.stored);
+   await fsp.mkdir(path.dirname(target),{recursive:true});
+   await fsp.rename(from,target);staged.push({from,target});
+  }
+  d.items=d.items.filter(item=>item.kind!=='images');
+  await save(d);
+ }catch(error){
+  for(const file of staged.reverse()){
+   await fsp.mkdir(path.dirname(file.from),{recursive:true});
+   await fsp.rename(file.target,file.from);
+  }
+  throw error;
+ }
+ // Once library metadata is durably saved, remove the staged image bytes.
+ await fsp.rm(staging,{recursive:true,force:true});
+ queueFolderBackup();
+ return {deleted:photos.length};
+});
 ipcMain.handle('delete-all-trash',async()=>{
  const d=await load(),trashed=d.items.filter(x=>x.deletedAt);
  // Do not change metadata if deleting a file fails.
