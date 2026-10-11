@@ -14,3 +14,26 @@ test('Resume has own update channel',()=>{assert.match(main,/main\/resume\/resum
 
 test('migration copies and verifies without deleting Replay photos',()=>{const start=main.indexOf("ipcMain.handle('migrate-replay-photos'");const end=main.indexOf("ipcMain.handle('choose-folder-icon'",start);const body=main.slice(start,end);assert.ok(start>0&&end>start);assert.match(body,/await fileCopy\(src,dest\)/);assert.match(body,/verifiedHash!==photoHash/);assert.doesNotMatch(body,/fsp\.rm\(src/);assert.doesNotMatch(body,/fsp\.rename\(src/)});
 test('photo editor preserves original bytes in separate Originals folder',()=>{assert.match(main,/ipcMain\.handle\('save-photo-edit'/);assert.match(main,/Originals/);assert.match(ui,/edit-crop/);assert.match(ui,/edit-rotate/)});
+
+test('verified Replay transfer requires closed Replay and saves source recovery snapshot',()=>{
+ assert.match(main,/IMAGENAME eq Replay\.exe/);
+ assert.match(main,/library-before-migration\.json/);
+ assert.match(main,/Replay source cleanup/);
+ assert.match(main,/replayRemoved/);
+ assert.match(main,/await backupOne\(ownDb,copy\)/);
+});
+test('source Windows photo files are removed only following independent archive and backup verification',()=>{
+ const start=main.indexOf('async function importFiles(');
+ const end=main.indexOf('async function updateItem(',start);
+ const body=main.slice(start,end);
+ assert.match(body,/checksum\(path\.join\(root,stored\)\)/);
+ assert.match(body,/checksum\(backupFile\)/);
+ assert.ok(body.indexOf('await fsp.rm(src)')>body.indexOf('checksum(backupFile)'));
+});
+test('Resume photo viewer deletes without a confirmation dialog',()=>{
+ const pos=ui.indexOf("permanentDeleteButton.onclick");
+ const stop=ui.indexOf("$('#move-viewed-media').onclick",pos);
+ const body=ui.slice(pos,stop);
+ assert.ok(pos>=0&&stop>pos);
+ assert.doesNotMatch(body,/confirm\(/);
+});
