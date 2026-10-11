@@ -340,7 +340,6 @@ function openItem(it){
   const permanentDeleteButton=$('#permanent-delete-photo');
   permanentDeleteButton.hidden=current.kind!=='images';
   permanentDeleteButton.onclick=async()=>{
-   if(!confirm('Permanently delete this photo? This cannot be undone.'))return;
    permanentDeleteButton.disabled=true;
    try{
     const removedId=current.id;
