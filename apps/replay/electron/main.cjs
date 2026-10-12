@@ -1,6 +1,7 @@
 const {app,BrowserWindow,dialog,ipcMain,protocol,net,shell}=require('electron');
 const fs=require('node:fs'), fsp=require('node:fs/promises'), path=require('node:path'),crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
+let replayCloud=null;
 protocol.registerSchemesAsPrivileged([{scheme:'replay',privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}}]);
 app.setPath('userData',path.join(app.getPath('appData'),'VeyrStudio','Replay'));
 const root=path.join(app.getPath('userData'),'Media'), dbfile=path.join(app.getPath('userData'),'library.json');
@@ -157,7 +158,6 @@ app.whenReady().then(async()=>{await fsp.mkdir(root,{recursive:true});if(!fs.exi
  const stream=fs.createReadStream(file,{start,end});
  return new Response(require('node:stream').Readable.toWeb(stream),{status,headers});
 });
-let replayCloud=null;
 try{
  replayCloud=require('./cloud.cjs').launch({
   dir:path.join(app.getPath('userData'),'ReplayCloud'),
