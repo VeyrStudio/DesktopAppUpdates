@@ -156,7 +156,20 @@ app.whenReady().then(async()=>{await fsp.mkdir(root,{recursive:true});if(!fs.exi
  if(req.method==='HEAD'||total===0)return new Response(null,{status,headers});
  const stream=fs.createReadStream(file,{start,end});
  return new Response(require('node:stream').Readable.toWeb(stream),{status,headers});
-});const win=new BrowserWindow({width:1320,height:850,minWidth:850,minHeight:560,backgroundColor:'#101014',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false}});win.loadFile(path.join(__dirname,'../src/index.html'))});
+});
+let replayCloud=null;
+try{
+ replayCloud=require('./cloud.cjs').launch({
+  dir:path.join(app.getPath('userData'),'ReplayCloud'),
+  folders:async()=>{const d=await load();return d.folders.map(f=>({id:f.id,name:f.name,kind:f.kind}))},
+  importVideo:async(file,folderId)=>{
+   const d=await load(),f=d.folders.find(x=>x.id===folderId&&x.kind==='videos');
+   const results=await importFiles([{path:file,folder:f?.id||'',group:f?.group||'nonfandom'}]);
+   return results[0];
+  }
+ });
+}catch(error){console.error('Replay Cloud startup failed:',error)}
+const win=new BrowserWindow({width:1320,height:850,minWidth:850,minHeight:560,backgroundColor:'#101014',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false}});win.loadFile(path.join(__dirname,'../src/index.html'))});
 ipcMain.handle('open-media-window',async(_event,id)=>{const d=await load();const item=d.items.find(x=>x.id===id&&!x.deletedAt);if(!item)throw Error('Media not found');const pop=new BrowserWindow({width:960,height:720,minWidth:360,minHeight:260,backgroundColor:'#101014',title:'Replay — '+item.name,autoHideMenuBar:true,webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});await pop.loadFile(path.join(__dirname,'../src/media-window.html'),{query:{id:item.id}});return true});
 ipcMain.handle('state',()=>load());
 ipcMain.handle('browse',async()=>{const r=await dialog.showOpenDialog({properties:['openFile','multiSelections'],filters:[{name:'Media',extensions:['mp4','mov','mkv','webm','avi','gif','png','jpg','jpeg','webp','heic','bmp','tiff']}]});return r.canceled?[]:r.filePaths});
@@ -348,3 +361,5 @@ ipcMain.handle('folder-delete',async(_e,id)=>{
  d.folders=d.folders.filter(f=>f.id!==id);
  await save(d);await synchronizeBackup();return d;
 });
+
+ipcMain.handle('replay-cloud-info',()=>replayCloud?{enabled:true,port:replayCloud.port,key:replayCloud.key,addresses:replayCloud.addresses}:{enabled:false,error:'Replay Cloud could not start. Check port 8787.'});
