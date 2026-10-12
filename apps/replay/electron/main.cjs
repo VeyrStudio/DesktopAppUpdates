@@ -362,4 +362,4 @@ ipcMain.handle('folder-delete',async(_e,id)=>{
  await save(d);await synchronizeBackup();return d;
 });
 
-ipcMain.handle('replay-cloud-info',()=>replayCloud?{enabled:true,port:replayCloud.port,key:replayCloud.key,addresses:replayCloud.addresses}:{enabled:false,error:'Replay Cloud could not start. Check port 8787.'});
+ipcMain.handle('replay-cloud-info',()=>replayCloud?{enabled:true,port:replayCloud.port,key:replayCloud.key,addresses:replayCloud.addresses,notificationTopic:replayCloud.notificationTopic}:{enabled:false,error:'Replay Cloud could not start. Check port 8787.'});
