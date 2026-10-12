@@ -53,6 +53,13 @@ jobs:
           $writer.Write($raw); $writer.Flush()
           [IO.File]::WriteAllBytes('build/icon.ico', $ico.ToArray())
           $writer.Dispose(); $ico.Dispose(); $graphics.Dispose(); $bitmap.Dispose(); $source.Dispose(); $inputStream.Dispose(); $outputStream.Dispose()
+      - name: Bundle free TikTok downloader
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path 'build/tools' | Out-Null
+          Invoke-WebRequest -Uri 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe' -OutFile 'build/tools/yt-dlp.exe'
+          if ((Get-Item 'build/tools/yt-dlp.exe').Length -lt 1000000) { throw 'yt-dlp download incomplete' }
       - name: Build Windows installer
         run: npm run build:win
       - name: Upload installer artifact
