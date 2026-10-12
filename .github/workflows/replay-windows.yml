@@ -60,6 +60,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path 'build/tools' | Out-Null
           Invoke-WebRequest -Uri 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe' -OutFile 'build/tools/yt-dlp.exe'
           if ((Get-Item 'build/tools/yt-dlp.exe').Length -lt 1000000) { throw 'yt-dlp download incomplete' }
+          Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile 'build/tools/cloudflared.exe'
+          if ((Get-Item 'build/tools/cloudflared.exe').Length -lt 1000000) { throw 'cloudflared download incomplete' }
       - name: Build Windows installer
         run: npm run build:win
       - name: Upload installer artifact
