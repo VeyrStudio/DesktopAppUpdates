@@ -43,6 +43,10 @@
       {
         "from": "build/tools/yt-dlp.exe",
         "to": "yt-dlp.exe"
+      },
+      {
+        "from": "build/tools/cloudflared.exe",
+        "to": "cloudflared.exe"
       }
     ]
   },
