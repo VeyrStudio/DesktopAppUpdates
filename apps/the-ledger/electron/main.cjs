@@ -319,10 +319,10 @@ ipcMain.handle("ledger:delete-lecture-files", async (_event, { lectureId, audioP
 
 ipcMain.handle("ledger:choose-import", async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
-    title: "Import into The Ledger",
+    title: "Import Audio or Video",
     properties: ["openFile", "multiSelections"],
     filters: [
-      { name: "Supported files", extensions: ["mp3", "wav", "m4a", "aac", "flac", "mp4", "mov", "txt", "docx", "pdf"] },
+      { name: "Audio and video", extensions: ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus", "wma", "mp4", "m4v", "mov", "webm", "mkv", "avi", "wmv", "mpg", "mpeg"] },
       { name: "All files", extensions: ["*"] }
     ]
   });
