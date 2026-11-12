@@ -1,4 +1,5 @@
 name: Build Constellation
+# platonic-filter-backup-v1
 # multiple-pairing-media-v2
 # safe-media-storage-v1
 # rollback-multi-image-v1
@@ -99,6 +100,14 @@ jobs:
           python "apps/constellation/patches/multiple-pairing-media-v2.py"
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'CONSTELLATION_EXTRA_MEDIA_DB' -Quiet)) { throw "Multiple pairing media support was not applied." }
           if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'accept="image/*,video/*"' -Quiet)) { throw "Pairing media picker does not accept images and video." }
+
+      - name: Fix Platonic filter and preserve metadata backup
+        shell: pwsh
+        working-directory: .
+        run: |
+          python "apps/constellation/patches/platonic-filter-backup.py"
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'STORAGE_BACKUP_KEY' -Quiet)) { throw "Metadata backup support was not applied." }
+          if (-not (Select-String -Path "apps/constellation/src/app.js" -SimpleMatch 'currentView === "platonic" ? true' -Quiet)) { throw "Platonic filter fix was not applied." }
 
       - name: Use Node.js
         uses: actions/setup-node@v4
